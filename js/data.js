@@ -18,9 +18,7 @@ export const DEVELOPER_PROFILE = {
   email: "raflyfirmansyah02@gmail.com",
   whatsapp: "089913333223",
   whatsappUrl: "https://wa.me/6289913333223",
-  linkedin: "https://linkedin.com/in/raflyf",
-  repoUrl: "https://github.com/Raflyf/web-portofolio",
-  cvUrl: "certificates/cv-rafly-firmansyah-2024.pdf"
+  repoUrl: "https://github.com/Raflyf/web-portofolio"
 };
 
 export const PROJECTS_DATA = [
