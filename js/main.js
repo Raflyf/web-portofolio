@@ -478,14 +478,15 @@ function renderCertificates(category) {
 
     actionsWrap.appendChild(viewBtn);
 
-    if (cert.pdfUrl) {
-      const previewUrl = `preview.html?file=${encodeURIComponent(cert.pdfUrl)}&title=${encodeURIComponent(cert.title)}`;
+    if (cert.imageUrl || cert.pdfUrl || cert.images) {
+      const imgsParam = cert.images ? cert.images.join(',') : (cert.imageUrl || '');
+      const previewUrl = `preview.html?imgs=${encodeURIComponent(imgsParam)}&pdf=${encodeURIComponent(cert.pdfUrl || '')}&title=${encodeURIComponent(cert.title)}`;
       const pdfBtn = document.createElement('a');
       pdfBtn.href = previewUrl;
       pdfBtn.target = '_blank';
       pdfBtn.rel = 'noopener noreferrer';
       pdfBtn.className = 'btn-copy';
-      pdfBtn.innerHTML = `<span>Buka PDF</span> ↗`;
+      pdfBtn.innerHTML = `<span>Buka Sertifikat</span> ↗`;
       actionsWrap.appendChild(pdfBtn);
     }
 
@@ -718,14 +719,15 @@ function openCertModal(cert) {
     actionsWrap.style.gap = '0.75rem';
     actionsWrap.style.marginTop = '1rem';
 
-    if (cert.pdfUrl) {
-      const previewUrl = `preview.html?file=${encodeURIComponent(cert.pdfUrl)}&title=${encodeURIComponent(cert.title)}`;
+    if (cert.imageUrl || cert.pdfUrl || cert.images) {
+      const imgsParam = cert.images ? cert.images.join(',') : (cert.imageUrl || '');
+      const previewUrl = `preview.html?imgs=${encodeURIComponent(imgsParam)}&pdf=${encodeURIComponent(cert.pdfUrl || '')}&title=${encodeURIComponent(cert.title)}`;
       const pdfBtn = document.createElement('a');
       pdfBtn.href = previewUrl;
       pdfBtn.target = '_blank';
       pdfBtn.rel = 'noopener noreferrer';
       pdfBtn.className = 'btn-primary';
-      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Pratinjau Dokumen PDF`;
+      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> Pratinjau Dokumen Sertifikat`;
       actionsWrap.appendChild(pdfBtn);
     }
 
