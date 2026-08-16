@@ -1,9 +1,12 @@
 /**
  * ============================================================================
  * RAFLY FIRMANSYAH - MAIN APPLICATION LOGIC
- * Custom Smooth-Scroll Engine with Cubic Easing (0-Lag / Ultra Fluid)
- * Security: Strict XSS-safe DOM construction, email regex validation
- * Accessibility: WCAG 2.2 AA compliant, prefers-reduced-motion support
+ * - Inertia Smooth-Scroll Engine with Cubic Physics & Wheel Damper
+ * - FormSubmit AJAX Real Email Delivery to raflyfirmansyah02@gmail.com
+ * - 1-Click Email Copy with Floating Toast Feedback
+ * - Dual Delivery with Direct WhatsApp Web Dispatch
+ * - Embedded PDF Document Viewer inside Native <dialog> Modals
+ * - WCAG 2.2 AA Accessibility & Security Sanitization
  * ============================================================================
  */
 
@@ -18,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initTimelineSection();
   initModals();
   initContactForm();
+  initCopyEmailButton();
   initScrollSpy();
   initScrollProgressBar();
   initScrollReveal();
@@ -32,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
    Guarantees 60-120fps fluid deceleration across all platforms
    ========================================================================== */
 export function smoothScrollTo(targetY, duration = 850) {
-  // Respect user preference for reduced motion
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     window.scrollTo(0, targetY);
     return;
@@ -45,7 +48,6 @@ export function smoothScrollTo(targetY, duration = 850) {
 
   let startTime = null;
 
-  // Cubic Easing In-Out function (smooth acceleration & deceleration)
   function easeInOutCubic(t) {
     return t < 0.5 
       ? 4 * t * t * t 
@@ -87,13 +89,11 @@ function initSmoothScrollEngine() {
 
         smoothScrollTo(offsetPosition, 850);
 
-        // Update active class immediately for tactile feel
         document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
         if (this.classList.contains('nav-link')) {
           this.classList.add('active');
         }
 
-        // Accessibility focus handling without jump
         targetEl.setAttribute('tabindex', '-1');
         targetEl.focus({ preventScroll: true });
       }
@@ -117,7 +117,6 @@ function initBackToTopButtons() {
   if (floatingBtn) {
     floatingBtn.addEventListener('click', handleScrollToTop);
 
-    // Toggle visibility on scroll
     window.addEventListener('scroll', () => {
       const currentScroll = window.scrollY || window.pageYOffset;
       if (currentScroll > 350) {
@@ -131,7 +130,6 @@ function initBackToTopButtons() {
 
 /* ==========================================================================
    2. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
-   Transforms stiff Windows mouse wheel increments into silky smooth glides
    ========================================================================== */
 function initInertiaSmoothWheel() {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -139,7 +137,7 @@ function initInertiaSmoothWheel() {
   let currentY = window.scrollY || window.pageYOffset;
   let targetY = currentY;
   let isRunning = false;
-  const ease = 0.085; // Velvety smooth damper coefficient
+  const ease = 0.085;
 
   function updateWheelPhysics() {
     const diff = targetY - currentY;
@@ -156,14 +154,14 @@ function initInertiaSmoothWheel() {
   }
 
   window.addEventListener('wheel', (e) => {
-    // Check if scrolling inside an internal scrollable container
     const path = e.composedPath ? e.composedPath() : [];
     const isScrollableChild = path.some(el => {
       if (!el || !el.classList) return false;
       return (
         el.classList.contains('terminal-body') ||
         el.classList.contains('modal-body') ||
-        el.tagName === 'TEXTAREA'
+        el.tagName === 'TEXTAREA' ||
+        el.tagName === 'IFRAME'
       );
     });
 
@@ -181,8 +179,8 @@ function initInertiaSmoothWheel() {
     );
 
     let delta = e.deltaY;
-    if (e.deltaMode === 1) delta *= 40; // line scroll multiplier
-    if (e.deltaMode === 2) delta *= 800; // page scroll multiplier
+    if (e.deltaMode === 1) delta *= 40;
+    if (e.deltaMode === 2) delta *= 800;
 
     targetY = Math.min(Math.max(0, targetY + delta), maxScroll);
 
@@ -193,7 +191,6 @@ function initInertiaSmoothWheel() {
     }
   }, { passive: false });
 
-  // Sync position on native drag or key press
   window.addEventListener('scroll', () => {
     if (!isRunning) {
       currentY = window.scrollY || window.pageYOffset;
@@ -203,7 +200,7 @@ function initInertiaSmoothWheel() {
 }
 
 /* ==========================================================================
-   3. THEME TOGGLER (Local Storage + System Preference)
+   3. THEME TOGGLER
    ========================================================================== */
 function initThemeToggle() {
   const themeBtn = document.getElementById('theme-toggle-btn');
@@ -232,7 +229,7 @@ function applyTheme(theme) {
 }
 
 /* ==========================================================================
-   3. MOBILE NAVIGATION
+   4. MOBILE NAVIGATION
    ========================================================================== */
 function initMobileNavigation() {
   const toggleBtn = document.getElementById('mobile-nav-toggle');
@@ -245,7 +242,6 @@ function initMobileNavigation() {
     toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
 
-  // Close menu on nav link click
   navMenu.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
       navMenu.classList.remove('is-open');
@@ -255,7 +251,7 @@ function initMobileNavigation() {
 }
 
 /* ==========================================================================
-   4. PROJECTS SHOWCASE & FILTERING
+   5. PROJECTS SHOWCASE & FILTERING
    ========================================================================== */
 function initProjectsSection() {
   const gridEl = document.getElementById('projects-grid');
@@ -299,7 +295,6 @@ function renderProjects(category) {
     card.setAttribute('tabindex', '0');
     card.style.transitionDelay = `${idx * 40}ms`;
 
-    // Header
     const header = document.createElement('div');
     header.className = 'project-card__header';
 
@@ -324,7 +319,6 @@ function renderProjects(category) {
     header.appendChild(badge);
     header.appendChild(linksWrap);
 
-    // Body
     const body = document.createElement('div');
     body.className = 'project-card__body';
 
@@ -353,7 +347,6 @@ function renderProjects(category) {
     body.appendChild(desc);
     body.appendChild(featuresList);
 
-    // Footer
     const footer = document.createElement('div');
     footer.className = 'project-card__footer';
 
@@ -383,7 +376,7 @@ function renderProjects(category) {
 }
 
 /* ==========================================================================
-   5. CERTIFICATES SHOWCASE & FILTERING
+   6. CERTIFICATES SHOWCASE & FILTERING
    ========================================================================== */
 function initCertificatesSection() {
   const gridEl = document.getElementById('certificates-grid');
@@ -459,7 +452,7 @@ function renderCertificates(category) {
 
     const viewBtn = document.createElement('button');
     viewBtn.className = 'btn-cert-view';
-    viewBtn.textContent = 'Lihat Kredensial';
+    viewBtn.textContent = 'Lihat Kredensial & PDF';
     viewBtn.addEventListener('click', () => openCertModal(cert));
 
     actionsWrap.appendChild(viewBtn);
@@ -473,7 +466,7 @@ function renderCertificates(category) {
 }
 
 /* ==========================================================================
-   6. TIMELINE / MILESTONES
+   7. TIMELINE / MILESTONES
    ========================================================================== */
 function initTimelineSection() {
   const timelineEl = document.getElementById('experience-timeline');
@@ -520,7 +513,7 @@ function initTimelineSection() {
 }
 
 /* ==========================================================================
-   7. MODAL DIALOGS (Accessible native <dialog> implementation)
+   8. MODAL DIALOGS (Accessible native <dialog> implementation)
    ========================================================================== */
 let activeProjectModal = null;
 let activeCertModal = null;
@@ -536,7 +529,6 @@ function initModals() {
     });
   });
 
-  // Close dialog on backdrop click
   [activeProjectModal, activeCertModal].forEach(dialog => {
     if (!dialog) return;
     dialog.addEventListener('click', (e) => {
@@ -661,8 +653,24 @@ function openCertModal(cert) {
     `;
     bodyEl.appendChild(metaBox);
 
+    // Embedded PDF Preview Frame
+    if (cert.pdfUrl) {
+      const previewHeader = document.createElement('h4');
+      previewHeader.textContent = 'Pratinjau Dokumen Sertifikat:';
+      previewHeader.style.marginTop = '0.75rem';
+      bodyEl.appendChild(previewHeader);
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'modal-pdf-frame';
+      iframe.src = `${cert.pdfUrl}#toolbar=0&navpanes=0`;
+      iframe.title = `Pratinjau Dokumen ${cert.title}`;
+      iframe.loading = 'lazy';
+      bodyEl.appendChild(iframe);
+    }
+
     const descHeader = document.createElement('h4');
     descHeader.textContent = 'Kompetensi yang Dicapai:';
+    descHeader.style.marginTop = '0.75rem';
     bodyEl.appendChild(descHeader);
 
     const desc = document.createElement('p');
@@ -685,13 +693,6 @@ function openCertModal(cert) {
     });
     bodyEl.appendChild(skillsWrap);
 
-    const note = document.createElement('p');
-    note.style.fontSize = 'var(--fs-caption)';
-    note.style.color = 'var(--text-muted)';
-    note.style.marginTop = '0.5rem';
-    note.textContent = 'Dokumen sertifikat autentik tersimpan dan dapat dibuka langsung dalam format PDF.';
-    bodyEl.appendChild(note);
-
     const actionsWrap = document.createElement('div');
     actionsWrap.style.display = 'flex';
     actionsWrap.style.flexWrap = 'wrap';
@@ -704,7 +705,7 @@ function openCertModal(cert) {
       pdfBtn.target = '_blank';
       pdfBtn.rel = 'noopener noreferrer';
       pdfBtn.className = 'btn-primary';
-      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Buka Dokumen PDF Resmi`;
+      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Buka Tab Baru (Ukuran Penuh)`;
       actionsWrap.appendChild(pdfBtn);
     }
 
@@ -714,7 +715,7 @@ function openCertModal(cert) {
       verifyBtn.target = '_blank';
       verifyBtn.rel = 'noopener noreferrer';
       verifyBtn.className = 'btn-secondary';
-      verifyBtn.textContent = 'Laman Lembaga / Penerbit';
+      verifyBtn.textContent = 'Laman Lembaga / Penyelenggara';
       actionsWrap.appendChild(verifyBtn);
     }
 
@@ -725,21 +726,34 @@ function openCertModal(cert) {
 }
 
 /* ==========================================================================
-   8. CONTACT FORM & VALIDATION
+   9. REAL CONTACT FORM DELIVERY (FormSubmit.co + WhatsApp Dual Delivery)
    ========================================================================== */
 function initContactForm() {
   const form = document.getElementById('contact-form');
   const statusEl = document.getElementById('form-status');
+  const submitBtn = document.getElementById('form-submit-btn');
+  const btnText = document.getElementById('btn-text');
 
-  if (!form || !statusEl) return;
+  if (!form || !statusEl || !submitBtn) return;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Honeypot check
+    // 1. Anti-spam Honeypot Check
     const honeypot = form.querySelector('input[name="_honeypot"]');
     if (honeypot && honeypot.value !== '') {
-      return; // Silent discard bot submission
+      return;
+    }
+
+    // 2. Client-side Rate Limiting (30-second cooldown)
+    const lastSubmitTime = localStorage.getItem('portfolio_last_submit');
+    const now = Date.now();
+    if (lastSubmitTime && (now - parseInt(lastSubmitTime, 10)) < 30000) {
+      const remainingSeconds = Math.ceil((30000 - (now - parseInt(lastSubmitTime, 10))) / 1000);
+      statusEl.className = 'form-status error';
+      statusEl.style.display = 'block';
+      statusEl.textContent = `Mohon menunggu ${remainingSeconds} detik sebelum mengirimkan pesan kembali demi mencegah spam.`;
+      return;
     }
 
     const nameInput = form.querySelector('#contact-name');
@@ -750,12 +764,12 @@ function initContactForm() {
     const email = emailInput.value.trim();
     const message = messageInput.value.trim();
 
-    // Email regex validation (RFC 5322 simplified)
+    // 3. Email regex validation (RFC 5322)
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!name || !email || !message || !emailPattern.test(email)) {
       form.classList.remove('is-shaking');
-      void form.offsetWidth; // Trigger reflow for replayable shake animation
+      void form.offsetWidth;
       form.classList.add('is-shaking');
 
       statusEl.className = 'form-status error';
@@ -775,21 +789,124 @@ function initContactForm() {
       return;
     }
 
-    // Success response
-    statusEl.className = 'form-status success';
-    statusEl.style.display = 'block';
-    statusEl.textContent = `Terima kasih ${name}, pesan Anda berhasil dicatat. Anda juga dapat menghubungi WhatsApp kami di ${DEVELOPER_PROFILE.whatsapp}.`;
+    // 4. Loading State
+    submitBtn.disabled = true;
+    if (btnText) btnText.textContent = 'Mengirim Pesan...';
 
-    form.reset();
+    const payload = {
+      name: name,
+      email: email,
+      message: message,
+      _subject: `Pesan Portofolio Baru dari ${name} (${email})`,
+      _template: 'table',
+      _captcha: 'false'
+    };
 
-    setTimeout(() => {
-      statusEl.style.display = 'none';
-    }, 7000);
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/raflyfirmansyah02@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (response.ok || data.success === 'true') {
+        localStorage.setItem('portfolio_last_submit', Date.now().toString());
+
+        statusEl.className = 'form-status success';
+        statusEl.style.display = 'block';
+
+        const waText = encodeURIComponent(`Halo Rafly, saya ${name} (${email}). Pesan: ${message}`);
+        const waLink = `https://wa.me/6289913333223?text=${waText}`;
+
+        statusEl.innerHTML = `
+          <div><strong>Pesan Berhasil Terkirim!</strong> Pesan Anda telah diteruskan langsung ke kotak masuk email <code>raflyfirmansyah02@gmail.com</code>.</div>
+          <div style="margin-top: 0.5rem;">Ingin respon lebih cepat? Anda dapat langsung melanjutkan obrolan via WhatsApp:</div>
+          <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="form-status-wa-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            Lanjutkan ke WhatsApp
+          </a>
+        `;
+
+        form.reset();
+        showToast('Pesan berhasil terkirim ke email Rafly Firmansyah!');
+      } else {
+        throw new Error(data.message || 'Gagal mengirimkan pesan.');
+      }
+    } catch (err) {
+      console.warn('FormSubmit AJAX fallback:', err);
+      
+      // Fallback directly to WhatsApp
+      statusEl.className = 'form-status error';
+      statusEl.style.display = 'block';
+
+      const waText = encodeURIComponent(`Halo Rafly, saya ${name} (${email}). Pesan: ${message}`);
+      const waLink = `https://wa.me/6289913333223?text=${waText}`;
+
+      statusEl.innerHTML = `
+        <div>Koneksi email pengiriman sedang sibuk. Silakan hubungi langsung via WhatsApp dengan 1-klik di bawah ini:</div>
+        <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="form-status-wa-btn" style="margin-top:0.5rem;">
+          Kirim via WhatsApp
+        </a>
+      `;
+    } finally {
+      submitBtn.disabled = false;
+      if (btnText) btnText.textContent = 'Kirim Pesan Langsung';
+    }
   });
 }
 
 /* ==========================================================================
-   9. SCROLL PROGRESS BAR
+   10. COPY EMAIL TO CLIPBOARD WITH TOAST
+   ========================================================================== */
+function initCopyEmailButton() {
+  const copyBtn = document.getElementById('copy-email-btn');
+  if (!copyBtn) return;
+
+  copyBtn.addEventListener('click', async () => {
+    const email = DEVELOPER_PROFILE.email || 'raflyfirmansyah02@gmail.com';
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(email);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = email;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+
+      showToast(`Alamat email ${email} berhasil disalin ke clipboard!`);
+    } catch (err) {
+      showToast(`Email: ${email}`);
+    }
+  });
+}
+
+export function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.add('is-visible');
+
+  setTimeout(() => {
+    toast.classList.remove('is-visible');
+  }, 3500);
+}
+
+/* ==========================================================================
+   11. SCROLL PROGRESS BAR
    ========================================================================== */
 function initScrollProgressBar() {
   const progressBar = document.getElementById('scroll-progress-bar');
@@ -813,7 +930,7 @@ function initScrollProgressBar() {
 }
 
 /* ==========================================================================
-   10. SCROLL REVEAL (IntersectionObserver)
+   12. SCROLL REVEAL (IntersectionObserver)
    ========================================================================== */
 function initScrollReveal() {
   const revealElements = document.querySelectorAll('.section, .about-pillars .pillar-card, .tech-group-card, .timeline-item');
@@ -836,7 +953,7 @@ function initScrollReveal() {
 }
 
 /* ==========================================================================
-   11. SCROLL SPY
+   13. SCROLL SPY
    ========================================================================== */
 function initScrollSpy() {
   const sections = document.querySelectorAll('section[id]');
