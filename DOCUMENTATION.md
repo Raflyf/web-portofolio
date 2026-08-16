@@ -80,4 +80,6 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **1.4.0** | 2026-08-16 | Optimasi engine scroll inersia cross-browser (penghapusan hard bailout prefers-reduced-motion) dan penyelarasan riwayat commit git ke identitas resmi Rafly Firmansyah (`raflyfirmansyah02@gmail.com`). |
 | **2.0.0** | 2026-08-16 | Transformasi total UI/UX Anti-Slop: Layout Asimetris Split 60/40 pada Hero dengan Developer Telemetry Card, Matriks Keahlian 12-Kolom Bento Grid dengan visualisasi pipeline NLP, Spotlight Showcase 2-kolom untuk OpenPlagiarismChecker, dan kartu sertifikat modular dengan tombol salin nomor ID kredensial. |
 | **2.1.0** | 2026-08-16 | Integrasi eksplisit kualifikasi akademik Program Sarjana (S1) Informatika UBSI di seluruh antarmuka dan metadata, serta peluncuran standalone viewer `preview.html` untuk pratinjau dokumen sertifikat PDF di tab peramban baru tanpa memicu download otomatis. |
+| **2.2.0** | 2026-08-16 | Penghapusan menyeluruh pencantuman angka IPK dari seluruh antarmuka (Hero metrics ribbon, telemetry card, about bio, structured metadata, timeline milestones, dan terminal simulator) demi fokus pada kualifikasi rekayasa, riset AI/ML, dan kompetensi teknis terverifikasi. |
+
 
