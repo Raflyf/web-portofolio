@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollProgressBar();
   initScrollReveal();
   initSmoothScrollEngine();
+  initInertiaSmoothWheel();
   initBackToTopButtons();
   initTerminal();
 });
@@ -129,7 +130,80 @@ function initBackToTopButtons() {
 }
 
 /* ==========================================================================
-   2. THEME TOGGLER (Local Storage + System Preference)
+   2. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
+   Transforms stiff Windows mouse wheel increments into silky smooth glides
+   ========================================================================== */
+function initInertiaSmoothWheel() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  let currentY = window.scrollY || window.pageYOffset;
+  let targetY = currentY;
+  let isRunning = false;
+  const ease = 0.085; // Velvety smooth damper coefficient
+
+  function updateWheelPhysics() {
+    const diff = targetY - currentY;
+    
+    if (Math.abs(diff) > 0.4) {
+      currentY += diff * ease;
+      window.scrollTo(0, Math.round(currentY * 10) / 10);
+      requestAnimationFrame(updateWheelPhysics);
+    } else {
+      currentY = targetY;
+      window.scrollTo(0, targetY);
+      isRunning = false;
+    }
+  }
+
+  window.addEventListener('wheel', (e) => {
+    // Check if scrolling inside an internal scrollable container
+    const path = e.composedPath ? e.composedPath() : [];
+    const isScrollableChild = path.some(el => {
+      if (!el || !el.classList) return false;
+      return (
+        el.classList.contains('terminal-body') ||
+        el.classList.contains('modal-body') ||
+        el.tagName === 'TEXTAREA'
+      );
+    });
+
+    if (isScrollableChild) {
+      targetY = window.scrollY || window.pageYOffset;
+      currentY = targetY;
+      return;
+    }
+
+    e.preventDefault();
+
+    const maxScroll = Math.max(
+      0,
+      document.documentElement.scrollHeight - window.innerHeight
+    );
+
+    let delta = e.deltaY;
+    if (e.deltaMode === 1) delta *= 40; // line scroll multiplier
+    if (e.deltaMode === 2) delta *= 800; // page scroll multiplier
+
+    targetY = Math.min(Math.max(0, targetY + delta), maxScroll);
+
+    if (!isRunning) {
+      isRunning = true;
+      currentY = window.scrollY || window.pageYOffset;
+      requestAnimationFrame(updateWheelPhysics);
+    }
+  }, { passive: false });
+
+  // Sync position on native drag or key press
+  window.addEventListener('scroll', () => {
+    if (!isRunning) {
+      currentY = window.scrollY || window.pageYOffset;
+      targetY = currentY;
+    }
+  }, { passive: true });
+}
+
+/* ==========================================================================
+   3. THEME TOGGLER (Local Storage + System Preference)
    ========================================================================== */
 function initThemeToggle() {
   const themeBtn = document.getElementById('theme-toggle-btn');
