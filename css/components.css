@@ -1250,6 +1250,56 @@ html[data-theme="light"] .filter-tab-btn.active {
   border-color: var(--accent-emerald);
 }
 
+/* Floating Smooth Back-to-Top Button */
+.floating-back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-card);
+  border: 1px solid var(--accent-emerald);
+  color: var(--accent-emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.4), 0 0 12px var(--accent-emerald-glow);
+  z-index: var(--z-sticky);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px) scale(0.9);
+  transition: opacity var(--duration-fast) var(--ease-smooth-out),
+              transform var(--duration-fast) var(--ease-smooth-out),
+              background-color var(--duration-fast) var(--ease-smooth-out),
+              box-shadow var(--duration-fast) var(--ease-smooth-out);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.floating-back-to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.floating-back-to-top:hover {
+  background-color: var(--accent-emerald);
+  color: oklch(0.12 0.02 250);
+  box-shadow: 0 6px 20px var(--accent-emerald-glow);
+  transform: translateY(-3px) scale(1.05);
+}
+
+@media (max-width: 600px) {
+  .floating-back-to-top {
+    bottom: 1.25rem;
+    right: 1.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
 /* ==========================================================================
    13. RESPONSIVE BREAKPOINTS
    ========================================================================== */

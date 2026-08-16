@@ -72,3 +72,4 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **1.0.4** | 2026-08-16 | Restrukturisasi arsip berkas sertifikat dan CV ke direktori `certificates/` dengan tombol penampil dokumen PDF langsung pada modal viewer. |
 | **1.0.5** | 2026-08-16 | Standardisasi nama penuh Rafly Firmansyah pada logo navigasi, pembersihan tag badge footer, pembaruan hak cipta profesional, dan penghapusan tombol unduh CV publik. |
 | **1.1.0** | 2026-08-16 | Audit menyeluruh UI/UX, implementasi navigasi smooth scrolling dengan scroll-padding-top, indikator progress bar gulir, animasi scroll reveal intersection, riwayat perintah dan pintasan chip pada Terminal Lab, serta validasi regex dan efek shake pada formulir kontak. |
+| **1.1.1** | 2026-08-16 | Engine kustom Cubic Smooth-Scroll (`easeInOutCubic` 60-120fps), tombol melayang neon emerald Back-to-Top interaktif, dan panduan aktivasi 1-klik GitHub Pages Actions di tab Settings. |
