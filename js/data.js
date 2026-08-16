@@ -9,10 +9,11 @@ export const DEVELOPER_PROFILE = {
   name: "Rafly Firmansyah",
   handle: "@Raflyf",
   title: "Software Developer & AI/ML Engineer",
-  institution: "Universitas Bina Sarana Informatika (UBSI)",
-  location: "Indonesia",
+  institution: "Universitas Bina Sarana Informatika (UBSI), Sukabumi",
+  gpa: "3.93 / 4.00",
+  location: "Cianjur / Sukabumi, Indonesia",
   status: "Available for projects & AI/ML collaborations",
-  bio: "Mahasiswa Ilmu Komputer / Informatika di Universitas Bina Sarana Informatika (UBSI) dan Pengembang Perangkat Lunak dengan minat mendalam pada integrasi kecerdasan buatan (Machine Learning, NLP, dan Computer Vision) dengan arsitektur sistem web modern yang cepat, aman, dan beretika privasi.",
+  bio: "Mahasiswa Informatika di Universitas Bina Sarana Informatika (IPK 3.93/4.00) dan Pengembang Perangkat Lunak dengan minat mendalam pada riset kecerdasan buatan (NLP, Machine Learning, dan Computer Vision), arsitektur jaringan komputer, serta rekayasa sistem web modern yang beretika privasi.",
   github: "https://github.com/Raflyf",
   email: "raflyfirmansyah02@gmail.com",
   whatsapp: "089913333223",
@@ -130,9 +131,22 @@ export const PROJECTS_DATA = [
 ];
 
 /**
- * Authentic Certificates of Rafly Firmansyah
+ * Complete Authentic Certificates Registry of Rafly Firmansyah
  */
 export const CERTIFICATES_DATA = [
+  {
+    id: "cert-mikrotik-mtcna",
+    title: "MTCNA: MikroTik Certified Network Associate",
+    issuer: "Mikrotikls SIA (Riga, Latvia)",
+    institution: "MikroTik Academy / UBSI",
+    category: "security",
+    categoryLabel: "Network & Security",
+    date: "14 Feb 2025",
+    credentialId: "2502NA6383",
+    verificationUrl: "https://mikrotik.com/certificates",
+    description: "Sertifikasi internasional resmi MikroTik Network Associate yang memvalidasi kompetensi konfigurasi jaringan, routing, firewall security, bandwidth management, wireless networking, dan tunnel interface.",
+    skillsGained: ["MikroTik RouterOS", "Network Routing", "Firewall & Security", "Bandwidth Queues", "Wireless & Tunnels"]
+  },
   {
     id: "cert-python-pcap",
     title: "PCAP: Programming Essentials in Python",
@@ -190,6 +204,20 @@ export const CERTIFICATES_DATA = [
     skillsGained: ["Cloud Specialist Roadmap", "Server Infrastructure", "Scalability", "DevOps Fundamentals"]
   },
   {
+    id: "cert-google-profil-bisnis",
+    title: "Google Profil Bisnis dan E-Commerce",
+    issuer: "Digital Entrepreneurship Academy - Kominfo Digital Talent Scholarship 2023",
+    institution: "Kementerian Komunikasi dan Informatika RI (Kominfo)",
+    instructor: "Hary Budiarto (Kepala Badan Litbang & SDM)",
+    category: "web",
+    categoryLabel: "Digital & E-Commerce",
+    date: "6 Jul 2023",
+    credentialId: "1966871850-43/DEA/BLSDM.Kominfo/2023",
+    verificationUrl: "https://digitalent.kominfo.go.id",
+    description: "Pelatihan resmi standardisasi digital presence, optimasi Google Business profile, integrasi platform e-commerce, dan strategi visibilitas digital.",
+    skillsGained: ["Digital Presence", "Google Business Profile", "E-Commerce Integration", "SEO Basics"]
+  },
+  {
     id: "cert-slicing-tailwind",
     title: "Workshop Slicing UI with Tailwind CSS",
     issuer: "HIMA-SI & Program Studi Ilmu Komputer UBSI",
@@ -202,26 +230,66 @@ export const CERTIFICATES_DATA = [
     verificationUrl: "https://www.bsi.ac.id",
     description: "Praktek pembuatan antarmuka pengguna responsif (UI Slicing), implementasi utility-first CSS, standardisasi layout modern, dan transisi elemen antarmuka.",
     skillsGained: ["UI Slicing", "Tailwind CSS", "Responsive Layouts", "Modern Frontend"]
+  },
+  {
+    id: "cert-simk-fullstack",
+    title: "Simulasi Kerja (SiM-K) Full-Stack Web Developer",
+    issuer: "Harisenin.com (Rise)",
+    institution: "Harisenin.com",
+    instructor: "Kezia Bernadeth Manege, S.E., M.Sc.",
+    category: "web",
+    categoryLabel: "Full-Stack Web",
+    date: "2023",
+    credentialId: "HARISENIN-SIMK-FSW-2023",
+    verificationUrl: "https://harisenin.com",
+    description: "Simulasi kerja intensif peran Full-Stack Web Developer, arsitektur client-server, kolaborasi git workflow, dan implementasi endpoint API terstruktur.",
+    skillsGained: ["Full-Stack Workflow", "Client-Server Architecture", "Git Collaboration", "Web APIs"]
+  },
+  {
+    id: "cert-coding-camp-js",
+    title: "Coding Camp: Introduction to Javascript for Beginners",
+    issuer: "Harisenin.com (Rise)",
+    institution: "Harisenin.com",
+    instructor: "Kezia Bernadeth Manege, S.E., M.Sc.",
+    category: "web",
+    categoryLabel: "JavaScript",
+    date: "2023",
+    credentialId: "HARISENIN-CC-JS-2023",
+    verificationUrl: "https://harisenin.com",
+    description: "Dasar-dasar logika pemrograman JavaScript, manipulasi DOM interaktif, penanganan event peramban, dan asynchronous JavaScript.",
+    skillsGained: ["JavaScript Fundamentals", "DOM Manipulation", "Event Handling", "Async JS"]
   }
 ];
 
 export const TIMELINE_DATA = [
   {
-    period: "2024 — Sekarang",
-    title: "AI/ML & Software Research Projects",
-    institution: "Universitas Bina Sarana Informatika (UBSI) & Riset Mandiri",
-    description: "Mengembangkan OpenPlagiarismChecker (deteksi kesamaan dokumen akademik N-Gram + Sentence Transformers) dan Spam-Email Classifier (Scikit-Learn & XGBoost)."
+    period: "2022 — Sekarang",
+    title: "Mahasiswa S1 Informatika (IPK 3.93/4.00)",
+    institution: "Universitas Bina Sarana Informatika (UBSI), Kampus Sukabumi",
+    description: "Fokus mendalami kecerdasan buatan, Machine Learning, Computer Vision, pemrograman Python, arsitektur basis data, dan rekayasa perangkat lunak."
+  },
+  {
+    period: "Feb — Jun 2024",
+    title: "Program Kampus Mengajar — Angkatan 7",
+    institution: "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi (Kemendikbudristek RI)",
+    description: "Menyusun program kerja pelaksanaan kegiatan edukasi dan literasi digital selama 4 bulan, serta bertindak sebagai seksi dokumentasi media."
   },
   {
     period: "2023 — 2024",
-    title: "Computer Vision & Interactive Systems",
-    institution: "Universitas Bina Sarana Informatika (UBSI)",
-    description: "Merancang laser_pointer_PPT (touchpad & gyro remote via WebSockets) dan FotoKitaBlur (gesture privacy camera via MediaPipe & OpenCV), serta meraih sertifikasi Python PCAP Cisco/OpenEDG."
+    title: "Anggota Divisi Pendidikan — HIMAIF UBSI",
+    institution: "Himpunan Mahasiswa Informatika (HIMAIF)",
+    description: "Berpartisipasi merancang dan mengeksekusi kegiatan edukatif untuk mahasiswa informatika serta koordinasi seminar ke sekolah-sekolah."
   },
   {
-    period: "2022 — 2023",
-    title: "Foundations of Computer Science & Web Engineering",
-    institution: "Universitas Bina Sarana Informatika (UBSI)",
-    description: "Mempelajari dasar komputasi awan, struktur data, algoritma, pemrograman berorientasi objek (OOP), dan pengembangan web full-stack."
+    period: "Agu — Sep 2023",
+    title: "Staf Magang Divisi Keuangan & Sistem",
+    institution: "Dinas Kelautan, Perikanan, dan Peternakan",
+    description: "Mengelola pembukuan kas data digital, riset alur keuangan instansi, dan sinkronisasi sistem administrasi pemerintahan."
+  },
+  {
+    period: "2023 — Sekarang",
+    title: "Freelance IT Support & System Optimization",
+    institution: "Jasa Mandiri / Komunitas Lokal",
+    description: "Melayani instalasi sistem operasi, pengecekan, perbaikan, dan optimasi performa perangkat keras/lunak komputer."
   }
 ];
