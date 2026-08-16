@@ -9,11 +9,12 @@ export const DEVELOPER_PROFILE = {
   name: "Rafly Firmansyah",
   handle: "@Raflyf",
   title: "Software Developer & AI/ML Engineer",
+  degree: "Program Sarjana (S1) Informatika",
   institution: "Universitas Bina Sarana Informatika (UBSI), Sukabumi",
   gpa: "3.93 / 4.00",
   location: "Cianjur / Sukabumi, Indonesia",
   status: "Available for projects & AI/ML collaborations",
-  bio: "Mahasiswa Informatika di Universitas Bina Sarana Informatika (IPK 3.93/4.00) dan Pengembang Perangkat Lunak dengan minat mendalam pada riset kecerdasan buatan (NLP, Machine Learning, dan Computer Vision), arsitektur jaringan komputer, serta rekayasa sistem web modern yang beretika privasi.",
+  bio: "Mahasiswa Program Sarjana (S1) Informatika di Universitas Bina Sarana Informatika (UBSI, IPK 3.93/4.00) dan Pengembang Perangkat Lunak dengan minat mendalam pada riset kecerdasan buatan (NLP, Machine Learning, dan Computer Vision), arsitektur jaringan komputer MikroTik, serta rekayasa sistem web modern yang beretika privasi.",
   github: "https://github.com/Raflyf",
   email: "raflyfirmansyah02@gmail.com",
   whatsapp: "089913333223",
@@ -131,7 +132,7 @@ export const PROJECTS_DATA = [
 
 /**
  * Complete Authentic Certificates Registry of Rafly Firmansyah
- * Linked directly to original PDF documents in certificates/
+ * Linked directly to preview.html?file=... for seamless in-browser view
  */
 export const CERTIFICATES_DATA = [
   {
@@ -275,7 +276,7 @@ export const TIMELINE_DATA = [
     period: "2022 — Sekarang",
     title: "Mahasiswa S1 Informatika (IPK 3.93/4.00)",
     institution: "Universitas Bina Sarana Informatika (UBSI), Kampus Sukabumi",
-    description: "Fokus mendalami kecerdasan buatan, Machine Learning, Computer Vision, pemrograman Python, arsitektur basis data, dan rekayasa perangkat lunak."
+    description: "Fokus mendalami kecerdasan buatan (NLP, Machine Learning, Computer Vision), arsitektur jaringan MikroTik (MTCNA), pemrograman Python, arsitektur basis data, dan rekayasa perangkat lunak."
   },
   {
     period: "Feb — Jun 2024",

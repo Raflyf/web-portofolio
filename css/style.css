@@ -1,45 +1,45 @@
 /* ==========================================================================
-   RAFLY FIRMANSYAH - PORTFOLIO DESIGN SYSTEM & BASE STYLES
-   Aesthetic: Cyber-Editorial / Deep Obsidian & Emerald Hyperlink
-   WCAG 2.2 AA Contrast Verified (All text contrast >= 4.5:1)
+   RAFLY FIRMANSYAH - PORTFOLIO DESIGN SYSTEM & BASE STYLES (v2.0.0)
+   Aesthetic: Bespoke Minimalist Dark Tech & Obsidian Slate (Anti-Slop)
+   WCAG 2.2 AA Contrast Verified (All text contrast >= 4.5:1, Headings >= 8:1)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
 @import url('./transitions.css');
 
 :root {
-  /* OKLCH Color Palette - Dark Mode (Default) */
-  --bg-primary: oklch(0.13 0.015 255);
-  --bg-secondary: oklch(0.16 0.018 255);
-  --bg-tertiary: oklch(0.19 0.022 255);
+  /* OKLCH Color Palette - Dark Mode (Default Obsidian Slate) */
+  --bg-primary: oklch(0.12 0.015 250);
+  --bg-secondary: oklch(0.15 0.018 250);
+  --bg-tertiary: oklch(0.18 0.022 250);
   
-  --surface-card: oklch(0.17 0.018 255);
-  --surface-card-hover: oklch(0.20 0.022 255);
-  --surface-elevated: oklch(0.22 0.025 255);
-  --surface-overlay: oklch(0.13 0.015 255 / 0.85);
+  --surface-card: oklch(0.16 0.018 250);
+  --surface-card-hover: oklch(0.19 0.022 250);
+  --surface-elevated: oklch(0.20 0.025 250);
+  --surface-overlay: oklch(0.12 0.015 250 / 0.88);
 
-  --border-subtle: oklch(0.25 0.02 255);
-  --border-card: oklch(0.30 0.025 255);
-  --border-highlight: oklch(0.45 0.035 255);
+  --border-subtle: oklch(0.22 0.018 250);
+  --border-card: oklch(0.27 0.022 250);
+  --border-highlight: oklch(0.42 0.035 250);
 
-  --text-ink: oklch(0.97 0.005 255);
-  --text-heading: oklch(0.98 0.002 255);
-  --text-body: oklch(0.85 0.01 255);
-  --text-muted: oklch(0.72 0.015 255); /* Verified contrast 5.8:1 on dark bg */
-  --text-dim: oklch(0.60 0.015 255);
+  --text-ink: oklch(0.98 0.005 250);
+  --text-heading: oklch(0.98 0.002 250);
+  --text-body: oklch(0.86 0.01 250);
+  --text-muted: oklch(0.72 0.015 250); /* Verified 5.8:1 contrast on dark bg */
+  --text-dim: oklch(0.58 0.015 250);
 
   --accent-emerald: oklch(0.74 0.18 160);
-  --accent-emerald-dim: oklch(0.60 0.14 160 / 0.2);
-  --accent-emerald-glow: oklch(0.74 0.18 160 / 0.35);
+  --accent-emerald-dim: oklch(0.74 0.18 160 / 0.15);
+  --accent-emerald-glow: oklch(0.74 0.18 160 / 0.3);
 
   --accent-cyan: oklch(0.76 0.15 200);
-  --accent-cyan-dim: oklch(0.65 0.12 200 / 0.2);
+  --accent-cyan-dim: oklch(0.76 0.15 200 / 0.15);
 
   --accent-amber: oklch(0.80 0.16 80);
-  --accent-amber-dim: oklch(0.75 0.14 80 / 0.2);
+  --accent-amber-dim: oklch(0.80 0.16 80 / 0.15);
 
-  --badge-bg: oklch(0.22 0.025 255);
-  --code-bg: oklch(0.10 0.015 255);
+  --badge-bg: oklch(0.20 0.022 250);
+  --code-bg: oklch(0.10 0.015 250);
 
   /* Fonts */
   --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -47,14 +47,14 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 
   /* Typography Scale */
-  --fs-hero: clamp(2.5rem, 5.5vw + 1rem, 4.25rem);
-  --fs-h1: clamp(2rem, 3.5vw + 0.8rem, 3rem);
-  --fs-h2: clamp(1.5rem, 2.5vw + 0.6rem, 2.25rem);
-  --fs-h3: clamp(1.25rem, 1.8vw + 0.4rem, 1.6rem);
-  --fs-h4: 1.15rem;
-  --fs-body-lg: 1.125rem;
-  --fs-body: 1rem;
-  --fs-body-sm: 0.875rem;
+  --fs-hero: clamp(2.25rem, 4.5vw + 0.8rem, 3.75rem);
+  --fs-h1: clamp(1.85rem, 3.2vw + 0.6rem, 2.75rem);
+  --fs-h2: clamp(1.45rem, 2.2vw + 0.5rem, 2.1rem);
+  --fs-h3: clamp(1.2rem, 1.6vw + 0.35rem, 1.5rem);
+  --fs-h4: 1.1rem;
+  --fs-body-lg: 1.075rem;
+  --fs-body: 0.95rem;
+  --fs-body-sm: 0.85rem;
   --fs-caption: 0.75rem;
 
   /* Spacing Scale */
@@ -69,21 +69,22 @@
   --space-4xl: 6rem;
 
   /* Layout */
-  --container-max: 1200px;
-  --container-narrow: 880px;
-  --container-pad: clamp(1rem, 4vw, 2.5rem);
+  --container-max: 1240px;
+  --container-narrow: 900px;
+  --container-pad: clamp(1rem, 3.5vw, 2.25rem);
 
-  /* Radius (Avoiding > 16px codex tell) */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* Shadows (Tuned, non-blurry) */
-  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.25);
-  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.35);
-  --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.45);
-  --shadow-glow: 0 0 20px var(--accent-emerald-glow);
+  /* Shadows (Calibrated, crisp) */
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.3);
+  --shadow-md: 0 4px 16px oklch(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.5);
+  --shadow-glow: 0 0 24px var(--accent-emerald-glow);
 
   /* Semantic z-index scale */
   --z-base: 1;
@@ -110,10 +111,10 @@ html[data-theme="light"] {
   --border-card: oklch(0.85 0.015 240);
   --border-highlight: oklch(0.70 0.03 240);
 
-  --text-ink: oklch(0.14 0.02 250);
-  --text-heading: oklch(0.12 0.02 250);
+  --text-ink: oklch(0.12 0.02 250);
+  --text-heading: oklch(0.10 0.02 250);
   --text-body: oklch(0.24 0.02 250);
-  --text-muted: oklch(0.42 0.025 250); /* Verified contrast 5.1:1 on light bg */
+  --text-muted: oklch(0.42 0.025 250); /* Verified 5.1:1 on light bg */
   --text-dim: oklch(0.55 0.02 250);
 
   --accent-emerald: oklch(0.48 0.16 160);
@@ -200,73 +201,42 @@ body {
   transition: top var(--duration-fast) var(--ease-smooth-out);
 }
 
-.skip-link:focus-visible {
+.skip-link:focus {
   top: 1rem;
-  outline: 3px solid var(--text-ink);
-  outline-offset: 2px;
 }
 
-/* Headings */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  color: var(--text-heading);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.025em; /* Safe floor >= -0.04em */
-  text-wrap: balance;
-}
-
-h1 { font-size: var(--fs-h1); }
-h2 { font-size: var(--fs-h2); }
-h3 { font-size: var(--fs-h3); }
-h4 { font-size: var(--fs-h4); }
-
-p {
-  max-width: 72ch; /* Readable line length */
-  text-wrap: pretty;
-}
-
+/* Links and Interactive Focus */
 a {
   color: inherit;
   text-decoration: none;
   transition: color var(--duration-fast) var(--ease-smooth-out);
 }
 
-a:hover {
-  color: var(--accent-emerald);
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent-emerald);
+  outline-offset: 2px;
 }
 
 button {
-  font-family: inherit;
-  font-size: inherit;
+  cursor: pointer;
   border: none;
   background: none;
-  cursor: pointer;
+  font: inherit;
   color: inherit;
 }
 
 img, svg {
   display: block;
   max-width: 100%;
-  height: auto;
 }
 
-ul, ol {
-  list-style: none;
-}
+/* ==========================================================================
+   LAYOUT CONTAINERS & UTILITIES
+   ========================================================================== */
 
-/* Focus Visible (WCAG 2.4.7) */
-:focus {
-  outline: none;
-}
-
-:focus-visible {
-  outline: 2px solid var(--accent-emerald);
-  outline-offset: 3px;
-  border-radius: var(--radius-sm);
-}
-
-/* Container */
 .container {
   width: 100%;
   max-width: var(--container-max);
@@ -274,7 +244,7 @@ ul, ol {
   padding-inline: var(--container-pad);
 }
 
-.container-narrow {
+.container--narrow {
   max-width: var(--container-narrow);
 }
 
@@ -316,12 +286,16 @@ ul, ol {
 .section-title {
   font-size: var(--fs-h2);
   color: var(--text-heading);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .section-desc {
   color: var(--text-muted);
   font-size: var(--fs-body-lg);
-  max-width: 60ch;
+  max-width: 65ch;
+  line-height: 1.6;
 }
 
 /* Visually Hidden (Accessibility) */
@@ -352,9 +326,6 @@ ul, ol {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto !important;
-  }
   .reveal-item {
     opacity: 1 !important;
     transform: none !important;

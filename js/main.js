@@ -1,11 +1,12 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - MAIN APPLICATION LOGIC
+ * RAFLY FIRMANSYAH - MAIN APPLICATION LOGIC (v2.1.0 S1 Informatika & Preview)
  * - Inertia Smooth-Scroll Engine with Cubic Physics & Wheel Damper
+ * - Asymmetric Bento & Spotlight Projects Render Architecture
  * - FormSubmit AJAX Real Email Delivery to raflyfirmansyah02@gmail.com
- * - 1-Click Email Copy with Floating Toast Feedback
- * - Dual Delivery with Direct WhatsApp Web Dispatch
- * - Embedded PDF Document Viewer inside Native <dialog> Modals
+ * - Standalone preview.html PDF Viewer Integration (In-Browser Preview)
+ * - 1-Click Email & Credential Copy with Floating Toast Feedback
+ * - Verified Native <dialog> Modals with Centered Glassmorphism
  * - WCAG 2.2 AA Accessibility & Security Sanitization
  * ============================================================================
  */
@@ -16,6 +17,7 @@ import { initTerminal } from './terminal.js';
 document.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   initMobileNavigation();
+  initHeroClock();
   initProjectsSection();
   initCertificatesSection();
   initTimelineSection();
@@ -32,8 +34,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   1. CUSTOM CUBIC SMOOTH-SCROLL ENGINE
-   Guarantees 60-120fps fluid deceleration across all platforms
+   1. HERO LIVE TIME TICKER
+   ========================================================================== */
+function initHeroClock() {
+  const clockEl = document.getElementById('hero-clock');
+  if (!clockEl) return;
+
+  function updateClock() {
+    const now = new Date();
+    const options = { timeZone: 'Asia/Jakarta', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const timeStr = new Intl.DateTimeFormat('id-ID', options).format(now);
+    clockEl.textContent = `WIB (UTC+7) · ${timeStr}`;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
+/* ==========================================================================
+   2. CUSTOM CUBIC SMOOTH-SCROLL ENGINE
    ========================================================================== */
 export function smoothScrollTo(targetY, duration = 850) {
   const startY = window.scrollY || window.pageYOffset;
@@ -124,7 +143,7 @@ function initBackToTopButtons() {
 }
 
 /* ==========================================================================
-   2. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
+   3. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
    ========================================================================== */
 function initInertiaSmoothWheel() {
   let currentY = window.scrollY || window.pageYOffset;
@@ -166,7 +185,6 @@ function initInertiaSmoothWheel() {
 
     if (e.ctrlKey || e.shiftKey || e.altKey) return;
 
-    // Preserve natural touchpad scrolling when deltaY is fractional/low
     if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
       targetY = window.scrollY || window.pageYOffset;
       currentY = targetY;
@@ -202,7 +220,7 @@ function initInertiaSmoothWheel() {
 }
 
 /* ==========================================================================
-   3. THEME TOGGLER
+   4. THEME TOGGLER
    ========================================================================== */
 function initThemeToggle() {
   const themeBtn = document.getElementById('theme-toggle-btn');
@@ -231,7 +249,7 @@ function applyTheme(theme) {
 }
 
 /* ==========================================================================
-   4. MOBILE NAVIGATION
+   5. MOBILE NAVIGATION
    ========================================================================== */
 function initMobileNavigation() {
   const toggleBtn = document.getElementById('mobile-nav-toggle');
@@ -253,11 +271,18 @@ function initMobileNavigation() {
 }
 
 /* ==========================================================================
-   5. PROJECTS SHOWCASE & FILTERING
+   6. SPOTLIGHT & SECONDARY PROJECTS SHOWCASE
    ========================================================================== */
 function initProjectsSection() {
   const gridEl = document.getElementById('projects-grid');
   const filterTabs = document.querySelectorAll('[data-filter-project]');
+  const spotlightDetailBtn = document.getElementById('btn-spotlight-detail');
+
+  if (spotlightDetailBtn) {
+    spotlightDetailBtn.addEventListener('click', () => {
+      openProjectModal(PROJECTS_DATA[0]);
+    });
+  }
 
   if (!gridEl) return;
 
@@ -275,15 +300,24 @@ function initProjectsSection() {
 
 function renderProjects(category) {
   const gridEl = document.getElementById('projects-grid');
+  const spotlightCard = document.getElementById('spotlight-project-card');
   if (!gridEl) return;
 
   gridEl.innerHTML = '';
 
-  const filtered = category === 'all' 
-    ? PROJECTS_DATA 
-    : PROJECTS_DATA.filter(p => p.category === category);
+  if (spotlightCard) {
+    if (category === 'all' || category === 'ai-ml') {
+      spotlightCard.style.display = 'grid';
+    } else {
+      spotlightCard.style.display = 'none';
+    }
+  }
 
-  if (filtered.length === 0) {
+  const secondaryProjects = category === 'all'
+    ? PROJECTS_DATA.slice(1)
+    : PROJECTS_DATA.filter(p => p.category === category && p.id !== 'open-plagiarism-checker');
+
+  if (secondaryProjects.length === 0 && (!spotlightCard || spotlightCard.style.display === 'none')) {
     const emptyEl = document.createElement('div');
     emptyEl.className = 'empty-state reveal-item is-revealed';
     emptyEl.textContent = 'Belum ada proyek dalam kategori ini.';
@@ -291,38 +325,30 @@ function renderProjects(category) {
     return;
   }
 
-  filtered.forEach((project, idx) => {
+  secondaryProjects.forEach((project, idx) => {
     const card = document.createElement('article');
     card.className = 'project-card reveal-item is-revealed';
     card.setAttribute('tabindex', '0');
     card.style.transitionDelay = `${idx * 40}ms`;
 
-    const header = document.createElement('div');
-    header.className = 'project-card__header';
+    const topWrap = document.createElement('div');
+    topWrap.className = 'project-card__top';
 
-    const badge = document.createElement('span');
-    badge.className = 'project-card__badge';
-    badge.textContent = project.badge;
+    const tagBadge = document.createElement('span');
+    tagBadge.className = 'section-tag';
+    tagBadge.textContent = project.categoryLabel;
 
-    const linksWrap = document.createElement('div');
-    linksWrap.className = 'project-card__links';
+    topWrap.appendChild(tagBadge);
 
     if (project.githubUrl) {
       const ghLink = document.createElement('a');
       ghLink.href = project.githubUrl;
       ghLink.target = '_blank';
       ghLink.rel = 'noopener noreferrer';
-      ghLink.className = 'project-icon-link';
-      ghLink.setAttribute('aria-label', `Buka repositori GitHub untuk ${project.title}`);
-      ghLink.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>`;
-      linksWrap.appendChild(ghLink);
+      ghLink.className = 'btn-copy';
+      ghLink.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg> <span>GitHub</span>`;
+      topWrap.appendChild(ghLink);
     }
-
-    header.appendChild(badge);
-    header.appendChild(linksWrap);
-
-    const body = document.createElement('div');
-    body.className = 'project-card__body';
 
     const title = document.createElement('h3');
     title.className = 'project-card__title';
@@ -332,53 +358,36 @@ function renderProjects(category) {
     desc.className = 'project-card__desc';
     desc.textContent = project.description;
 
-    const featuresList = document.createElement('div');
-    featuresList.className = 'project-card__features';
-
-    project.keyFeatures.slice(0, 2).forEach(feature => {
-      const featItem = document.createElement('div');
-      featItem.className = 'project-card__feature-item';
-      featItem.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-      const featText = document.createElement('span');
-      featText.textContent = feature;
-      featItem.appendChild(featText);
-      featuresList.appendChild(featItem);
-    });
-
-    body.appendChild(title);
-    body.appendChild(desc);
-    body.appendChild(featuresList);
-
-    const footer = document.createElement('div');
-    footer.className = 'project-card__footer';
-
     const tagsWrap = document.createElement('div');
-    tagsWrap.className = 'project-card__tags';
+    tagsWrap.className = 'tech-pills-wrap';
     project.techStack.forEach(t => {
       const tag = document.createElement('span');
-      tag.className = 'project-card__tag';
+      tag.className = 'tech-pill';
       tag.textContent = t;
       tagsWrap.appendChild(tag);
     });
 
+    const actionsWrap = document.createElement('div');
+    actionsWrap.className = 'project-card__actions';
+
     const detailBtn = document.createElement('button');
-    detailBtn.className = 'btn-detail-trigger';
+    detailBtn.className = 'btn-project-detail';
     detailBtn.textContent = 'Detail & Arsitektur';
     detailBtn.addEventListener('click', () => openProjectModal(project));
+    actionsWrap.appendChild(detailBtn);
 
-    footer.appendChild(tagsWrap);
-    footer.appendChild(detailBtn);
-
-    card.appendChild(header);
-    card.appendChild(body);
-    card.appendChild(footer);
+    card.appendChild(topWrap);
+    card.appendChild(title);
+    card.appendChild(desc);
+    card.appendChild(tagsWrap);
+    card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
   });
 }
 
 /* ==========================================================================
-   6. CERTIFICATES SHOWCASE & FILTERING
+   7. MODULAR CERTIFICATES SECTION (Preview in Browser Tab)
    ========================================================================== */
 function initCertificatesSection() {
   const gridEl = document.getElementById('certificates-grid');
@@ -443,11 +452,21 @@ function renderCertificates(category) {
     const dateSpan = document.createElement('span');
     dateSpan.textContent = `Tahun: ${cert.date}`;
 
-    const idSpan = document.createElement('span');
-    idSpan.textContent = `ID: ${cert.credentialId}`;
+    const idButton = document.createElement('button');
+    idButton.className = 'btn-copy';
+    idButton.title = 'Salin Nomor Kredensial';
+    idButton.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> <span>ID: ${cert.credentialId}</span>`;
+    idButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(cert.credentialId);
+        showToast(`ID Kredensial ${cert.credentialId} berhasil disalin!`);
+      } catch (err) {
+        showToast(`ID: ${cert.credentialId}`);
+      }
+    });
 
     metaWrap.appendChild(dateSpan);
-    metaWrap.appendChild(idSpan);
+    metaWrap.appendChild(idButton);
 
     const actionsWrap = document.createElement('div');
     actionsWrap.className = 'cert-card__actions';
@@ -459,6 +478,17 @@ function renderCertificates(category) {
 
     actionsWrap.appendChild(viewBtn);
 
+    if (cert.pdfUrl) {
+      const previewUrl = `preview.html?file=${encodeURIComponent(cert.pdfUrl)}&title=${encodeURIComponent(cert.title)}`;
+      const pdfBtn = document.createElement('a');
+      pdfBtn.href = previewUrl;
+      pdfBtn.target = '_blank';
+      pdfBtn.rel = 'noopener noreferrer';
+      pdfBtn.className = 'btn-copy';
+      pdfBtn.innerHTML = `<span>Buka PDF</span> ↗`;
+      actionsWrap.appendChild(pdfBtn);
+    }
+
     card.appendChild(topWrap);
     card.appendChild(metaWrap);
     card.appendChild(actionsWrap);
@@ -468,7 +498,7 @@ function renderCertificates(category) {
 }
 
 /* ==========================================================================
-   7. TIMELINE / MILESTONES
+   8. TIMELINE / MILESTONES
    ========================================================================== */
 function initTimelineSection() {
   const timelineEl = document.getElementById('experience-timeline');
@@ -515,7 +545,7 @@ function initTimelineSection() {
 }
 
 /* ==========================================================================
-   8. MODAL DIALOGS (Accessible native <dialog> implementation)
+   9. MODAL DIALOGS
    ========================================================================== */
 let activeProjectModal = null;
 let activeCertModal = null;
@@ -646,6 +676,7 @@ function openCertModal(cert) {
 
     metaBox.innerHTML = `
       <div><strong>Penerima:</strong> Rafly Firmansyah</div>
+      <div><strong>Program Studi:</strong> S1 Informatika — UBSI</div>
       <div><strong>Penerbit / Penyelenggara:</strong> ${cert.issuer}</div>
       ${cert.institution ? `<div><strong>Institusi / Lokasi:</strong> ${cert.institution}</div>` : ''}
       ${cert.instructor ? `<div><strong>Instruktur / Pembicara:</strong> ${cert.instructor}</div>` : ''}
@@ -655,7 +686,6 @@ function openCertModal(cert) {
     `;
     bodyEl.appendChild(metaBox);
 
-    // Kompetensi yang Dicapai
     const descHeader = document.createElement('h4');
     descHeader.textContent = 'Kompetensi yang Dicapai:';
     descHeader.style.marginTop = '0.75rem';
@@ -667,9 +697,9 @@ function openCertModal(cert) {
     desc.textContent = cert.description;
     bodyEl.appendChild(desc);
 
-    // Keahlian Teruji
     const skillsHeader = document.createElement('h4');
     skillsHeader.textContent = 'Keahlian Teruji:';
+    skillsHeader.style.marginTop = '0.5rem';
     bodyEl.appendChild(skillsHeader);
 
     const skillsWrap = document.createElement('div');
@@ -682,7 +712,6 @@ function openCertModal(cert) {
     });
     bodyEl.appendChild(skillsWrap);
 
-    // Actions
     const actionsWrap = document.createElement('div');
     actionsWrap.style.display = 'flex';
     actionsWrap.style.flexWrap = 'wrap';
@@ -690,12 +719,13 @@ function openCertModal(cert) {
     actionsWrap.style.marginTop = '1rem';
 
     if (cert.pdfUrl) {
+      const previewUrl = `preview.html?file=${encodeURIComponent(cert.pdfUrl)}&title=${encodeURIComponent(cert.title)}`;
       const pdfBtn = document.createElement('a');
-      pdfBtn.href = cert.pdfUrl;
+      pdfBtn.href = previewUrl;
       pdfBtn.target = '_blank';
       pdfBtn.rel = 'noopener noreferrer';
       pdfBtn.className = 'btn-primary';
-      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Buka Dokumen PDF Resmi`;
+      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Pratinjau Dokumen PDF`;
       actionsWrap.appendChild(pdfBtn);
     }
 
@@ -716,7 +746,7 @@ function openCertModal(cert) {
 }
 
 /* ==========================================================================
-   9. REAL CONTACT FORM DELIVERY (FormSubmit.co + WhatsApp Dual Delivery)
+   10. REAL CONTACT FORM DELIVERY (FormSubmit.co + WhatsApp Dual Delivery)
    ========================================================================== */
 function initContactForm() {
   const form = document.getElementById('contact-form');
@@ -729,13 +759,11 @@ function initContactForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // 1. Anti-spam Honeypot Check
     const honeypot = form.querySelector('input[name="_honeypot"]');
     if (honeypot && honeypot.value !== '') {
       return;
     }
 
-    // 2. Client-side Rate Limiting (30-second cooldown)
     const lastSubmitTime = localStorage.getItem('portfolio_last_submit');
     const now = Date.now();
     if (lastSubmitTime && (now - parseInt(lastSubmitTime, 10)) < 30000) {
@@ -754,7 +782,6 @@ function initContactForm() {
     const email = emailInput.value.trim();
     const message = messageInput.value.trim();
 
-    // 3. Email regex validation (RFC 5322)
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!name || !email || !message || !emailPattern.test(email)) {
@@ -779,7 +806,6 @@ function initContactForm() {
       return;
     }
 
-    // 4. Loading State
     submitBtn.disabled = true;
     if (btnText) btnText.textContent = 'Mengirim Pesan...';
 
@@ -828,9 +854,6 @@ function initContactForm() {
         throw new Error(data.message || 'Gagal mengirimkan pesan.');
       }
     } catch (err) {
-      console.warn('FormSubmit AJAX fallback:', err);
-      
-      // Fallback directly to WhatsApp
       statusEl.className = 'form-status error';
       statusEl.style.display = 'block';
 
@@ -851,7 +874,7 @@ function initContactForm() {
 }
 
 /* ==========================================================================
-   10. COPY EMAIL TO CLIPBOARD WITH TOAST
+   11. COPY EMAIL TO CLIPBOARD WITH TOAST
    ========================================================================== */
 function initCopyEmailButton() {
   const copyBtn = document.getElementById('copy-email-btn');
@@ -864,7 +887,6 @@ function initCopyEmailButton() {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(email);
       } else {
-        // Fallback for older browsers
         const textArea = document.createElement('textarea');
         textArea.value = email;
         textArea.style.position = 'fixed';
@@ -896,7 +918,7 @@ export function showToast(message) {
 }
 
 /* ==========================================================================
-   11. SCROLL PROGRESS BAR
+   12. SCROLL PROGRESS BAR & SCROLL REVEAL
    ========================================================================== */
 function initScrollProgressBar() {
   const progressBar = document.getElementById('scroll-progress-bar');
@@ -919,11 +941,8 @@ function initScrollProgressBar() {
   }, { passive: true });
 }
 
-/* ==========================================================================
-   12. SCROLL REVEAL (IntersectionObserver)
-   ========================================================================== */
 function initScrollReveal() {
-  const revealElements = document.querySelectorAll('.section, .about-pillars .pillar-card, .tech-group-card, .timeline-item');
+  const revealElements = document.querySelectorAll('.section, .bento-tile, .project-card, .certificate-card, .timeline-item');
 
   if (revealElements.length === 0) return;
 
@@ -942,9 +961,6 @@ function initScrollReveal() {
   });
 }
 
-/* ==========================================================================
-   13. SCROLL SPY
-   ========================================================================== */
 function initScrollSpy() {
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-link');
