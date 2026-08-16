@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * RAFLY FIRMANSYAH - CENTRAL DATA STORE
- * Projects from GitHub (@Raflyf) & Extensible Certificates Registry
+ * Projects from GitHub (@Raflyf) & Authentic Certificates Registry
  * ============================================================================
  */
 
@@ -9,11 +9,14 @@ export const DEVELOPER_PROFILE = {
   name: "Rafly Firmansyah",
   handle: "@Raflyf",
   title: "Software Developer & AI/ML Engineer",
+  institution: "Universitas Bina Sarana Informatika (UBSI)",
   location: "Indonesia",
   status: "Available for projects & AI/ML collaborations",
-  bio: "Pengembang perangkat lunak dengan minat mendalam pada integrasi kecerdasan buatan (Machine Learning, NLP, dan Computer Vision) dengan arsitektur sistem web modern yang cepat, aman, dan beretika privasi.",
+  bio: "Mahasiswa Ilmu Komputer / Informatika di Universitas Bina Sarana Informatika (UBSI) dan Pengembang Perangkat Lunak dengan minat mendalam pada integrasi kecerdasan buatan (Machine Learning, NLP, dan Computer Vision) dengan arsitektur sistem web modern yang cepat, aman, dan beretika privasi.",
   github: "https://github.com/Raflyf",
-  email: "contact.raflyf@gmail.com",
+  email: "raflyfirmansyah02@gmail.com",
+  whatsapp: "089913333223",
+  whatsappUrl: "https://wa.me/6289913333223",
   linkedin: "https://linkedin.com/in/raflyf",
   repoUrl: "https://github.com/Raflyf/web-portofolio"
 };
@@ -127,89 +130,98 @@ export const PROJECTS_DATA = [
 ];
 
 /**
- * Extensible Certificates List
- * Pengguna dapat menambahkan sertifikat baru dengan format objek di bawah ini.
+ * Authentic Certificates of Rafly Firmansyah
  */
 export const CERTIFICATES_DATA = [
   {
-    id: "cert-ml-expert",
-    title: "Machine Learning & NLP Practitioner",
-    issuer: "Dicoding Academy & Google Developers",
+    id: "cert-python-pcap",
+    title: "PCAP: Programming Essentials in Python",
+    issuer: "Cisco Networking Academy & OpenEDG Python Institute",
+    institution: "Universitas Bina Sarana Informatika (UBSI)",
+    instructor: "Tommi Alfian Armawan Sandi",
     category: "ai-ml",
-    categoryLabel: "AI & ML",
-    date: "2024",
-    credentialId: "DICODING-ML-8812",
-    verificationUrl: "https://github.com/Raflyf",
-    description: "Pelatihan mendalam rekayasa model machine learning, evaluasi metrik akurasi/F1, natural language processing, dan penerapan algoritma klasifikasi.",
-    skillsGained: ["Machine Learning", "NLP", "Scikit-Learn", "Model Evaluation"]
+    categoryLabel: "Python & Programming",
+    date: "22 Jan 2024",
+    credentialId: "CISCO-OPENEDG-PCAP-2024",
+    verificationUrl: "https://www.netacad.com",
+    description: "Penguasaan konsep universal pemrograman, sintaks & semantik Python 3, manipulasi struktur data dan algoritma, penanganan eksepsi, pemrograman berorientasi objek (OOP), pemrosesan teks dan berkas biner, serta generator dan closures.",
+    skillsGained: ["Python 3", "Data Structures", "Algorithms", "OOP", "File Processing", "Generators & Closures"]
   },
   {
-    id: "cert-fullstack-dev",
-    title: "Full-Stack Web Application Engineering",
-    issuer: "Binar Academy / Alibaba Cloud",
+    id: "cert-cloud-blockchain",
+    title: "Seminar Cloud Computing and Blockchain",
+    issuer: "Fakultas Teknik & Informatika, Universitas Bina Sarana Informatika (UBSI)",
+    institution: "UBSI Kampus Sukabumi",
+    instructor: "Jeffry Lukman (Speaker)",
+    category: "cloud",
+    categoryLabel: "Cloud & Blockchain",
+    date: "17 Des 2024",
+    credentialId: "UBSI-FTI-CC-BC-2024",
+    verificationUrl: "https://www.bsi.ac.id",
+    description: "Pemahaman arsitektur komputasi awan modern (Cloud Computing Infrastructure), desentralisasi sistem Blockchain, konsensus terdistribusi, dan implementasi teknologi awan pada skala industri.",
+    skillsGained: ["Cloud Computing", "Blockchain Architecture", "Distributed Systems", "Cloud Infrastructure"]
+  },
+  {
+    id: "cert-it-bootcamp-sec",
+    title: "IT Bootcamp: Software Development & Network Security",
+    issuer: "Fakultas Teknik & Informatika, Universitas Bina Sarana Informatika (UBSI)",
+    institution: "Sentul Bogor & UBSI",
+    instructor: "Tim Instruktur FTI UBSI",
+    category: "security",
+    categoryLabel: "Software Dev & Security",
+    date: "7 Jun 2024",
+    credentialId: "UBSI-BOOTCAMP-SDNS-2024",
+    verificationUrl: "https://www.bsi.ac.id",
+    description: "Pelatihan intensif (Workshop 2.5 jam, Project 7 jam, Presentasi 3 jam) mengenai rekayasa perangkat lunak terintegrasi, mitigasi kerentanan keamanan jaringan, serta penyusunan dan presentasi proyek teknis.",
+    skillsGained: ["Software Development", "Network Security", "Project Execution", "Technical Presentation"]
+  },
+  {
+    id: "cert-cloud-specialist",
+    title: "Seminar How to be a Cloud Computing Specialist",
+    issuer: "Fakultas Teknik & Informatika, Universitas Bina Sarana Informatika (UBSI)",
+    institution: "UBSI Kampus Sukabumi",
+    instructor: "Rendy Fransiskus Cundawan, ST (Speaker)",
+    category: "cloud",
+    categoryLabel: "Cloud Computing",
+    date: "6 Des 2023",
+    credentialId: "UBSI-FTI-CCS-2023",
+    verificationUrl: "https://www.bsi.ac.id",
+    description: "Pendalaman jalur spesialisasi komputasi awan, perencanaan infrastruktur server scalable, deployment aplikasi, serta standar kompetensi cloud engineer di industri.",
+    skillsGained: ["Cloud Specialist Roadmap", "Server Infrastructure", "Scalability", "DevOps Fundamentals"]
+  },
+  {
+    id: "cert-slicing-tailwind",
+    title: "Workshop Slicing UI with Tailwind CSS",
+    issuer: "HIMA-SI & Program Studi Ilmu Komputer UBSI",
+    institution: "UBSI Kampus Sukabumi",
+    instructor: "Yogi Firdaus, S.Kom (Speaker)",
     category: "web",
     categoryLabel: "Web Development",
-    date: "2024",
-    credentialId: "BINAR-FSW-4192",
-    verificationUrl: "https://github.com/Raflyf",
-    description: "Arsitektur frontend modern, RESTful API design, validasi sisi server, manajemen basis data, dan optimasi performa web.",
-    skillsGained: ["Full-Stack", "JavaScript", "REST APIs", "Database Modeling"]
-  },
-  {
-    id: "cert-computer-vision",
-    title: "Computer Vision & Edge AI Implementation",
-    issuer: "DeepLearning.AI / Kampus Merdeka",
-    category: "ai-ml",
-    categoryLabel: "AI & ML",
-    date: "2023",
-    credentialId: "DL-CV-9031",
-    verificationUrl: "https://github.com/Raflyf",
-    description: "Pemrosesan citra digital, deteksi objek dan landmark menggunakan MediaPipe dan OpenCV, serta integrasi kamera real-time.",
-    skillsGained: ["Computer Vision", "MediaPipe", "OpenCV", "Image Processing"]
-  },
-  {
-    id: "cert-cloud-infrastructure",
-    title: "Cloud Infrastructure & CI/CD Pipelines",
-    issuer: "Google Cloud Skills Boost",
-    category: "cloud",
-    categoryLabel: "Cloud & DevOps",
-    date: "2023",
-    credentialId: "GCP-CLD-6621",
-    verificationUrl: "https://github.com/Raflyf",
-    description: "Penerapan containerization, otomatisasi deployment GitHub Actions, konfigurasi serverless, dan hosting statis berperforma tinggi.",
-    skillsGained: ["Cloud Architecture", "GitHub Actions", "CI/CD", "DevOps"]
-  },
-  {
-    id: "cert-cyber-security",
-    title: "Web Security & Secure Coding Fundamentals",
-    issuer: "Cisco Networking Academy",
-    category: "security",
-    categoryLabel: "Security",
-    date: "2023",
-    credentialId: "CISCO-SEC-1099",
-    verificationUrl: "https://github.com/Raflyf",
-    description: "Prinsip keamanan OWASP Top 10, sanitasi input terhadap ancaman XSS & CSRF, proteksi Content Security Policy, dan otentikasi token.",
-    skillsGained: ["AppSec", "XSS Mitigation", "CSP", "Input Sanitization"]
+    date: "10 Okt 2023",
+    credentialId: "UBSI-HIMASI-TAILWIND-2023",
+    verificationUrl: "https://www.bsi.ac.id",
+    description: "Praktek pembuatan antarmuka pengguna responsif (UI Slicing), implementasi utility-first CSS, standardisasi layout modern, dan transisi elemen antarmuka.",
+    skillsGained: ["UI Slicing", "Tailwind CSS", "Responsive Layouts", "Modern Frontend"]
   }
 ];
 
 export const TIMELINE_DATA = [
   {
-    period: "2025 — Sekarang",
-    title: "AI/ML & Software Research Lead",
-    institution: "Independent Research & Open-Source Projects",
-    description: "Mengembangkan sistem deteksi kesamaan dokumen akademik terdesentralisasi (OpenPlagiarismChecker) dan sistem klasifikasi berbasis Machine Learning."
+    period: "2024 — Sekarang",
+    title: "AI/ML & Software Research Projects",
+    institution: "Universitas Bina Sarana Informatika (UBSI) & Riset Mandiri",
+    description: "Mengembangkan OpenPlagiarismChecker (deteksi kesamaan dokumen akademik N-Gram + Sentence Transformers) dan Spam-Email Classifier (Scikit-Learn & XGBoost)."
   },
   {
-    period: "2023 — 2025",
-    title: "Computer Vision & Full-Stack System Developer",
-    institution: "Akademik & Proyek Rekayasa Perangkat Lunak",
-    description: "Merancang kontrol presentasi nirsentuh (laser_pointer_PPT) berbasis WebSockets dan antarmuka visi komputer (FotoKitaBlur) dengan MediaPipe."
+    period: "2023 — 2024",
+    title: "Computer Vision & Interactive Systems",
+    institution: "Universitas Bina Sarana Informatika (UBSI)",
+    description: "Merancang laser_pointer_PPT (touchpad & gyro remote via WebSockets) dan FotoKitaBlur (gesture privacy camera via MediaPipe & OpenCV), serta meraih sertifikasi Python PCAP Cisco/OpenEDG."
   },
   {
-    period: "2021 — 2023",
+    period: "2022 — 2023",
     title: "Foundations of Computer Science & Web Engineering",
-    institution: "Computer Science Degree Program",
-    description: "Mempelajari struktur data, algoritma, pemrograman berorientasi objek, arsitektur basis data relasional, dan protokol jaringan web."
+    institution: "Universitas Bina Sarana Informatika (UBSI)",
+    description: "Mempelajari dasar komputasi awan, struktur data, algoritma, pemrograman berorientasi objek (OOP), dan pengembangan web full-stack."
   }
 ];

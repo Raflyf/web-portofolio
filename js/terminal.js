@@ -70,10 +70,11 @@ export function initTerminal() {
       "   - Confusion Matrix & F1-Score Instant Evaluation"
     ],
     contact: () => [
+      `Nama     : ${DEVELOPER_PROFILE.name}`,
       `Email    : ${DEVELOPER_PROFILE.email}`,
+      `WhatsApp : ${DEVELOPER_PROFILE.whatsapp} (${DEVELOPER_PROFILE.whatsappUrl})`,
       `GitHub   : ${DEVELOPER_PROFILE.github}`,
-      `LinkedIn : ${DEVELOPER_PROFILE.linkedin}`,
-      `Repo     : ${DEVELOPER_PROFILE.repoUrl}`
+      `Kampus   : ${DEVELOPER_PROFILE.institution}`
     ],
     whoami: () => [
       "visitor@portfolio-client: guest (read-only privilege level)"
