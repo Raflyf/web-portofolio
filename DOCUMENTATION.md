@@ -71,3 +71,4 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **1.0.3** | 2026-08-16 | Integrasi penuh 9 sertifikasi autentik (MikroTik MTCNA, Cisco Python PCAP, Kominfo DEA, FTI UBSI, Harisenin), riwayat organisasi & magang CV, serta pencapaian akademik IPK 3.93 UBSI. |
 | **1.0.4** | 2026-08-16 | Restrukturisasi arsip berkas sertifikat dan CV ke direktori `certificates/` dengan tombol penampil dokumen PDF langsung pada modal viewer. |
 | **1.0.5** | 2026-08-16 | Standardisasi nama penuh Rafly Firmansyah pada logo navigasi, pembersihan tag badge footer, pembaruan hak cipta profesional, dan penghapusan tombol unduh CV publik. |
+| **1.1.0** | 2026-08-16 | Audit menyeluruh UI/UX, implementasi navigasi smooth scrolling dengan scroll-padding-top, indikator progress bar gulir, animasi scroll reveal intersection, riwayat perintah dan pintasan chip pada Terminal Lab, serta validasi regex dan efek shake pada formulir kontak. |

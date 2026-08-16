@@ -965,6 +965,54 @@ html[data-theme="light"] .filter-tab-btn.active {
   outline: none;
 }
 
+/* Interactive Command Chips */
+.terminal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0.5rem 1rem;
+  background-color: var(--code-bg);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.terminal-chips-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-dim);
+}
+
+.terminal-chip {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  padding: 0.2rem 0.55rem;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  color: var(--accent-emerald);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth-out);
+}
+
+.terminal-chip:hover {
+  background-color: var(--accent-emerald);
+  color: oklch(0.12 0.02 250);
+  border-color: var(--accent-emerald);
+  transform: translateY(-1px);
+}
+
+/* Error State Shake Animation (Transitions-dev 12) */
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.is-shaking {
+  animation: errorShake 0.4s var(--ease-smooth-out);
+  border-color: #ef4444 !important;
+}
+
 /* ==========================================================================
    10. CONTACT SECTION & FORM
    ========================================================================== */

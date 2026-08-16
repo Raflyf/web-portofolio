@@ -151,8 +151,22 @@ html {
   font-size: 16px;
   line-height: 1.6;
   scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
   -webkit-text-size-adjust: 100%;
   color-scheme: dark light;
+}
+
+/* Global Scroll Progress Bar */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+  z-index: calc(var(--z-sticky) + 10);
+  transition: width 0.1s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
 body {
@@ -321,4 +335,32 @@ ul, ol {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Scroll Reveal Micro-Interactions */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(var(--distance-medium, 16px));
+  transition: opacity var(--duration-medium) var(--ease-smooth-out),
+              transform var(--duration-medium) var(--ease-smooth-out);
+  will-change: opacity, transform;
+}
+
+.reveal-item.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  .reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .scroll-progress-bar {
+    display: none !important;
+  }
 }

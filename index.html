@@ -51,6 +51,9 @@
 </head>
 <body>
 
+  <!-- Scroll Progress Indicator -->
+  <div class="scroll-progress-bar" id="scroll-progress-bar" role="progressbar" aria-label="Indikator gulir halaman" aria-valuemin="0" aria-valuemax="100"></div>
+
   <!-- WCAG 2.4.1 Skip Link -->
   <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
 
@@ -426,6 +429,17 @@
 
           <div class="terminal-body" id="terminal-body" tabindex="0" aria-live="polite">
             <!-- Terminal Lines -->
+          </div>
+
+          <div class="terminal-chips" role="toolbar" aria-label="Pintasan Perintah Terminal">
+            <span class="terminal-chips-label">Pintasan Perintah:</span>
+            <button type="button" class="terminal-chip" data-cmd="skills">skills</button>
+            <button type="button" class="terminal-chip" data-cmd="projects">projects</button>
+            <button type="button" class="terminal-chip" data-cmd="certifs">certifs</button>
+            <button type="button" class="terminal-chip" data-cmd="benchmarks">benchmarks</button>
+            <button type="button" class="terminal-chip" data-cmd="about">about</button>
+            <button type="button" class="terminal-chip" data-cmd="contact">contact</button>
+            <button type="button" class="terminal-chip" data-cmd="clear">clear</button>
           </div>
 
           <form id="terminal-form" class="terminal-input-form" style="padding: 0.5rem 1rem; border-top: 1px solid var(--border-subtle);">
