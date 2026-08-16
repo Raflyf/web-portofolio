@@ -335,3 +335,43 @@ img, svg {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   MOBILE HEADER & NAVIGATION RESILIENCE
+   ========================================================================== */
+@media (max-width: 900px) {
+  .nav-menu {
+    display: none !important;
+  }
+
+  .nav-menu.is-open {
+    display: flex !important;
+    position: fixed;
+    top: 4.25rem;
+    left: 0;
+    width: 100vw;
+    background-color: var(--surface-overlay);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border-card);
+    padding: 1.25rem var(--container-pad);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    box-shadow: 0 16px 36px oklch(0 0 0 / 0.7);
+    z-index: var(--z-dropdown);
+  }
+
+  .mobile-nav-toggle {
+    display: inline-flex !important;
+  }
+
+  .btn-github span {
+    display: none !important;
+  }
+
+  .btn-github {
+    padding: 0.45rem 0.55rem !important;
+  }
+}
+
