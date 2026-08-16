@@ -11,3 +11,5 @@ npm-debug.log*
 .env.local
 *.log
 .system_generated/
+.agents/
+skills-lock.json
