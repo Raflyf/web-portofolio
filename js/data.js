@@ -19,7 +19,8 @@ export const DEVELOPER_PROFILE = {
   whatsapp: "089913333223",
   whatsappUrl: "https://wa.me/6289913333223",
   linkedin: "https://linkedin.com/in/raflyf",
-  repoUrl: "https://github.com/Raflyf/web-portofolio"
+  repoUrl: "https://github.com/Raflyf/web-portofolio",
+  cvUrl: "certificates/cv-rafly-firmansyah-2024.pdf"
 };
 
 export const PROJECTS_DATA = [
@@ -132,6 +133,7 @@ export const PROJECTS_DATA = [
 
 /**
  * Complete Authentic Certificates Registry of Rafly Firmansyah
+ * Linked directly to original PDF documents in certificates/
  */
 export const CERTIFICATES_DATA = [
   {
@@ -144,6 +146,7 @@ export const CERTIFICATES_DATA = [
     date: "14 Feb 2025",
     credentialId: "2502NA6383",
     verificationUrl: "https://mikrotik.com/certificates",
+    pdfUrl: "certificates/mikrotik-mtcna-2025.pdf",
     description: "Sertifikasi internasional resmi MikroTik Network Associate yang memvalidasi kompetensi konfigurasi jaringan, routing, firewall security, bandwidth management, wireless networking, dan tunnel interface.",
     skillsGained: ["MikroTik RouterOS", "Network Routing", "Firewall & Security", "Bandwidth Queues", "Wireless & Tunnels"]
   },
@@ -158,6 +161,7 @@ export const CERTIFICATES_DATA = [
     date: "22 Jan 2024",
     credentialId: "CISCO-OPENEDG-PCAP-2024",
     verificationUrl: "https://www.netacad.com",
+    pdfUrl: "certificates/python-essentials-pcap-cisco.pdf",
     description: "Penguasaan konsep universal pemrograman, sintaks & semantik Python 3, manipulasi struktur data dan algoritma, penanganan eksepsi, pemrograman berorientasi objek (OOP), pemrosesan teks dan berkas biner, serta generator dan closures.",
     skillsGained: ["Python 3", "Data Structures", "Algorithms", "OOP", "File Processing", "Generators & Closures"]
   },
@@ -172,6 +176,7 @@ export const CERTIFICATES_DATA = [
     date: "17 Des 2024",
     credentialId: "UBSI-FTI-CC-BC-2024",
     verificationUrl: "https://www.bsi.ac.id",
+    pdfUrl: "certificates/seminar-cloud-computing-blockchain-ubsi.pdf",
     description: "Pemahaman arsitektur komputasi awan modern (Cloud Computing Infrastructure), desentralisasi sistem Blockchain, konsensus terdistribusi, dan implementasi teknologi awan pada skala industri.",
     skillsGained: ["Cloud Computing", "Blockchain Architecture", "Distributed Systems", "Cloud Infrastructure"]
   },
@@ -186,6 +191,7 @@ export const CERTIFICATES_DATA = [
     date: "7 Jun 2024",
     credentialId: "UBSI-BOOTCAMP-SDNS-2024",
     verificationUrl: "https://www.bsi.ac.id",
+    pdfUrl: "certificates/bootcamp-software-dev-network-security.pdf",
     description: "Pelatihan intensif (Workshop 2.5 jam, Project 7 jam, Presentasi 3 jam) mengenai rekayasa perangkat lunak terintegrasi, mitigasi kerentanan keamanan jaringan, serta penyusunan dan presentasi proyek teknis.",
     skillsGained: ["Software Development", "Network Security", "Project Execution", "Technical Presentation"]
   },
@@ -200,6 +206,7 @@ export const CERTIFICATES_DATA = [
     date: "6 Des 2023",
     credentialId: "UBSI-FTI-CCS-2023",
     verificationUrl: "https://www.bsi.ac.id",
+    pdfUrl: "certificates/seminar-cloud-computing-specialist.pdf",
     description: "Pendalaman jalur spesialisasi komputasi awan, perencanaan infrastruktur server scalable, deployment aplikasi, serta standar kompetensi cloud engineer di industri.",
     skillsGained: ["Cloud Specialist Roadmap", "Server Infrastructure", "Scalability", "DevOps Fundamentals"]
   },
@@ -214,6 +221,7 @@ export const CERTIFICATES_DATA = [
     date: "6 Jul 2023",
     credentialId: "1966871850-43/DEA/BLSDM.Kominfo/2023",
     verificationUrl: "https://digitalent.kominfo.go.id",
+    pdfUrl: "certificates/google-profil-bisnis-ecommerce-kominfo.pdf",
     description: "Pelatihan resmi standardisasi digital presence, optimasi Google Business profile, integrasi platform e-commerce, dan strategi visibilitas digital.",
     skillsGained: ["Digital Presence", "Google Business Profile", "E-Commerce Integration", "SEO Basics"]
   },
@@ -228,6 +236,7 @@ export const CERTIFICATES_DATA = [
     date: "10 Okt 2023",
     credentialId: "UBSI-HIMASI-TAILWIND-2023",
     verificationUrl: "https://www.bsi.ac.id",
+    pdfUrl: "certificates/workshop-slicing-ui-tailwind.pdf",
     description: "Praktek pembuatan antarmuka pengguna responsif (UI Slicing), implementasi utility-first CSS, standardisasi layout modern, dan transisi elemen antarmuka.",
     skillsGained: ["UI Slicing", "Tailwind CSS", "Responsive Layouts", "Modern Frontend"]
   },
@@ -242,6 +251,7 @@ export const CERTIFICATES_DATA = [
     date: "2023",
     credentialId: "HARISENIN-SIMK-FSW-2023",
     verificationUrl: "https://harisenin.com",
+    pdfUrl: "certificates/simulasi-kerja-fullstack-harisenin.pdf",
     description: "Simulasi kerja intensif peran Full-Stack Web Developer, arsitektur client-server, kolaborasi git workflow, dan implementasi endpoint API terstruktur.",
     skillsGained: ["Full-Stack Workflow", "Client-Server Architecture", "Git Collaboration", "Web APIs"]
   },
@@ -256,6 +266,7 @@ export const CERTIFICATES_DATA = [
     date: "2023",
     credentialId: "HARISENIN-CC-JS-2023",
     verificationUrl: "https://harisenin.com",
+    pdfUrl: "certificates/coding-camp-javascript-harisenin.pdf",
     description: "Dasar-dasar logika pemrograman JavaScript, manipulasi DOM interaktif, penanganan event peramban, dan asynchronous JavaScript.",
     skillsGained: ["JavaScript Fundamentals", "DOM Manipulation", "Event Handling", "Async JS"]
   }
