@@ -452,7 +452,7 @@ function renderCertificates(category) {
 
     const viewBtn = document.createElement('button');
     viewBtn.className = 'btn-cert-view';
-    viewBtn.textContent = 'Lihat Kredensial & PDF';
+    viewBtn.textContent = 'Lihat Kredensial';
     viewBtn.addEventListener('click', () => openCertModal(cert));
 
     actionsWrap.appendChild(viewBtn);
@@ -653,21 +653,7 @@ function openCertModal(cert) {
     `;
     bodyEl.appendChild(metaBox);
 
-    // Embedded PDF Preview Frame
-    if (cert.pdfUrl) {
-      const previewHeader = document.createElement('h4');
-      previewHeader.textContent = 'Pratinjau Dokumen Sertifikat:';
-      previewHeader.style.marginTop = '0.75rem';
-      bodyEl.appendChild(previewHeader);
-
-      const iframe = document.createElement('iframe');
-      iframe.className = 'modal-pdf-frame';
-      iframe.src = `${cert.pdfUrl}#toolbar=0&navpanes=0`;
-      iframe.title = `Pratinjau Dokumen ${cert.title}`;
-      iframe.loading = 'lazy';
-      bodyEl.appendChild(iframe);
-    }
-
+    // Kompetensi yang Dicapai
     const descHeader = document.createElement('h4');
     descHeader.textContent = 'Kompetensi yang Dicapai:';
     descHeader.style.marginTop = '0.75rem';
@@ -679,6 +665,7 @@ function openCertModal(cert) {
     desc.textContent = cert.description;
     bodyEl.appendChild(desc);
 
+    // Keahlian Teruji
     const skillsHeader = document.createElement('h4');
     skillsHeader.textContent = 'Keahlian Teruji:';
     bodyEl.appendChild(skillsHeader);
@@ -693,6 +680,7 @@ function openCertModal(cert) {
     });
     bodyEl.appendChild(skillsWrap);
 
+    // Actions
     const actionsWrap = document.createElement('div');
     actionsWrap.style.display = 'flex';
     actionsWrap.style.flexWrap = 'wrap';
@@ -705,7 +693,7 @@ function openCertModal(cert) {
       pdfBtn.target = '_blank';
       pdfBtn.rel = 'noopener noreferrer';
       pdfBtn.className = 'btn-primary';
-      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Buka Tab Baru (Ukuran Penuh)`;
+      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Buka Dokumen PDF Resmi`;
       actionsWrap.appendChild(pdfBtn);
     }
 
