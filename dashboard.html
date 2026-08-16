@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Telemetry & Monitoring Panel — Rafly Firmansyah</title>
+  
+  <!-- Security Headers & Strict CSP -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https:;">
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='monospace' fill='%2310b981'>R</text></svg>">
+  <link rel="stylesheet" href="css/style.css?v=2.5.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=1.0.0">
+
+  <!-- Chart.js from Cloudflare CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. SECURITY PIN AUTHENTICATION GATEWAY (SHA-256 Web Crypto)
+       ========================================================================= -->
+  <div class="pin-gateway-overlay" id="pin-gateway">
+    <div class="pin-card" role="dialog" aria-labelledby="pin-title">
+      <div class="pin-icon-wrap" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      </div>
+
+      <div>
+        <h1 class="pin-title" id="pin-title">Admin Monitoring Portal</h1>
+        <p class="pin-desc">Masukkan Master PIN keamanan untuk membuka akses grafik dan telemetri portofolio.</p>
+      </div>
+
+      <form class="pin-form" id="pin-form">
+        <input type="password" id="pin-input" class="pin-input" placeholder="••••••" maxlength="8" autofocus autocomplete="off" required aria-label="Master PIN Keamanan">
+        <div class="pin-error" id="pin-error"></div>
+        <button type="submit" class="pin-submit-btn">
+          <span>Buka Panel Monitoring</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </form>
+
+      <div style="font-family: var(--font-mono); font-size: 0.725rem; color: var(--text-dim);">
+        Standard SHA-256 Crypto & Brute-Force Lockout Protected
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       2. DASHBOARD TOP NAVIGATION BAR
+       ========================================================================= -->
+  <header class="dash-header">
+    <div class="dash-container dash-header-wrap">
+      <div class="dash-brand">
+        <a href="index.html" class="dash-brand-title" title="Kembali ke Portofolio">
+          Rafly <span>Firmansyah</span> / Telemetry
+        </a>
+        <div class="dash-status-pill">
+          <span class="dash-status-dot" aria-hidden="true"></span>
+          <span id="sync-status">Sistem Siap</span>
+        </div>
+      </div>
+
+      <!-- Controls & Filters -->
+      <div class="dash-actions-group">
+        <select id="dash-time-range" class="dash-select" aria-label="Rentang Waktu Analitik">
+          <option value="today">Hari Ini (24 Jam)</option>
+          <option value="7d" selected>7 Hari Terakhir</option>
+          <option value="30d">30 Hari Terakhir</option>
+          <option value="all">Semua Data</option>
+        </select>
+
+        <button type="button" id="dash-refresh-btn" class="dash-btn" title="Muat Ulang Data Telemetri">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+          <span>Refresh</span>
+        </button>
+
+        <button type="button" id="dash-config-btn" class="dash-btn" title="Konfigurasi Cloud Supabase">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>Cloud Sync</span>
+        </button>
+
+        <button type="button" id="dash-logout-btn" class="dash-btn" title="Kunci Dashboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span>Kunci</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       3. MAIN METRICS & CHARTS INTERFACE
+       ========================================================================= -->
+  <main class="dash-container" role="main">
+
+    <!-- Bento Metric Cards Grid -->
+    <section class="dash-kpi-grid" aria-label="Ringkasan Metrik Utama">
+      <!-- 1. Total Views -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-label">Total Page Views</span>
+          <div class="kpi-icon-badge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-views">0</div>
+        <div class="kpi-meta">
+          <span class="kpi-delta-tag">+100%</span>
+          <span>Akumulasi impresi</span>
+        </div>
+      </div>
+
+      <!-- 2. Unique Visitors -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-label">Pengunjung Unik</span>
+          <div class="kpi-icon-badge" style="color:var(--accent-cyan);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-visitors" style="color:var(--accent-cyan);">0</div>
+        <div class="kpi-meta">
+          <span>Berdasarkan sesi terisolasi</span>
+        </div>
+      </div>
+
+      <!-- 3. Link Clicks -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-label">Total Klik Tautan</span>
+          <div class="kpi-icon-badge" style="color:var(--accent-amber);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-clicks" style="color:var(--accent-amber);">0</div>
+        <div class="kpi-meta">
+          <span>WhatsApp, GitHub, PDF, Proyek</span>
+        </div>
+      </div>
+
+      <!-- 4. Contact Conversions -->
+      <div class="kpi-card">
+        <div class="kpi-card-header">
+          <span class="kpi-label">Konversi Kontak</span>
+          <div class="kpi-icon-badge" style="color:var(--accent-rose);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpi-contacts" style="color:var(--accent-rose);">0</div>
+        <div class="kpi-meta">
+          <span>Kirim Form & Chat WA</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Top Charts Grid (Row 1) -->
+    <section class="charts-grid" aria-label="Grafik Tren Trafik dan Interaksi">
+      <!-- 1. Traffic Velocity Line Chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <h2 class="chart-title">Tren Kunjungan Portofolio</h2>
+            <span class="chart-subtitle">Fluktuasi harian page views & sesi pengunjung unik</span>
+          </div>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="traffic-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- 2. Link Clicks Bar Chart -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <h2 class="chart-title">Distribusi Klik Tautan & Aksi</h2>
+            <span class="chart-subtitle">Frekuensi interaksi target utama pengunjung</span>
+          </div>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="links-chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Charts Grid (Row 2) -->
+    <section class="charts-grid" aria-label="Grafik Distribusi Perangkat dan Eksplorasi">
+      <!-- 3. Platform & Device Ratio Doughnut Chart -->
+      <div class="chart-card" style="grid-column: span 1;">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <h2 class="chart-title">Rasio Perangkat Pengunjung</h2>
+            <span class="chart-subtitle">Proporsi Ponsel, Komputer, dan Tablet</span>
+          </div>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="devices-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- 4. Exploration Engagement Radar Chart -->
+      <div class="chart-card" style="grid-column: span 1;">
+        <div class="chart-card-header">
+          <div class="chart-title-wrap">
+            <h2 class="chart-title">Matriks Eksplorasi Fitur</h2>
+            <span class="chart-subtitle">Indeks interaksi per domain portofolio</span>
+          </div>
+        </div>
+        <div class="chart-canvas-box">
+          <canvas id="engagement-chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Activity Stream Table -->
+    <section class="table-card" aria-label="Tabel Riwayat Aktivitas Pengunjung">
+      <div class="table-header-row">
+        <div class="chart-title-wrap">
+          <h2 class="chart-title">Log Aktivitas Pengunjung Terkini</h2>
+          <span class="chart-subtitle">Aliran event interaksi real-time tanpa menyimpan PII</span>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <div class="table-search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="table-search-input" class="table-search-input" placeholder="Cari event atau target...">
+          </div>
+
+          <select id="table-type-filter" class="dash-select">
+            <option value="all">Semua Tipe Event</option>
+            <option value="page_view">Page View</option>
+            <option value="link_click">Link Click</option>
+            <option value="cert_view">Cert View</option>
+            <option value="terminal_cmd">Terminal Command</option>
+            <option value="contact_submit">Contact Submit</option>
+          </select>
+
+          <button type="button" id="export-csv-btn" class="dash-btn" title="Unduh data dalam format CSV">
+            <span>Ekspor CSV</span>
+          </button>
+          <button type="button" id="export-json-btn" class="dash-btn" title="Unduh data dalam format JSON">
+            <span>Ekspor JSON</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Waktu (WIB)</th>
+              <th>Tipe Event</th>
+              <th>Aksi / Target</th>
+              <th>Perangkat</th>
+              <th>Sesi ID</th>
+            </tr>
+          </thead>
+          <tbody id="activity-table-body">
+            <!-- Dynamically populated by js/dashboard.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       4. SUPABASE CLOUD CONFIG MODAL
+       ========================================================================= -->
+  <div class="config-modal" id="config-modal">
+    <div class="config-card" role="dialog" aria-labelledby="config-title">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="config-title" style="font-size:1.15rem; font-weight:700; color:var(--text-heading);">Konfigurasi Supabase Cloud</h3>
+        <button type="button" id="config-close-btn" class="dash-btn" style="padding:0.3rem 0.6rem;">&times;</button>
+      </div>
+
+      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+        Sinkronkan telemetri ke cloud Supabase pribadi secara gratis untuk memantau trafik dari berbagai perangkat secara terpusat.
+      </p>
+
+      <form id="config-form" style="display:flex; flex-direction:column; gap:1rem;">
+        <div>
+          <label for="supabase-url-input" style="font-size:0.8rem; font-weight:600; color:var(--text-heading); display:block; margin-bottom:0.35rem;">Supabase Project URL</label>
+          <input type="url" id="supabase-url-input" class="pin-input" style="font-size:0.9rem; text-align:left; letter-spacing:normal;" value="https://rphyzcqwpkxtzllvymss.supabase.co" placeholder="https://rphyzcqwpkxtzllvymss.supabase.co" required>
+        </div>
+
+        <div>
+          <label for="supabase-key-input" style="font-size:0.8rem; font-weight:600; color:var(--text-heading); display:block; margin-bottom:0.35rem;">Supabase Anon Public API Key</label>
+          <input type="text" id="supabase-key-input" class="pin-input" style="font-size:0.9rem; text-align:left; letter-spacing:normal;" placeholder="eyJhbGciOiJIUzI1NiIsInR5..." required>
+        </div>
+
+        <div style="background-color:var(--bg-base); padding:0.85rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); font-size:0.775rem; color:var(--text-dim); line-height:1.5;">
+          <strong>Petunjuk Skema:</strong> Pastikan Anda telah menjalankan skrip DDL SQL dari berkas <code>supabase_schema.sql</code> di SQL Editor Supabase Dashboard Anda.
+        </div>
+
+        <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
+          <span>Simpan & Sambungkan Cloud</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/dashboard.js?v=1.0.0"></script>
+</body>
+</html>

@@ -1,0 +1,598 @@
+/* ==========================================================================
+   RAFLY FIRMANSYAH - ADMIN TELEMETRY DASHBOARD DESIGN SYSTEM
+   Aesthetic: Bespoke Obsidian Dark Tech (Anti-Slop), OKLCH Tokens, Chart.js
+   WCAG 2.2 AA Verified, High-Contrast Precision Interface
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-base: oklch(0.10 0.015 250);
+  --bg-primary: oklch(0.12 0.015 250);
+  --bg-secondary: oklch(0.15 0.018 250);
+  
+  --surface-card: oklch(0.16 0.018 250);
+  --surface-card-hover: oklch(0.19 0.022 250);
+  --surface-overlay: oklch(0.11 0.015 250 / 0.94);
+
+  --border-card: oklch(0.25 0.022 250);
+  --border-subtle: oklch(0.20 0.018 250);
+  --border-highlight: oklch(0.42 0.035 250);
+
+  --text-ink: oklch(0.98 0.005 250);
+  --text-heading: oklch(0.98 0.002 250);
+  --text-body: oklch(0.86 0.01 250);
+  --text-muted: oklch(0.72 0.015 250);
+  --text-dim: oklch(0.55 0.015 250);
+
+  --accent-emerald: oklch(0.74 0.18 160);
+  --accent-emerald-dim: oklch(0.74 0.18 160 / 0.15);
+  --accent-emerald-glow: oklch(0.74 0.18 160 / 0.35);
+
+  --accent-cyan: oklch(0.76 0.15 200);
+  --accent-cyan-dim: oklch(0.76 0.15 200 / 0.15);
+
+  --accent-amber: oklch(0.80 0.16 80);
+  --accent-amber-dim: oklch(0.80 0.16 80 / 0.15);
+
+  --accent-rose: oklch(0.70 0.18 25);
+  --accent-rose-dim: oklch(0.70 0.18 25 / 0.15);
+
+  --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-ink);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Container */
+.dash-container {
+  max-width: 1400px;
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3.5vw, 2.5rem);
+}
+
+/* ==========================================================================
+   1. PIN AUTHENTICATION GATEWAY
+   ========================================================================== */
+.pin-gateway-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: oklch(0.08 0.015 250 / 0.95);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1.5rem;
+}
+
+.pin-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  box-shadow: 0 24px 64px oklch(0 0 0 / 0.8), 0 0 1px oklch(1 1 1 / 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.pin-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-emerald), transparent);
+}
+
+.pin-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--accent-emerald-dim);
+  border: 1px solid var(--accent-emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-emerald);
+  box-shadow: 0 0 20px var(--accent-emerald-glow);
+}
+
+.pin-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.pin-desc {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.pin-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pin-input {
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  color: var(--text-heading);
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  text-align: center;
+  letter-spacing: 0.35em;
+  transition: all 0.2s ease;
+}
+
+.pin-input:focus {
+  outline: none;
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 0 3px var(--accent-emerald-dim);
+}
+
+.pin-error {
+  font-size: 0.8rem;
+  color: var(--accent-rose);
+  font-family: var(--font-mono);
+  display: none;
+}
+
+.pin-submit-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background-color: var(--accent-emerald);
+  color: oklch(0.12 0.02 250);
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pin-submit-btn:hover {
+  background-color: var(--accent-emerald);
+  box-shadow: 0 0 16px var(--accent-emerald-glow);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   2. DASHBOARD TOPBAR & CONTROLS
+   ========================================================================== */
+.dash-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--surface-overlay);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-card);
+  padding-block: 0.85rem;
+}
+
+.dash-header-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dash-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+}
+
+.dash-brand-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  font-family: var(--font-mono);
+}
+
+.dash-brand-title span {
+  color: var(--accent-emerald);
+}
+
+.dash-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  background-color: var(--accent-emerald-dim);
+  border: 1px solid var(--accent-emerald);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent-emerald);
+  font-weight: 600;
+}
+
+.dash-status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-emerald);
+  border-radius: 50%;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.dash-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.dash-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  color: var(--text-ink);
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.dash-btn:hover {
+  background-color: var(--surface-card-hover);
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+  transform: translateY(-1px);
+}
+
+.dash-select {
+  padding: 0.45rem 0.85rem;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  color: var(--text-ink);
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  outline: none;
+}
+
+.dash-select:focus {
+  border-color: var(--accent-emerald);
+}
+
+/* ==========================================================================
+   3. BENTO KPI METRIC CARDS
+   ========================================================================== */
+.dash-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-block: 1.75rem;
+}
+
+@media (max-width: 1024px) {
+  .dash-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .dash-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi-card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.kpi-card:hover {
+  border-color: var(--border-highlight);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px oklch(0 0 0 / 0.4);
+}
+
+.kpi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kpi-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-emerald);
+}
+
+.kpi-value {
+  font-size: 2.15rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--text-heading);
+  line-height: 1;
+}
+
+.kpi-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.775rem;
+  color: var(--text-dim);
+}
+
+.kpi-delta-tag {
+  color: var(--accent-emerald);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   4. INTERACTIVE CHARTS GRID
+   ========================================================================== */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.chart-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.chart-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.chart-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.chart-canvas-box {
+  position: relative;
+  width: 100%;
+  height: 280px;
+}
+
+/* ==========================================================================
+   5. REAL-TIME ACTIVITY STREAM TABLE
+   ========================================================================== */
+.table-card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.table-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.table-search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  min-width: 260px;
+}
+
+.table-search-input {
+  background: transparent;
+  border: none;
+  color: var(--text-ink);
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.data-table th {
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-card);
+}
+
+.data-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-body);
+}
+
+.data-table tr:hover td {
+  background-color: var(--surface-card-hover);
+}
+
+.event-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.725rem;
+  font-weight: 700;
+}
+
+.event-type-badge.page_view {
+  background-color: var(--accent-cyan-dim);
+  color: var(--accent-cyan);
+  border: 1px solid var(--accent-cyan);
+}
+
+.event-type-badge.link_click {
+  background-color: var(--accent-emerald-dim);
+  color: var(--accent-emerald);
+  border: 1px solid var(--accent-emerald);
+}
+
+.event-type-badge.cert_view {
+  background-color: var(--accent-amber-dim);
+  color: var(--accent-amber);
+  border: 1px solid var(--accent-amber);
+}
+
+.event-type-badge.terminal_cmd {
+  background-color: oklch(0.70 0.18 280 / 0.15);
+  color: oklch(0.80 0.18 280);
+  border: 1px solid oklch(0.80 0.18 280);
+}
+
+.event-type-badge.contact_submit {
+  background-color: var(--accent-rose-dim);
+  color: var(--accent-rose);
+  border: 1px solid var(--accent-rose);
+}
+
+/* Modal Config */
+.config-modal {
+  position: fixed;
+  inset: 0;
+  background-color: oklch(0.08 0.015 250 / 0.9);
+  backdrop-filter: blur(20px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  padding: 1.5rem;
+}
+
+.config-modal.is-open {
+  display: flex;
+}
+
+.config-card {
+  width: 100%;
+  max-width: 560px;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
