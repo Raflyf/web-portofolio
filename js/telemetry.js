@@ -102,9 +102,11 @@ class TelemetryEngine {
   }
 
   async syncToSupabase(payload) {
+    if (!this.supabaseConfig || !this.supabaseConfig.url || !this.supabaseConfig.anonKey) return;
     const endpoint = `${this.supabaseConfig.url.replace(/\/$/, '')}/rest/v1/portfolio_telemetry`;
     const res = await fetch(endpoint, {
       method: 'POST',
+      keepalive: true,
       headers: {
         'Content-Type': 'application/json',
         'apikey': this.supabaseConfig.anonKey,
