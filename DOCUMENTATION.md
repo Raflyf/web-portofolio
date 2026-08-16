@@ -82,5 +82,7 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **2.1.0** | 2026-08-16 | Integrasi eksplisit kualifikasi akademik Program Sarjana (S1) Informatika UBSI di seluruh antarmuka dan metadata, serta peluncuran standalone viewer `preview.html` untuk pratinjau dokumen sertifikat PDF di tab peramban baru tanpa memicu download otomatis. |
 | **2.2.0** | 2026-08-16 | Penghapusan menyeluruh pencantuman angka IPK dari seluruh antarmuka (Hero metrics ribbon, telemetry card, about bio, structured metadata, timeline milestones, dan terminal simulator) demi fokus pada kualifikasi rekayasa, riset AI/ML, dan kompetensi teknis terverifikasi. |
 | **2.3.0** | 2026-08-16 | Perbaikan tuntas navigasi mobile (menu hamburger dropdown blur & tombol GitHub responsif), render pratinjau sertifikat berbasis grafis ultra-resolusi kebal cegatan download IDM, serta dukungan pratinjau multi-halaman berurutan untuk dokumen yang memiliki lampiran transkrip/materi. |
+| **2.4.0** | 2026-08-16 | Penguatan redundansi aturan navigasi mobile pada style.css dan components.css, penambahan mekanisme auto-close klik luar/Escape, serta bumping string cache-busting v2.4.0 untuk memaksa pembaruan instan pada peramban mobile. |
+
 
 
