@@ -86,9 +86,4 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **2.5.0** | 2026-08-17 | Pembaruan nomor kontak resmi WhatsApp menjadi `08991333323` di seluruh repositori (data store, kartu kontak, template tautan, dan terminal), serta desain ulang tombol aksi WhatsApp pada status pengiriman formulir dengan visualisasi tombol hijau resmi (#25D366), ikon vektor, efek hover glow, dan keterbacaan tinggi. |
 | **2.6.0** | 2026-08-17 | Penggantian entri proyek showcase dari repositori privat `Wp2` menjadi repositori publik `web-portofolio` (Bespoke Web Portfolio) dengan deskripsi teknis arsitektur modular, kepatuhan WCAG 2.2 AA, dan sistem desain OKLCH. |
 | **3.0.0** | 2026-08-17 | Peluncuran sistem Admin Monitoring & Telemetri Analitik: gateway autentikasi SHA-256 Master PIN (`dashboard.html`), 4 kartu Bento KPI, 4 grafik visual Chart.js (Tren Kunjungan, Heatmap Klik Tautan, Rasio Perangkat, dan Matriks Eksplorasi Radar), ekspor data CSV/JSON, skema DDL Supabase RLS (`supabase_schema.sql`), dan pelacakan event asinkron non-blocking (`js/telemetry.js`). |
-
-
-
-
-
-
+| **3.1.0** | 2026-08-17 | Desain ulang menyeluruh Dashboard Telemetri: Perombakan grafik radar menjadi Matriks Intelijen 3-Kolom (Rasio Perangkat Doughnut, Leaderboard Perintah Terminal Lab CLI terpopuler dengan progress bar, dan Leaderboard Sertifikat paling diminati), penambahan kartu KPI ke-5 (Rasio Interaktivitas), ekspansi grafik batang 9 kategori interaksi, tool Uji Ping real-time, modal pembaruan Master PIN SHA-256 mandiri, serta perbaikan CSP dan event tracker modal proyek. |
