@@ -69,4 +69,5 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **1.0.1** | 2026-08-16 | Penambahan skrip otomatis 1-klik lokal `Jalankan_Lokal.bat` untuk Windows. |
 | **1.0.2** | 2026-08-16 | Integrasi data sertifikat autentik, pembaruan kontak resmi (WhatsApp & Email), dan penyempurnaan metadata pengembang. |
 | **1.0.3** | 2026-08-16 | Integrasi penuh 9 sertifikasi autentik (MikroTik MTCNA, Cisco Python PCAP, Kominfo DEA, FTI UBSI, Harisenin), riwayat organisasi & magang CV, serta pencapaian akademik IPK 3.93 UBSI. |
-| **1.0.4** | 2026-08-16 | Restrukturisasi arsip berkas sertifikat dan CV ke direktori `certificates/` dengan tombol penampil dokumen PDF langsung pada modal viewer dan tombol unduh CV pada hero. |
+| **1.0.4** | 2026-08-16 | Restrukturisasi arsip berkas sertifikat dan CV ke direktori `certificates/` dengan tombol penampil dokumen PDF langsung pada modal viewer. |
+| **1.0.5** | 2026-08-16 | Standardisasi nama penuh Rafly Firmansyah pada logo navigasi, pembersihan tag badge footer, pembaruan hak cipta profesional, dan penghapusan tombol unduh CV publik. |

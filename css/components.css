@@ -1182,22 +1182,6 @@ html[data-theme="light"] .filter-tab-btn.active {
   color: var(--text-muted);
 }
 
-.footer-badges {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.footer-badge {
-  font-family: var(--font-mono);
-  font-size: var(--fs-caption);
-  padding: 0.2rem 0.5rem;
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  color: var(--text-dim);
-}
-
 /* Back to Top Button */
 .back-to-top-btn {
   display: inline-flex;
