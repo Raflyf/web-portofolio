@@ -469,9 +469,12 @@ function openCertModal(cert) {
     metaBox.style.fontSize = 'var(--fs-body-sm)';
 
     metaBox.innerHTML = `
-      <div><strong>Penerbit:</strong> ${cert.issuer}</div>
-      <div><strong>Tahun Kelulusan:</strong> ${cert.date}</div>
-      <div><strong>Nomor Kredensial:</strong> <code style="font-family:var(--font-mono);background:var(--badge-bg);padding:0.1rem 0.4rem;border-radius:4px;">${cert.credentialId}</code></div>
+      <div><strong>Penerima:</strong> Rafly Firmansyah</div>
+      <div><strong>Penerbit / Penyelenggara:</strong> ${cert.issuer}</div>
+      ${cert.institution ? `<div><strong>Institusi / Lokasi:</strong> ${cert.institution}</div>` : ''}
+      ${cert.instructor ? `<div><strong>Instruktur / Pembicara:</strong> ${cert.instructor}</div>` : ''}
+      <div><strong>Tanggal Penerbitan:</strong> ${cert.date}</div>
+      <div><strong>Nomor Kredensial / Ref:</strong> <code style="font-family:var(--font-mono);background:var(--badge-bg);padding:0.1rem 0.4rem;border-radius:4px;">${cert.credentialId}</code></div>
       <div><strong>Kategori:</strong> ${cert.categoryLabel}</div>
     `;
     bodyEl.appendChild(metaBox);

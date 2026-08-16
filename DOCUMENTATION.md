@@ -67,3 +67,4 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 |---|---|---|
 | **1.0.0** | 2026-08-16 | Inisialisasi awal arsitektur portofolio, sistem desain OKLCH, integrasi repositori GitHub riil, terminal lab interaktif, sistem sertifikat modular, dan konfigurasi multi-hosting gratis. |
 | **1.0.1** | 2026-08-16 | Penambahan skrip otomatis 1-klik lokal `Jalankan_Lokal.bat` untuk Windows. |
+| **1.0.2** | 2026-08-16 | Integrasi data sertifikat autentik (Cisco/OpenEDG Python PCAP, Cloud Computing UBSI, UI Slicing Tailwind, IT Bootcamp Security), pembaruan kontak resmi (WhatsApp & Email), dan penyempurnaan metadata pengembang. |
