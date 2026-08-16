@@ -582,6 +582,11 @@ function initModals() {
 function openProjectModal(project) {
   if (!activeProjectModal) return;
 
+  // Log Telemetry Event
+  if (window.telemetry || telemetry) {
+    telemetry.logEvent('link_click', project.id, `Lihat Detail Proyek: ${project.title}`);
+  }
+
   const titleEl = document.getElementById('project-modal-title');
   const bodyEl = document.getElementById('project-modal-body');
 
@@ -660,6 +665,11 @@ function openProjectModal(project) {
 
 function openCertModal(cert) {
   if (!activeCertModal) return;
+
+  // Log Telemetry Event
+  if (window.telemetry || telemetry) {
+    telemetry.logEvent('cert_view', cert.id, `Buka Detail Sertifikat: ${cert.title}`);
+  }
 
   const titleEl = document.getElementById('cert-modal-title');
   const bodyEl = document.getElementById('cert-modal-body');
