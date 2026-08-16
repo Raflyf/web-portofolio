@@ -36,11 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
    Guarantees 60-120fps fluid deceleration across all platforms
    ========================================================================== */
 export function smoothScrollTo(targetY, duration = 850) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    window.scrollTo(0, targetY);
-    return;
-  }
-
   const startY = window.scrollY || window.pageYOffset;
   const distance = targetY - startY;
   
@@ -132,17 +127,15 @@ function initBackToTopButtons() {
    2. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
    ========================================================================== */
 function initInertiaSmoothWheel() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
   let currentY = window.scrollY || window.pageYOffset;
   let targetY = currentY;
   let isRunning = false;
-  const ease = 0.085;
+  const ease = 0.095;
 
   function updateWheelPhysics() {
     const diff = targetY - currentY;
     
-    if (Math.abs(diff) > 0.4) {
+    if (Math.abs(diff) > 0.5) {
       currentY += diff * ease;
       window.scrollTo(0, Math.round(currentY * 10) / 10);
       requestAnimationFrame(updateWheelPhysics);
@@ -171,6 +164,15 @@ function initInertiaSmoothWheel() {
       return;
     }
 
+    if (e.ctrlKey || e.shiftKey || e.altKey) return;
+
+    // Preserve natural touchpad scrolling when deltaY is fractional/low
+    if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
+      targetY = window.scrollY || window.pageYOffset;
+      currentY = targetY;
+      return;
+    }
+
     e.preventDefault();
 
     const maxScroll = Math.max(
@@ -179,10 +181,10 @@ function initInertiaSmoothWheel() {
     );
 
     let delta = e.deltaY;
-    if (e.deltaMode === 1) delta *= 40;
-    if (e.deltaMode === 2) delta *= 800;
+    if (e.deltaMode === 1) delta *= 35;
+    if (e.deltaMode === 2) delta *= 750;
 
-    targetY = Math.min(Math.max(0, targetY + delta), maxScroll);
+    targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
 
     if (!isRunning) {
       isRunning = true;
