@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO & OpenGraph Meta Tags -->
+  <title>Rafly Firmansyah — Software Developer & AI/ML Engineer</title>
+  <meta name="description" content="Portofolio resmi Rafly Firmansyah (@Raflyf) — Software Developer & AI/ML Engineer yang berfokus pada riset NLP, Computer Vision, dan Rekayasa Sistem Web Modern.">
+  <meta name="keywords" content="Rafly Firmansyah, Raflyf, Software Developer, AI Engineer, Machine Learning, OpenPlagiarismChecker, Spam-Email, Portfolio, Python, JavaScript">
+  <meta name="author" content="Rafly Firmansyah">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='monospace' fill='%2310b981'>R</text></svg>">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://raflyf.github.io/web-portofolio/">
+  <meta property="og:title" content="Rafly Firmansyah — Software Developer & AI/ML Engineer">
+  <meta property="og:description" content="Eksplorasi proyek riset AI open-source, sistem klasifikasi machine learning, dan portofolio rekayasa perangkat lunak Rafly Firmansyah.">
+  <meta property="og:locale" content="id_ID">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rafly Firmansyah — Software Developer & AI/ML Engineer">
+  <meta name="twitter:description" content="Eksplorasi proyek riset AI open-source, sistem klasifikasi machine learning, dan portofolio rekayasa perangkat lunak Rafly Firmansyah.">
+
+  <!-- Security: Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- JSON-LD Structured Data Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Rafly Firmansyah",
+    "alternateName": "Raflyf",
+    "url": "https://github.com/Raflyf",
+    "jobTitle": "Software Developer & AI/ML Engineer",
+    "knowsAbout": ["Artificial Intelligence", "Machine Learning", "Computer Vision", "Natural Language Processing", "Full-Stack Web Development"],
+    "sameAs": [
+      "https://github.com/Raflyf",
+      "https://github.com/Raflyf/web-portofolio"
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- WCAG 2.4.1 Skip Link -->
+  <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+
+  <!-- =========================================================================
+       SITE HEADER & NAVIGATION
+       ========================================================================= -->
+  <header class="site-header" role="banner">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo" aria-label="Beranda Rafly Firmansyah">
+        <span class="brand-logo__prefix">rafly</span><span>f</span>
+        <span class="brand-logo__dot" aria-hidden="true"></span>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="nav-menu" id="nav-menu" role="navigation" aria-label="Navigasi Utama">
+        <a href="#about" class="nav-link">Tentang</a>
+        <a href="#skills" class="nav-link">Keahlian</a>
+        <a href="#projects" class="nav-link">Proyek</a>
+        <a href="#certificates" class="nav-link">Sertifikat</a>
+        <a href="#experience" class="nav-link">Pengalaman</a>
+        <a href="#lab" class="nav-link">Terminal Lab</a>
+        <a href="#contact" class="nav-link">Kontak</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="nav-actions">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Ganti mode tampilan">
+          <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <!-- GitHub Profile Button -->
+        <a href="https://github.com/Raflyf" target="_blank" rel="noopener noreferrer" class="btn-github" aria-label="Kunjungi profil GitHub Raflyf">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          <span>GitHub</span>
+        </a>
+
+        <!-- Mobile Nav Toggle -->
+        <button id="mobile-nav-toggle" class="mobile-nav-toggle" aria-label="Buka menu navigasi" aria-expanded="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN CONTENT LANDMARK
+       ========================================================================= -->
+  <main id="main-content" role="main">
+
+    <!-- =======================================================================
+         1. HERO SECTION
+         ======================================================================= -->
+    <section class="hero-section" id="hero" aria-labelledby="hero-title">
+      <div class="container">
+        <div class="hero-content">
+          <!-- Status Pill -->
+          <div class="status-pill">
+            <span class="status-indicator" aria-hidden="true"></span>
+            <span>Tersedia untuk Kolaborasi Riset & Proyek AI</span>
+          </div>
+
+          <!-- Hero Heading -->
+          <h1 id="hero-title" class="hero-title">
+            Membangun Sistem Cerdas, Riset <span class="hero-title__highlight">AI Terbuka</span>, & Rekayasa Perangkat Lunak.
+          </h1>
+
+          <!-- Hero Subtitle -->
+          <p class="hero-subtitle">
+            Halo, saya <strong>Rafly Firmansyah</strong>. Pengembang perangkat lunak dengan fokus pada deteksi kesamaan teks NLP (Sentence Transformers), klasifikasi Machine Learning, Computer Vision real-time, dan arsitektur web modern yang beretika privasi.
+          </p>
+
+          <!-- Hero Action CTAs -->
+          <div class="hero-actions">
+            <a href="#projects" class="btn-primary">
+              <span>Jelajahi Proyek Riset</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+            <a href="#certificates" class="btn-secondary">
+              <span>Kumpulan Sertifikat</span>
+            </a>
+          </div>
+
+          <!-- Quick Metrics Bar -->
+          <div class="hero-stats-grid" role="region" aria-label="Ringkasan Statistik Proyek">
+            <div class="hero-stat-card">
+              <div class="hero-stat-value">5<span>+</span></div>
+              <div class="hero-stat-label">Proyek Unggulan GitHub</div>
+            </div>
+            <div class="hero-stat-card">
+              <div class="hero-stat-value">15<span>+</span></div>
+              <div class="hero-stat-label">Basis Data Akademik Terindeks</div>
+            </div>
+            <div class="hero-stat-card">
+              <div class="hero-stat-value">100<span>%</span></div>
+              <div class="hero-stat-label">Pemrosesan Lokal & Privasi</div>
+            </div>
+            <div class="hero-stat-card">
+              <div class="hero-stat-value">0<span>ms</span></div>
+              <div class="hero-stat-label">Kompromi Aksesibilitas WCAG</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         2. ABOUT & CORE PILLARS SECTION
+         ======================================================================= -->
+    <section class="section" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Tentang Pengembang</span>
+          <h2 id="about-title" class="section-title">Dedikasi pada Rekayasa Cerdas & Open-Source</h2>
+          <p class="section-desc">Mengkombinasikan ketajaman analisis matematis dengan implementasi sistem yang dapat direproduksi dan diandalkan.</p>
+        </div>
+
+        <div class="about-grid">
+          <!-- Bio Column -->
+          <div class="about-bio">
+            <p>
+              Saya adalah seorang pengembang perangkat lunak yang berfokus pada pemecahan masalah nyata menggunakan <strong>Kecerdasan Buatan</strong> dan <strong>Arsitektur Web Modern</strong>. Dalam perjalanan rekayasa saya, saya percaya bahwa teknologi AI harus transparan, dapat diakses, dan menghormati privasi data pengguna.
+            </p>
+            <p>
+              Melalui proyek riset seperti <strong>OpenPlagiarismChecker</strong>, saya mengembangkan alternatif terbuka bagi mesin pemeriksa dokumen akademik yang menggabungkan pencocokan eksak <em>N-Gram</em> dan kemiripan semantik <em>Sentence Transformers</em>. Di bidang klasifikasi, saya merancang evaluasi model <em>Naive Bayes vs XGBoost</em> untuk mendeteksi ancaman spam secara efisien.
+            </p>
+          </div>
+
+          <!-- Pillars Cards -->
+          <div class="about-pillars">
+            <div class="pillar-card">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+              </div>
+              <h3 class="pillar-title">AI & NLP Research</h3>
+              <p class="pillar-desc">Pengolahan bahasa alami, deteksi parafrasa semantik, embedding transformer, dan klasifikasi teks.</p>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </div>
+              <h3 class="pillar-title">Computer Vision</h3>
+              <p class="pillar-desc">Deteksi gesture tangan dan landmark wajah via MediaPipe Tasks Vision & OpenCV di peramban dan CLI.</p>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              </div>
+              <h3 class="pillar-title">Full-Stack Web</h3>
+              <p class="pillar-desc">Pengembangan server Flask/PHP, interaksi real-time WebSockets, dan frontend murni berstandar WCAG.</p>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </div>
+              <h3 class="pillar-title">Privacy & Security</h3>
+              <p class="pillar-desc">Arsitektur terisolasi lokal, proteksi OWASP Top 10, sanitasi input XSS, dan enkripsi data token.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         3. TECH STACK MATRIX
+         ======================================================================= -->
+    <section class="section" id="skills" aria-labelledby="skills-title">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Matriks Keterampilan</span>
+          <h2 id="skills-title" class="section-title">Teknologi & Lingkup Keahlian</h2>
+          <p class="section-desc">Kumpulan bahasa pemrograman, kerangka kerja AI/ML, dan pustaka yang rutin digunakan dalam implementasi proyek.</p>
+        </div>
+
+        <div class="tech-matrix-grid">
+          <!-- AI & Machine Learning -->
+          <div class="tech-group-card">
+            <div class="tech-group-header">
+              <div class="tech-group-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+              </div>
+              <h3 class="tech-group-title">AI & Machine Learning</h3>
+            </div>
+            <div class="tech-pills-wrap">
+              <span class="tech-pill">Python 3</span>
+              <span class="tech-pill">PyTorch</span>
+              <span class="tech-pill">Scikit-Learn</span>
+              <span class="tech-pill">XGBoost</span>
+              <span class="tech-pill">Sentence-Transformers</span>
+              <span class="tech-pill">N-Gram Shingling</span>
+              <span class="tech-pill">Pandas / NumPy</span>
+            </div>
+          </div>
+
+          <!-- Computer Vision & Realtime -->
+          <div class="tech-group-card">
+            <div class="tech-group-header">
+              <div class="tech-group-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              </div>
+              <h3 class="tech-group-title">Vision & Interactive</h3>
+            </div>
+            <div class="tech-pills-wrap">
+              <span class="tech-pill">MediaPipe Tasks</span>
+              <span class="tech-pill">OpenCV</span>
+              <span class="tech-pill">WebSockets</span>
+              <span class="tech-pill">Flask-SocketIO</span>
+              <span class="tech-pill">PyAutoGUI</span>
+              <span class="tech-pill">WebRTC / Camera API</span>
+            </div>
+          </div>
+
+          <!-- Backend & Database -->
+          <div class="tech-group-card">
+            <div class="tech-group-header">
+              <div class="tech-group-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+              </div>
+              <h3 class="tech-group-title">Backend & Data Layer</h3>
+            </div>
+            <div class="tech-pills-wrap">
+              <span class="tech-pill">Flask (Python)</span>
+              <span class="tech-pill">PHP 8</span>
+              <span class="tech-pill">RESTful APIs</span>
+              <span class="tech-pill">MySQL</span>
+              <span class="tech-pill">Joblib / Pickling</span>
+              <span class="tech-pill">HTTP Security</span>
+            </div>
+          </div>
+
+          <!-- Frontend & Tooling -->
+          <div class="tech-group-card">
+            <div class="tech-group-header">
+              <div class="tech-group-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+              </div>
+              <h3 class="tech-group-title">Frontend & Tooling</h3>
+            </div>
+            <div class="tech-pills-wrap">
+              <span class="tech-pill">Vanilla JS (ES6+)</span>
+              <span class="tech-pill">Semantic HTML5</span>
+              <span class="tech-pill">Modern CSS / OKLCH</span>
+              <span class="tech-pill">Git / GitHub</span>
+              <span class="tech-pill">Chart.js</span>
+              <span class="tech-pill">WCAG 2.2 a11y</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         4. FEATURED PROJECTS SHOWCASE
+         ======================================================================= -->
+    <section class="section" id="projects" aria-labelledby="projects-title">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Karya Terpilih</span>
+          <h2 id="projects-title" class="section-title">Portofolio Proyek GitHub</h2>
+          <p class="section-desc">Kumpulan repositori dan luaran riset yang dikembangkan secara mandiri, terdokumentasi, dan siap dievaluasi.</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-bar" role="tablist" aria-label="Filter Kategori Proyek">
+          <div class="filter-tabs">
+            <button class="filter-tab-btn active" role="tab" aria-selected="true" data-filter-project="all">Semua Proyek</button>
+            <button class="filter-tab-btn" role="tab" aria-selected="false" data-filter-project="ai-ml">AI & Machine Learning</button>
+            <button class="filter-tab-btn" role="tab" aria-selected="false" data-filter-project="tools">Vision & Tools</button>
+            <button class="filter-tab-btn" role="tab" aria-selected="false" data-filter-project="web">Web Architecture</button>
+          </div>
+        </div>
+
+        <!-- Projects Dynamic Grid -->
+        <div class="projects-grid" id="projects-grid">
+          <!-- Populated by js/main.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         5. CERTIFICATES & CREDENTIALS SHOWCASE
+         ======================================================================= -->
+    <section class="section" id="certificates" aria-labelledby="certificates-title">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Kredensial Resmi</span>
+          <h2 id="certificates-title" class="section-title">Kumpulan Sertifikat & Pencapaian</h2>
+          <p class="section-desc">Sertifikasi pelatihan terverifikasi, lisensi kompetensi, dan pencapaian akademik di bidang rekayasa AI dan perangkat lunak.</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-bar" role="tablist" aria-label="Filter Kategori Sertifikat">
+          <div class="filter-tabs">
+            <button class="filter-tab-btn active" role="tab" aria-selected="true" data-filter-cert="all">Semua Sertifikat</button>
+            <button class="filter-tab-btn" role="tab" aria-selected="false" data-filter-cert="ai-ml">AI & Machine Learning</button>
+            <button class="filter-tab-btn" role="tab" aria-selected="false" data-filter-cert="web">Web Development</button>
+            <button class="filter-tab-btn" role="tab" aria-selected="false" data-filter-cert="cloud">Cloud & DevOps</button>
+            <button class="filter-tab-btn" role="tab" aria-selected="false" data-filter-cert="security">Keamanan Siber</button>
+          </div>
+        </div>
+
+        <!-- Certificates Dynamic Grid -->
+        <div class="certificates-grid" id="certificates-grid">
+          <!-- Populated by js/main.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         6. EXPERIENCE & TIMELINE
+         ======================================================================= -->
+    <section class="section" id="experience" aria-labelledby="experience-title">
+      <div class="container">
+        <div class="section-header section-header--center">
+          <span class="section-tag">Jejak Langkah</span>
+          <h2 id="experience-title" class="section-title">Riwayat Pengalaman & Milestone</h2>
+          <p class="section-desc">Evolusi pembelajaran, fokus riset, dan rekayasa proyek open-source.</p>
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline" id="experience-timeline">
+          <!-- Populated by js/main.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         7. INTERACTIVE DEVELOPER LAB / TERMINAL
+         ======================================================================= -->
+    <section class="section" id="lab" aria-labelledby="lab-title">
+      <div class="container">
+        <div class="section-header section-header--center">
+          <span class="section-tag">Interactive Playground</span>
+          <h2 id="lab-title" class="section-title">Terminal Developer Lab</h2>
+          <p class="section-desc">Eksplorasi profil, keahlian, dan metrik riset melalui emulator terminal interaktif.</p>
+        </div>
+
+        <div class="terminal-wrapper" role="region" aria-label="Terminal Interaktif Pengembang">
+          <div class="terminal-header">
+            <div class="terminal-dots" aria-hidden="true">
+              <span class="terminal-dot terminal-dot--red"></span>
+              <span class="terminal-dot terminal-dot--yellow"></span>
+              <span class="terminal-dot terminal-dot--green"></span>
+            </div>
+            <div class="terminal-title">rafly@portfolio-lab:~ (bash)</div>
+            <div></div>
+          </div>
+
+          <div class="terminal-body" id="terminal-body" tabindex="0" aria-live="polite">
+            <!-- Terminal Lines -->
+          </div>
+
+          <form id="terminal-form" class="terminal-input-form" style="padding: 0.5rem 1rem; border-top: 1px solid var(--border-subtle);">
+            <span class="terminal-prompt" aria-hidden="true">rafly@lab:~$</span>
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="ketik perintah (misal: 'help', 'skills', 'benchmarks')..." autocomplete="off" spellcheck="false" aria-label="Input perintah terminal">
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         8. CONTACT SECTION & FORM
+         ======================================================================= -->
+    <section class="section" id="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Terhubung</span>
+          <h2 id="contact-title" class="section-title">Hubungi & Diskusikan Peluang</h2>
+          <p class="section-desc">Terbuka untuk diskusi proyek rekayasa perangkat lunak, kolaborasi riset model AI/ML, dan peluang karir profesional.</p>
+        </div>
+
+        <div class="contact-grid">
+          <!-- Info Column -->
+          <div class="contact-info-col">
+            <div class="contact-methods">
+              <a href="mailto:contact.raflyf@gmail.com" class="contact-method-card">
+                <div class="contact-method-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+                <div class="contact-method-text">
+                  <span class="contact-method-label">Email Langsung</span>
+                  <span class="contact-method-value">contact.raflyf@gmail.com</span>
+                </div>
+              </a>
+
+              <a href="https://github.com/Raflyf" target="_blank" rel="noopener noreferrer" class="contact-method-card">
+                <div class="contact-method-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                </div>
+                <div class="contact-method-text">
+                  <span class="contact-method-label">Profil GitHub</span>
+                  <span class="contact-method-value">github.com/Raflyf</span>
+                </div>
+              </a>
+
+              <a href="https://linkedin.com/in/raflyf" target="_blank" rel="noopener noreferrer" class="contact-method-card">
+                <div class="contact-method-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                </div>
+                <div class="contact-method-text">
+                  <span class="contact-method-label">Jejaring LinkedIn</span>
+                  <span class="contact-method-value">linkedin.com/in/raflyf</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Contact Form -->
+          <form id="contact-form" class="contact-form" novalidate>
+            <!-- Anti-spam Honeypot Field -->
+            <input type="text" name="_honeypot" style="display:none" tabindex="-1" autocomplete="off">
+
+            <div class="form-group">
+              <label for="contact-name" class="form-label">Nama Lengkap</label>
+              <input type="text" id="contact-name" class="form-input" placeholder="Masukkan nama Anda..." required>
+            </div>
+
+            <div class="form-group">
+              <label for="contact-email" class="form-label">Alamat Email</label>
+              <input type="email" id="contact-email" class="form-input" placeholder="nama@instansi.com..." required>
+            </div>
+
+            <div class="form-group">
+              <label for="contact-message" class="form-label">Pesan atau Diskusi Proyek</label>
+              <textarea id="contact-message" class="form-textarea" placeholder="Tuliskan detail pertanyaan atau tawaran kolaborasi..." required></textarea>
+            </div>
+
+            <div id="form-status" class="form-status" role="alert"></div>
+
+            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
+              <span>Kirim Pesan</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-grid">
+      <div class="footer-copy">
+        <p>&copy; 2026 Rafly Firmansyah. Dikembangkan dengan Standar Web Murni (HTML5, CSS3, ES6+).</p>
+      </div>
+
+      <div class="footer-badges">
+        <span class="footer-badge">Zero AI-Slop</span>
+        <span class="footer-badge">WCAG 2.2 AA</span>
+        <span class="footer-badge">Static Free Deploy Ready</span>
+      </div>
+
+      <button id="back-to-top" class="back-to-top-btn" aria-label="Kembali ke atas halaman">
+        <span>Kembali ke Atas</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+      </button>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       ACCESSIBLE MODAL DIALOGS
+       ========================================================================= -->
+  
+  <!-- 1. Project Detail Modal -->
+  <dialog id="project-modal" class="modal-dialog" aria-labelledby="project-modal-title" aria-modal="true">
+    <div class="modal-header">
+      <h3 id="project-modal-title" class="modal-title">Detail Proyek</h3>
+      <button class="modal-close-btn" aria-label="Tutup jendela detail proyek">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="project-modal-body">
+      <!-- Injected by js/main.js -->
+    </div>
+  </dialog>
+
+  <!-- 2. Certificate Detail Modal -->
+  <dialog id="cert-modal" class="modal-dialog" aria-labelledby="cert-modal-title" aria-modal="true">
+    <div class="modal-header">
+      <h3 id="cert-modal-title" class="modal-title">Kredensial Sertifikat</h3>
+      <button class="modal-close-btn" aria-label="Tutup jendela sertifikat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="cert-modal-body">
+      <!-- Injected by js/main.js -->
+    </div>
+  </dialog>
+
+  <!-- Main JavaScript Module -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
