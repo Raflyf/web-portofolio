@@ -417,7 +417,7 @@ function renderCertificates(category) {
 
   const filtered = category === 'all'
     ? CERTIFICATES_DATA
-    : CERTIFICATES_DATA.filter(c => c.category === category);
+    : CERTIFICATES_DATA.filter(c => c.category === category || (category === 'security' && c.category === 'network') || (category === 'network' && c.category === 'security'));
 
   filtered.forEach((cert, idx) => {
     const card = document.createElement('article');
