@@ -336,21 +336,30 @@ class DashboardApp {
       if (this.charts.links) this.charts.links.destroy();
 
       const counts = {
-        'WhatsApp Chat': 0,
-        'GitHub Profile': 0,
-        'OpenPlagiarism': 0,
+        'WhatsApp': 0,
+        'GitHub': 0,
+        'Plagiarism': 0,
         'Spam-Email': 0,
-        'Sertifikat PDF': 0,
-        'Terminal CLI': 0
+        'Laser PPT': 0,
+        'FotoKita': 0,
+        'Portfolio': 0,
+        'Sertifikat': 0,
+        'Terminal': 0
       };
 
       this.filteredEvents.forEach(e => {
-        if (e.event_target === 'whatsapp') counts['WhatsApp Chat']++;
-        else if (e.event_target === 'github') counts['GitHub Profile']++;
-        else if (e.event_target?.includes('open-plagiarism')) counts['OpenPlagiarism']++;
-        else if (e.event_target?.includes('spam-email')) counts['Spam-Email']++;
-        else if (e.event_type === 'cert_view') counts['Sertifikat PDF']++;
-        else if (e.event_type === 'terminal_cmd') counts['Terminal CLI']++;
+        const target = (e.event_target || '').toLowerCase();
+        const label = (e.event_label || '').toLowerCase();
+
+        if (target.includes('whatsapp') || label.includes('whatsapp')) counts['WhatsApp']++;
+        else if (target === 'github' || label.includes('github profile')) counts['GitHub']++;
+        else if (target.includes('plagiarism') || label.includes('plagiarism')) counts['Plagiarism']++;
+        else if (target.includes('spam') || label.includes('spam')) counts['Spam-Email']++;
+        else if (target.includes('laser') || label.includes('laser')) counts['Laser PPT']++;
+        else if (target.includes('fotokita') || label.includes('fotokita')) counts['FotoKita']++;
+        else if (target.includes('portofolio') || label.includes('portofolio')) counts['Portfolio']++;
+        else if (e.event_type === 'cert_view' || label.includes('sertifikat')) counts['Sertifikat']++;
+        else if (e.event_type === 'terminal_cmd' || label.includes('terminal')) counts['Terminal']++;
       });
 
       this.charts.links = new Chart(linksCtx, {
@@ -361,12 +370,15 @@ class DashboardApp {
             label: 'Total Klik',
             data: Object.values(counts),
             backgroundColor: [
-              'rgba(37, 211, 102, 0.75)',
-              'rgba(56, 189, 248, 0.75)',
-              'rgba(168, 85, 247, 0.75)',
-              'rgba(251, 191, 36, 0.75)',
-              'rgba(244, 63, 94, 0.75)',
-              'rgba(148, 163, 184, 0.75)'
+              'rgba(37, 211, 102, 0.85)',
+              'rgba(56, 189, 248, 0.85)',
+              'rgba(168, 85, 247, 0.85)',
+              'rgba(251, 191, 36, 0.85)',
+              'rgba(236, 72, 153, 0.85)',
+              'rgba(20, 184, 166, 0.85)',
+              'rgba(99, 102, 241, 0.85)',
+              'rgba(244, 63, 94, 0.85)',
+              'rgba(148, 163, 184, 0.85)'
             ],
             borderRadius: 6
           }]
@@ -376,7 +388,10 @@ class DashboardApp {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { display: false } },
+            x: { 
+              grid: { display: false },
+              ticks: { font: { size: 10 } }
+            },
             y: { grid: { color: gridColor }, beginAtZero: true }
           }
         }
