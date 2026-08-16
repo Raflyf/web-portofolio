@@ -1,7 +1,8 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - ADMIN TELEMETRY DASHBOARD CONTROLLER (v3.1.0)
+ * RAFLY FIRMANSYAH - ADMIN TELEMETRY DASHBOARD CONTROLLER (v3.2.0)
  * Chart.js Visualizations, Web Crypto PIN Auth, Supabase REST Sync, Leaderboards
+ * Inertia Smooth-Scroll Physics Engine & Anti-Cache Real-Time Polling
  * ============================================================================
  */
 
@@ -27,6 +28,8 @@ class DashboardApp {
   async init() {
     this.initAuthGateway();
     this.initEventListeners();
+    this.initInertiaSmoothWheel();
+    this.initBackToTopButton();
   }
 
   // =========================================================================
@@ -114,9 +117,10 @@ class DashboardApp {
 
   startRealtimePolling() {
     if (this.pollInterval) clearInterval(this.pollInterval);
+    // Real-time live background polling every 3 seconds
     this.pollInterval = setInterval(() => {
       this.loadDashboardData(true);
-    }, 6000);
+    }, 3000);
   }
 
   logout() {
@@ -126,7 +130,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 2. DATA RETRIEVAL (Supabase REST or Local Storage)
+  // 2. DATA RETRIEVAL (Anti-Cache Supabase REST & Local Storage)
   // =========================================================================
   async loadDashboardData(isBackground = false) {
     const syncStatusEl = document.getElementById('sync-status');
@@ -142,11 +146,15 @@ class DashboardApp {
 
     if (config && config.url && config.anonKey) {
       try {
-        const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=1000`;
+        const timestamp = Date.now();
+        const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=1000&_t=${timestamp}`;
         const res = await fetch(endpoint, {
+          cache: 'no-store',
           headers: {
             'apikey': config.anonKey,
-            'Authorization': `Bearer ${config.anonKey}`
+            'Authorization': `Bearer ${config.anonKey}`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
           }
         });
         if (res.ok) {
@@ -397,19 +405,33 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 5. INTELLIGENCE LEADERBOARDS (Terminal & Certificates)
+  // 5. INTELLIGENCE LEADERBOARDS (Unified Normalization)
   // =========================================================================
+  normalizeCertName(target = '', label = '') {
+    const combined = `${target} ${label}`.toLowerCase();
+    if (combined.includes('mikrotik') || combined.includes('mtcna')) return 'MikroTik MTCNA (Latvia)';
+    if (combined.includes('python') || combined.includes('pcap')) return 'Cisco Python PCAP (OpenEDG)';
+    if (combined.includes('blockchain') || combined.includes('cloud-blockchain')) return 'Seminar Cloud & Blockchain';
+    if (combined.includes('bootcamp') || combined.includes('sdns') || combined.includes('network-security')) return 'IT Bootcamp Network Security';
+    if (combined.includes('specialist') || combined.includes('cloud-specialist')) return 'Seminar Cloud Specialist';
+    if (combined.includes('bisnis') || combined.includes('google-profil') || combined.includes('dea')) return 'Kominfo DEA E-Commerce';
+    if (combined.includes('tailwind') || combined.includes('slicing')) return 'Workshop Slicing Tailwind';
+    if (combined.includes('simk') || combined.includes('simulasi')) return 'Harisenin Full-Stack SiM-K';
+    if (combined.includes('coding-camp') || combined.includes('javascript')) return 'Harisenin JavaScript Camp';
+    return target || label || 'Sertifikat Kompetensi';
+  }
+
   renderIntelligenceLists() {
     // 1. Terminal Command Leaderboard
     const terminalListEl = document.getElementById('terminal-ranked-list');
     if (terminalListEl) {
       const cmdCounts = {};
       this.filteredEvents.filter(e => e.event_type === 'terminal_cmd').forEach(e => {
-        const cmd = e.event_target || 'help';
+        let cmd = (e.event_target || e.event_label || 'help').toLowerCase();
+        cmd = cmd.replace(/^perintah terminal:\s*/i, '').trim();
         cmdCounts[cmd] = (cmdCounts[cmd] || 0) + 1;
       });
 
-      // Default common commands if empty
       if (Object.keys(cmdCounts).length === 0) {
         cmdCounts['skills'] = 0;
         cmdCounts['projects'] = 0;
@@ -436,19 +458,19 @@ class DashboardApp {
       }).join('');
     }
 
-    // 2. Certificate Views Leaderboard
+    // 2. Certificate Views Leaderboard (Consolidated)
     const certListEl = document.getElementById('cert-ranked-list');
     if (certListEl) {
       const certCounts = {};
       this.filteredEvents.filter(e => e.event_type === 'cert_view').forEach(e => {
-        const title = e.event_target || e.event_label || 'Sertifikat';
-        certCounts[title] = (certCounts[title] || 0) + 1;
+        const unifiedName = this.normalizeCertName(e.event_target, e.event_label);
+        certCounts[unifiedName] = (certCounts[unifiedName] || 0) + 1;
       });
 
       if (Object.keys(certCounts).length === 0) {
-        certCounts['MikroTik MTCNA'] = 0;
-        certCounts['Cisco Python PCAP'] = 0;
-        certCounts['Cloud Computing'] = 0;
+        certCounts['MikroTik MTCNA (Latvia)'] = 0;
+        certCounts['Cisco Python PCAP (OpenEDG)'] = 0;
+        certCounts['Seminar Cloud & Blockchain'] = 0;
       }
 
       const sortedCerts = Object.entries(certCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -459,7 +481,7 @@ class DashboardApp {
         return `
           <div class="ranked-item">
             <div class="ranked-item-header">
-              <span class="ranked-item-name" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(title)}">${this.sanitize(title)}</span>
+              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(title)}">${this.sanitize(title)}</span>
               <span class="ranked-item-count">${count}x</span>
             </div>
             <div class="ranked-progress-bg">
@@ -569,7 +591,128 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 7. EVENT LISTENERS & QUICK ACTIONS
+  // 7. SMOOTH SCROLLING & INERTIA WHEEL ENGINE (Fluid 60-120fps)
+  // =========================================================================
+  initInertiaSmoothWheel() {
+    let currentY = window.scrollY || window.pageYOffset;
+    let targetY = currentY;
+    let isRunning = false;
+    const ease = 0.095;
+
+    function updateWheelPhysics() {
+      const diff = targetY - currentY;
+      
+      if (Math.abs(diff) > 0.5) {
+        currentY += diff * ease;
+        window.scrollTo(0, Math.round(currentY * 10) / 10);
+        requestAnimationFrame(updateWheelPhysics);
+      } else {
+        currentY = targetY;
+        window.scrollTo(0, targetY);
+        isRunning = false;
+      }
+    }
+
+    window.addEventListener('wheel', (e) => {
+      const path = e.composedPath ? e.composedPath() : [];
+      const isScrollableChild = path.some(el => {
+        if (!el || !el.classList) return false;
+        return (
+          el.classList.contains('table-responsive') ||
+          el.tagName === 'TEXTAREA'
+        );
+      });
+
+      if (isScrollableChild) {
+        targetY = window.scrollY || window.pageYOffset;
+        currentY = targetY;
+        return;
+      }
+
+      if (e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
+        targetY = window.scrollY || window.pageYOffset;
+        currentY = targetY;
+        return;
+      }
+
+      e.preventDefault();
+
+      const maxScroll = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 35;
+      if (e.deltaMode === 2) delta *= 750;
+
+      targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
+
+      if (!isRunning) {
+        isRunning = true;
+        currentY = window.scrollY || window.pageYOffset;
+        requestAnimationFrame(updateWheelPhysics);
+      }
+    }, { passive: false });
+
+    window.addEventListener('scroll', () => {
+      if (!isRunning) {
+        currentY = window.scrollY || window.pageYOffset;
+        targetY = currentY;
+      }
+    }, { passive: true });
+  }
+
+  smoothScrollTo(targetY, duration = 800) {
+    const startY = window.scrollY || window.pageYOffset;
+    const distance = targetY - startY;
+    let startTime = null;
+
+    function easeInOutCubic(t) {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function animationLoop(currentTime) {
+      if (!startTime) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      const easedProgress = easeInOutCubic(progress);
+
+      window.scrollTo(0, startY + (distance * easedProgress));
+
+      if (progress < 1) {
+        window.requestAnimationFrame(animationLoop);
+      }
+    }
+
+    window.requestAnimationFrame(animationLoop);
+  }
+
+  initBackToTopButton() {
+    const floatingBtn = document.getElementById('floating-back-to-top');
+    if (!floatingBtn) return;
+
+    floatingBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.smoothScrollTo(0, 850);
+    });
+
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.scrollY || window.pageYOffset;
+      if (currentScroll > 300) {
+        floatingBtn.classList.add('is-visible');
+      } else {
+        floatingBtn.classList.remove('is-visible');
+      }
+    }, { passive: true });
+  }
+
+  // =========================================================================
+  // 8. EVENT LISTENERS & QUICK ACTIONS
   // =========================================================================
   initEventListeners() {
     // Time Range Select
