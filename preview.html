@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pratinjau Dokumen Sertifikat — Rafly Firmansyah</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='monospace' fill='%2310b981'>R</text></svg>">
+  <link rel="stylesheet" href="css/style.css?v=2.0.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg-primary);
+      color: var(--text-ink);
+      font-family: var(--font-body);
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--surface-card);
+      border-bottom: 1px solid var(--border-card);
+      z-index: 10;
+      gap: 1rem;
+    }
+
+    .preview-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      overflow: hidden;
+    }
+
+    .preview-tag {
+      font-family: var(--font-mono);
+      font-size: var(--fs-caption);
+      padding: 0.25rem 0.6rem;
+      background-color: var(--accent-emerald-dim);
+      border: 1px solid var(--accent-emerald);
+      color: var(--accent-emerald);
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+
+    .preview-title {
+      font-size: var(--fs-body);
+      font-weight: 700;
+      color: var(--text-heading);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .preview-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .preview-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-ink);
+      font-size: var(--fs-body-sm);
+      font-weight: 600;
+      text-decoration: none;
+      transition: all var(--duration-fast) var(--ease-smooth-out);
+    }
+
+    .preview-btn:hover {
+      background-color: var(--surface-card-hover);
+      border-color: var(--accent-emerald);
+      color: var(--accent-emerald);
+    }
+
+    .preview-btn--primary {
+      background-color: var(--accent-emerald);
+      color: oklch(0.12 0.02 250);
+      border: none;
+    }
+
+    .preview-btn--primary:hover {
+      background-color: var(--accent-emerald);
+      color: oklch(0.08 0.02 250);
+      box-shadow: 0 0 12px var(--accent-emerald-glow);
+    }
+
+    .preview-container {
+      flex: 1;
+      width: 100%;
+      height: calc(100vh - 58px);
+      background-color: oklch(0.08 0.01 250);
+      position: relative;
+    }
+
+    .pdf-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .fallback-message {
+      display: none;
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: min(90%, 480px);
+      height: fit-content;
+      text-align: center;
+      padding: 2rem;
+      background-color: var(--surface-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="preview-header">
+    <div class="preview-title-wrap">
+      <span class="preview-tag">DOKUMEN RESMI</span>
+      <h1 class="preview-title" id="doc-title">Memuat Pratinjau Sertifikat...</h1>
+    </div>
+
+    <div class="preview-actions">
+      <a id="download-btn" href="#" download class="preview-btn" title="Unduh berkas PDF">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Unduh File</span>
+      </a>
+      <a href="index.html#certificates" class="preview-btn preview-btn--primary">
+        <span>Tutup / Kembali</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="preview-container">
+    <iframe id="pdf-viewer" class="pdf-frame" title="Pratinjau PDF"></iframe>
+    <div id="fallback-box" class="fallback-message">
+      <h2 style="font-size:1.1rem;margin-bottom:0.5rem;">Pratinjau PDF</h2>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1rem;">Peramban Anda tidak mendukung penampil PDF bawaan.</p>
+      <a id="fallback-link" href="#" class="preview-btn preview-btn--primary" style="display:inline-flex;">Unduh Dokumen PDF</a>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const filePath = urlParams.get('file');
+      const docTitle = urlParams.get('title') || 'Dokumen Sertifikat';
+
+      const titleEl = document.getElementById('doc-title');
+      const viewerEl = document.getElementById('pdf-viewer');
+      const downloadBtn = document.getElementById('download-btn');
+      const fallbackLink = document.getElementById('fallback-link');
+
+      if (titleEl) titleEl.textContent = docTitle;
+      document.title = `${docTitle} — Rafly Firmansyah`;
+
+      if (filePath) {
+        // Sanitize to prevent path traversal
+        const cleanPath = filePath.replace(/^[./\\]+/, '');
+        const targetSrc = cleanPath.startsWith('certificates/') ? cleanPath : `certificates/${cleanPath}`;
+        
+        viewerEl.src = `${targetSrc}#toolbar=1&navpanes=0&scrollbar=1`;
+        downloadBtn.href = targetSrc;
+        fallbackLink.href = targetSrc;
+      } else {
+        if (titleEl) titleEl.textContent = 'Berkas dokumen tidak ditemukan.';
+      }
+    });
+  </script>
+</body>
+</html>
