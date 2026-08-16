@@ -32,11 +32,11 @@ export function initTerminal() {
       "  clear        - Membersihkan layar terminal"
     ],
     about: () => [
-      `[PROFIL] ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
-      `[KAMPUS] ${DEVELOPER_PROFILE.institution}`,
-      `[IPK]    ${DEVELOPER_PROFILE.gpa}`,
-      `[STATUS] ${DEVELOPER_PROFILE.status}`,
-      `[BIO]    ${DEVELOPER_PROFILE.bio}`
+      `[PROFIL]  ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
+      `[PROGRAM] ${DEVELOPER_PROFILE.degree}`,
+      `[KAMPUS]  ${DEVELOPER_PROFILE.institution}`,
+      `[STATUS]  ${DEVELOPER_PROFILE.status}`,
+      `[BIO]     ${DEVELOPER_PROFILE.bio}`
     ],
     skills: () => [
       "[AI / ML]       Python, PyTorch, Scikit-Learn, XGBoost, Sentence-Transformers, NLP, N-Gram",
