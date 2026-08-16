@@ -839,14 +839,19 @@ function initContactForm() {
         statusEl.style.display = 'block';
 
         const waText = encodeURIComponent(`Halo Rafly, saya ${name} (${email}). Pesan: ${message}`);
-        const waLink = `https://wa.me/6289913333223?text=${waText}`;
+        const waLink = `https://wa.me/628991333323?text=${waText}`;
 
         statusEl.innerHTML = `
-          <div><strong>Pesan Berhasil Terkirim!</strong> Pesan Anda telah diteruskan langsung ke kotak masuk email <code>raflyfirmansyah02@gmail.com</code>.</div>
-          <div style="margin-top: 0.5rem;">Ingin respon lebih cepat? Anda dapat langsung melanjutkan obrolan via WhatsApp:</div>
-          <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="form-status-wa-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-            Lanjutkan ke WhatsApp
+          <div class="form-status-head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <strong>Pesan Berhasil Terkirim!</strong>
+          </div>
+          <p style="margin: 0.35rem 0 0.75rem 0; font-size: 0.85rem; color: var(--text-muted);">Pesan Anda telah diteruskan langsung ke kotak masuk email <code>raflyfirmansyah02@gmail.com</code>.</p>
+          <div style="font-size: 0.85rem; color: var(--text-body); margin-bottom: 0.5rem;">Ingin respon lebih cepat? Lanjutkan diskusi instan via WhatsApp:</div>
+          <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="form-status-wa-btn" aria-label="Lanjutkan chat ke WhatsApp">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            <span>Lanjutkan ke WhatsApp</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="margin-left:auto;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </a>
         `;
 
@@ -860,12 +865,18 @@ function initContactForm() {
       statusEl.style.display = 'block';
 
       const waText = encodeURIComponent(`Halo Rafly, saya ${name} (${email}). Pesan: ${message}`);
-      const waLink = `https://wa.me/6289913333223?text=${waText}`;
+      const waLink = `https://wa.me/628991333323?text=${waText}`;
 
       statusEl.innerHTML = `
-        <div>Koneksi email pengiriman sedang sibuk. Silakan hubungi langsung via WhatsApp dengan 1-klik di bawah ini:</div>
-        <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="form-status-wa-btn" style="margin-top:0.5rem;">
-          Kirim via WhatsApp
+        <div class="form-status-head">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          <strong>Koneksi Pengiriman Sedang Sibuk</strong>
+        </div>
+        <p style="margin: 0.35rem 0 0.75rem 0; font-size: 0.85rem; color: var(--text-muted);">Silakan hubungi langsung melalui WhatsApp 1-klik di bawah ini:</p>
+        <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="form-status-wa-btn" aria-label="Kirim pesan langsung via WhatsApp">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          <span>Kirim via WhatsApp Langsung</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="margin-left:auto;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </a>
       `;
     } finally {

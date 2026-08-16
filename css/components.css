@@ -1331,6 +1331,80 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   min-height: 120px;
 }
 
+/* Contact Form Submission Status & WhatsApp Action Button */
+.form-status {
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-body-sm);
+  line-height: 1.5;
+  animation: formStatusFadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.form-status.success {
+  background-color: oklch(0.18 0.035 160 / 0.4);
+  border: 1px solid oklch(0.74 0.18 160 / 0.6);
+  color: var(--text-ink);
+}
+
+.form-status.error {
+  background-color: oklch(0.18 0.035 30 / 0.4);
+  border: 1px solid oklch(0.70 0.18 30 / 0.6);
+  color: var(--text-ink);
+}
+
+.form-status-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-heading);
+  margin-bottom: 0.25rem;
+}
+
+.form-status-wa-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.8rem 1.25rem;
+  margin-top: 0.6rem;
+  background-color: #25D366;
+  color: #071d0e !important;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  border: 1px solid #20ba5a;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35);
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.form-status-wa-btn:hover {
+  background-color: #20ba5a;
+  color: #05140a !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(37, 211, 102, 0.55);
+}
+
+.form-status-wa-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
+@keyframes formStatusFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ==========================================================================
    10. TOAST NOTIFICATION & BACK-TO-TOP
    ========================================================================== */

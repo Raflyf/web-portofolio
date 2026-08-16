@@ -31,8 +31,8 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://formsubmit.co; frame-src 'self' data: blob:;">
 
   <!-- Stylesheets (Cache-Busting for Instant CDN Refresh) -->
-  <link rel="stylesheet" href="css/style.css?v=2.4.0">
-  <link rel="stylesheet" href="css/components.css?v=2.4.0">
+  <link rel="stylesheet" href="css/style.css?v=2.5.0">
+  <link rel="stylesheet" href="css/components.css?v=2.5.0">
 
   <!-- JSON-LD Structured Data Schema -->
   <script type="application/ld+json">
@@ -55,7 +55,7 @@
   }
   </script>
 
-  <!-- Critical Mobile Navigation Override (Inline — bypasses CDN cache entirely) -->
+  <!-- Critical Mobile Navigation & WhatsApp Action Button Override (Inline — bypasses CDN cache entirely) -->
   <style>
     @media screen and (max-width: 900px) {
       #nav-menu { display: none !important; }
@@ -86,6 +86,34 @@
       }
       #mobile-nav-toggle { display: inline-flex !important; }
       .btn-github span { display: none !important; }
+    }
+
+    /* WhatsApp Standout Action Button */
+    .form-status-wa-btn {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 0.65rem !important;
+      width: 100% !important;
+      padding: 0.85rem 1.25rem !important;
+      margin-top: 0.65rem !important;
+      background-color: #25D366 !important;
+      color: #071d0e !important;
+      font-weight: 700 !important;
+      font-size: 0.95rem !important;
+      border-radius: 10px !important;
+      text-decoration: none !important;
+      border: 1px solid #20ba5a !important;
+      box-shadow: 0 4px 18px rgba(37, 211, 102, 0.4) !important;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+      box-sizing: border-box !important;
+      cursor: pointer !important;
+    }
+    .form-status-wa-btn:hover {
+      background-color: #20ba5a !important;
+      color: #041208 !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 24px rgba(37, 211, 102, 0.6) !important;
     }
   </style>
 </head>
@@ -606,12 +634,12 @@
             </div>
 
             <!-- WhatsApp Card -->
-            <a href="https://wa.me/6289913333223" target="_blank" rel="noopener noreferrer" class="contact-method-card" aria-label="Hubungi WhatsApp Rafly Firmansyah">
+            <a href="https://wa.me/628991333323" target="_blank" rel="noopener noreferrer" class="contact-method-card" aria-label="Hubungi WhatsApp Rafly Firmansyah">
               <div class="contact-method-info">
                 <span class="contact-method-label">WhatsApp Chat</span>
-                <span class="contact-method-val">089913333223</span>
+                <span class="contact-method-val">08991333323</span>
               </div>
-              <span class="btn-copy" style="color:#22c55e;border-color:#22c55e;">
+              <span class="btn-copy" style="color:#25D366;border-color:#25D366;">
                 <span>Kirim WA</span>
               </span>
             </a>
@@ -714,6 +742,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busted for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=2.4.0"></script>
+  <script type="module" src="js/main.js?v=2.5.0"></script>
 </body>
 </html>

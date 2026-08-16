@@ -83,6 +83,8 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **2.2.0** | 2026-08-16 | Penghapusan menyeluruh pencantuman angka IPK dari seluruh antarmuka (Hero metrics ribbon, telemetry card, about bio, structured metadata, timeline milestones, dan terminal simulator) demi fokus pada kualifikasi rekayasa, riset AI/ML, dan kompetensi teknis terverifikasi. |
 | **2.3.0** | 2026-08-16 | Perbaikan tuntas navigasi mobile (menu hamburger dropdown blur & tombol GitHub responsif), render pratinjau sertifikat berbasis grafis ultra-resolusi kebal cegatan download IDM, serta dukungan pratinjau multi-halaman berurutan untuk dokumen yang memiliki lampiran transkrip/materi. |
 | **2.4.0** | 2026-08-16 | Penguatan redundansi aturan navigasi mobile pada style.css dan components.css, penambahan mekanisme auto-close klik luar/Escape, serta bumping string cache-busting v2.4.0 untuk memaksa pembaruan instan pada peramban mobile. |
+| **2.5.0** | 2026-08-17 | Pembaruan nomor kontak resmi WhatsApp menjadi `08991333323` di seluruh repositori (data store, kartu kontak, template tautan, dan terminal), serta desain ulang tombol aksi WhatsApp pada status pengiriman formulir dengan visualisasi tombol hijau resmi (#25D366), ikon vektor, efek hover glow, dan keterbacaan tinggi. |
+
 
 
 
