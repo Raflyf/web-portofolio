@@ -507,8 +507,36 @@ function openCertModal(cert) {
     note.style.fontSize = 'var(--fs-caption)';
     note.style.color = 'var(--text-muted)';
     note.style.marginTop = '0.5rem';
-    note.textContent = 'Dokumen sertifikat fisik/digital terintegrasi dalam arsip portofolio pengembang.';
+    note.textContent = 'Dokumen sertifikat autentik tersimpan dan dapat dibuka langsung dalam format PDF.';
     bodyEl.appendChild(note);
+
+    const actionsWrap = document.createElement('div');
+    actionsWrap.style.display = 'flex';
+    actionsWrap.style.flexWrap = 'wrap';
+    actionsWrap.style.gap = '0.75rem';
+    actionsWrap.style.marginTop = '1rem';
+
+    if (cert.pdfUrl) {
+      const pdfBtn = document.createElement('a');
+      pdfBtn.href = cert.pdfUrl;
+      pdfBtn.target = '_blank';
+      pdfBtn.rel = 'noopener noreferrer';
+      pdfBtn.className = 'btn-primary';
+      pdfBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Buka Dokumen PDF Resmi`;
+      actionsWrap.appendChild(pdfBtn);
+    }
+
+    if (cert.verificationUrl) {
+      const verifyBtn = document.createElement('a');
+      verifyBtn.href = cert.verificationUrl;
+      verifyBtn.target = '_blank';
+      verifyBtn.rel = 'noopener noreferrer';
+      verifyBtn.className = 'btn-secondary';
+      verifyBtn.textContent = 'Laman Lembaga / Penerbit';
+      actionsWrap.appendChild(verifyBtn);
+    }
+
+    bodyEl.appendChild(actionsWrap);
   }
 
   activeCertModal.showModal();
