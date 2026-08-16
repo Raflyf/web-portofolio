@@ -7,6 +7,7 @@
  */
 
 import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js';
+import { telemetry } from './telemetry.js';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -27,10 +28,26 @@ export function initTerminal() {
       "  projects     - Daftar proyek GitHub open-source",
       "  certifs      - Daftar sertifikat & kredensial terverifikasi",
       "  benchmarks   - Metrik pengujian model ML / AI",
+      "  telemetry    - Portal monitoring analitik & trafik admin",
       "  contact      - Informasi kontak resmi",
       "  whoami       - Status sesi saat ini",
       "  clear        - Membersihkan layar terminal"
     ],
+    telemetry: () => {
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+      return [
+        "[PORTAL TELEMETRI & ANALITIK]",
+        "Mengarahkan ke panel monitoring: dashboard.html",
+        "Memerlukan Master PIN keamanan..."
+      ];
+    },
+    admin: () => {
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+      return [
+        "[ADMIN GATEWAY]",
+        "Membuka portal analitik: dashboard.html"
+      ];
+    },
     about: () => [
       `[PROFIL]  ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
       `[PROGRAM] ${DEVELOPER_PROFILE.degree}`,
@@ -121,6 +138,8 @@ export function initTerminal() {
     const cmd = trimmed.toLowerCase();
     appendLine('', true, trimmed);
     terminalInput.value = '';
+
+    telemetry.logEvent('terminal_cmd', cmd, `Perintah Terminal: ${cmd}`);
 
     if (COMMAND_REGISTRY[cmd]) {
       const outputLines = COMMAND_REGISTRY[cmd]();

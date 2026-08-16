@@ -13,8 +13,10 @@
 
 import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js';
 import { initTerminal } from './terminal.js';
+import { telemetry } from './telemetry.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  telemetry.init();
   initThemeToggle();
   initMobileNavigation();
   initHeroClock();
@@ -856,11 +858,13 @@ function initContactForm() {
         `;
 
         form.reset();
+        telemetry.logEvent('contact_submit', 'success', 'Pengiriman Formulir Kontak Berhasil');
         showToast('Pesan berhasil terkirim ke email Rafly Firmansyah!');
       } else {
         throw new Error(data.message || 'Gagal mengirimkan pesan.');
       }
     } catch (err) {
+      telemetry.logEvent('contact_submit', 'error', 'Kegagalan Pengiriman Formulir Kontak');
       statusEl.className = 'form-status error';
       statusEl.style.display = 'block';
 
