@@ -1,7 +1,7 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - ADMIN TELEMETRY DASHBOARD CONTROLLER
- * Chart.js Visualizations, Web Crypto PIN Auth, Supabase REST Sync, Exporting
+ * RAFLY FIRMANSYAH - ADMIN TELEMETRY DASHBOARD CONTROLLER (v3.1.0)
+ * Chart.js Visualizations, Web Crypto PIN Auth, Supabase REST Sync, Leaderboards
  * ============================================================================
  */
 
@@ -21,6 +21,7 @@ class DashboardApp {
     this.charts = {};
     this.searchTerm = '';
     this.selectedEventType = 'all';
+    this.pollInterval = null;
   }
 
   async init() {
@@ -127,9 +128,9 @@ class DashboardApp {
   // =========================================================================
   // 2. DATA RETRIEVAL (Supabase REST or Local Storage)
   // =========================================================================
-  async loadDashboardData() {
+  async loadDashboardData(isBackground = false) {
     const syncStatusEl = document.getElementById('sync-status');
-    if (syncStatusEl) syncStatusEl.textContent = 'Memuat data...';
+    if (syncStatusEl && !isBackground) syncStatusEl.textContent = 'Memuat data...';
 
     let loaded = [];
     const configRaw = localStorage.getItem(CONFIG_KEY);
@@ -164,48 +165,8 @@ class DashboardApp {
       if (syncStatusEl) syncStatusEl.textContent = 'Penyimpanan Lokal Aktif';
     }
 
-    // If completely empty on first run, generate an initial realistic sample telemetry set
-    if (loaded.length === 0) {
-      loaded = this.generateBaselineSeedData();
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(loaded));
-    }
-
     this.events = loaded;
     this.filterAndRender();
-  }
-
-  generateBaselineSeedData() {
-    const seed = [];
-    const now = Date.now();
-    const actions = [
-      { type: 'page_view', target: '/', label: 'Kunjungan Halaman Beranda', device: 'mobile' },
-      { type: 'link_click', target: 'whatsapp', label: 'Klik Tombol Chat WhatsApp', device: 'mobile' },
-      { type: 'link_click', target: 'github', label: 'Klik Tautan GitHub Profile', device: 'desktop' },
-      { type: 'cert_view', target: 'MikroTik MTCNA', label: 'Buka Pratinjau Sertifikat: MTCNA', device: 'desktop' },
-      { type: 'cert_view', target: 'Cisco Python PCAP', label: 'Buka Pratinjau Sertifikat: PCAP', device: 'mobile' },
-      { type: 'link_click', target: 'project_open-plagiarism-checker', label: 'Lihat Detail: OpenPlagiarismChecker', device: 'desktop' },
-      { type: 'link_click', target: 'project_spam-email-classifier', label: 'Lihat Detail: Spam-Email Classifier', device: 'desktop' },
-      { type: 'terminal_cmd', target: 'benchmarks', label: 'Perintah Terminal: benchmarks', device: 'desktop' },
-      { type: 'terminal_cmd', target: 'skills', label: 'Perintah Terminal: skills', device: 'desktop' },
-      { type: 'link_click', target: 'copy_email', label: 'Salin Alamat Email', device: 'mobile' },
-      { type: 'contact_submit', target: 'success', label: 'Pengiriman Formulir Kontak Berhasil', device: 'mobile' }
-    ];
-
-    for (let i = 0; i < 45; i++) {
-      const item = actions[Math.floor(Math.random() * actions.length)];
-      const randomOffset = Math.floor(Math.random() * 6 * 86400000); // last 6 days
-      seed.push({
-        event_type: item.type,
-        event_target: item.target,
-        event_label: item.label,
-        device_type: item.device,
-        screen_resolution: item.device === 'mobile' ? '390x844' : '1920x1080',
-        referrer: Math.random() > 0.4 ? 'github.com' : 'Direct / Bookmark',
-        session_id: 'sess_' + Math.random().toString(36).substring(2, 9),
-        created_at: new Date(now - randomOffset).toISOString()
-      });
-    }
-    return seed.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }
 
   // =========================================================================
@@ -230,19 +191,22 @@ class DashboardApp {
 
     this.renderKPIs();
     this.renderCharts();
+    this.renderIntelligenceLists();
     this.renderActivityTable();
   }
 
   renderKPIs() {
     const pageViews = this.filteredEvents.filter(e => e.event_type === 'page_view').length;
-    const uniqueSessions = new Set(this.filteredEvents.map(e => e.session_id)).size;
+    const uniqueSessions = new Set(this.filteredEvents.map(e => e.session_id)).size || 1;
     const linkClicks = this.filteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'cert_view').length;
     const contacts = this.filteredEvents.filter(e => e.event_target === 'whatsapp' || e.event_type === 'contact_submit').length;
+    const interactivity = (this.filteredEvents.length / Math.max(1, uniqueSessions)).toFixed(1);
 
     document.getElementById('kpi-views').textContent = pageViews.toLocaleString('id-ID');
     document.getElementById('kpi-visitors').textContent = uniqueSessions.toLocaleString('id-ID');
     document.getElementById('kpi-clicks').textContent = linkClicks.toLocaleString('id-ID');
     document.getElementById('kpi-contacts').textContent = contacts.toLocaleString('id-ID');
+    document.getElementById('kpi-engagement').textContent = interactivity;
   }
 
   // =========================================================================
@@ -251,13 +215,10 @@ class DashboardApp {
   renderCharts() {
     if (!window.Chart) return;
 
-    // Dark Obsidian Palette Chart Colors
     const emerald = 'rgba(37, 211, 102, 1)';
     const emeraldDim = 'rgba(37, 211, 102, 0.15)';
     const cyan = 'rgba(56, 189, 248, 1)';
     const cyanDim = 'rgba(56, 189, 248, 0.15)';
-    const amber = 'rgba(251, 191, 36, 1)';
-    const purple = 'rgba(168, 85, 247, 1)';
     const gridColor = 'rgba(255, 255, 255, 0.08)';
     const textColor = 'rgba(203, 213, 225, 0.8)';
 
@@ -265,13 +226,12 @@ class DashboardApp {
     Chart.defaults.font.family = "'JetBrains Mono', monospace";
     Chart.defaults.font.size = 11;
 
-    // 1. Traffic Velocity Line Chart (Page Views per Day)
+    // 1. Traffic Velocity Line Chart
     const trafficCtx = document.getElementById('traffic-chart')?.getContext('2d');
     if (trafficCtx) {
       if (this.charts.traffic) this.charts.traffic.destroy();
 
       const dayBuckets = {};
-      // Initialize past 7 days
       for (let i = 6; i >= 0; i--) {
         const d = new Date(Date.now() - i * 86400000);
         const key = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
@@ -330,7 +290,7 @@ class DashboardApp {
       });
     }
 
-    // 2. Link Interactions Bar Chart
+    // 2. Link & Project Interactions Bar Chart (9 Categories)
     const linksCtx = document.getElementById('links-chart')?.getContext('2d');
     if (linksCtx) {
       if (this.charts.links) this.charts.links.destroy();
@@ -434,54 +394,85 @@ class DashboardApp {
         }
       });
     }
+  }
 
-    // 4. Section Engagement Radar Chart
-    const engagementCtx = document.getElementById('engagement-chart')?.getContext('2d');
-    if (engagementCtx) {
-      if (this.charts.engagement) this.charts.engagement.destroy();
-
-      const engagementData = {
-        'AI/NLP Research': this.filteredEvents.filter(e => e.event_target?.includes('plagiarism') || e.event_label?.includes('NLP')).length + 3,
-        'Machine Learning': this.filteredEvents.filter(e => e.event_target?.includes('spam')).length + 2,
-        'Computer Networks': this.filteredEvents.filter(e => e.event_target?.includes('mtcna') || e.event_label?.includes('MTCNA')).length + 4,
-        'Terminal CLI': this.filteredEvents.filter(e => e.event_type === 'terminal_cmd').length + 2,
-        'Sertifikat & CV': this.filteredEvents.filter(e => e.event_type === 'cert_view').length + 3,
-        'Kontak & Form': this.filteredEvents.filter(e => e.event_target === 'whatsapp' || e.event_type === 'contact_submit').length + 1
-      };
-
-      this.charts.engagement = new Chart(engagementCtx, {
-        type: 'radar',
-        data: {
-          labels: Object.keys(engagementData),
-          datasets: [{
-            label: 'Indeks Eksplorasi',
-            data: Object.values(engagementData),
-            borderColor: cyan,
-            backgroundColor: cyanDim,
-            pointBackgroundColor: cyan,
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: cyan
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            r: {
-              angleLines: { color: gridColor },
-              grid: { color: gridColor },
-              pointLabels: { color: textColor, font: { size: 10 } },
-              ticks: { display: false }
-            }
-          }
-        }
+  // =========================================================================
+  // 5. INTELLIGENCE LEADERBOARDS (Terminal & Certificates)
+  // =========================================================================
+  renderIntelligenceLists() {
+    // 1. Terminal Command Leaderboard
+    const terminalListEl = document.getElementById('terminal-ranked-list');
+    if (terminalListEl) {
+      const cmdCounts = {};
+      this.filteredEvents.filter(e => e.event_type === 'terminal_cmd').forEach(e => {
+        const cmd = e.event_target || 'help';
+        cmdCounts[cmd] = (cmdCounts[cmd] || 0) + 1;
       });
+
+      // Default common commands if empty
+      if (Object.keys(cmdCounts).length === 0) {
+        cmdCounts['skills'] = 0;
+        cmdCounts['projects'] = 0;
+        cmdCounts['benchmarks'] = 0;
+        cmdCounts['certifs'] = 0;
+      }
+
+      const sortedCmds = Object.entries(cmdCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const maxCmd = Math.max(1, ...sortedCmds.map(c => c[1]));
+
+      terminalListEl.innerHTML = sortedCmds.map(([cmd, count]) => {
+        const pct = Math.round((count / maxCmd) * 100);
+        return `
+          <div class="ranked-item">
+            <div class="ranked-item-header">
+              <span class="ranked-item-name"><code>$ ${this.sanitize(cmd)}</code></span>
+              <span class="ranked-item-count">${count}x</span>
+            </div>
+            <div class="ranked-progress-bg">
+              <div class="ranked-progress-fill" style="width:${pct}%;background-color:var(--accent-cyan);"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 2. Certificate Views Leaderboard
+    const certListEl = document.getElementById('cert-ranked-list');
+    if (certListEl) {
+      const certCounts = {};
+      this.filteredEvents.filter(e => e.event_type === 'cert_view').forEach(e => {
+        const title = e.event_target || e.event_label || 'Sertifikat';
+        certCounts[title] = (certCounts[title] || 0) + 1;
+      });
+
+      if (Object.keys(certCounts).length === 0) {
+        certCounts['MikroTik MTCNA'] = 0;
+        certCounts['Cisco Python PCAP'] = 0;
+        certCounts['Cloud Computing'] = 0;
+      }
+
+      const sortedCerts = Object.entries(certCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const maxCert = Math.max(1, ...sortedCerts.map(c => c[1]));
+
+      certListEl.innerHTML = sortedCerts.map(([title, count]) => {
+        const pct = Math.round((count / maxCert) * 100);
+        return `
+          <div class="ranked-item">
+            <div class="ranked-item-header">
+              <span class="ranked-item-name" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(title)}">${this.sanitize(title)}</span>
+              <span class="ranked-item-count">${count}x</span>
+            </div>
+            <div class="ranked-progress-bg">
+              <div class="ranked-progress-fill" style="width:${pct}%;background-color:var(--accent-emerald);"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
   }
 
   // =========================================================================
-  // 5. ACTIVITY STREAM TABLE & EXPORT
+  // 6. ACTIVITY STREAM TABLE & EXPORT
   // =========================================================================
   renderActivityTable() {
     const tbody = document.getElementById('activity-table-body');
@@ -578,7 +569,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 6. EVENT LISTENERS
+  // 7. EVENT LISTENERS & QUICK ACTIONS
   // =========================================================================
   initEventListeners() {
     // Time Range Select
@@ -590,11 +581,77 @@ class DashboardApp {
       });
     }
 
-    // Refresh Button
-    const refreshBtn = document.getElementById('dash-refresh-btn');
-    if (refreshBtn) {
-      refreshBtn.addEventListener('click', () => {
-        this.loadDashboardData();
+    // Ping Test Button
+    const pingBtn = document.getElementById('dash-ping-btn');
+    if (pingBtn) {
+      pingBtn.addEventListener('click', async () => {
+        pingBtn.disabled = true;
+        pingBtn.innerHTML = '<span>Mengirim...</span>';
+        
+        try {
+          const configRaw = localStorage.getItem(CONFIG_KEY);
+          const parsedConfig = configRaw ? JSON.parse(configRaw) : {};
+          const url = parsedConfig.url || 'https://rphyzcqwpkxtzllvymss.supabase.co';
+          const key = parsedConfig.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
+
+          const res = await fetch(`${url}/rest/v1/portfolio_telemetry`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': key,
+              'Authorization': `Bearer ${key}`,
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              event_type: 'link_click',
+              event_target: 'ping_test',
+              event_label: 'Sinyal Uji Ping Admin Dashboard',
+              device_type: 'desktop',
+              screen_resolution: `${window.screen.width}x${window.screen.height}`,
+              referrer: 'Admin Portal',
+              session_id: 'sess_admin_ping',
+              created_at: new Date().toISOString()
+            })
+          });
+
+          if (res.ok) {
+            pingBtn.innerHTML = '<span style="color:var(--accent-emerald);">Terkirim ✓</span>';
+            setTimeout(() => {
+              this.loadDashboardData();
+              pingBtn.disabled = false;
+              pingBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Uji Ping</span>';
+            }, 1000);
+          } else {
+            throw new Error('Gagal');
+          }
+        } catch (err) {
+          pingBtn.disabled = false;
+          pingBtn.innerHTML = '<span style="color:var(--accent-rose);">Gagal ✗</span>';
+        }
+      });
+    }
+
+    // Change PIN Modal
+    const changePinBtn = document.getElementById('dash-changepin-btn');
+    const changePinModal = document.getElementById('changepin-modal');
+    const changePinClose = document.getElementById('changepin-close-btn');
+    const changePinForm = document.getElementById('changepin-form');
+
+    if (changePinBtn && changePinModal) {
+      changePinBtn.addEventListener('click', () => changePinModal.classList.add('is-open'));
+    }
+    if (changePinClose && changePinModal) {
+      changePinClose.addEventListener('click', () => changePinModal.classList.remove('is-open'));
+    }
+    if (changePinForm) {
+      changePinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPin = document.getElementById('new-pin-input').value.trim();
+        if (newPin.length < 4) return;
+        const newHash = await this.hashPin(newPin);
+        localStorage.setItem('dash_custom_pin_hash', newHash);
+        changePinModal.classList.remove('is-open');
+        alert('Master PIN berhasil diperbarui!');
       });
     }
 
