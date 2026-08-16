@@ -16,8 +16,8 @@ export const DEVELOPER_PROFILE = {
   bio: "Mahasiswa Program Sarjana (S1) Informatika di Universitas Bina Sarana Informatika (UBSI) dan Pengembang Perangkat Lunak dengan minat mendalam pada riset kecerdasan buatan (NLP, Machine Learning, dan Computer Vision), arsitektur jaringan komputer MikroTik, serta rekayasa sistem web modern yang beretika privasi.",
   github: "https://github.com/Raflyf",
   email: "raflyfirmansyah02@gmail.com",
-  whatsapp: "089913333223",
-  whatsappUrl: "https://wa.me/6289913333223",
+  whatsapp: "08991333323",
+  whatsappUrl: "https://wa.me/628991333323",
   repoUrl: "https://github.com/Raflyf/web-portofolio"
 };
 
