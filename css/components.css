@@ -1241,14 +1241,6 @@ html[data-theme="light"] .filter-tab-btn.active {
   transform: translateY(0) !important;
   display: block !important;
 }
-
-/* Embedded PDF Frame in Modal */
-.modal-pdf-frame {
-  width: 100%;
-  height: 380px;
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  background-color: var(--bg-secondary);
 }
 
 /* ==========================================================================
