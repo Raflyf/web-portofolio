@@ -93,7 +93,7 @@ export const PROJECTS_DATA = [
     categoryLabel: "Edge AI / Vision",
     badge: "Interactive Privacy",
     description: "Sistem deteksi gestur tangan realtime berbasis browser menggunakan MediaPipe Tasks Vision dan OpenCV untuk privasi kamera dan filter visual interaktif.",
-    longDescription: "Aplikasi deteksi gestur tangan langsung di browser (Edge AI inference). Gestur peace (✌️) secara otomatis mendeteksi dan memblur wajah demi privasi kamera, dilengkapi kamus gestur interaktif berbahasa Indonesia dan CLI Python/OpenCV standalone.",
+    longDescription: "Aplikasi deteksi gestur tangan langsung di browser (Edge AI inference). Gestur dua jari (V-Sign) secara otomatis mendeteksi dan menyamarkan wajah demi privasi kamera, dilengkapi kamus gestur interaktif dan modul mandiri Python OpenCV.",
     keyFeatures: [
       "Deteksi landmark tangan dan wajah lokal via MediaPipe Tasks Vision",
       "Preservasi privasi: frame kamera diproses di sisi klien tanpa pengiriman data",
