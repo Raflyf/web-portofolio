@@ -13,24 +13,26 @@
   <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='monospace' fill='%2310b981'>R</text></svg>">
 
-  <!-- Open Graph / Facebook -->
+  <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://raflyf.github.io/web-portofolio/">
   <meta property="og:title" content="Rafly Firmansyah — Software Developer & AI/ML Engineer">
   <meta property="og:description" content="Eksplorasi proyek riset AI open-source, sistem klasifikasi machine learning, dan portofolio rekayasa perangkat lunak Rafly Firmansyah.">
+  <meta property="og:image" content="https://raflyf.github.io/web-portofolio/assets/og-cover.jpg">
   <meta property="og:locale" content="id_ID">
 
-  <!-- Twitter -->
+  <!-- Twitter / Discord Preview -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Rafly Firmansyah — Software Developer & AI/ML Engineer">
   <meta name="twitter:description" content="Eksplorasi proyek riset AI open-source, sistem klasifikasi machine learning, dan portofolio rekayasa perangkat lunak Rafly Firmansyah.">
+  <meta name="twitter:image" content="https://raflyf.github.io/web-portofolio/assets/og-cover.jpg">
 
   <!-- Security: Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://formsubmit.co; frame-src 'self' data: blob:;">
 
   <!-- Stylesheets (Cache-Busting for Instant GitHub Pages Sync) -->
-  <link rel="stylesheet" href="css/style.css?v=1.2.0">
-  <link rel="stylesheet" href="css/components.css?v=1.2.0">
+  <link rel="stylesheet" href="css/style.css?v=1.3.0">
+  <link rel="stylesheet" href="css/components.css?v=1.3.0">
 
   <!-- JSON-LD Structured Data Schema -->
   <script type="application/ld+json">
@@ -465,16 +467,22 @@
           <!-- Info Column -->
           <div class="contact-info-col">
             <div class="contact-methods">
-              <!-- Email Card -->
-              <a href="mailto:raflyfirmansyah02@gmail.com" class="contact-method-card" aria-label="Kirim email ke raflyfirmansyah02@gmail.com">
-                <div class="contact-method-icon" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                </div>
-                <div class="contact-method-text">
-                  <span class="contact-method-label">Email Langsung</span>
-                  <span class="contact-method-value">raflyfirmansyah02@gmail.com</span>
-                </div>
-              </a>
+              <!-- Email Card with Copy Action -->
+              <div class="contact-method-card contact-method-card--actionable">
+                <a href="mailto:raflyfirmansyah02@gmail.com" class="contact-method-link" aria-label="Kirim email ke raflyfirmansyah02@gmail.com">
+                  <div class="contact-method-icon" aria-hidden="true">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                  </div>
+                  <div class="contact-method-text">
+                    <span class="contact-method-label">Email Langsung</span>
+                    <span class="contact-method-value">raflyfirmansyah02@gmail.com</span>
+                  </div>
+                </a>
+                <button type="button" id="copy-email-btn" class="btn-copy" aria-label="Salin alamat email ke clipboard" title="Salin alamat email">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  <span>Salin</span>
+                </button>
+              </div>
 
               <!-- WhatsApp Card -->
               <a href="https://wa.me/6289913333223" target="_blank" rel="noopener noreferrer" class="contact-method-card" aria-label="Hubungi WhatsApp Rafly Firmansyah di 089913333223">
@@ -500,36 +508,39 @@
             </div>
           </div>
 
-          <!-- Contact Form -->
+          <!-- Contact Form with Real FormSubmit Delivery -->
           <form id="contact-form" class="contact-form" novalidate>
             <!-- Anti-spam Honeypot Field -->
             <input type="text" name="_honeypot" style="display:none" tabindex="-1" autocomplete="off">
 
             <div class="form-group">
               <label for="contact-name" class="form-label">Nama Lengkap</label>
-              <input type="text" id="contact-name" class="form-input" placeholder="Masukkan nama Anda..." required>
+              <input type="text" id="contact-name" name="name" class="form-input" placeholder="Masukkan nama Anda..." required>
             </div>
 
             <div class="form-group">
               <label for="contact-email" class="form-label">Alamat Email</label>
-              <input type="email" id="contact-email" class="form-input" placeholder="nama@instansi.com..." required>
+              <input type="email" id="contact-email" name="email" class="form-input" placeholder="nama@instansi.com..." required>
             </div>
 
             <div class="form-group">
               <label for="contact-message" class="form-label">Pesan atau Diskusi Proyek</label>
-              <textarea id="contact-message" class="form-textarea" placeholder="Tuliskan detail pertanyaan atau tawaran kolaborasi..." required></textarea>
+              <textarea id="contact-message" name="message" class="form-textarea" placeholder="Tuliskan detail pertanyaan atau tawaran kolaborasi..." required></textarea>
             </div>
 
             <div id="form-status" class="form-status" role="alert"></div>
 
-            <button type="submit" class="btn-primary" style="width:100%;justify-content:center;">
-              <span>Kirim Pesan</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            <button type="submit" id="form-submit-btn" class="btn-primary" style="width:100%;justify-content:center;">
+              <span id="btn-text">Kirim Pesan Langsung</span>
+              <svg id="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
           </form>
         </div>
       </div>
     </section>
+
+    <!-- Global Toast Notification Container -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </main>
 
   <!-- =========================================================================
