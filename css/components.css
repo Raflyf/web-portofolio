@@ -1241,24 +1241,47 @@ html[data-theme="light"] .filter-tab-btn.active {
   transform: translateY(0) !important;
   display: block !important;
 }
-}
 
 /* ==========================================================================
-   11. MODAL DIALOGS (Accessible & Animated)
+   11. MODAL DIALOGS (Accessible, Centered & Animated)
    ========================================================================== */
 
 .modal-dialog {
-  border: none;
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   background-color: var(--surface-card);
   color: var(--text-body);
   padding: 0;
   max-width: 680px;
-  width: 90%;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-card);
-  margin: auto;
+  width: min(92vw, 680px);
+  max-height: 85vh;
+  box-shadow: 0 24px 64px oklch(0 0 0 / 0.6), 0 0 1px oklch(1 0 0 / 0.1);
   z-index: var(--z-modal);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-dialog:not([open]) {
+  display: none;
+}
+
+.modal-dialog[open] {
+  animation: modalScaleIn var(--duration-fast) var(--ease-spring) forwards;
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-dialog::backdrop {
@@ -1298,11 +1321,30 @@ html[data-theme="light"] .filter-tab-btn.active {
 
 .modal-body {
   padding: var(--space-lg);
-  max-height: 70vh;
+  max-height: calc(85vh - 75px);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.35 0.02 240) transparent;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: oklch(0.35 0.02 240);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-emerald);
 }
 
 /* ==========================================================================
