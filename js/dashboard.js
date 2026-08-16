@@ -52,6 +52,7 @@ class DashboardApp {
       if (Date.now() - parsed.timestamp < 30 * 60 * 1000) {
         overlay.style.display = 'none';
         this.loadDashboardData();
+        this.startRealtimePolling();
         return;
       }
     }
@@ -82,6 +83,7 @@ class DashboardApp {
         localStorage.removeItem(LOCKOUT_KEY);
         overlay.style.display = 'none';
         this.loadDashboardData();
+        this.startRealtimePolling();
       } else {
         // Failed attempt handling
         const attempts = (lockout.attempts || 0) + 1;
@@ -109,7 +111,15 @@ class DashboardApp {
     }
   }
 
+  startRealtimePolling() {
+    if (this.pollInterval) clearInterval(this.pollInterval);
+    this.pollInterval = setInterval(() => {
+      this.loadDashboardData(true);
+    }, 6000);
+  }
+
   logout() {
+    if (this.pollInterval) clearInterval(this.pollInterval);
     sessionStorage.removeItem(SESSION_AUTH_KEY);
     window.location.reload();
   }
