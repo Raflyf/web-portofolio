@@ -2,6 +2,7 @@
  * ============================================================================
  * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR
  * Provides an interactive CLI playground for visitors to explore Rafly's profile
+ * With Command History (Up/Down), Tab Auto-complete, and Shortcut Chips
  * ============================================================================
  */
 
@@ -11,8 +12,12 @@ export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
   const terminalForm = document.getElementById('terminal-form');
   const terminalInput = document.getElementById('terminal-input');
+  const chipButtons = document.querySelectorAll('.terminal-chip');
 
   if (!terminalBody || !terminalForm || !terminalInput) return;
+
+  const history = [];
+  let historyIndex = -1;
 
   const COMMAND_REGISTRY = {
     help: () => [
@@ -22,13 +27,14 @@ export function initTerminal() {
       "  projects     - Daftar proyek GitHub open-source",
       "  certifs      - Daftar sertifikat & kredensial terverifikasi",
       "  benchmarks   - Metrik pengujian model ML / AI",
-      "  contact      - Informasi kontak dan media sosial",
+      "  contact      - Informasi kontak resmi",
       "  whoami       - Status sesi saat ini",
       "  clear        - Membersihkan layar terminal"
     ],
     about: () => [
       `[PROFIL] ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
-      `[ROLE]   ${DEVELOPER_PROFILE.title}`,
+      `[KAMPUS] ${DEVELOPER_PROFILE.institution}`,
+      `[IPK]    ${DEVELOPER_PROFILE.gpa}`,
       `[STATUS] ${DEVELOPER_PROFILE.status}`,
       `[BIO]    ${DEVELOPER_PROFILE.bio}`
     ],
@@ -37,7 +43,7 @@ export function initTerminal() {
       "[VISION]        MediaPipe Vision, OpenCV, Image Processing, Edge Inference",
       "[BACKEND]       Flask, Flask-SocketIO, REST APIs, WebSockets, PHP, MySQL",
       "[FRONTEND]      Vanilla JavaScript (ES6+), Modern HTML5/CSS3, OKLCH, Chart.js",
-      "[TOOLS & CLOUD] Git, GitHub Actions, Docker, Vercel, Linux"
+      "[NETWORKING]    MikroTik RouterOS (MTCNA), Network Security, Routing, Firewall"
     ],
     projects: () => {
       const lines = ["PROYEK UNGGULAN GITHUB:"];
@@ -105,26 +111,73 @@ export function initTerminal() {
     terminalBody.scrollTop = terminalBody.scrollHeight;
   }
 
-  // Initial welcome message
-  appendLine("Sistem Terminal Interaktif Portofolio [Versi 2.4.0]");
-  appendLine("Ketik 'help' untuk melihat daftar perintah yang tersedia.");
-  appendLine("");
+  function executeCommand(rawInput) {
+    const trimmed = rawInput.trim();
+    if (!trimmed) return;
 
-  terminalForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const rawInput = terminalInput.value.trim();
-    if (!rawInput) return;
+    history.push(trimmed);
+    historyIndex = history.length;
 
-    const cmd = rawInput.toLowerCase();
-    appendLine('', true, rawInput);
+    const cmd = trimmed.toLowerCase();
+    appendLine('', true, trimmed);
     terminalInput.value = '';
 
     if (COMMAND_REGISTRY[cmd]) {
       const outputLines = COMMAND_REGISTRY[cmd]();
       outputLines.forEach(line => appendLine(line));
     } else {
-      appendLine(`Perintah tidak dikenali: '${rawInput}'. Ketik 'help' untuk panduan.`);
+      appendLine(`Perintah tidak dikenali: '${trimmed}'. Ketik 'help' untuk panduan.`);
     }
     appendLine("");
+  }
+
+  // Initial welcome message
+  appendLine("Sistem Terminal Interaktif Portofolio [Versi 2.5.0]");
+  appendLine("Ketik 'help' atau klik pintasan di bawah untuk eksplorasi.");
+  appendLine("");
+
+  // Form submit listener
+  terminalForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    executeCommand(terminalInput.value);
+  });
+
+  // History & Tab completion key handlers
+  terminalInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        historyIndex--;
+        terminalInput.value = history[historyIndex];
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        terminalInput.value = history[historyIndex];
+      } else {
+        historyIndex = history.length;
+        terminalInput.value = '';
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      const current = terminalInput.value.trim().toLowerCase();
+      if (!current) return;
+      const match = Object.keys(COMMAND_REGISTRY).find(c => c.startsWith(current));
+      if (match) {
+        terminalInput.value = match;
+      }
+    }
+  });
+
+  // Chip shortcut click listeners
+  chipButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cmd = btn.getAttribute('data-cmd');
+      if (cmd) {
+        executeCommand(cmd);
+        terminalInput.focus();
+      }
+    });
   });
 }
