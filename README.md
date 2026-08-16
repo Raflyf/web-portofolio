@@ -8,7 +8,7 @@ Dibangun dengan **HTML5 Semantik**, **Modern Vanilla CSS (OKLCH + Motion Tokens)
 
 ## Fitur Utama
 
-- **Integrasi Proyek GitHub Riil:** Menampilkan proyek penelitian dan repositori unggulan (`OpenPlagiarismChecker`, `Spam-Email Classifier`, `laser_pointer_PPT`, `FotoKitaBlur`, `Wp2`).
+- **Integrasi Proyek GitHub Riil:** Menampilkan proyek penelitian dan repositori unggulan (`OpenPlagiarismChecker`, `Spam-Email Classifier`, `laser_pointer_PPT`, `FotoKitaBlur`, `web-portofolio`).
 - **Sistem Showcase Sertifikat Modular:** Filter kategori dinamis (AI & ML, Web Development, Cloud & DevOps, Keamanan Siber) dengan pop-up modal viewer kredensial.
 - **Terminal Developer Lab Interaktif:** Emulator CLI bash interaktif bagi pengunjung untuk mengeksplorasi perintah seperti `help`, `skills`, `projects`, `certifs`, dan `benchmarks`.
 - **Mode Terang & Gelap:** Pengaturan tema cerdas dengan sistem warna OKLCH, persistensi *localStorage*, dan sinkronisasi otomatis dengan preferensi sistem operasi.

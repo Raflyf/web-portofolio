@@ -44,7 +44,7 @@ Proyek ini dibangun dengan komitmen terhadap estetika *Cyber-Editorial* dan pres
 
 - File `js/data.js` menyimpan data terpusat:
   - `DEVELOPER_PROFILE`: Metadata pengembang, bio, dan link sosial.
-  - `PROJECTS_DATA`: 5 proyek unggulan GitHub (`OpenPlagiarismChecker`, `Spam-Email`, `laser_pointer_PPT`, `FotoKitaBlur`, `Wp2`).
+  - `PROJECTS_DATA`: 5 proyek unggulan GitHub (`OpenPlagiarismChecker`, `Spam-Email`, `laser_pointer_PPT`, `FotoKitaBlur`, `web-portofolio`).
   - `CERTIFICATES_DATA`: Struktur sertifikasi modular dengan ID kredensial, issuer, kategori, dan deskripsi kompetensi.
   - `TIMELINE_DATA`: Riwayat milestone dan pengalaman riset.
 - File `js/terminal.js`: Terminal emulator interaktif mandiri yang merespons perintah `help`, `skills`, `projects`, `certifs`, `benchmarks`, `about`, `whoami`, `contact`, dan `clear`.
@@ -84,6 +84,8 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **2.3.0** | 2026-08-16 | Perbaikan tuntas navigasi mobile (menu hamburger dropdown blur & tombol GitHub responsif), render pratinjau sertifikat berbasis grafis ultra-resolusi kebal cegatan download IDM, serta dukungan pratinjau multi-halaman berurutan untuk dokumen yang memiliki lampiran transkrip/materi. |
 | **2.4.0** | 2026-08-16 | Penguatan redundansi aturan navigasi mobile pada style.css dan components.css, penambahan mekanisme auto-close klik luar/Escape, serta bumping string cache-busting v2.4.0 untuk memaksa pembaruan instan pada peramban mobile. |
 | **2.5.0** | 2026-08-17 | Pembaruan nomor kontak resmi WhatsApp menjadi `08991333323` di seluruh repositori (data store, kartu kontak, template tautan, dan terminal), serta desain ulang tombol aksi WhatsApp pada status pengiriman formulir dengan visualisasi tombol hijau resmi (#25D366), ikon vektor, efek hover glow, dan keterbacaan tinggi. |
+| **2.6.0** | 2026-08-17 | Penggantian entri proyek showcase dari repositori privat `Wp2` menjadi repositori publik `web-portofolio` (Bespoke Web Portfolio) dengan deskripsi teknis arsitektur modular, kepatuhan WCAG 2.2 AA, dan sistem desain OKLCH. |
+
 
 
 

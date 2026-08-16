@@ -108,24 +108,26 @@ export const PROJECTS_DATA = [
     year: "2026"
   },
   {
-    id: "wp2-web-programming",
-    title: "Web Programming Suite (WP2)",
+    id: "web-portofolio",
+    title: "Bespoke Web Portfolio",
     category: "web",
-    categoryLabel: "Full-Stack Web",
-    badge: "Web Infrastructure",
-    description: "Implementasi arsitektur web backend, routing, dan manipulasi database berbasis PHP & SQL.",
-    longDescription: "Koleksi implementasi server-side scripting, sanitasi formulir, integrasi basis data relasional, dan manajemen session untuk aplikasi web terstruktur.",
+    categoryLabel: "Frontend & Systems",
+    badge: "Live Production",
+    description: "Platform portofolio web rekayasa performa tinggi berarsitektur modular. Mengusung tema dark tech OKLCH, simulator terminal CLI interaktif, viewer sertifikat kebal IDM, dan kepatuhan aksesibilitas WCAG 2.2 AA.",
+    longDescription: "Situs web portofolio profesional dan riset yang dibangun dari nol tanpa dependensi pustaka berat. Mengintegrasikan sistem token desain OKLCH presisi, emulator terminal berbasis perintah riil, penampil berkas sertifikat multi-halaman beresolusi tinggi, integrasi pengiriman form asinkron, dan kepatuhan aksesibilitas WCAG 2.2 AA.",
     keyFeatures: [
-      "Server-side validation dan session management",
-      "Integrasi basis data relasional MySQL",
-      "Struktur kode modular dan pemisahan logika tampilan"
+      "Sistem token warna modern OKLCH & Dark Obsidian aesthetic",
+      "Emulator terminal interaktif dengan riwayat perintah dan navigasi keyboard",
+      "Penampil berkas sertifikat multi-halaman anti-intersepsi IDM",
+      "Kepatuhan aksesibilitas WCAG 2.2 AA dengan rasio kontras tinggi",
+      "Arsitektur Vanilla JavaScript ES6+ modular tanpa framework bloat"
     ],
-    techStack: ["PHP", "MySQL", "JavaScript", "HTML5", "CSS3"],
-    githubUrl: "https://github.com/Raflyf/Wp2",
-    demoUrl: null,
-    stars: 0,
+    techStack: ["JavaScript (ES6+)", "HTML5 Semantic", "CSS3 / OKLCH", "GitHub Pages", "Responsive UI"],
+    githubUrl: "https://github.com/Raflyf/web-portofolio",
+    demoUrl: "https://raflyf.github.io/web-portofolio/",
+    stars: 1,
     license: "MIT",
-    year: "2024"
+    year: "2026"
   }
 ];
 
