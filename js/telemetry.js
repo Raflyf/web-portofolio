@@ -34,12 +34,12 @@ class TelemetryEngine {
       const parsed = raw ? JSON.parse(raw) : {};
       return {
         url: parsed.url || 'https://rphyzcqwpkxtzllvymss.supabase.co',
-        anonKey: parsed.anonKey || ''
+        anonKey: parsed.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
       };
     } catch {
       return {
         url: 'https://rphyzcqwpkxtzllvymss.supabase.co',
-        anonKey: ''
+        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
       };
     }
   }

@@ -123,7 +123,11 @@ class DashboardApp {
 
     let loaded = [];
     const configRaw = localStorage.getItem(CONFIG_KEY);
-    const config = configRaw ? JSON.parse(configRaw) : null;
+    const parsedConfig = configRaw ? JSON.parse(configRaw) : {};
+    const config = {
+      url: parsedConfig.url || 'https://rphyzcqwpkxtzllvymss.supabase.co',
+      anonKey: parsedConfig.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
+    };
 
     if (config && config.url && config.anonKey) {
       try {
