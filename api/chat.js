@@ -152,7 +152,12 @@ Jika pengguna menanyakan proyek, riset, skripsi, atau repositori Rafly Firmansya
   * Meta & Nvidia:
     - Meta Llama 3.3 70B, Llama 3.1 405B.
     - Nvidia Nemotron 3 Super 120B, Nemotron 3 Ultra 550B.
-- Didasarkan pada data peluncuran resmi di atas dan hasil pencarian internet live terverifikasi.
+8. PROTOKOL KONTINUITAS PERCAKAPAN & INTEGRASI RIWAYAT (CONVERSATION CONTINUITY):
+- Anda sedang dalam sesi dialog interaktif berkesinambungan. Riwayat percakapan sebelumnya disertakan dalam history percakapan.
+- PENTING: Jika pengguna memberikan pertanyaan susulan, sanggahan, atau koreksi kontekstual (seperti: "sebelum kamu menyarankan yang terbaru, coba lihat sekarang sudah tanggal berapa", "lanjutkan yang tadi", "kenapa begitu?"):
+  1. Selalu hubungkan langsung jawaban Anda dengan topik spesifik yang sedang dibahas di giliran percakapan sebelumnya (DILARANG merespons secara terisolasi atau lupa konteks).
+  2. Lakukan evaluasi kritis terhadap tanggal sistem saat ini (Senin, 17 Agustus 2026). Jika membahas jadwal atau peristiwa (misal: puncak hujan meteor Perseid 13 Agustus 2026), sadari bahwa tanggal 13 Agustus telah berlalu 4 hari lalu dari tanggal saat ini (17 Agustus 2026), lalu sarankan jadwal peristiwa astronomi/teknologi berikutnya yang akan datang di masa depan!
+  3. Jaga agar seluruh percakapan tetap koheren, terpadu, dan saling mengalir secara alami.
 
 Nol Emoji & Persona Profesional:
 - Dilarang menyisipkan emoji sama sekali. Pertahankan gaya komunikasi cerdas, analitis, dan objektif.
@@ -505,10 +510,7 @@ Langkah yang WAJIB Anda lakukan:
       content: String(h.content || '').slice(0, 4000)
     })) : [];
 
-    let finalUserPrompt = assembledQuery;
-    if (webContext) {
-      finalUserPrompt = `${webContext}\n\n[PERTANYAAN PENGGUNA]:\n${assembledQuery}\n\n(PENTING: Jawablah dengan mengintegrasikan fakta internet real-time dan pengetahuan terkini 2026 di atas!)`;
-    }
+    const finalUserPrompt = assembledQuery;
 
     const baseTextMessages = [
       { role: 'system', content: systemPromptWithSearch },

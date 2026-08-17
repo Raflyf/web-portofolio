@@ -368,72 +368,144 @@ export function initTerminal() {
    * Terminal Markdown Parser & Sanitizer
    * Converts Markdown asterisks, headings, lists, and code blocks into styled terminal elements
    */
-  let inCodeBlock = false;
-  let codeBlockLang = '';
+  /**
+   * Comprehensive Markdown & Table Engine for Terminal (v9.5.0)
+   * Supports:
+   * - Markdown Tables (<thead>, <tbody>, responsive scroll wrappers)
+   * - Headings (H1, H2, H3, H4)
+   * - Code Blocks with syntax highlight & copy
+   * - Bold, Italic, Inline Code, Links
+   * - Numbered & Bulleted Lists
+   * - Horizontal Rules & Blockquotes
+   */
+  function formatMarkdownFull(text) {
+    if (!text) return '';
+
+    // 1. Normalize line endings
+    let content = text.replace(/\r\n/g, '\n');
+
+    // 2. Protect Code blocks
+    const codeBlocks = [];
+    content = content.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+      const placeholder = `§§CODE_BLOCK_${codeBlocks.length}§§`;
+      const escapedCode = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      const langLabel = (lang || 'CODE').toUpperCase();
+      codeBlocks.push(`
+        <div class="terminal-code-box">
+          <div style="background:rgba(255,255,255,0.04);padding:4px 10px;font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;">
+            <span>${langLabel}</span>
+          </div>
+          <pre style="margin:0;padding:10px;overflow-x:auto;font-family:var(--font-mono);font-size:0.85rem;line-height:1.5;color:#e2e8f0;"><code>${escapedCode}</code></pre>
+        </div>
+      `);
+      return placeholder;
+    });
+
+    // 3. Parse Markdown Tables
+    content = content.replace(/((?:^[ \t]*\|[^\n]+\|[ \t]*\n?)+)/gm, (tableMatch) => {
+      const rawLines = tableMatch.trim().split('\n').map(l => l.trim()).filter(l => l.startsWith('|') && l.endsWith('|'));
+      if (rawLines.length < 2) return tableMatch;
+
+      if (!rawLines[1].includes('---') && !rawLines[1].includes(':---')) {
+        return tableMatch;
+      }
+
+      const parseRow = (rowStr) => {
+        return rowStr.slice(1, -1).split('|').map(c => c.trim());
+      };
+
+      const headers = parseRow(rawLines[0]);
+      const bodyRows = rawLines.slice(2).map(parseRow);
+
+      let tableHtml = `
+        <div class="terminal-table-wrapper">
+          <table class="terminal-table">
+            <thead>
+              <tr>
+                ${headers.map(h => `<th>${h}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${bodyRows.map((cols) => `
+                <tr>
+                  ${cols.map(c => `<td>${c}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      return tableHtml;
+    });
+
+    // 4. Process lines for Typography & Headings
+    const lines = content.split('\n');
+    const processedLines = lines.map(line => {
+      let l = line.trim();
+      if (!l) return '<div style="height:0.35rem;"></div>';
+      if (l.startsWith('§§CODE_BLOCK_') || l.startsWith('<div class="terminal-table-wrapper"')) return l;
+
+      // Horizontal Rule
+      if (/^(\-{3,}|\*{3,}|_{3,})$/.test(l)) {
+        return '<hr class="terminal-hr" />';
+      }
+
+      // Headings (H1 to H4)
+      if (l.startsWith('#### ')) {
+        return `<div style="color:var(--accent-emerald);font-weight:700;font-size:0.95rem;margin-top:10px;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span style="color:var(--accent-emerald);opacity:0.8;">▸</span> ${l.slice(5)}</div>`;
+      }
+      if (l.startsWith('### ')) {
+        return `<div style="color:var(--accent-emerald);font-weight:700;font-size:1.02rem;margin-top:12px;margin-bottom:6px;border-left:3px solid var(--accent-emerald);padding-left:8px;">${l.slice(4)}</div>`;
+      }
+      if (l.startsWith('## ')) {
+        return `<div style="color:var(--accent-emerald);font-weight:800;font-size:1.1rem;margin-top:14px;margin-bottom:6px;border-left:3px solid var(--accent-emerald);padding-left:8px;">${l.slice(3)}</div>`;
+      }
+      if (l.startsWith('# ')) {
+        return `<div style="color:var(--accent-emerald);font-weight:800;font-size:1.2rem;margin-top:16px;margin-bottom:8px;">${l.slice(2)}</div>`;
+      }
+
+      // Blockquote
+      if (l.startsWith('&gt; ') || l.startsWith('> ')) {
+        const quoteText = l.replace(/^(&gt;|>)\s*/, '');
+        return `<blockquote style="border-left:3px solid var(--accent-emerald);padding:4px 10px;margin:6px 0;background:rgba(16,185,129,0.05);color:var(--text-muted);border-radius:0 4px 4px 0;">${quoteText}</blockquote>`;
+      }
+
+      // Lists
+      if (/^[-*•]\s+/.test(l)) {
+        const itemText = l.replace(/^[-*•]\s+/, '');
+        return `<div style="display:flex;align-items:flex-start;gap:8px;margin:3px 0;"><span style="color:var(--accent-emerald);font-weight:bold;line-height:1.4;">•</span><span style="flex:1;">${itemText}</span></div>`;
+      }
+      if (/^\d+\.\s+/.test(l)) {
+        const match = l.match(/^(\d+)\.\s+(.*)/);
+        return `<div style="display:flex;align-items:flex-start;gap:8px;margin:4px 0;"><span style="color:var(--accent-emerald);font-weight:700;background:rgba(16,185,129,0.1);padding:0px 5px;border-radius:3px;font-size:0.8rem;font-family:var(--font-mono);">${match[1]}.</span><span style="flex:1;">${match[2]}</span></div>`;
+      }
+
+      return `<div style="margin:2px 0;line-height:1.6;">${l}</div>`;
+    });
+
+    content = processedLines.join('\n');
+
+    // Inline styling (Bold, Italic, Code)
+    content = content
+      .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
+      .replace(/__(.*?)__/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
+      .replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>')
+      .replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:2px 6px;border-radius:4px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.85em;font-weight:600;">$1</code>');
+
+    // Restore Code blocks
+    codeBlocks.forEach((cb, idx) => {
+      content = content.replace(`§§CODE_BLOCK_${idx}§§`, cb);
+    });
+
+    return content;
+  }
 
   function formatMarkdownText(raw) {
-    if (!raw) return '';
-
-    const trimmed = raw.trim();
-
-    // Code block opening or closing fence: ```python, ```js, ```
-    if (trimmed.startsWith('```')) {
-      if (!inCodeBlock) {
-        inCodeBlock = true;
-        codeBlockLang = trimmed.slice(3).trim().toUpperCase() || 'CODE';
-        return `<div class="terminal-code-header"><span class="terminal-code-lang">${codeBlockLang}</span></div>`;
-      } else {
-        inCodeBlock = false;
-        codeBlockLang = '';
-        return `<div style="height:4px;border-bottom:1px solid var(--border-subtle);margin-bottom:6px;"></div>`;
-      }
-    }
-
-    // Escape HTML first for XSS safety
-    let escaped = raw
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    // Inside code block styling & safe syntax highlights (No style-tag self collision)
-    if (inCodeBlock) {
-      if (/^\s*(#|\/\/)/.test(raw)) {
-        return `<div class="terminal-code-line"><span style="color:var(--text-muted);user-select:none;margin-right:10px;opacity:0.4;">&gt;</span><span style="color:#6ee7b7;font-style:italic;opacity:0.9;">${escaped}</span></div>`;
-      }
-
-      let codeHtml = escaped
-        .replace(/(["'][^"']*?["'])/g, '§§STR_$1§§')
-        .replace(/\b(def|class|import|from|return|if|elif|else|for|while|try|except|const|let|var|function|async|await)\b/g, '§§KW_$1§§');
-
-      codeHtml = codeHtml
-        .replace(/§§STR_(.*?)§§/g, '<span style="color:#fde047;">$1</span>')
-        .replace(/§§KW_(.*?)§§/g, '<span style="color:#38bdf8;font-weight:700;">$1</span>');
-
-      return `<div class="terminal-code-line"><span style="color:var(--text-muted);user-select:none;margin-right:10px;opacity:0.4;">&gt;</span>${codeHtml}</div>`;
-    }
-
-    // Headings (### Title, ## Title, # Title)
-    escaped = escaped.replace(/^###\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.05em;display:block;margin-top:8px;margin-bottom:3px;border-left:3px solid var(--accent-emerald);padding-left:6px;">$1</strong>');
-    escaped = escaped.replace(/^##\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.1em;display:block;margin-top:10px;margin-bottom:4px;border-left:3px solid var(--accent-emerald);padding-left:6px;">$1</strong>');
-    escaped = escaped.replace(/^#\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:800;font-size:1.15em;display:block;margin-top:12px;margin-bottom:4px;">$1</strong>');
-
-    // Bold (**text** or __text__)
-    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>');
-    escaped = escaped.replace(/__(.*?)__/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>');
-
-    // Italic (*text* or _text_)
-    escaped = escaped.replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>');
-
-    // Inline Code (`code`)
-    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:2px 6px;border-radius:4px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.9em;font-weight:600;">$1</code>');
-
-    // List bullets (- item or * item)
-    escaped = escaped.replace(/^[-*]\s+(.*$)/gim, '<span style="color:var(--accent-emerald);margin-right:8px;font-weight:700;">&bull;</span>$1');
-
-    // Numbered lists (1. item)
-    escaped = escaped.replace(/^(\d+)\.\s+(.*$)/gim, '<span style="color:var(--accent-emerald);font-weight:700;margin-right:6px;background:rgba(16,185,129,0.1);padding:1px 5px;border-radius:3px;">$1.</span>$2');
-
-    return escaped;
+    return formatMarkdownFull(raw);
   }
 
   function appendUserBubble(userText, attachments = []) {
@@ -520,15 +592,11 @@ export function initTerminal() {
   }
 
   /**
-   * Snappy Token/Word Typewriter Streamer with Markdown Rendering into Chat Bubble Container
-   */
-  /**
-   * Snappy Adaptive Token/Word Streamer with Instant Markdown Rendering
+   * Snappy Adaptive Token/Word Streamer with Full-Fledged Markdown & Table Rendering
    */
   async function streamOutputLines(lines, targetContainer = null) {
     const container = targetContainer || terminalBody;
-    inCodeBlock = false;
-    codeBlockLang = '';
+    const fullText = Array.isArray(lines) ? lines.join('\n') : String(lines);
 
     const totalLines = lines.length;
     // Adaptive speed: faster chunking for long/deep analytical answers
@@ -565,13 +633,15 @@ export function initTerminal() {
         }
       }
 
-      // Convert the line to formatted Markdown HTML
       cursorSpan.remove();
-      lineEl.innerHTML = formatMarkdownText(lineText);
+      lineEl.innerHTML = formatMarkdownFull(lineText);
       terminalBody.scrollTop = terminalBody.scrollHeight;
       await new Promise(r => setTimeout(r, 2));
     }
-    inCodeBlock = false;
+
+    // Convert complete accumulated text into pristine structured Markdown HTML (Tables, Headings, Lists)
+    container.innerHTML = formatMarkdownFull(fullText);
+    terminalBody.scrollTop = terminalBody.scrollHeight;
   }
 
   function getDynamicThinkingMessage(effort, attachments, query, model) {
