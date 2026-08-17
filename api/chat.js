@@ -18,32 +18,37 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
     effortDirective = isEnglish ? `
 [CHAIN-OF-THOUGHT / HIGH-IQ REASONING MODE ACTIVATED]:
 - Deliver an exceptionally rigorous, in-depth analytical breakdown with deep technical precision.
-- Provide comprehensive architectural trade-offs, benchmarks, code comparisons, and concrete actionable recommendations.
-- Present your final insights directly using rich structured formatting (tables, bullet points, and code blocks) without dumping raw meta-planning scratchpads.
+- Focus deeply on 3 to 5 top architectural choices/models with comprehensive comparison tables and actionable conclusions.
+- Ensure your entire response is 100% complete and fully concludes without truncation.
 ` : `
 [MODE PENALARAN MENDALAM & ANALISIS TINGKAT TINGGI (HIGH-IQ THINKING)]:
 - Pengguna mengaktifkan Mode Penalaran Mendalam / Thinking CoT.
-- Sajikan analisis teknis berbobot tinggi, komparasi arsitektural mendalam, tolok ukur benchmark kuantitatif, dan rekomendasi konkret yang matang.
-- Langsung sajikan jawaban terstruktur dengan format Markdown yang kaya (tabel komparasi komprehensif, poin-poin penjelasan tajam, blok kode/rumus jika relevan) tanpa mencantumkan coretan meta-perencanaan yang kaku.
+- Sajikan analisis teknis berbobot tinggi, komparasi arsitektural mendalam, dan tolok ukur benchmark kuantitatif untuk 3–5 pilihan terbaik.
+- Langsung sajikan jawaban terstruktur dengan format Markdown yang kaya (tabel komparasi komprehensif, poin-poin penjelasan tajam, blok kode/rumus jika relevan) dan selesaikan secara tuntas 100%.
 `;
   } else if (reasoningEffort === 'high') {
     effortDirective = `
 [MODE DEEP RESEARCH & MAXIMUM EFFORT]:
-- Berikan analisis riset mendalam, rinci, menyeluruh, dan komprehensif dari hulu ke hilir dengan cakupan maksimal dan tabel komparatif lengkap.
+- Berikan analisis riset mendalam, rinci, dan komprehensif untuk 3–5 topik/model utama dengan tabel komparatif lengkap dan kesimpulan yang tuntas 100%.
 `;
   } else if (reasoningEffort === 'low') {
     effortDirective = isEnglish ? `
 [MODE FAST & ACTIONABLE CONCISE RESPONSE]:
 - The user has selected Fast/Concise mode.
-- Give the direct, actionable answer immediately without repeating questions, preamble, or lengthy meta-criteria.
-- If asked for recommendations, list the exact models/items, key specs, and access links directly in clear bullet points or a concise table.
+- Give the direct, actionable answer immediately without preamble or lengthy meta-criteria.
+- List the exact items, key specs, and access links directly in clear bullet points or a concise table.
 - Ensure the answer is 100% complete and fully concludes without truncation.
 ` : `
 [MODE CEPAT & LANGSUNG KE INTI (FAST & ACTIONABLE)]:
 - Pengguna memilih Mode Cepat / Ringkas.
-- DILARANG bertele-tele membuat kriteria pembuka yang panjang, mengulang pertanyaan, atau menulis definisi pengantar yang mubazir.
-- LANGSUNG berikan jawaban inti, daftar rekomendasi spesifik, poin-poin utama, atau solusi praktis yang ditanyakan secara to-the-point, berbobot, dan jelas.
-- Pastikan jawaban selesai tuntas 100% dan tidak terpotong!
+- DILARANG bertele-tele membuat kriteria pembuka yang panjang atau menulis definisi pengantar yang mubazir.
+- LANGSUNG berikan jawaban inti, daftar rekomendasi spesifik, poin-poin utama, atau solusi praktis secara to-the-point dan selesaikan secara tuntas 100%.
+`;
+  } else {
+    effortDirective = `
+[MODE STANDAR / BALANCED]:
+- Berikan jawaban yang seimbang, jelas, informatif, dan terstruktur rapi.
+- Fokuskan pada 3–4 poin atau rekomendasi utama beserta tabel ringkasan, dan pastikan jawaban selesai tuntas 100% tanpa terpotong.
 `;
   }
 
@@ -81,15 +86,18 @@ WAKTU AKTIF & PENCARIAN INTERNET (2026):
 ${languageDirective}
 ${effortDirective}
 
-PEDOMAN FORMAT & KEJELASAN JAWABAN (CLEAN, READABLE & STRUCTURED):
+PEDOMAN FORMAT & KEJELASAN JAWABAN (CLEAN, READABLE, STRUCTURED & ZERO-TRUNCATION):
 1. Format Yang Sangat Rapi & Mudah Dipahami:
    - Gunakan hierarki yang jelas dengan judul/heading (### Judul Bagian).
    - Gunakan poin-poin bernomor (1., 2., 3.) atau bullet points (- Poin) untuk menjelaskan tahapan dan konsep.
    - Tebalkan (**kata kunci**, **istilah teknis**, **metrik penting**) agar mudah dipindai mata pembaca.
+   - Gunakan tabel Markdown (| Kolom 1 | Kolom 2 |) jika menyajikan komparasi atau ringkasan data.
    - Berikan jeda baris antar paragraf dan poin agar tidak terjadi dinding teks padat.
    - Untuk kode program, selalu gunakan blok kode dengan penanda bahasa (contoh: \`\`\`python) dan sertakan komentar kode yang jelas.
-2. Jawaban Mendalam, Lengkap & Zero-Truncation:
-   - Berikan penjelasan tuntas dari hulu ke hilir tanpa terpotong di tengah jalan.
+2. Protokol Anti-Truncation (Penyelesaian Tuntas 100%):
+   - Jawablah secara padat, tajam, dan langsung ke substansi inti tanpa mengulang kata pengantar berlebihan atau menulis esai teoritis yang terlalu bertele-tele.
+   - Batasi komparasi pada 3 hingga 5 entitas/rekomendasi terbaik dan paling relevan.
+   - PASTIKAN seluruh analisis, tabel komparasi, dan bagian kesimpulan/penutup selesai tuntas 100% sebelum batas token berakhir.
 
 PENGETAHUAN LENGKAP & SPESIFIKASI ARSITEKTUR REPOSITORI RESMI RAFLY FIRMANSYAH (@Raflyf):
 Jika pengguna menanyakan proyek, riset, skripsi, atau repositori Rafly Firmansyah, WAJIB menjelaskan secara mendalam mengacu pada arsitektur teknis autentik berikut:
