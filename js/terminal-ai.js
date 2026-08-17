@@ -477,17 +477,31 @@ class TerminalAIEngine {
     const cleanOutput = (text) => {
       let cleaned = String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
-      // If text contains English internal reasoning monologue (e.g. from Nemotron/DeepSeek R1)
-      const reasoningKeywords = /^(?:First|Let me|I should|I need to|The user|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Okay|Let's)\b/i;
+      // 1. Check for explicit output markers like Thus: "..." or Response:
+      const markerMatch = cleaned.match(/(?:Thus|Therefore|Response|Answer|Jawaban|In Indonesian|Output):\s*["']?([\s\S]+?)["']?$/i);
+      if (markerMatch && markerMatch[1] && markerMatch[1].trim().length > 10) {
+        return markerMatch[1].trim().replace(/^["']|["']$/g, '').trim();
+      }
+
+      // 2. Check for English reasoning monologue start
+      const reasoningKeywords = /^(?:Okay|First|Let me|I should|I need to|The user|Looking back|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Let's|Checking|So the user|The system message)\b/i;
       if (reasoningKeywords.test(cleaned)) {
-        // Find the start of the actual Indonesian answer or table or heading
-        const indonesianMarker = /(?:(?:\n|\A)(?:Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|[#|]|\d+\.))/i;
+        // Look for Indonesian transition or Markdown
+        const indonesianMarker = /(?:(?:\n|\A)(?:Terima kasih|Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|Pada|[#|]|\d+\.)\s)/i;
         const match = cleaned.search(indonesianMarker);
         if (match !== -1 && match > 0) {
           cleaned = cleaned.slice(match).trim();
+        } else {
+          // Filter out lines that look like English reasoning
+          const lines = cleaned.split('\n');
+          const filtered = lines.filter(l => !/^(?:Okay|First|Let me|I should|I need to|The user|Looking|Wait|Checking|So the user|Therefore|Thus|The system message|In their message|Given that|However|Alternatively|So, my response)\b/i.test(l.trim()));
+          if (filtered.length > 0) {
+            cleaned = filtered.join('\n').trim();
+          }
         }
       }
-      return cleaned;
+
+      return cleaned.replace(/^["']|["']$/g, '').trim();
     };
 
     const SYSTEM_PROMPT_2026 = `Status Bahasa: BAHASA INDONESIA. Waktu Sistem Saat Ini: Senin, 17 Agustus 2026.
@@ -506,8 +520,8 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 - Nvidia: Nemotron 3 Super 120B, Nemotron 3 Ultra 550B MoE, Nemotron Laguna.
 
 [INSTRUKSI UTAMA]:
-- Jika ditanya perbandingan model AI terbaru atau posisi benchmark di LMSYS Chatbot Arena / Arena AI, sajikan perbandingan lengkap tahun 2026 dalam Tabel Markdown yang rapi dan komprehensif.
-- Jawab secara lugas, profesional, dan terstruktur tanpa menyisipkan monolog proses berpikir bahasa Inggris.`;
+- Jika pengguna melampirkan gambar atau screenshot, analisis dan jelaskan isi gambar secara spesifik dan faktual.
+- DILARANG KERAS mengeluarkan monolog penalaran internal (scratchpad/chain of thought) dalam Bahasa Inggris. LANGSUNG berikan jawaban akhir dalam Bahasa Indonesia yang bersih, to-the-point, dan profesional.`;
 
     // Real-Time Client-Side Web Search Crawler
     let searchContext = '';
@@ -552,10 +566,22 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     const q = cleanQuery.toLowerCase();
     const len = q.length;
 
+    // Detect if image attachment exists
+    const hasImages = Array.isArray(attachments) && attachments.some(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50));
+
+    // Construct Multimodal Payload
+    const userMessageContent = hasImages ? [
+      { type: 'text', text: cleanQuery || 'Analisis dan jelaskan isi gambar/dokumen ini secara mendalam.' },
+      ...attachments.filter(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50)).map(img => ({
+        type: 'image_url',
+        image_url: { url: img.base64.startsWith('data:') ? img.base64 : `data:${img.type || 'image/jpeg'};base64,${img.base64}` }
+      }))
+    ] : cleanQuery;
+
     // Intelligent Intent Detection
-    const isHeavyCoding = /\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q);
-    const isDeepReasoning = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200;
-    const isGreeting = len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
+    const isHeavyCoding = !hasImages && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
+    const isDeepReasoning = !hasImages && (/\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200);
+    const isGreeting = !hasImages && len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
 
     // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
     const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
@@ -564,7 +590,10 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     let omniCandidates = [];
     let targetEffort = 'MEDIUM';
 
-    if (isGreeting) {
+    if (hasImages) {
+      targetEffort = 'MEDIUM';
+      omniCandidates = ['Vision-model', 'Codex', 'Antigravity'];
+    } else if (isGreeting) {
       targetEffort = 'LOW';
       omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Deepseek-V4-Flash-Free', 'Codex'];
     } else if (isHeavyCoding) {
@@ -631,7 +660,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
               model: omniModel,
               messages: [
                 { role: 'system', content: fullSystemPrompt },
-                { role: 'user', content: cleanQuery }
+                { role: 'user', content: userMessageContent }
               ],
               stream: false,
               max_tokens: calculatedMaxTokens
@@ -673,56 +702,58 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     }
 
     // 2. OpenCode Cloud Direct Dual-Account Pool (Nemotron 3 Ultra 550B & DeepSeek V4 Flash)
-    const OC_KEYS = [
-      decodeKey('c2stTW01NmMyZFpaNmZlWFVMbEI5NnN4NGpWTjh5bVNnY2pja3NpRHd2a0tuNUFhTjFkQmNiaUdGcHVVZFpEaGVWSTU='),
-      decodeKey('c2stWVdUc2JDaTBiYkhJb2lLbGJCMGdiNFRielExcHlrSTRoQkJhbEVKNE55cTU4OFBPelJlcHpEVWNrb1M1a0NJ')
-    ].filter(Boolean);
+    if (!hasImages) {
+      const OC_KEYS = [
+        decodeKey('c2stTW01NmMyZFpaNmZlWFVMbEI5NnN4NGpWTjh5bVNnY2pja3NpRHd2a0tuNUFhTjFkQmNiaUdGcHVVZFpEaGVWSTU='),
+        decodeKey('c2stWVdUc2JDaTBiYkhJb2lLbGJCMGdiNFRielExcHlrSTRoQkJhbEVKNE55cTU4OFBPelJlcHpEVWNrb1M1a0NJ')
+      ].filter(Boolean);
 
-    const OC_MODELS = ['nemotron-3-ultra-free', 'deepseek-v4-flash-free'];
-    for (const ocModel of OC_MODELS) {
-      for (const ocKey of OC_KEYS) {
-        try {
-          const ocController = new AbortController();
-          const ocTimeout = setTimeout(() => ocController.abort(), 12000);
-          const ocRes = await fetch('https://api.opencode.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + ocKey
-            },
-            body: JSON.stringify({
-              model: ocModel,
-              messages: [
-                { role: 'system', content: fullSystemPrompt },
-                { role: 'user', content: cleanQuery }
-              ],
-              max_tokens: calculatedMaxTokens
-            }),
-            signal: ocController.signal
-          });
-          clearTimeout(ocTimeout);
-          if (ocRes.ok) {
-            const ocData = await ocRes.json();
-            const rawContent = ocData?.choices?.[0]?.message?.content;
-            const content = cleanOutput(rawContent);
-            if (content && content.length > 5) {
-              this.lastExecutionInfo = {
-                isAuto: true,
-                resolvedModel: `opencode/${ocModel}`,
-                requestedModel: this.currentModel,
-                isFailover: true,
-                provider: 'OpenCode Cloud Pool',
-                effort: targetEffort,
-                category: 'standard'
-              };
-              return content.split('\n');
+      const OC_MODELS = ['nemotron-3-ultra-free', 'deepseek-v4-flash-free'];
+      for (const ocModel of OC_MODELS) {
+        for (const ocKey of OC_KEYS) {
+          try {
+            const ocController = new AbortController();
+            const ocTimeout = setTimeout(() => ocController.abort(), 12000);
+            const ocRes = await fetch('https://api.opencode.ai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + ocKey
+              },
+              body: JSON.stringify({
+                model: ocModel,
+                messages: [
+                  { role: 'system', content: fullSystemPrompt },
+                  { role: 'user', content: cleanQuery }
+                ],
+                max_tokens: calculatedMaxTokens
+              }),
+              signal: ocController.signal
+            });
+            clearTimeout(ocTimeout);
+            if (ocRes.ok) {
+              const ocData = await ocRes.json();
+              const rawContent = ocData?.choices?.[0]?.message?.content;
+              const content = cleanOutput(rawContent);
+              if (content && content.length > 5) {
+                this.lastExecutionInfo = {
+                  isAuto: true,
+                  resolvedModel: `opencode/${ocModel}`,
+                  requestedModel: this.currentModel,
+                  isFailover: true,
+                  provider: 'OpenCode Cloud Pool',
+                  effort: targetEffort,
+                  category: 'standard'
+                };
+                return content.split('\n');
+              }
             }
-          }
-        } catch (_) {}
+          } catch (_) {}
+        }
       }
     }
 
-    // 3. OpenRouter Direct SOTA Pool (Nemotron 3 Super 120B / Ultra 550B / Nano 30B / GPT-OSS 20B)
+    // 3. OpenRouter Direct SOTA Pool (Vision & Flagships)
     const OR_KEYS = [
       decodeKey('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
       decodeKey('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw==')
@@ -731,7 +762,12 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     let OR_MODELS = [];
     targetEffort = targetEffort || 'MEDIUM';
 
-    if (isGreeting) {
+    if (hasImages) {
+      OR_MODELS = [
+        'nvidia/nemotron-nano-12b-v2-vl:free',
+        'google/gemma-3-27b-it'
+      ];
+    } else if (isGreeting) {
       targetEffort = 'LOW';
       OR_MODELS = [
         'nvidia/nemotron-3-super-120b-a12b:free',
@@ -774,7 +810,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
               model: model,
               messages: [
                 { role: 'system', content: fullSystemPrompt },
-                { role: 'user', content: cleanQuery }
+                { role: 'user', content: userMessageContent }
               ],
               max_tokens: calculatedMaxTokens,
               temperature: 0.25
