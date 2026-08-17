@@ -416,9 +416,13 @@ export default async function handler(req, res) {
       ? customKey 
       : process.env.NVIDIA_API_KEY;
 
-    const OPENCODE_KEY = (customKey && customProvider === 'opencode') 
-      ? customKey 
-      : process.env.OPENCODE_API_KEY;
+    const OPENCODE_KEYS = [
+      (customKey && customProvider === 'opencode') ? customKey : null,
+      process.env.OPENCODE_API_KEY,
+      'sk-Mm56c2dZ6feXULlB96sx4jVN8ymSgcjcksiDwvkKn5AaN1dBcbiGFpuUdZDheVI5',
+      'sk-YWTsbCi0bpBHIoiKlbB0gb4TbzY1pykI4hBBalEJ4Nyq588POzRepzDUckoS5kCI'
+    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const OPENCODE_KEY = OPENCODE_KEYS[0] || null;
 
     const MINIMAX_KEY = (customKey && customProvider === 'minimax') 
       ? customKey 
@@ -595,7 +599,41 @@ Langkah yang WAJIB Anda lakukan:
     // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
 
-    // 2A. Hugging Face Dedicated OmniRoute Cloud Space (150+ OpenCode Accounts Pool)
+    // 2A-0. Direct OpenCode Multi-Account Rotation (DeepSeek V4 Flash Free)
+    if (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || (model && model.includes('opencode'))) {
+      for (const ocKey of OPENCODE_KEYS) {
+        try {
+          const ocResp = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${ocKey}`
+            },
+            body: JSON.stringify({
+              model: 'deepseek-v4-flash-free',
+              messages: baseTextMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, 18000);
+
+          if (ocResp.ok) {
+            const ocData = await ocResp.json();
+            const ocText = ocData?.choices?.[0]?.message?.content;
+            if (ocText) {
+              return sendSuccess(ocText, 'opencode/deepseek-v4-flash-free', 'OpenCode Cloud Multi-Account Pool');
+            }
+          } else {
+            const ocErr = await ocResp.text();
+            providerErrors.push(`OpenCode HTTP ${ocResp.status}: ${ocErr.slice(0, 100)}`);
+          }
+        } catch (ocErr) {
+          providerErrors.push(`OpenCode: ${ocErr.message}`);
+        }
+      }
+    }
+
+    // 2A-1. Hugging Face Dedicated OmniRoute Cloud Space (150+ OpenCode Accounts Pool)
     try {
       const hfBase = 'https://rflyyyf-omniroute-gateway.hf.space';
       const hfController = new AbortController();
