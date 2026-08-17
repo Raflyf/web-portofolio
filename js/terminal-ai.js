@@ -340,10 +340,14 @@ class TerminalAIEngine {
         const isAuto = !this.currentModel || this.currentModel === 'auto';
         const resolvedModel = data.model || 'deepseek/deepseek-chat';
         const provider = data.provider || 'Gateway';
+        const isFailover = !!data.isFailover;
+        const requestedModel = data.requestedModel || this.currentModel;
 
         this.lastExecutionInfo = {
           isAuto,
           resolvedModel,
+          requestedModel,
+          isFailover,
           provider
         };
 
