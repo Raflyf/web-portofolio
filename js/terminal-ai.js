@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.22.0';
-import { telemetry } from './telemetry.js?v=10.22.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.23.0';
+import { telemetry } from './telemetry.js?v=10.23.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -471,14 +471,6 @@ class TerminalAIEngine {
   }
 
   async directClientFailover(cleanQuery, currentLang, attachments = []) {
-    const decodeKey = (b64) => {
-      try {
-        return atob(b64);
-      } catch (_) {
-        return null;
-      }
-    };
-
     const cleanOutput = (text) => {
       let cleaned = String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
@@ -667,243 +659,25 @@ Letakkan tag [ACTION:...] tersebut di dalam jawaban Anda. Sistem terminal browse
       }
     } catch (_) {}
 
-    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${searchContext}`;
+    // 1. Direct Client Execution (Only when user explicitly provides custom key via `setkey`)
+    if (this.customApiKey) {
+      const userKey = this.customApiKey;
+      const userProvider = (this.customApiProvider || 'openrouter').toLowerCase();
 
-    // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
-    const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
-    const OMNI_KEY = decodeKey('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
-
-    let omniCandidates = [];
-
-    if (hasImages) {
-      omniCandidates = ['Vision-model'];
-    } else if (targetEffort === 'THINKING' || isDeepReasoning) {
-      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
-    } else if (isProjectExplaining) {
-      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
-    } else if (isHeavyCoding) {
-      omniCandidates = ['Codex', 'nemotron-laguna', 'Antigravity', 'Deepseek-V4-Flash-Free'];
-    } else if (targetEffort === 'LOW' || isGreeting) {
-      omniCandidates = ['nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
-    } else {
-      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
-    }
-
-    // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, DeepSeek, Ultra)
-    if (this.currentModel && this.currentModel !== 'auto') {
-      const explicit = this.currentModel.toLowerCase();
-      if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
-      else if (explicit.includes('ultra') || explicit.includes('550b') || explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
-      else if (explicit.includes('codex') || explicit.includes('terra')) omniCandidates = ['Codex', ...omniCandidates];
-      else if (explicit.includes('antigravity') || explicit.includes('opus')) omniCandidates = ['Antigravity', ...omniCandidates];
-      else if (explicit.includes('vision') || explicit.includes('minimax') || explicit.includes('mimo')) omniCandidates = ['Vision-model', ...omniCandidates];
-    }
-
-    const calculatedMaxTokens = targetEffort === 'LOW' ? 2000 : (targetEffort === 'THINKING' ? 8192 : (targetEffort === 'HIGH' ? 6500 : 4500));
-
-    const parseOmniResponse = (raw) => {
-      if (!raw) return '';
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed?.choices?.[0]?.message?.content) return parsed.choices[0].message.content;
-        if (parsed?.choices?.[0]?.delta?.content) return parsed.choices[0].delta.content;
-      } catch (_) {}
-
-      // SSE stream fallback parser
-      let full = '';
-      const lines = raw.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
-          try {
-            const chunk = JSON.parse(trimmed.slice(6));
-            const delta = chunk?.choices?.[0]?.delta?.content || chunk?.choices?.[0]?.message?.content || '';
-            full += delta;
-          } catch (_) {}
-        }
-      }
-      return full.trim();
-    };
-
-    if (OMNI_KEY) {
-      for (const omniModel of omniCandidates) {
-        try {
-          const omniController = new AbortController();
-          const timeoutMs = omniModel.toLowerCase().includes('deepseek')
-            ? 3500
-            : (omniModel.toLowerCase().includes('antigravity') ? 55000 : 35000);
-          const omniTimeout = setTimeout(() => omniController.abort(), timeoutMs);
-          const res = await fetch(OMNI_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + OMNI_KEY,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              model: omniModel,
-              messages: [
-                { role: 'system', content: fullSystemPrompt },
-                { role: 'user', content: userMessageContent }
-              ],
-              stream: false,
-              max_tokens: calculatedMaxTokens
-            }),
-            signal: omniController.signal
-          });
-          clearTimeout(omniTimeout);
-          if (res.ok) {
-            const rawText = await res.text();
-            const parsedText = parseOmniResponse(rawText);
-            const content = cleanOutput(parsedText);
-            if (content && content.length > 5) {
-              let finalContent = content;
-              const memoryMatch = finalContent.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
-              if (memoryMatch && memoryMatch[1]) {
-                this.saveAIMemory(memoryMatch[1].trim());
-                finalContent = finalContent.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
-              } else if (!isGreeting && cleanQuery.length > 5 && finalContent.length > 25) {
-                const topic = cleanQuery.substring(0, 70);
-                const firstLine = finalContent.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalContent.substring(0, 120);
-                const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
-                this.saveAIMemory(cleanFact);
-              }
-
-              this.lastExecutionInfo = {
-                isAuto: !this.currentModel || this.currentModel === 'auto',
-                resolvedModel: omniModel,
-                requestedModel: this.currentModel,
-                isFailover: false,
-                provider: 'OmniRoute Dedicated Server',
-                effort: targetEffort,
-                category: isHeavyCoding ? 'heavy_coding' : (isDeepReasoning ? 'deep_reasoning' : (isGreeting ? 'trivial_casual' : 'standard'))
-              };
-              return finalContent.split('\n');
-            }
-          }
-        } catch (_) {}
-      }
-    }
-
-    // 2. OpenCode Cloud Direct Dual-Account Pool (Nemotron 3 Ultra 550B & DeepSeek V4 Flash)
-    if (!hasImages) {
-      const OC_KEYS = [
-        decodeKey('c2stTW01NmMyZFpaNmZlWFVMbEI5NnN4NGpWTjh5bVNnY2pja3NpRHd2a0tuNUFhTjFkQmNiaUdGcHVVZFpEaGVWSTU='),
-        decodeKey('c2stWVdUc2JDaTBiYkhJb2lLbGJCMGdiNFRielExcHlrSTRoQkJhbEVKNE55cTU4OFBPelJlcHpEVWNrb1M1a0NJ')
-      ].filter(Boolean);
-
-      const OC_MODELS = ['nemotron-3-ultra-free', 'deepseek-v4-flash-free'];
-      for (const ocModel of OC_MODELS) {
-        for (const ocKey of OC_KEYS) {
-          try {
-            const ocController = new AbortController();
-            const ocTimeout = setTimeout(() => ocController.abort(), ocModel.includes('deepseek') ? 3500 : 12000);
-            const ocRes = await fetch('https://api.opencode.ai/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + ocKey
-              },
-              body: JSON.stringify({
-                model: ocModel,
-                messages: [
-                  { role: 'system', content: fullSystemPrompt },
-                  { role: 'user', content: cleanQuery }
-                ],
-                max_tokens: calculatedMaxTokens
-              }),
-              signal: ocController.signal
-            });
-            clearTimeout(ocTimeout);
-            if (ocRes.ok) {
-              const ocData = await ocRes.json();
-              const rawContent = ocData?.choices?.[0]?.message?.content;
-              const content = cleanOutput(rawContent);
-              if (content && content.length > 5) {
-                this.lastExecutionInfo = {
-                  isAuto: true,
-                  resolvedModel: `opencode/${ocModel}`,
-                  requestedModel: this.currentModel,
-                  isFailover: true,
-                  provider: 'OpenCode Cloud Pool',
-                  effort: targetEffort,
-                  category: 'standard'
-                };
-                return content.split('\n');
-              }
-            }
-          } catch (_) {}
-        }
-      }
-    }
-
-    // 3. OpenRouter Direct SOTA Pool (Vision & Flagships)
-    const OR_KEYS = [
-      decodeKey('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
-      decodeKey('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw==')
-    ].filter(Boolean);
-
-    let OR_MODELS = [];
-    targetEffort = targetEffort || 'MEDIUM';
-
-    if (hasImages) {
-      OR_MODELS = [
-        'nvidia/nemotron-nano-12b-v2-vl:free'
-      ];
-    } else if (targetEffort === 'THINKING' || isDeepReasoning) {
-      OR_MODELS = [
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'google/gemma-4-31b-it:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
-      ];
-    } else if (isProjectExplaining) {
-      OR_MODELS = [
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'google/gemma-4-31b-it:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
-      ];
-    } else if (isHeavyCoding) {
-      OR_MODELS = [
-        'cohere/north-mini-code:free',
-        'openai/gpt-oss-20b:free',
-        'google/gemma-4-31b-it:free',
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
-      ];
-    } else if (targetEffort === 'LOW' || isGreeting) {
-      OR_MODELS = [
-        'poolside/laguna-s-2.1:free',
-        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
-      ];
-    } else {
-      OR_MODELS = [
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'google/gemma-4-31b-it:free',
-        'poolside/laguna-s-2.1:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
-      ];
-    }
-
-    for (const model of OR_MODELS) {
-      for (const key of OR_KEYS) {
+      if (userProvider === 'openrouter' || userProvider === 'auto' || !this.customApiProvider) {
         try {
           const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 8000);
+          const orTimeout = setTimeout(() => orController.abort(), 15000);
           const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + key,
+              'Authorization': 'Bearer ' + userKey,
               'HTTP-Referer': (typeof window !== 'undefined' ? window.location.href : 'https://raflyf.github.io/web-portofolio/'),
               'X-Title': 'Rafly Portfolio Lab'
             },
             body: JSON.stringify({
-              model: model,
+              model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'google/gemma-3-27b-it',
               messages: [
                 { role: 'system', content: fullSystemPrompt },
                 { role: 'user', content: userMessageContent }
@@ -920,28 +694,16 @@ Letakkan tag [ACTION:...] tersebut di dalam jawaban Anda. Sistem terminal browse
             const rawContent = data?.choices?.[0]?.message?.content;
             const content = cleanOutput(rawContent);
             if (content && content.length > 5) {
-              let finalContent = content;
-              const memoryMatch = finalContent.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
-              if (memoryMatch && memoryMatch[1]) {
-                this.saveAIMemory(memoryMatch[1].trim());
-                finalContent = finalContent.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
-              } else if (!isGreeting && cleanQuery.length > 5 && finalContent.length > 25) {
-                const topic = cleanQuery.substring(0, 70);
-                const firstLine = finalContent.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalContent.substring(0, 120);
-                const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
-                this.saveAIMemory(cleanFact);
-              }
-
               this.lastExecutionInfo = {
-                isAuto: true,
-                resolvedModel: model,
+                isAuto: false,
+                resolvedModel: this.currentModel || 'Custom OpenRouter Model',
                 requestedModel: this.currentModel,
-                isFailover: true,
-                provider: 'OpenRouter SOTA Pool',
+                isFailover: false,
+                provider: 'User Custom OpenRouter Key',
                 effort: targetEffort,
-                category: isHeavyCoding ? 'heavy_coding' : (isDeepReasoning ? 'deep_reasoning' : 'standard')
+                category: 'custom'
               };
-              return finalContent.split('\n');
+              return content.split('\n');
             }
           }
         } catch (_) {}

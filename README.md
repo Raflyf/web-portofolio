@@ -129,14 +129,18 @@ Untuk mengaktifkan Multi-Model AI Gateway dan Telemetri Analitik secara penuh di
 
 | Nama Variabel | Penyedia / Deskripsi |
 |---|---|
-| `OMNIROUTE_API_KEY` | OmniRoute Dedicated Server Key (5 verified combos) |
-| `OPENROUTER_API_KEY` | OpenRouter (DeepSeek V3, DeepSeek R1, Llama 3.3, Qwen Coder, Hermes 3) |
-| `NVIDIA_API_KEY` | Nvidia NIM (Nemotron Ultra 70B, Llama 3.2 Vision) |
-| `OPENCODE_API_KEY` | OpenCode Zen (DeepSeek V4 Flash) |
-| `MINIMAX_API_KEY` | MiniMax AI (MiniMax-01 M3) |
+| `OMNIROUTE_URL` | URL Cloudflare Tunnel / Server Lokal OmniRoute |
+| `OMNIROUTE_KEY` | API Key Autentikasi OmniRoute Dedicated Server |
+| `OPENROUTER_API_KEY` | Kunci Utama OpenRouter AI Gateway (DeepSeek, Llama 3.3, Gemma, Nemotron) |
+| `OPENROUTER_API_KEYS` | Kumpulan Multi-Key OpenRouter (pisahkan dengan koma untuk rotasi otomatis) |
+| `OPENCODE_API_KEY` | Kunci Utama OpenCode Cloud (DeepSeek V4 Flash & Nemotron Ultra) |
+| `OPENCODE_API_KEYS` | Kumpulan Multi-Account OpenCode (pisahkan dengan koma) |
+| `NVIDIA_API_KEY` | Nvidia NIM Engine (Nemotron Ultra 70B, Llama 3.2 Vision) |
+| `MINIMAX_API_KEY` | MiniMax AI (MiniMax-01 M3 Vision) |
 | `OLLAMA_CLOUD_API_KEY` | Ollama Cloud (Kimi K2.7 Coder, Gemma 31B) |
 | `SUPABASE_URL` | Supabase Project REST Endpoint (Continuous RAG & Telemetry) |
-| `SUPABASE_ANON_KEY` | Supabase Anonymous Key dengan RLS Policy |
+| `SUPABASE_ANON_KEY` | Supabase Anonymous Client Key dengan RLS Policy |
+
 
 ---
 
