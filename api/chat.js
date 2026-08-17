@@ -32,9 +32,18 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
 - Berikan analisis riset mendalam, rinci, menyeluruh, dan komprehensif dari hulu ke hilir dengan cakupan maksimal dan tabel komparatif lengkap.
 `;
   } else if (reasoningEffort === 'low') {
-    effortDirective = `
-[MODE FAST & CONCISE RESPONSE]:
-- Berikan jawaban yang padat, lugas, cepat dipahami, dan langsung ke inti solusi.
+    effortDirective = isEnglish ? `
+[MODE FAST & ACTIONABLE CONCISE RESPONSE]:
+- The user has selected Fast/Concise mode.
+- Give the direct, actionable answer immediately without repeating questions, preamble, or lengthy meta-criteria.
+- If asked for recommendations, list the exact models/items, key specs, and access links directly in clear bullet points or a concise table.
+- Ensure the answer is 100% complete and fully concludes without truncation.
+` : `
+[MODE CEPAT & LANGSUNG KE INTI (FAST & ACTIONABLE)]:
+- Pengguna memilih Mode Cepat / Ringkas.
+- DILARANG bertele-tele membuat kriteria pembuka yang panjang, mengulang pertanyaan, atau menulis definisi pengantar yang mubazir.
+- LANGSUNG berikan jawaban inti, daftar rekomendasi spesifik, poin-poin utama, atau solusi praktis yang ditanyakan secara to-the-point, berbobot, dan jelas.
+- Pastikan jawaban selesai tuntas 100% dan tidak terpotong!
 `;
   }
 
@@ -531,7 +540,7 @@ Langkah yang WAJIB Anda lakukan:
       { role: 'user', content: finalUserPrompt }
     ];
 
-    const maxTokensConfig = reasoningEffort === 'low' ? 1024 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 4096 : 2500);
+    const maxTokensConfig = reasoningEffort === 'low' ? 2048 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 4096 : 3000);
     const tempConfig = reasoningEffort === 'low' ? 0.2 : (reasoningEffort === 'thinking' ? 0.3 : 0.3);
 
     // ========================================================================
