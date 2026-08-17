@@ -1269,7 +1269,19 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  overscroll-behavior: contain;
+  overscroll-behavior: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .terminal-body {
+    min-height: 240px;
+    height: clamp(240px, 42vh, 380px);
+    padding: var(--space-sm);
+    overscroll-behavior: auto;
+    touch-action: pan-y;
+  }
 }
 
 .terminal-thinking-line {
@@ -1893,6 +1905,10 @@ body.modal-open {
   flex-direction: column;
   flex: 1;
   padding: 0;
+  overscroll-behavior: contain;
+}
+
+.terminal-modal-slot .terminal-body {
   overscroll-behavior: contain;
 }
 
