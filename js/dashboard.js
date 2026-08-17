@@ -197,6 +197,7 @@ class DashboardApp {
     this.renderKPIs();
     this.renderCharts();
     this.renderIntelligenceLists();
+    this.renderAllAIModelsMatrix();
     this.renderActivityTable();
   }
 
@@ -606,6 +607,158 @@ class DashboardApp {
         `;
       }).join('');
     }
+  }
+
+  // =========================================================================
+  // 5B. COMPREHENSIVE ALL AI MODELS USAGE MATRIX (Counters & Auto Resolution)
+  // =========================================================================
+  renderAllAIModelsMatrix() {
+    const gridEl = document.getElementById('ai-models-grid');
+    const totalCountEl = document.getElementById('ai-matrix-total-count');
+    if (!gridEl) return;
+
+    const MODELS_CATALOG = [
+      {
+        id: 'deepseek-v3',
+        name: 'DeepSeek V3',
+        tag: '671B MoE General',
+        icon: '⚡',
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-chat') || `${t} ${l}`.toLowerCase().includes('deepseek-v3') || (`${t} ${l}`.toLowerCase().includes('deepseek') && !`${t} ${l}`.toLowerCase().includes('r1'))
+      },
+      {
+        id: 'deepseek-r1',
+        name: 'DeepSeek R1',
+        tag: 'Thinking CoT 671B',
+        icon: '🧬',
+        color: 'oklch(0.80 0.18 280)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-r1') || `${t} ${l}`.toLowerCase().includes('thinking') || `${t} ${l}`.toLowerCase().includes('reasoning')
+      },
+      {
+        id: 'qwen-coder',
+        name: 'Qwen 2.5 Coder',
+        tag: '32B Code Specialist',
+        icon: '💻',
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen') || `${t} ${l}`.toLowerCase().includes('coder')
+      },
+      {
+        id: 'llama-3.3',
+        name: 'Meta Llama 3.3',
+        tag: '70B Instruct',
+        icon: '🦙',
+        color: 'var(--accent-amber)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.3') || `${t} ${l}`.toLowerCase().includes('llama 3.3')
+      },
+      {
+        id: 'nemotron',
+        name: 'Nvidia Nemotron',
+        tag: '70B Ultra Reasoning',
+        icon: '🟢',
+        color: 'oklch(0.75 0.18 145)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron') || `${t} ${l}`.toLowerCase().includes('nvidia')
+      },
+      {
+        id: 'gemma-3',
+        name: 'Google Gemma 3',
+        tag: '27B Vision Multimodal',
+        icon: '👁️',
+        color: 'oklch(0.75 0.18 220)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma') || `${t} ${l}`.toLowerCase().includes('vision')
+      },
+      {
+        id: 'minimax',
+        name: 'MiniMax-01',
+        tag: '456B MoE Long-Context',
+        icon: '🌟',
+        color: 'var(--accent-rose)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('minimax')
+      },
+      {
+        id: 'ollama-kimi',
+        name: 'Ollama Cloud Kimi',
+        tag: 'K2.7 Reasoning',
+        icon: '☁️',
+        color: 'oklch(0.78 0.15 70)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('ollama') || `${t} ${l}`.toLowerCase().includes('kimi')
+      },
+      {
+        id: 'auto-router',
+        name: 'Auto Cloud Router',
+        tag: 'Multi-Gateway Cascades',
+        icon: '🔀',
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('auto') || t === 'auto'
+      },
+      {
+        id: 'local-semantic',
+        name: 'Local Semantic',
+        tag: 'In-Browser Offline Pattern',
+        icon: '💾',
+        color: 'var(--text-muted)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('local_semantic') || `${t} ${l}`.toLowerCase().includes('semantic pattern')
+      }
+    ];
+
+    const aiEvents = this.filteredEvents.filter(e => 
+      e.event_type === 'ai_query' || 
+      e.event_type === 'ai_query_resolved' || 
+      e.event_type === 'model_select' || 
+      (e.event_type === 'terminal_cmd' && e.event_target && !['skills', 'projects', 'benchmarks', 'certifs', 'clear', 'help'].includes(e.event_target.toLowerCase()))
+    );
+
+    let grandTotalAI = 0;
+    const modelStats = MODELS_CATALOG.map(model => {
+      let manualCount = 0;
+      let autoCount = 0;
+
+      aiEvents.forEach(e => {
+        const t = e.event_target || '';
+        const l = e.event_label || '';
+        if (model.match(t, l)) {
+          const isAutoResolved = t.startsWith('auto:') || l.includes('[Auto ➔') || t === 'auto';
+          if (isAutoResolved) {
+            autoCount++;
+          } else {
+            manualCount++;
+          }
+        }
+      });
+
+      const total = manualCount + autoCount;
+      grandTotalAI += total;
+      return { ...model, manualCount, autoCount, total };
+    });
+
+    if (totalCountEl) {
+      totalCountEl.textContent = `${grandTotalAI.toLocaleString('id-ID')}x`;
+    }
+
+    const maxModelCount = Math.max(1, ...modelStats.map(m => m.total));
+
+    gridEl.innerHTML = modelStats.map(m => {
+      const pct = Math.round((m.total / maxModelCount) * 100);
+      return `
+        <div class="ai-model-card">
+          <div class="ai-model-card-header">
+            <div class="ai-model-name-wrap">
+              <span class="ai-model-name">${m.icon} ${this.sanitize(m.name)}</span>
+              <span class="ai-model-tag">${this.sanitize(m.tag)}</span>
+            </div>
+            <span class="ai-model-count-badge" style="color:${m.color};">${m.total}x</span>
+          </div>
+
+          <div class="ai-model-progress-bg">
+            <div class="ai-model-progress-fill" style="width:${pct}%;background-color:${m.color};"></div>
+          </div>
+
+          <div class="ai-model-breakdown">
+            <span>Manual: <strong>${m.manualCount}x</strong></span>
+            <span>Auto: <strong style="color:var(--accent-cyan);">${m.autoCount}x</strong></span>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   // =========================================================================

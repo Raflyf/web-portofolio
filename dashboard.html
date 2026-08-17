@@ -11,8 +11,8 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/style.css?v=4.0.0">
-  <link rel="stylesheet" href="css/dashboard.css?v=4.0.0">
+  <link rel="stylesheet" href="css/style.css?v=4.1.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=4.1.0">
 
   <!-- Chart.js from Cloudflare CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -261,6 +261,23 @@
       </div>
     </section>
 
+    <!-- Dedicated AI Models Comprehensive Count Matrix (All Models) -->
+    <section class="ai-models-matrix-card" aria-label="Matriks Pemantauan Lengkap Seluruh Model AI">
+      <div class="table-header-row">
+        <div class="chart-title-wrap">
+          <h2 class="chart-title">Penghitung & Pemantauan Seluruh Model AI</h2>
+          <span class="chart-subtitle">Frekuensi eksekusi per model secara menyeluruh (Pilihan Manual + Resolusi Auto Cloud Router)</span>
+        </div>
+        <div class="ai-matrix-total-badge" id="ai-matrix-total-badge">
+          Total Interaksi AI: <strong id="ai-matrix-total-count" style="color:var(--accent-emerald);">0x</strong>
+        </div>
+      </div>
+
+      <div class="ai-models-grid" id="ai-models-grid">
+        <!-- Rendered dynamically by js/dashboard.js -->
+      </div>
+    </section>
+
     <!-- Activity Stream Table -->
     <section class="table-card" aria-label="Tabel Riwayat Aktivitas Pengunjung">
       <div class="table-header-row">
@@ -374,6 +391,6 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script type="module" src="js/dashboard.js?v=4.0.0"></script>
+  <script type="module" src="js/dashboard.js?v=4.1.0"></script>
 </body>
 </html>
