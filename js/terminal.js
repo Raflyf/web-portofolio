@@ -584,4 +584,75 @@ export function initTerminal() {
       }
     });
   });
+
+  // =========================================================================
+  // Pop-up Modal & Floating Instant Terminal Action
+  // =========================================================================
+  const terminalModal = document.getElementById('terminal-modal');
+  const terminalModalSlot = document.getElementById('terminal-modal-slot');
+  const terminalInpageSlot = document.getElementById('terminal-inpage-slot');
+  const floatingTerminalBtn = document.getElementById('floating-terminal-btn');
+  const terminalPopBtn = document.getElementById('terminal-pop-btn');
+  const terminalModalClose = document.getElementById('terminal-modal-close');
+
+  function openTerminalModal() {
+    if (!terminalModal || !terminalModalSlot || !terminalCard) return;
+    terminalModalSlot.appendChild(terminalCard);
+    if (typeof terminalModal.showModal === 'function') {
+      terminalModal.showModal();
+    } else {
+      terminalModal.setAttribute('open', '');
+    }
+    if (terminalPopBtn) terminalPopBtn.style.display = 'none';
+    setTimeout(() => {
+      terminalInput.focus();
+      terminalBody.scrollTop = terminalBody.scrollHeight;
+    }, 100);
+  }
+
+  function closeTerminalModal() {
+    if (!terminalModal || !terminalInpageSlot || !terminalCard) return;
+    terminalInpageSlot.appendChild(terminalCard);
+    if (typeof terminalModal.close === 'function') {
+      terminalModal.close();
+    } else {
+      terminalModal.removeAttribute('open');
+    }
+    if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
+    setTimeout(() => {
+      terminalBody.scrollTop = terminalBody.scrollHeight;
+    }, 50);
+  }
+
+  if (floatingTerminalBtn) {
+    floatingTerminalBtn.addEventListener('click', openTerminalModal);
+  }
+
+  if (terminalPopBtn) {
+    terminalPopBtn.addEventListener('click', openTerminalModal);
+  }
+
+  if (terminalModalClose) {
+    terminalModalClose.addEventListener('click', closeTerminalModal);
+  }
+
+  if (terminalModal) {
+    terminalModal.addEventListener('click', (e) => {
+      const rect = terminalModal.getBoundingClientRect();
+      const isInDialog = (
+        rect.top <= e.clientY &&
+        e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX &&
+        e.clientX <= rect.left + rect.width
+      );
+      if (!isInDialog) {
+        closeTerminalModal();
+      }
+    });
+
+    terminalModal.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      closeTerminalModal();
+    });
+  }
 }

@@ -1689,6 +1689,165 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 /* ==========================================================================
+   10B. FLOATING INSTANT TERMINAL BUTTON & POP-UP MODAL
+   ========================================================================== */
+
+.floating-terminal-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 5.75rem;
+  height: 3rem;
+  padding: 0 1.15rem;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-card);
+  border: 1.5px solid var(--accent-emerald);
+  color: var(--accent-emerald);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25);
+  z-index: var(--z-sticky);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--fs-body-sm);
+  font-weight: 700;
+  transition: all var(--duration-fast) var(--ease-smooth-out);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.floating-terminal-btn:hover {
+  background-color: var(--accent-emerald);
+  color: oklch(0.12 0.02 250);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 28px var(--accent-emerald-glow);
+}
+
+.floating-terminal-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald);
+  animation: terminalPulse 2s infinite ease-in-out;
+}
+
+.floating-terminal-btn:hover .floating-terminal-pulse {
+  background-color: oklch(0.12 0.02 250);
+  box-shadow: 0 0 8px oklch(0.12 0.02 250);
+}
+
+@keyframes terminalPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.35);
+  }
+}
+
+@media (max-width: 768px) {
+  .floating-terminal-btn {
+    bottom: 5.5rem;
+    right: 1.25rem;
+    padding: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
+  }
+  .floating-terminal-label {
+    display: none;
+  }
+}
+
+.terminal-pop-btn {
+  background: transparent;
+  border: 1px solid var(--border-card);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--duration-micro) var(--ease-out);
+}
+
+.terminal-pop-btn:hover {
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Terminal Modal Dialog */
+.terminal-modal-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  border: 1px solid var(--accent-emerald);
+  border-radius: var(--radius-lg);
+  background-color: var(--code-bg);
+  color: var(--text-body);
+  padding: 0;
+  max-width: min(96vw, 1060px);
+  width: min(96vw, 1060px);
+  max-height: 90vh;
+  box-shadow: 0 24px 64px oklch(0 0 0 / 0.85), 0 0 35px var(--accent-emerald-glow);
+  z-index: var(--z-modal);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-modal-dialog:not([open]) {
+  display: none;
+}
+
+.terminal-modal-dialog[open] {
+  animation: modalScaleIn var(--duration-fast) var(--ease-spring) forwards;
+}
+
+.terminal-modal-dialog::backdrop {
+  background-color: rgba(5, 10, 15, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.terminal-modal-header {
+  background-color: var(--bg-secondary);
+  padding: 0.65rem var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.terminal-modal-title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--accent-emerald);
+  font-weight: 700;
+  margin: 0;
+}
+
+.terminal-modal-slot {
+  width: 100%;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.terminal-modal-slot .terminal-card {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  max-width: 100% !important;
+}
+
+/* ==========================================================================
    11. MODAL DIALOGS (Centered, Glassmorphic & Accessible)
    ========================================================================== */
 
