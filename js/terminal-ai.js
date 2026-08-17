@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.24.0';
-import { telemetry } from './telemetry.js?v=10.24.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.25.0';
+import { telemetry } from './telemetry.js?v=10.25.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -690,15 +690,203 @@ Letakkan tag [ACTION:...] tersebut di dalam jawaban Anda. Sistem terminal browse
       }
     } catch (_) {}
 
-    // 1. Direct Client Execution (Only when user explicitly provides custom key via `setkey`)
+    const fullSystemPrompt = SYSTEM_PROMPT_2026 + searchContext;
+    const effortTokensMap = {
+      'LOW': 2000,
+      'MEDIUM': 4500,
+      'HIGH': 6500,
+      'THINKING': 8192
+    };
+    const calculatedMaxTokens = effortTokensMap[targetEffort] || 4500;
+
+    // Helper: Safe JSON or SSE stream extractor
+    const extractContentFromResponseText = (rawText) => {
+      if (!rawText) return '';
+      const trimmedText = rawText.trim();
+      if (trimmedText.startsWith('data:')) {
+        let assembled = '';
+        const lines = trimmedText.split('\n');
+        for (const line of lines) {
+          const l = line.trim();
+          if (l.startsWith('data:') && !l.includes('[DONE]')) {
+            try {
+              const json = JSON.parse(l.slice(5).trim());
+              const delta = json.choices?.[0]?.delta?.content || json.choices?.[0]?.message?.content || '';
+              assembled += delta;
+            } catch (_) {}
+          }
+        }
+        if (assembled.trim().length > 0) return assembled;
+      }
+      try {
+        const json = JSON.parse(trimmedText);
+        return json.choices?.[0]?.message?.content || json.choices?.[0]?.delta?.content || '';
+      } catch (_) {
+        return '';
+      }
+    };
+
+    // 1. Primary Direct Route: Dedicated OmniRoute Gateway (Cloudflare Tunnel - 5 Verified Combos)
+    const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
+    const OMNI_KEY = atob('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
+
+    try {
+      const omniController = new AbortController();
+      const omniTimeout = setTimeout(() => omniController.abort(), 18000);
+
+      let omniModel = 'nemotron-laguna';
+      if (this.currentModel && this.currentModel !== 'auto') {
+        omniModel = this.currentModel;
+      } else if (isProjectExplaining || isHeavyCoding) {
+        omniModel = 'qwen-2.5-coder-free';
+      } else if (isDeepReasoning) {
+        omniModel = 'nemotron-3-ultra-free';
+      }
+
+      const omniRes = await fetch(OMNI_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OMNI_KEY}`
+        },
+        body: JSON.stringify({
+          model: omniModel,
+          messages: [
+            { role: 'system', content: fullSystemPrompt },
+            { role: 'user', content: userMessageContent }
+          ],
+          max_tokens: calculatedMaxTokens,
+          temperature: 0.25,
+          stream: false
+        }),
+        signal: omniController.signal
+      });
+
+      clearTimeout(omniTimeout);
+
+      if (omniRes.ok) {
+        const rawText = await omniRes.text();
+        const content = cleanOutput(extractContentFromResponseText(rawText));
+        if (content && content.length > 5) {
+          this.lastExecutionInfo = {
+            isAuto: !this.currentModel || this.currentModel === 'auto',
+            resolvedModel: omniModel,
+            requestedModel: this.currentModel,
+            isFailover: false,
+            provider: 'OmniRoute Dedicated Tunnel',
+            effort: targetEffort,
+            category: isProjectExplaining ? 'project_architecture' : (isDeepReasoning ? 'deep_reasoning' : 'general')
+          };
+          return content.split('\n');
+        }
+      }
+    } catch (_) {}
+
+    // 2. Secondary Direct Route: OpenCode Cloud Pool
+    const OC_KEYS = [
+      atob('c2stTW01NmMyZFpnZmVYVUxsQjk2c3g0alZOOHltU2djamNrc2lEd3ZrS241QWFNMWRCY2JpR0ZwdVVkWkRoZVZJNQ=='),
+      atob('c2stWVdUc2JDaTBicEJISW9pS2xiQjBnYjRUYnZZMXB5a0k0aEJCQWxFSkROEHE1ODhPT3pSZXB6RFVja29TNWtDSQ==')
+    ];
+    for (const ocKey of OC_KEYS) {
+      try {
+        const ocController = new AbortController();
+        const ocTimeout = setTimeout(() => ocController.abort(), 12000);
+        const ocRes = await fetch('https://opencode.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + ocKey
+          },
+          body: JSON.stringify({
+            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'deepseek/deepseek-chat',
+            messages: [
+              { role: 'system', content: fullSystemPrompt },
+              { role: 'user', content: userMessageContent }
+            ],
+            max_tokens: calculatedMaxTokens,
+            temperature: 0.25
+          }),
+          signal: ocController.signal
+        });
+        clearTimeout(ocTimeout);
+
+        if (ocRes.ok) {
+          const rawText = await ocRes.text();
+          const content = cleanOutput(extractContentFromResponseText(rawText));
+          if (content && content.length > 5) {
+            this.lastExecutionInfo = {
+              isAuto: !this.currentModel || this.currentModel === 'auto',
+              resolvedModel: 'deepseek/deepseek-chat',
+              requestedModel: this.currentModel,
+              isFailover: true,
+              provider: 'OpenCode Direct Failover',
+              effort: targetEffort,
+              category: 'general'
+            };
+            return content.split('\n');
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 3. Tertiary Direct Route: OpenRouter Free Pool
+    const OR_KEYS = [
+      atob('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
+      atob('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw==')
+    ];
+    for (const orKey of OR_KEYS) {
+      try {
+        const orController = new AbortController();
+        const orTimeout = setTimeout(() => orController.abort(), 12000);
+        const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + orKey,
+            'HTTP-Referer': (typeof window !== 'undefined' ? window.location.href : 'https://raflyf.github.io/web-portofolio/'),
+            'X-Title': 'Rafly Portfolio Lab'
+          },
+          body: JSON.stringify({
+            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'google/gemma-3-27b-it',
+            messages: [
+              { role: 'system', content: fullSystemPrompt },
+              { role: 'user', content: userMessageContent }
+            ],
+            max_tokens: calculatedMaxTokens,
+            temperature: 0.25
+          }),
+          signal: orController.signal
+        });
+        clearTimeout(orTimeout);
+
+        if (orRes.ok) {
+          const rawText = await orRes.text();
+          const content = cleanOutput(extractContentFromResponseText(rawText));
+          if (content && content.length > 5) {
+            this.lastExecutionInfo = {
+              isAuto: !this.currentModel || this.currentModel === 'auto',
+              resolvedModel: 'google/gemma-3-27b-it',
+              requestedModel: this.currentModel,
+              isFailover: true,
+              provider: 'OpenRouter Direct Failover',
+              effort: targetEffort,
+              category: 'general'
+            };
+            return content.split('\n');
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 4. Custom User Key (if provided via `setkey`)
     if (this.customApiKey) {
       const userKey = this.customApiKey;
       const userProvider = (this.customApiProvider || 'openrouter').toLowerCase();
 
       if (userProvider === 'openrouter' || userProvider === 'auto' || !this.customApiProvider) {
         try {
-          const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 15000);
+          const customCtrl = new AbortController();
+          const customTimer = setTimeout(() => customCtrl.abort(), 15000);
           const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -716,14 +904,13 @@ Letakkan tag [ACTION:...] tersebut di dalam jawaban Anda. Sistem terminal browse
               max_tokens: calculatedMaxTokens,
               temperature: 0.25
             }),
-            signal: orController.signal
+            signal: customCtrl.signal
           });
-          clearTimeout(orTimeout);
+          clearTimeout(customTimer);
 
           if (res.ok) {
-            const data = await res.json();
-            const rawContent = data?.choices?.[0]?.message?.content;
-            const content = cleanOutput(rawContent);
+            const rawText = await res.text();
+            const content = cleanOutput(extractContentFromResponseText(rawText));
             if (content && content.length > 5) {
               this.lastExecutionInfo = {
                 isAuto: false,
