@@ -16,20 +16,20 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
   let effortDirective = '';
   if (reasoningEffort === 'thinking') {
     effortDirective = isEnglish ? `
-[CHAIN-OF-THOUGHT / THINKING MODE ACTIVATED]:
-- The user has selected High-IQ Thinking / Chain-of-Thought (CoT) Mode.
-- Provide a rigorous, step-by-step analytical reasoning breakdown before concluding.
-- Break down mathematical formulas, algorithmic complexities, architectural trade-offs, and verify every step thoroughly.
+[CHAIN-OF-THOUGHT / HIGH-IQ REASONING MODE ACTIVATED]:
+- Deliver an exceptionally rigorous, in-depth analytical breakdown with deep technical precision.
+- Provide comprehensive architectural trade-offs, benchmarks, code comparisons, and concrete actionable recommendations.
+- Present your final insights directly using rich structured formatting (tables, bullet points, and code blocks) without dumping raw meta-planning scratchpads.
 ` : `
-[MODE THINKING & PENALARAN BERTAHAP (CHAIN-OF-THOUGHT)]:
-- Pengguna mengaktifkan Mode Thinking / CoT Tingkat Tinggi.
-- Sajikan penalaran analitis langkah demi langkah (Step-by-Step Reasoning) sebelum memberikan jawaban lengkap.
-- Uraikan rumus matematis, kompleksitas algoritma, trade-off arsitektur, dan pembuktian teknis secara mendalam.
+[MODE PENALARAN MENDALAM & ANALISIS TINGKAT TINGGI (HIGH-IQ THINKING)]:
+- Pengguna mengaktifkan Mode Penalaran Mendalam / Thinking CoT.
+- Sajikan analisis teknis berbobot tinggi, komparasi arsitektural mendalam, tolok ukur benchmark kuantitatif, dan rekomendasi konkret yang matang.
+- Langsung sajikan jawaban terstruktur dengan format Markdown yang kaya (tabel komparasi komprehensif, poin-poin penjelasan tajam, blok kode/rumus jika relevan) tanpa mencantumkan coretan meta-perencanaan yang kaku.
 `;
   } else if (reasoningEffort === 'high') {
     effortDirective = `
 [MODE DEEP RESEARCH & MAXIMUM EFFORT]:
-- Berikan analisis riset mendalam, rinci, menyeluruh, dan komprehensif dari hulu ke hilir dengan cakupan maksimal.
+- Berikan analisis riset mendalam, rinci, menyeluruh, dan komprehensif dari hulu ke hilir dengan cakupan maksimal dan tabel komparatif lengkap.
 `;
   } else if (reasoningEffort === 'low') {
     effortDirective = `
@@ -531,8 +531,8 @@ Langkah yang WAJIB Anda lakukan:
       { role: 'user', content: finalUserPrompt }
     ];
 
-    const maxTokensConfig = reasoningEffort === 'low' ? 1024 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 2048 : 1500);
-    const tempConfig = reasoningEffort === 'low' ? 0.2 : (reasoningEffort === 'thinking' ? 0.4 : 0.3);
+    const maxTokensConfig = reasoningEffort === 'low' ? 1024 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 4096 : 2500);
+    const tempConfig = reasoningEffort === 'low' ? 0.2 : (reasoningEffort === 'thinking' ? 0.3 : 0.3);
 
     // ========================================================================
     // 1. MULTIMODAL VISION ROUTE (If images are attached)
