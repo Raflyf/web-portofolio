@@ -409,6 +409,7 @@ class DashboardApp {
   // =========================================================================
   normalizeCertName(target = '', label = '') {
     const combined = `${target} ${label}`.toLowerCase();
+    if (combined.includes('bnsp') || combined.includes('analis') || combined.includes('program')) return 'BNSP: Analis Program';
     if (combined.includes('mikrotik') || combined.includes('mtcna')) return 'MikroTik MTCNA (Latvia)';
     if (combined.includes('python') || combined.includes('pcap')) return 'Cisco Python PCAP (OpenEDG)';
     if (combined.includes('blockchain') || combined.includes('cloud-blockchain')) return 'Seminar Cloud & Blockchain';

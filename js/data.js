@@ -137,6 +137,36 @@ export const PROJECTS_DATA = [
  */
 export const CERTIFICATES_DATA = [
   {
+    id: "cert-bnsp-analis-program",
+    title: "Sertifikat Kompetensi: Analis Program (Program Analyst)",
+    issuer: "Badan Nasional Sertifikasi Profesi (BNSP)",
+    institution: "LSP Universitas Bina Sarana Informatika (LSP UBSI)",
+    instructor: "Firmansyah, M.Kom (Direktur) & Rachmat Hidayat, M.Kom",
+    category: "web",
+    categoryLabel: "Software Engineering / BNSP",
+    date: "15 Sep 2025",
+    credentialId: "62010 2514 0005487 2025",
+    serialNumber: "14371590",
+    regNumber: "TIK.1241.04242 2025",
+    verificationUrl: "https://bnsp.go.id",
+    pdfUrl: "certificates/bnsp-analis-program.pdf",
+    images: [
+      "certificates/images/bnsp-analis-program-1.png",
+      "certificates/images/bnsp-analis-program-2.png"
+    ],
+    imageUrl: "certificates/images/bnsp-analis-program-1.png",
+    pageCount: 2,
+    description: "Sertifikasi Kompetensi Nasional resmi dari Badan Nasional Sertifikasi Profesi (BNSP) bidang Pengembang Perangkat Lunak (Software Development) kualifikasi Analis Program (Program Analyst). Memvalidasi 10 unit kompetensi standar industri mencakup analisis skalabilitas perangkat lunak, SQL, akses basis data, implementasi algoritma pemrograman, dokumentasi kode, debugging, profiling, code review, pengujian unit, dan pengujian integrasi program.",
+    skillsGained: [
+      "Analisis Skalabilitas",
+      "SQL & Database Access",
+      "Algoritma Pemrograman",
+      "Debugging & Profiling",
+      "Code Review",
+      "Unit & Integration Testing"
+    ]
+  },
+  {
     id: "cert-mikrotik-mtcna",
     title: "MTCNA: MikroTik Certified Network Associate",
     issuer: "Mikrotikls SIA (Riga, Latvia)",
