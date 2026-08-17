@@ -149,34 +149,68 @@ const SEMANTIC_PATTERNS = [
   {
     keywords: ['model ai', 'ai terbaru', 'model ai terbaru', 'ai 2026', 'frontier ai', 'llm terbaru'],
     respond: () => [
-      "[KATALOG & REVOLUSI MODEL AI FRONTIER TERBARU 2025 - 2026]",
+      "[KATALOG LENGKAP GENERASI MODEL AI FRONTIER 2025 - 2026]",
       "----------------------------------------------------------------",
-      "Berikut adalah generasi model AI teranyar dan tercanggih di dunia:",
+      "Berikut adalah pemetaan generasi model AI teranyar dan paling mutakhir di dunia:",
       "",
-      "1. Zhipu AI / THUDM :",
-      "   • GLM-5.3 & GLM-4.5 : Model penalaran logika & agentic tool-use terdepan.",
-      "   • CogVideoX-5B      : Model video generatif open weights sinematik.",
+      "1. Google DeepMind :",
+      "   • Gemini 3.7 Flash & Gemini 3.5 Flash : Model Hybrid Reasoning (Thinking Tokens) sub-detik.",
+      "   • Gemini 3.0 Pro & Gemini 2.5 Flash   : Multimodal terpadu teks, audio, video 4K, dan koding.",
+      "   • Gemma 3                             : Open-weights multimodal vision terdepan.",
       "",
-      "2. Alibaba Cloud / Tongyi Lab :",
-      "   • Qwen 3 & Qwen 3.8 : Generasi arsitektur penalaran terpadu matematika & bahasa.",
-      "   • Qwen 2.5 Coder 32B : Juara #1 coding benchmark open source.",
-      "   • Qwen 2.5 VL 72B   : Multimodal Vision teratas untuk bagan, dokumen & spasial.",
+      "2. Anthropic :",
+      "   • Claude 3.7 Sonnet (Extended Thinking) : Juara #1 dunia reasoning koding & agen otonom.",
+      "   • Claude 3.7 Opus & Claude 3.5 Sonnet   : Model arsitektur penalaran sintesis mendalam.",
       "",
-      "3. Moonshot AI :",
-      "   • Kimi k3 & Kimi k2.7 : Model Deep Reasoning dengan konteks 2M+ token untuk riset kode.",
+      "3. OpenAI :",
+      "   • OpenAI o4, o3, o3-mini                : Deep reasoning dengan alokasi waktu berpikir fleksibel.",
+      "   • GPT-5 preview & GPT-4.5 Orion         : Lompatan pemahaman bahasa dan konteks masif.",
       "",
-      "4. DeepSeek AI :",
-      "   • DeepSeek V3 (MoE 671B MLA) & DeepSeek R1 (Large-Scale RL Reasoning CoT).",
+      "4. Zhipu AI / THUDM :",
+      "   • GLM-5.3, GLM-5 & GLM-4.5              : Frontier reasoning, agentic workflow, & CogVideoX.",
       "",
-      "5. xAI (Elon Musk) :",
-      "   • Grok 3 & Grok 2   : Dilatih pada klaster superkomputer Colossus (100k+ Nvidia GPUs).",
+      "5. Alibaba Cloud (Tongyi Lab) :",
+      "   • Qwen 3 & Qwen 3.8                     : Penalaran terpadu matematika & koding multibahasa.",
+      "   • Qwen 2.5 Coder 32B                    : Model koding open source nomor 1 di dunia.",
       "",
-      "6. Anthropic & OpenAI :",
-      "   • Claude 3.7 Sonnet (Hybrid Reasoning) & Claude 3.5 Sonnet.",
-      "   • OpenAI o1, o3, o3-mini & GPT-4.5 Orion.",
+      "6. Moonshot AI :",
+      "   • Kimi k3 & Kimi k2.7                   : Deep reasoning dengan context window 2M-10M token.",
       "",
-      "7. Google DeepMind :",
-      "   • Gemini 2.0 / 2.5 Flash, Gemma 3 Vision Multimodal, dan Veo 2 Video."
+      "7. DeepSeek AI :",
+      "   • DeepSeek V3 (671B MLA) & DeepSeek R1  : Open weights reasoning penantang OpenAI o1/o3.",
+      "",
+      "8. xAI (Elon Musk) :",
+      "   • Grok 3 & Grok 3.5                     : Superkomputer Colossus (100k+ GPU Nvidia)."
+    ]
+  },
+  {
+    keywords: ['gemini', 'gemini 3.7', 'gemini 3.5', 'gemini flash', 'google ai'],
+    respond: () => [
+      "[GOOGLE DEEPMIND: Gemini 3.7 Flash, Gemini 3.5 & Gemma 3]",
+      "----------------------------------------------------------------",
+      "• Gemini 3.7 Flash : Model Hybrid Reasoning dengan Thinking Tokens dan latensi ultra-rendah.",
+      "• Gemini 3.0 Pro   : Pemrosesan multimodal terpadu teks, audio, video real-time, dan repositori kode.",
+      "• Gemma 3 Vision   : Bobot terbuka (open weights) multimodal untuk inferensi mandiri di edge/server."
+    ]
+  },
+  {
+    keywords: ['claude', 'claude 3.7', 'claude 3.5', 'anthropic'],
+    respond: () => [
+      "[ANTHROPIC: Claude 3.7 Sonnet & Claude 3.7 Opus]",
+      "----------------------------------------------------------------",
+      "• Claude 3.7 Sonnet : Pelopor Hybrid Reasoning dengan Extended Thinking Budget fleksibel.",
+      "• Benchmark Koding  : Peringkat teratas global dalam SWE-bench dan Computer Use otomatis.",
+      "• Keandalan         : Output terstruktur presisi tinggi tanpa halusinasi sintaksis."
+    ]
+  },
+  {
+    keywords: ['gpt', 'gpt 5', 'gpt 4.5', 'openai', 'o3', 'o4', 'o1'],
+    respond: () => [
+      "[OPENAI: GPT-5 Preview, GPT-4.5 Orion & OpenAI o3/o4]",
+      "----------------------------------------------------------------",
+      "• OpenAI o3 / o4 : Model Deep Reasoning dengan alokasi waktu berpikir (inference compute).",
+      "• GPT-4.5 Orion  : Multimodal generasi baru dengan pemahaman konteks dan bahasa tingkat tinggi.",
+      "• Ekosistem      : Terintegrasi dengan GPT-4o real-time voice dan Sora 2 video."
     ]
   },
   {
