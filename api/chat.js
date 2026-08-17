@@ -450,7 +450,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'vision',
       effort: 'medium',
       omniCandidates: ['Vision-model'],
-      openRouterCandidates: ['nvidia/nemotron-nano-12b-v2-vl:free', 'google/gemma-4-26b-a4b-it:free']
+      openRouterCandidates: ['nvidia/nemotron-nano-12b-v2-vl:free', 'openai/gpt-oss-20b:free']
     };
   }
 
@@ -487,11 +487,10 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       effort: 'high',
       omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
-        'cohere/north-mini-code:free',
-        'openai/gpt-oss-20b:free',
-        'google/gemma-4-31b-it:free',
         'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
+        'nvidia/nemotron-3-super-120b-a12b:free',
+        'cohere/north-mini-code:free',
+        'openai/gpt-oss-20b:free'
       ]
     };
   }
@@ -505,9 +504,9 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
         'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'google/gemma-4-31b-it:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
+        'nvidia/nemotron-3-super-120b-a12b:free',
+        'poolside/laguna-s-2.1:free',
+        'openai/gpt-oss-20b:free'
       ]
     };
   }
@@ -519,12 +518,12 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
-      omniCandidates: ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['nemotron-3-ultra-free', 'nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
         'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'google/gemma-4-31b-it:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
+        'nvidia/nemotron-3-super-120b-a12b:free',
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'openai/gpt-oss-20b:free'
       ]
     };
   }
@@ -536,10 +535,9 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
     openRouterCandidates: [
       'nvidia/nemotron-3-ultra-550b-a55b:free',
-      'google/gemma-4-31b-it:free',
+      'nvidia/nemotron-3-super-120b-a12b:free',
       'poolside/laguna-s-2.1:free',
-      'openai/gpt-oss-20b:free',
-      'nvidia/nemotron-3-super-120b-a12b:free'
+      'openai/gpt-oss-20b:free'
     ]
   };
 }
@@ -786,8 +784,7 @@ Langkah yang WAJIB Anda lakukan:
       // 1B. Secondary Failover: OpenRouter Multimodal Vision Cascade
       if (OPENROUTER_KEYS.length > 0) {
         const visionModels = [
-          'nvidia/nemotron-nano-12b-v2-vl:free',
-          'google/gemma-3-27b-it'
+          'nvidia/nemotron-nano-12b-v2-vl:free'
         ];
 
         for (const vm of visionModels) {
@@ -840,7 +837,7 @@ Langkah yang WAJIB Anda lakukan:
               'Authorization': `Bearer ${NVIDIA_KEY}`
             },
             body: JSON.stringify({
-              model: 'meta/llama-3.2-11b-vision-instruct',
+              model: 'nvidia/nemotron-nano-12b-v2-vl',
               messages: [
                 { role: 'system', content: systemPromptWithSearch },
                 { role: 'user', content: userContent }
@@ -853,7 +850,7 @@ Langkah yang WAJIB Anda lakukan:
             const nvData = await nvResp.json();
             const nvText = nvData?.choices?.[0]?.message?.content;
             if (nvText) {
-              return sendSuccess(nvText, 'nvidia/meta/llama-3.2-11b-vision-instruct', 'Nvidia NIM Vision');
+              return sendSuccess(nvText, 'nvidia/nemotron-nano-12b-v2-vl', 'Nvidia NIM Vision');
             }
           } else {
             const errTxt = await nvResp.text();
@@ -956,7 +953,7 @@ Langkah yang WAJIB Anda lakukan:
       if (orModel.startsWith('opencode/')) {
         orModel = 'deepseek/deepseek-chat';
       } else if (orModel.startsWith('ollamacloud/')) {
-        orModel = orModel.includes('code') ? 'qwen/qwen-2.5-coder-32b-instruct' : 'meta-llama/llama-3.3-70b-instruct';
+        orModel = orModel.includes('code') ? 'qwen/qwen-2.5-coder-32b-instruct' : 'nvidia/nemotron-3-super-120b-a12b:free';
       }
 
       const isExplicitModel = (model && model !== 'auto');
@@ -1052,7 +1049,7 @@ Langkah yang WAJIB Anda lakukan:
     if (NVIDIA_KEY) {
       const nvCandidateModels = targetModel.startsWith('nvidia/')
         ? [targetModel.replace('nvidia/', '')]
-        : ['meta/llama-3.3-70b-instruct', 'meta/llama-3.1-70b-instruct'];
+        : ['nvidia/nemotron-4-340b-instruct', 'nvidia/nemotron-nano-9b'];
 
       for (let nvModel of nvCandidateModels) {
         try {
