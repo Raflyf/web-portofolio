@@ -229,27 +229,43 @@ class TerminalAIEngine {
     // 2. Try Hugging Face Dedicated Cloud OmniRoute Gateway (24/7 Online)
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 20000);
 
-      const hfRes = await fetch('https://rflyyyf-omniroute-gateway.hf.space/v1/chat/completions', {
+      const base = 'https://rflyyyf-omniroute-gateway.hf.space';
+      const hfPost = await fetch(`${base}/gradio_api/call/chat_fn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: this.currentModel,
-          messages: [{ role: 'user', content: cleanQuery }]
-        }),
+        body: JSON.stringify({ data: [cleanQuery, []] }),
         signal: controller.signal
       });
 
-      clearTimeout(timeout);
-
-      if (hfRes.ok) {
-        const data = await hfRes.json();
-        const content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text;
-        if (content) {
-          return content.split('\n');
+      if (hfPost.ok) {
+        const postData = await hfPost.json();
+        if (postData?.event_id) {
+          const eventRes = await fetch(`${base}/gradio_api/call/chat_fn/${postData.event_id}`, {
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          if (eventRes.ok) {
+            const rawEvent = await eventRes.text();
+            const lines = rawEvent.split('\n');
+            for (const l of lines) {
+              if (l.startsWith('data: ')) {
+                try {
+                  const arr = JSON.parse(l.slice(6));
+                  if (Array.isArray(arr) && arr.length > 0) {
+                    const text = arr[0];
+                    if (text && typeof text === 'string') {
+                      return text.trim().split('\n');
+                    }
+                  }
+                } catch (_) {}
+              }
+            }
+          }
         }
       }
+      clearTimeout(timeout);
     } catch (_) {}
 
     // 3. Try Vercel Serverless Function /api/chat with generous 30s timeout
