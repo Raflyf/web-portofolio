@@ -862,6 +862,24 @@ class DashboardApp {
       (e.event_type === 'terminal_cmd' && e.event_target && !['skills', 'projects', 'benchmarks', 'certifs', 'clear', 'help'].includes(e.event_target.toLowerCase()))
     );
 
+    // Track Auto Router Resolved Breakdown
+    const autoResolvedBreakdown = {};
+    aiEvents.forEach(e => {
+      const t = e.event_target || '';
+      const l = e.event_label || '';
+      if (t.startsWith('auto:') || l.includes('[Auto ➔')) {
+        let resolved = t.replace('auto:', '').trim();
+        if (!resolved && l.includes('[Auto ➔')) {
+          resolved = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
+        }
+        if (resolved) {
+          const matched = MODELS_CATALOG.find(mod => mod.id !== 'auto-router' && mod.match(resolved, l));
+          const name = matched ? matched.name : resolved;
+          autoResolvedBreakdown[name] = (autoResolvedBreakdown[name] || 0) + 1;
+        }
+      }
+    });
+
     let grandTotalAI = 0;
     const modelStats = MODELS_CATALOG.map(model => {
       let manualCount = 0;
@@ -893,6 +911,39 @@ class DashboardApp {
 
     gridEl.innerHTML = modelStats.map(m => {
       const pct = Math.round((m.total / maxModelCount) * 100);
+
+      let autoBreakdownHtml = '';
+      if (m.id === 'auto-router') {
+        const entries = Object.entries(autoResolvedBreakdown);
+        if (entries.length > 0) {
+          const listHtml = entries.map(([modelName, count]) => `
+            <div class="ai-model-auto-item">
+              <span>➔ ${this.sanitize(modelName)}</span>
+              <strong>${count}x</strong>
+            </div>
+          `).join('');
+
+          autoBreakdownHtml = `
+            <div class="ai-model-auto-breakdown">
+              <div class="ai-model-auto-title">
+                <span>⚡ Model Terpilih Saat Mode Auto:</span>
+              </div>
+              <div class="ai-model-auto-list">
+                ${listHtml}
+              </div>
+            </div>
+          `;
+        } else {
+          autoBreakdownHtml = `
+            <div class="ai-model-auto-breakdown">
+              <div class="ai-model-auto-title" style="color:var(--text-muted);">
+                <span>⚡ Menunggu query Auto berikutnya</span>
+              </div>
+            </div>
+          `;
+        }
+      }
+
       return `
         <div class="ai-model-card">
           <div class="ai-model-card-header">
@@ -911,6 +962,8 @@ class DashboardApp {
             <span>Manual: <strong>${m.manualCount}x</strong></span>
             <span>Auto: <strong style="color:var(--accent-cyan);">${m.autoCount}x</strong></span>
           </div>
+
+          ${autoBreakdownHtml}
         </div>
       `;
     }).join('');
