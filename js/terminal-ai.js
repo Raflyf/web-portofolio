@@ -660,15 +660,15 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     if (hasImages) {
       omniCandidates = ['Vision-model'];
     } else if (targetEffort === 'THINKING' || isDeepReasoning) {
-      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
+      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else if (isProjectExplaining) {
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Antigravity', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else if (isHeavyCoding) {
-      omniCandidates = ['Codex', 'Deepseek-V4-Flash-Free', 'Antigravity', 'nemotron-laguna'];
+      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
     } else if (targetEffort === 'LOW' || isGreeting) {
-      omniCandidates = ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else {
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Antigravity', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
     }
 
     // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, DeepSeek, Ultra)
@@ -711,7 +711,8 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       for (const omniModel of omniCandidates) {
         try {
           const omniController = new AbortController();
-          const omniTimeout = setTimeout(() => omniController.abort(), 16000);
+          const timeoutMs = omniModel.toLowerCase().includes('deepseek') ? 4000 : 16000;
+          const omniTimeout = setTimeout(() => omniController.abort(), timeoutMs);
           const res = await fetch(OMNI_URL, {
             method: 'POST',
             headers: {
@@ -776,7 +777,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
         for (const ocKey of OC_KEYS) {
           try {
             const ocController = new AbortController();
-            const ocTimeout = setTimeout(() => ocController.abort(), 12000);
+            const ocTimeout = setTimeout(() => ocController.abort(), ocModel.includes('deepseek') ? 3500 : 12000);
             const ocRes = await fetch('https://api.opencode.ai/v1/chat/completions', {
               method: 'POST',
               headers: {
