@@ -838,8 +838,12 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     ];
 
     const orModelCandidates = (this.currentModel && this.currentModel !== 'auto')
-      ? [this.currentModel, 'deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct']
-      : ['deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct'];
+      ? [this.currentModel, 'deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-r1', 'meta-llama/llama-3.3-70b-instruct']
+      : (isDeepReasoning 
+          ? ['deepseek/deepseek-r1', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
+          : (isHeavyCoding || isProjectExplaining
+              ? ['qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
+              : ['deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct', 'meta-llama/llama-3.3-70b-instruct']));
 
     for (const orM of orModelCandidates) {
       for (const orKey of OR_KEYS) {
