@@ -292,7 +292,32 @@ class TerminalAIEngine {
 
     const currentLang = this.detectOrUpdateLanguage(cleanQuery);
 
-    // 1. Primary: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
+    // 0. Primary Direct Route on Client (OmniRoute / OpenCode / Nvidia / OpenRouter)
+    if (typeof window !== 'undefined' && !this.customKey) {
+      try {
+        const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
+        if (directRes && directRes.length > 0) {
+          // Record conversation turn for dynamic context
+          this.conversationHistory.push({ role: 'user', content: cleanQuery });
+          this.conversationHistory.push({ role: 'assistant', content: directRes.join('\n') });
+          if (this.conversationHistory.length > 10) {
+            this.conversationHistory = this.conversationHistory.slice(-10);
+          }
+
+          if (telemetry && this.lastExecutionInfo) {
+            const isAuto = this.lastExecutionInfo.isAuto;
+            const resolvedModel = this.lastExecutionInfo.resolvedModel;
+            const provider = this.lastExecutionInfo.provider;
+            const target = isAuto ? `auto:${resolvedModel}` : (this.currentModel || resolvedModel);
+            const label = isAuto ? `[Auto ➔ ${resolvedModel} via ${provider}] ${cleanQuery.substring(0, 60)}` : `[${this.currentModel} via ${provider}] ${cleanQuery.substring(0, 60)}`;
+            telemetry.logEvent('ai_query_resolved', target, label);
+          }
+          return directRes;
+        }
+      } catch (_) {}
+    }
+
+    // 1. Fallback: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
     try {
       const memoryContext = await this.fetchAIMemories();
       const controller = new AbortController();
@@ -468,12 +493,17 @@ class TerminalAIEngine {
     const SYSTEM_PROMPT_2026 = `Status Bahasa: BAHASA INDONESIA. Waktu Sistem Saat Ini: Senin, 17 Agustus 2026.
 Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Rafly Firmansyah (@Raflyf).
 
+[KEMAMPUAN AKSES INTERNET & MULTIMODAL REAL-TIME]:
+- Anda TERHUBUNG LANGSUNG dengan internet dan engine penjelajah web real-time (Live 2026 Web Search Crawler: Wikipedia API, Hugging Face Hub, arXiv, DuckDuckGo) serta memori jangka panjang Supabase Continuous RAG.
+- Anda memiliki kemampuan multimodal penuh untuk memproses teks, kode, analisis dokumen PDF multi-halaman via PDF.js, dan pemindaian gambar Vision AI.
+- Jika pengguna menanyakan apakah Anda bisa mengakses internet, browsing, atau mencari data real-time, tegaskan dengan jelas bahwa sistem Anda DILENGKAPI fitur live web search dan continuous learning RAG, kemudian siap membantu mencari atau memverifikasi informasi terbaru.
+
 [REGISTRI FAKTA RESMI MODEL AI FRONTIER TAHUN 2026]:
 - OpenAI: GPT-5.6 (Juli 2026), GPT-5.5 (April 2026), GPT-5 (Agustus 2025), GPT-4o.
 - Anthropic: Claude Opus 5 (Juli 2026), Claude Mythos 5 & Claude Fable 5 (Juni 2026), Claude Sonnet 5 (Juni 2026), Claude 3.5 Sonnet.
 - Google: Gemini 3.7 Flash (Agustus 2026), Gemini 3.6 Flash & Gemini 3.5 Flash-Lite (Juli 2026), Gemini 3.5 Flash (Mei 2026), Gemini 2.0 Flash.
 - DeepSeek: DeepSeek-V4 Flash & DeepSeek-V4 Pro (Agustus 2026), DeepSeek-V3 MoE 671B, DeepSeek-R1.
-- Nvidia: Nemotron 3 Super 120B, Nemotron 3 Ultra 550B MoE.
+- Nvidia: Nemotron 3 Super 120B, Nemotron 3 Ultra 550B MoE, Nemotron Laguna.
 
 [INSTRUKSI UTAMA]:
 - Jika ditanya perbandingan model AI terbaru atau posisi benchmark di LMSYS Chatbot Arena / Arena AI, sajikan perbandingan lengkap tahun 2026 dalam Tabel Markdown yang rapi dan komprehensif.
