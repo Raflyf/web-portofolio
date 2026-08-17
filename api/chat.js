@@ -447,8 +447,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'trivial_casual',
       effort: 'low', // Fast & concise, strictly saves flagship quota
-      omniCandidates: ['Deepseek-V4-Flash-Free'], // STRICTLY NO FLAGSHIP CODEX/ANTIGRAVITY FOR CASUAL GREETINGS
-      openRouterCandidates: ['google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
+      omniCandidates: ['nemotron-laguna', 'Deepseek-V4-Flash-Free'], // High-speed local tier
+      openRouterCandidates: ['nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
     };
   }
 
@@ -460,7 +460,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'high', // Deep, complete code output
-      omniCandidates: ['Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'cohere/north-mini-code:free']
     };
   }
@@ -472,8 +472,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'deep_reasoning',
       effort: 'thinking', // Deep analytical CoT
-      omniCandidates: ['Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
-      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'google/gemma-4-26b-a4b-it:free']
+      omniCandidates: ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'],
+      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'openai/gpt-oss-20b:free']
     };
   }
 
@@ -481,8 +481,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   return {
     category: 'standard_balanced',
     effort: 'medium', // Balanced depth
-    omniCandidates: ['Deepseek-V4-Flash-Free', 'Codex', 'Antigravity'],
-    openRouterCandidates: ['google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free']
+    omniCandidates: ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex', 'Antigravity'],
+    openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'openai/gpt-oss-20b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free']
   };
 }
 
@@ -884,7 +884,6 @@ Langkah yang WAJIB Anda lakukan:
             `${orModel}:free`,
             'nvidia/nemotron-3-super-120b-a12b:free',
             'nvidia/nemotron-3-ultra-550b-a55b:free',
-            'google/gemma-4-26b-a4b-it:free',
             'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
             'openai/gpt-oss-20b:free',
             'cohere/north-mini-code:free'

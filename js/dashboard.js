@@ -666,9 +666,18 @@ class DashboardApp {
         }
       },
       {
+        id: 'omniroute-nemotron-laguna',
+        name: 'Nemotron Laguna (OmniRoute)',
+        category: 'OmniRoute #4',
+        tag: 'Tier 1 Priority: Nvidia Laguna SOTA',
+        icon: '🟢',
+        color: 'oklch(0.75 0.18 145)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('laguna') || `${t} ${l}`.toLowerCase().includes('nemotron-laguna')
+      },
+      {
         id: 'omniroute-vision',
         name: 'Vision-model (MiniMax M3)',
-        category: 'OmniRoute #4',
+        category: 'OmniRoute #5',
         tag: 'Tier 1 Priority: Multimodal Vision',
         icon: '👁️',
         color: 'oklch(0.75 0.18 280)',
@@ -714,15 +723,6 @@ class DashboardApp {
         icon: '🧬',
         color: 'oklch(0.80 0.18 280)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('nano-omni') || `${t} ${l}`.toLowerCase().includes('reasoning') || `${t} ${l}`.toLowerCase().includes('30b') || `${t} ${l}`.toLowerCase().includes('r1')
-      },
-      {
-        id: 'google-gemma-4-26b',
-        name: 'Google Gemma 4 26B',
-        category: 'Flagship',
-        tag: 'Gemma 4 SOTA Architecture',
-        icon: '💎',
-        color: 'oklch(0.75 0.18 220)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-4') || `${t} ${l}`.toLowerCase().includes('gemma 4') || `${t} ${l}`.toLowerCase().includes('26b')
       },
       {
         id: 'openai-gpt-oss-20b',
