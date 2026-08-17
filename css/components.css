@@ -1123,8 +1123,11 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   max-width: min(100%, 1020px);
+  width: 100%;
   margin-inline: auto;
   position: relative;
+  display: flex;
+  flex-direction: column;
   transition: border-color var(--duration-micro) var(--ease-out), box-shadow var(--duration-micro) var(--ease-out);
 }
 
@@ -1837,6 +1840,9 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 .terminal-modal-slot {
   width: 100%;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 0;
 }
 
@@ -1845,6 +1851,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   border-radius: 0 !important;
   box-shadow: none !important;
   max-width: 100% !important;
+  width: 100% !important;
 }
 
 /* ==========================================================================
