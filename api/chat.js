@@ -940,9 +940,15 @@ Langkah yang WAJIB Anda lakukan:
           } else {
             const errTxt = await response.text();
             providerErrors.push(`OmniRoute ${omniModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+            if ([502, 503, 521, 522, 524, 530].includes(response.status)) {
+              // Laptop OmniRoute server is offline -> instantly cascade to cloud backups
+              break;
+            }
           }
         } catch (err) {
           providerErrors.push(`OmniRoute ${omniModel}: ${err.message}`);
+          // Network or tunnel unreachable -> instantly cascade to cloud backups
+          break;
         }
       }
     }

@@ -726,7 +726,9 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Deepseek-V4-Flash-Free'];
     }
 
+    let isTunnelReachable = true;
     for (const omniModel of omniCandidates) {
+      if (!isTunnelReachable) break;
       try {
         const omniController = new AbortController();
         const omniTimeout = setTimeout(() => omniController.abort(), 60000);
@@ -767,8 +769,18 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
             };
             return content.split('\n');
           }
+        } else {
+          // If Cloudflare tunnel returns 502/503/521/522/524/530, server is offline
+          if ([502, 503, 521, 522, 524, 530].includes(omniRes.status)) {
+            isTunnelReachable = false;
+            break;
+          }
         }
-      } catch (_) {}
+      } catch (_) {
+        // Network failure / DNS unreachable -> instantly cascade to cloud backups
+        isTunnelReachable = false;
+        break;
+      }
     }
 
     // 2. Secondary Direct Route: OpenCode Cloud Pool (Nemotron & DeepSeek)
