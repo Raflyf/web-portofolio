@@ -47,9 +47,17 @@ export function initTerminal() {
   }
 
   function renderWelcomeMessage() {
-    appendLine("Sistem Terminal Interaktif Portofolio [Versi 5.2.0 — Multimodal & Real-Time AI Engine]");
-    appendLine("Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!");
-    appendLine("");
+    const existing = document.getElementById('terminal-welcome-banner');
+    if (existing) existing.remove();
+
+    const welcomeBox = document.createElement('div');
+    welcomeBox.id = 'terminal-welcome-banner';
+    welcomeBox.className = 'terminal-welcome-banner';
+    welcomeBox.innerHTML = `
+      <div class="terminal-line">Sistem Terminal Interaktif Portofolio [Versi 5.2.0 — Multimodal & Real-Time AI Engine]</div>
+      <div class="terminal-line" style="margin-bottom:8px;">Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!</div>
+    `;
+    terminalBody.appendChild(welcomeBox);
   }
 
   function renderFileTray() {
@@ -495,6 +503,12 @@ export function initTerminal() {
 
     if (!trimmed && currentAttachments.length === 0) return;
 
+    // Auto-hide initial welcome banner on first question/command
+    const welcomeBanner = document.getElementById('terminal-welcome-banner');
+    if (welcomeBanner && trimmed.toLowerCase() !== 'clear') {
+      welcomeBanner.remove();
+    }
+
     if (trimmed) {
       history.push(trimmed);
       historyIndex = history.length;
@@ -507,8 +521,17 @@ export function initTerminal() {
       displayPrompt = trimmed ? `${trimmed} [Lampiran: ${attachNames}]` : `[Menganalisis Lampiran: ${attachNames}]`;
     }
 
-    appendLine('', true, displayPrompt);
+    const promptLine = appendLine('', true, displayPrompt);
     terminalInput.value = '';
+
+    // Auto-scroll newly asked question to the top of the terminal viewport
+    if (promptLine) {
+      const targetTop = promptLine.offsetTop - terminalBody.offsetTop;
+      terminalBody.scrollTo({
+        top: Math.max(0, targetTop - 8),
+        behavior: 'smooth'
+      });
+    }
 
     // Clear attached files tray
     attachedFiles = [];

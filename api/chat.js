@@ -193,7 +193,8 @@ export default async function handler(req, res) {
       customKey = '', 
       customProvider = '',
       attachments = [],
-      sessionLanguage = 'id'
+      sessionLanguage = 'id',
+      history = []
     } = req.body || {};
 
     if (!query && (!attachments || attachments.length === 0)) {
@@ -243,6 +244,18 @@ export default async function handler(req, res) {
     }
 
     const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage)}${webContext}`;
+
+    // Assemble conversation history
+    const formattedHistory = Array.isArray(history) ? history.map(h => ({
+      role: h.role === 'assistant' ? 'assistant' : 'user',
+      content: String(h.content || '').slice(0, 4000)
+    })) : [];
+
+    const baseTextMessages = [
+      { role: 'system', content: systemPromptWithSearch },
+      ...formattedHistory,
+      { role: 'user', content: assembledQuery }
+    ];
 
     // ========================================================================
     // 1. MULTIMODAL VISION ROUTE (If images are attached)
@@ -371,12 +384,9 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
               model: nvModel,
-              messages: [
-                { role: 'system', content: systemPromptWithSearch },
-                { role: 'user', content: assembledQuery }
-              ],
+              messages: baseTextMessages,
               max_tokens: 8192,
-              temperature: 0.7
+              temperature: 0.8
             })
           }, 10000);
 
@@ -429,12 +439,9 @@ export default async function handler(req, res) {
             },
             body: JSON.stringify({
               model: m,
-              messages: [
-                { role: 'system', content: systemPromptWithSearch },
-                { role: 'user', content: assembledQuery }
-              ],
+              messages: baseTextMessages,
               max_tokens: 8192,
-              temperature: 0.7
+              temperature: 0.8
             })
           }, 9000);
 
@@ -470,11 +477,9 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({
             model: 'deepseek-v4-flash-free',
-            messages: [
-              { role: 'system', content: systemPromptWithSearch },
-              { role: 'user', content: assembledQuery }
-            ],
-            max_tokens: 8192
+            messages: baseTextMessages,
+            max_tokens: 8192,
+            temperature: 0.8
           })
         }, 10000);
 
@@ -513,11 +518,9 @@ export default async function handler(req, res) {
           },
           body: JSON.stringify({
             model: olModel,
-            messages: [
-              { role: 'system', content: systemPromptWithSearch },
-              { role: 'user', content: assembledQuery }
-            ],
-            max_tokens: 8192
+            messages: baseTextMessages,
+            max_tokens: 8192,
+            temperature: 0.8
           })
         }, 10000);
 
