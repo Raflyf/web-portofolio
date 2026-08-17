@@ -1,9 +1,9 @@
 /**
  * ============================================================================
- * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v3.9.0)
+ * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v4.8.0)
  * CLI Playground & Natural Language AI Assistant for Rafly Firmansyah Portfolio
- * With Multi-API Cascade (OpenRouter/DeepSeek, Nvidia Nemotron, MiniMax, Opencode)
- * & Interactive Model Dropdown Picker + Token-by-Token Typewriter Streamer
+ * With 24/7 Cloud Multi-AI Cascade (DeepSeek V3/V4, Meta Llama 3.3, Mistral Large 2, Qwen Coder)
+ * Interactive Dropdown, Permanent Header Banner, and Send Button
  * ============================================================================
  */
 
@@ -17,6 +17,7 @@ export function initTerminal() {
   const terminalInput = document.getElementById('terminal-input');
   const chipButtons = document.querySelectorAll('.terminal-chip');
   const modelSelect = document.getElementById('terminal-model-select');
+  const submitBtn = document.getElementById('terminal-submit-btn');
 
   if (!terminalBody || !terminalForm || !terminalInput) return;
 
@@ -38,6 +39,12 @@ export function initTerminal() {
     });
   }
 
+  function renderWelcomeMessage() {
+    appendLine("Sistem Terminal Interaktif Portofolio [Versi 4.8.0 — Cloud Multi-AI Engine]");
+    appendLine("Pilih Model AI pada dropdown di atas atau tanyakan apapun secara bebas & mendalam.");
+    appendLine("");
+  }
+
   const COMMAND_REGISTRY = {
     help: () => [
       "Perintah CLI yang tersedia:",
@@ -52,7 +59,7 @@ export function initTerminal() {
       "  telemetry    - Portal monitoring analitik & trafik admin",
       "  contact      - Informasi kontak resmi",
       "  whoami       - Status sesi saat ini",
-      "  clear        - Membersihkan layar terminal",
+      "  clear        - Membersihkan riwayat layar terminal",
       "",
       "TIPS: Gunakan dropdown 'Model AI' di pojok kanan atas untuk memilih model!",
       "Atau tanyakan apapun secara mendalam dan bebas dengan bahasa alami."
@@ -130,6 +137,7 @@ export function initTerminal() {
     clearkey: () => terminalAI.clearKey(),
     clear: () => {
       terminalBody.innerHTML = '';
+      renderWelcomeMessage();
       return [];
     }
   };
@@ -157,7 +165,7 @@ export function initTerminal() {
   }
 
   /**
-   * Snappy Token/Word Typewriter Streamer (Like ChatGPT/Claude)
+   * Snappy Token/Word Typewriter Streamer
    */
   async function streamOutputLines(lines) {
     for (let i = 0; i < lines.length; i++) {
@@ -234,6 +242,7 @@ export function initTerminal() {
     // Process via AI Engine with Snappy Streaming Output
     isGenerating = true;
     terminalInput.disabled = true;
+    if (submitBtn) submitBtn.disabled = true;
     telemetry.logEvent('terminal_ai_query', trimmed.slice(0, 40), `Pertanyaan AI: ${trimmed}`);
 
     const thinkingLine = appendLine("[AI Assistant] Menganalisis dan menyusun jawaban mendalam...", false, '', true);
@@ -253,6 +262,7 @@ export function initTerminal() {
     } finally {
       isGenerating = false;
       terminalInput.disabled = false;
+      if (submitBtn) submitBtn.disabled = false;
       terminalInput.focus();
     }
 
@@ -260,9 +270,7 @@ export function initTerminal() {
   }
 
   // Initial welcome message
-  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.9.0 — Deep AI Engine]");
-  appendLine("Pilih Model AI pada dropdown di atas atau tanyakan apapun secara mendalam.");
-  appendLine("");
+  renderWelcomeMessage();
 
   // Form submit listener
   terminalForm.addEventListener('submit', (e) => {
