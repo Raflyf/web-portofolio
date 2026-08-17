@@ -502,11 +502,17 @@ class DashboardApp {
     const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
     const tag = isAuto ? 'Auto: ' : '';
 
+    if (combined.includes('nemotron-4') || combined.includes('340b')) return `${tag}Nvidia Nemotron 4 (340B Flagship)`;
+    if (combined.includes('nemotron') || combined.includes('laguna') || combined.includes('ultra-free') || combined.includes('nvidia')) return `${tag}Nvidia Nemotron 3 Ultra`;
+    if (combined.includes('minimax-01') || (combined.includes('minimax') && !combined.includes('m3'))) return `${tag}MiniMax-01 (456B MoE)`;
+    if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo')) return `${tag}MiniMax-M3 Vision Multimodal`;
+    if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
+    if (combined.includes('deepseek-v3') || combined.includes('deepseek-chat') || combined.includes('671b')) return `${tag}DeepSeek V3 (671B MoE)`;
+    if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash`;
     if (combined.includes('codex') || combined.includes('gpt-5')) return `${tag}Codex (GPT-5.6 Terra)`;
-    if (combined.includes('antigravity') || combined.includes('opus')) return `${tag}Antigravity (Claude Opus 4.6)`;
-    if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash (OpenCode Pool)`;
-    if (combined.includes('vision') || combined.includes('minimax') || combined.includes('mimo')) return `${tag}Vision-model (MiniMax M3)`;
-    if (combined.includes('nemotron') || combined.includes('laguna') || combined.includes('ultra-free') || combined.includes('nvidia')) return `${tag}Nemotron Laguna (Nemotron 3 Ultra)`;
+    if (combined.includes('antigravity') || combined.includes('opus') || combined.includes('claude')) return `${tag}Antigravity (Claude Opus 4.6)`;
+    if (combined.includes('qwen') || combined.includes('coder') || combined.includes('koding')) return `${tag}Qwen 2.5 Coder (32B)`;
+    if (combined.includes('kimi')) return `${tag}Kimi K2.7 Coder (Ollama Cloud)`;
     if (combined.includes('local_semantic') || combined.includes('semantic engine')) return 'Auto: Local Semantic Fallback';
 
     if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
@@ -689,65 +695,128 @@ class DashboardApp {
         match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
       },
 
-      // 1. OmniRoute Combo #1: Codex Architecture
+      // 1. Nvidia NIM & Nemotron Family
+      {
+        id: 'omniroute-nemotron-laguna',
+        name: 'Nvidia Nemotron 3 Ultra',
+        category: 'Nvidia SOTA',
+        tag: 'Laguna / 100+ Accounts Pool',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('laguna') || s.includes('nemotron-3-ultra') || s.includes('ultra-free') || (s.includes('nemotron') && !s.includes('340b'));
+        }
+      },
+      {
+        id: 'nvidia-nemotron-340b',
+        name: 'Nvidia Nemotron 4 340B',
+        category: 'Nvidia NIM',
+        tag: '340B Flagship Instruct',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-4') || `${t} ${l}`.toLowerCase().includes('340b')
+      },
+
+      // 2. MiniMax Frontier
+      {
+        id: 'minimax-01',
+        name: 'MiniMax-01 (456B MoE)',
+        category: 'MiniMax API',
+        tag: '456B MoE SOTA Flagship',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('minimax-01') || (s.includes('minimax') && !s.includes('m3') && !s.includes('vision'));
+        }
+      },
+      {
+        id: 'omniroute-vision',
+        name: 'MiniMax-M3 Vision Multimodal',
+        category: 'Multimodal',
+        tag: 'Vision & OCR Document Engine',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('mimo') || `${t} ${l}`.toLowerCase().includes('vision')
+      },
+
+      // 3. DeepSeek Frontier Suite
+      {
+        id: 'deepseek-v3',
+        name: 'DeepSeek V3 (671B MoE)',
+        category: 'DeepSeek SOTA',
+        tag: 'OpenRouter & Ollama Cloud',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-amber)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return (s.includes('deepseek-v3') || s.includes('deepseek-chat') || s.includes('671b')) && !s.includes('r1');
+        }
+      },
+      {
+        id: 'deepseek-r1',
+        name: 'DeepSeek R1 (Thinking CoT)',
+        category: 'DeepSeek SOTA',
+        tag: 'Chain-of-Thought Reasoning',
+        icon: SVG_ICONS.cot,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-r1') || `${t} ${l}`.toLowerCase().includes('r1') || `${t} ${l}`.toLowerCase().includes('reasoning')
+      },
+      {
+        id: 'omniroute-deepseek-v4',
+        name: 'DeepSeek V4 Flash',
+        category: 'OpenCode Direct',
+        tag: 'Multi-Account 50+ Pool',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-amber)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('v4-flash') || s.includes('flash-free') || (s.includes('deepseek') && !s.includes('v3') && !s.includes('r1') && !s.includes('chat'));
+        }
+      },
+
+      // 4. OpenAI & Anthropic Dedicated (OmniRoute)
       {
         id: 'omniroute-codex',
-        name: 'Codex (GPT-5.6 Terra / GPT-5.5)',
-        category: 'OmniRoute Combo #1',
-        tag: 'Tier 1: Heavy Coding Round-Robin',
+        name: 'Codex (GPT-5.6 Terra)',
+        category: 'OmniRoute Dedicated',
+        tag: 'Tier 1: Heavy Coding & Architecture',
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('codex') || `${t} ${l}`.toLowerCase().includes('gpt-5.6') || `${t} ${l}`.toLowerCase().includes('terra') || `${t} ${l}`.toLowerCase().includes('gpt-5.5')
       },
-
-      // 2. OmniRoute Combo #2: Antigravity CoT
       {
         id: 'omniroute-antigravity',
         name: 'Antigravity (Claude Opus 4.6)',
-        category: 'OmniRoute Combo #2',
-        tag: 'Tier 1: Deep Reasoning CoT Round-Robin',
+        category: 'OmniRoute Dedicated',
+        tag: 'Tier 1: Deep CoT Multi-Step',
         icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus') || `${t} ${l}`.toLowerCase().includes('sonnet')
       },
 
-      // 3. OmniRoute Combo #3: DeepSeek V4 Flash
+      // 5. Ollama Cloud Specialists
       {
-        id: 'omniroute-deepseek-v4',
-        name: 'DeepSeek V4 Flash (OpenCode Pool)',
-        category: 'OmniRoute Combo #3',
-        tag: 'Tier 1: Fast Logic 50+ Accounts',
-        icon: SVG_ICONS.fast,
+        id: 'qwen-2.5-coder',
+        name: 'Qwen 2.5 Coder (32B)',
+        category: 'Ollama / OpenRouter',
+        tag: 'Agentic Coding Specialist',
+        icon: SVG_ICONS.code,
         color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('deepseek') || s.includes('v4-flash') || s.includes('flash-free');
-        }
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen') || `${t} ${l}`.toLowerCase().includes('coder:32b')
       },
-
-      // 4. OmniRoute Combo #4: Vision Model
       {
-        id: 'omniroute-vision',
-        name: 'Vision-model (MiniMax M3 / Mimo)',
-        category: 'OmniRoute Combo #4',
-        tag: 'Tier 1: Multimodal Vision & OCR',
-        icon: SVG_ICONS.vision,
+        id: 'kimi-k2.7',
+        name: 'Kimi K2.7 Coder',
+        category: 'Ollama Cloud',
+        tag: 'High-Context Analysis',
+        icon: SVG_ICONS.fast,
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('minimax') || `${t} ${l}`.toLowerCase().includes('mimo')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('kimi')
       },
 
-      // 5. OmniRoute Combo #5: Nemotron Laguna
-      {
-        id: 'omniroute-nemotron-laguna',
-        name: 'Nemotron Laguna (Nemotron 3 Ultra)',
-        category: 'OmniRoute Combo #5',
-        tag: 'Tier 1: SOTA Reasoning 100+ Accounts',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('laguna') || `${t} ${l}`.toLowerCase().includes('nemotron') || `${t} ${l}`.toLowerCase().includes('ultra-free')
-      },
-
-      // 6. Fallback Local & Offline Semantic Engine
+      // 6. Local & Offline Fallback
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
