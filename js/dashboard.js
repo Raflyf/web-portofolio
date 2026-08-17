@@ -127,13 +127,24 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 2. DATA RETRIEVAL (Anti-Cache Supabase REST & Local Storage)
+  // 2. DATA RETRIEVAL (Dual-Source Hybrid Merge: Supabase REST + Local Cache)
   // =========================================================================
   async loadDashboardData(isBackground = false) {
     const syncStatusEl = document.getElementById('sync-status');
-    if (syncStatusEl && !isBackground) syncStatusEl.textContent = 'Memuat data...';
+    if (syncStatusEl && !isBackground) syncStatusEl.textContent = 'Menyinkronkan data...';
 
-    let loaded = [];
+    // 1. Read local storage events first (0ms instant response)
+    let localEvents = [];
+    try {
+      const localRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      localEvents = localRaw ? JSON.parse(localRaw) : [];
+      if (!Array.isArray(localEvents)) localEvents = [];
+    } catch {
+      localEvents = [];
+    }
+
+    // 2. Fetch remote Supabase events
+    let remoteEvents = [];
     const configRaw = localStorage.getItem(CONFIG_KEY);
     const parsedConfig = configRaw ? JSON.parse(configRaw) : {};
     const config = {
@@ -141,6 +152,7 @@ class DashboardApp {
       anonKey: parsedConfig.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
     };
 
+    let isSupabaseConnected = false;
     if (config && config.url && config.anonKey) {
       try {
         const timestamp = Date.now();
@@ -155,22 +167,49 @@ class DashboardApp {
           }
         });
         if (res.ok) {
-          loaded = await res.json();
-          if (syncStatusEl) syncStatusEl.textContent = 'Cloud Supabase Terhubung';
+          remoteEvents = await res.json();
+          if (Array.isArray(remoteEvents)) {
+            isSupabaseConnected = true;
+          } else {
+            remoteEvents = [];
+          }
         }
       } catch (err) {
-        console.warn('Gagal memuat Supabase, beralih ke cache lokal:', err);
+        console.warn('Gagal memuat Supabase, menggunakan cache lokal:', err);
       }
     }
 
-    if (!loaded || loaded.length === 0) {
-      // Fallback to local storage cache
-      const localRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      loaded = localRaw ? JSON.parse(localRaw) : [];
-      if (syncStatusEl) syncStatusEl.textContent = 'Penyimpanan Lokal Aktif';
+    if (syncStatusEl) {
+      syncStatusEl.textContent = isSupabaseConnected 
+        ? 'Cloud Supabase Terhubung (Live Real-Time)' 
+        : 'Penyimpanan Lokal Aktif (Offline Mode)';
     }
 
-    this.events = loaded;
+    // 3. Deduplicating Hybrid Merge (Combines both sources seamlessly)
+    const eventMap = new Map();
+
+    // Ingest remote events
+    remoteEvents.forEach(e => {
+      if (!e) return;
+      const key = e.id || `${e.session_id}_${e.created_at}_${e.event_type}_${e.event_target}`;
+      eventMap.set(key, e);
+    });
+
+    // Ingest local events
+    localEvents.forEach(e => {
+      if (!e) return;
+      const key = e.id || `${e.session_id}_${e.created_at}_${e.event_type}_${e.event_target}`;
+      if (!eventMap.has(key)) {
+        eventMap.set(key, e);
+      }
+    });
+
+    // Sort chronologically descending (newest first)
+    const merged = Array.from(eventMap.values()).sort((a, b) => {
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    });
+
+    this.events = merged;
     this.filterAndRender();
   }
 
