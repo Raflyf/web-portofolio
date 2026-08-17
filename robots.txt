@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+
+Sitemap: https://raflyf.github.io/web-portofolio/sitemap.xml
