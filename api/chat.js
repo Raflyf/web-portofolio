@@ -129,6 +129,10 @@ Jika pengguna menanyakan proyek, riset, skripsi, atau repositori Rafly Firmansya
    - 10 Sertifikat: BNSP Analis Program (10 Unit Kompetensi Nasional TIK 037 00481 2026), MikroTik MTCNA Latvia (ID: 2410NA3062), Cisco Python PCAP, IT Bootcamp Network Security (UBSI), Cloud Computing Specialist (UBSI), Kominfo DEA E-Commerce, Harisenin Full-Stack.
    - Kontak: WhatsApp 08991333323 (https://wa.me/628991333323), Email raflyfirmansyah02@gmail.com, GitHub https://github.com/Raflyf.
 
+PROTOKOL RELEVANSI WAKTU & ZERO OBSOLETE DATA (PRIORITAS FAKTA MUTAKHIR 2026):
+- Jika pengguna menanyakan model AI, tools, atau perkembangan teknologi "terbaru", FOKUSKAN SECARA EKSKLUSIF pada model generasi teranyar (rilisan tahun 2026 seperti GPT-5.6 / GPT-5.5, Claude Opus 5 / Opus 4.6, DeepSeek V4).
+- DILARANG KERAS mencantumkan atau membuat tabel/daftar model-model lawas (seperti GPT-4, GPT-4.5, Claude Haiku 4.5 lama, dll) saat ditanya rilis terbaru, kecuali jika pengguna secara eksplisit meminta perbandingan historis. Jaga jawaban tetap tajam, segar, dan fokus pada yang paling baru.
+
 Nol Emoji & Persona Profesional:
 - Dilarang menyisipkan emoji sama sekali. Pertahankan gaya komunikasi cerdas, analitis, dan objektif.
 `;
@@ -217,15 +221,15 @@ async function searchWebContext(query, history = []) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2200);
 
-    // 5-Source Concurrent Multi-Index Search
+    // 5-Source Concurrent Multi-Index Search (Targeting latest 1 year / 2026 releases)
     const [googleNewsEnRes, googleNewsIdRes, ddgRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
       // 1. Google News Global / US RSS (Latest Global Tech & AI Releases)
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=en-US&gl=US&ceid=US:en`, {
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery + ' when:1y')}&hl=en-US&gl=US&ceid=US:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
       // 2. Google News Indonesia RSS
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=id&gl=ID&ceid=ID:id`, {
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery + ' when:1y')}&hl=id&gl=ID&ceid=ID:id`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
@@ -271,8 +275,11 @@ async function searchWebContext(query, history = []) {
           const title = cleanStr(titleMatch ? titleMatch[1] : '');
           if (title && !isJunkArticle(title)) {
             const dateStr = dateMatch ? dateMatch[1] : '2026';
-            snippets.push(`[Live Global News (${dateStr})]: ${title}`);
-            rawSnippets.push(`[Global News]: ${title}`);
+            // Prefer 2026 / recent items
+            if (dateStr.includes('2026') || !dateStr.includes('2024')) {
+              snippets.push(`[Live Global News (${dateStr})]: ${title}`);
+              rawSnippets.push(`[Global News]: ${title}`);
+            }
           }
         });
       }
@@ -289,8 +296,10 @@ async function searchWebContext(query, history = []) {
           const title = cleanStr(titleMatch ? titleMatch[1] : '');
           if (title && !isJunkArticle(title)) {
             const dateStr = dateMatch ? dateMatch[1] : '2026';
-            snippets.push(`[Live Berita Indonesia (${dateStr})]: ${title}`);
-            rawSnippets.push(`[Berita ID]: ${title}`);
+            if (dateStr.includes('2026') || !dateStr.includes('2024')) {
+              snippets.push(`[Live Berita Indonesia (${dateStr})]: ${title}`);
+              rawSnippets.push(`[Berita ID]: ${title}`);
+            }
           }
         });
       }
