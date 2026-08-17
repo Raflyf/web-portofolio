@@ -433,7 +433,7 @@ export default async function handler(req, res) {
       { role: 'user', content: assembledQuery }
     ];
 
-    const maxTokensConfig = reasoningEffort === 'low' ? 4096 : 8192;
+    const maxTokensConfig = reasoningEffort === 'low' ? 1024 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 2048 : 1500);
     const tempConfig = reasoningEffort === 'low' ? 0.6 : (reasoningEffort === 'thinking' ? 0.7 : 0.8);
 
     // ========================================================================
@@ -588,10 +588,10 @@ export default async function handler(req, res) {
     if (NVIDIA_KEY) {
       const nvCandidateModels = targetModel.startsWith('nvidia/')
         ? [targetModel.replace('nvidia/', '')]
-        : ['meta/llama-3.3-70b-instruct', 'nvidia/llama-3.1-nemotron-70b-instruct'];
+        : ['meta/llama-3.3-70b-instruct', 'meta/llama-3.1-70b-instruct', 'meta/llama-3.1-8b-instruct'];
 
       for (let nvModel of nvCandidateModels) {
-        if (nvModel.includes('nemotron')) nvModel = 'nvidia/llama-3.1-nemotron-70b-instruct';
+        if (nvModel.includes('nemotron')) nvModel = 'meta/llama-3.3-70b-instruct';
         try {
           const response = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
@@ -605,7 +605,7 @@ export default async function handler(req, res) {
               max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
-          }, 20000);
+          }, 25000);
 
           if (response.ok) {
             const data = await response.json();
@@ -631,19 +631,25 @@ export default async function handler(req, res) {
     // 2C. OpenRouter Multi-Model Cloud Pool
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
-      if (orModel.startsWith('ollamacloud/')) {
+      if (orModel.startsWith('opencode/')) {
+        orModel = 'deepseek/deepseek-chat';
+      } else if (orModel.startsWith('ollamacloud/')) {
         orModel = orModel.includes('code') ? 'qwen/qwen-2.5-coder-32b-instruct' : 'meta-llama/llama-3.3-70b-instruct';
       }
 
       const orCandidates = [
         orModel,
-        'meta-llama/llama-3.3-70b-instruct',
-        'qwen/qwen-2.5-72b-instruct',
-        'qwen/qwen-2.5-coder-32b-instruct',
+        `${orModel}:free`,
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'deepseek/deepseek-chat:free',
+        'deepseek/deepseek-r1:free',
+        'qwen/qwen-2.5-coder-32b-instruct:free',
+        'google/gemini-2.0-flash-exp:free',
+        'meta-llama/llama-3.1-8b-instruct:free',
+        'mistralai/mistral-nemo:free',
         'deepseek/deepseek-chat',
-        'deepseek/deepseek-r1',
-        'mistralai/mistral-large-2407'
-      ];
+        'meta-llama/llama-3.3-70b-instruct'
+      ].filter((v, i, a) => v && a.indexOf(v) === i && !v.startsWith('opencode/'));
 
       for (const m of orCandidates) {
         try {
