@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js';
-import { telemetry } from './telemetry.js';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.18.0';
+import { telemetry } from './telemetry.js?v=10.18.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -660,15 +660,15 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     if (hasImages) {
       omniCandidates = ['Vision-model'];
     } else if (targetEffort === 'THINKING' || isDeepReasoning) {
-      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
-    } else if (isProjectExplaining) {
       omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
+    } else if (isProjectExplaining) {
+      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     } else if (isHeavyCoding) {
-      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Codex', 'nemotron-laguna', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     } else if (targetEffort === 'LOW' || isGreeting) {
       omniCandidates = ['nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else {
-      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     }
 
     // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, DeepSeek, Ultra)
@@ -681,7 +681,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       else if (explicit.includes('vision') || explicit.includes('minimax') || explicit.includes('mimo')) omniCandidates = ['Vision-model', ...omniCandidates];
     }
 
-    const calculatedMaxTokens = targetEffort === 'LOW' ? 1000 : (targetEffort === 'THINKING' ? 6000 : (targetEffort === 'HIGH' ? 5000 : 3500));
+    const calculatedMaxTokens = targetEffort === 'LOW' ? 800 : (targetEffort === 'THINKING' ? 2600 : (targetEffort === 'HIGH' ? 2200 : 1800));
 
     const parseOmniResponse = (raw) => {
       if (!raw) return '';
@@ -711,7 +711,9 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       for (const omniModel of omniCandidates) {
         try {
           const omniController = new AbortController();
-          const timeoutMs = omniModel.toLowerCase().includes('deepseek') ? 4000 : 16000;
+          const timeoutMs = omniModel.toLowerCase().includes('deepseek')
+            ? 3500
+            : (omniModel.toLowerCase().includes('antigravity') ? 42000 : 24000);
           const omniTimeout = setTimeout(() => omniController.abort(), timeoutMs);
           const res = await fetch(OMNI_URL, {
             method: 'POST',
