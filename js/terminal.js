@@ -1,9 +1,9 @@
 /**
  * ============================================================================
- * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR
+ * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v3.8.0)
  * CLI Playground & Natural Language AI Assistant for Rafly Firmansyah Portfolio
  * With Multi-API Cascade (OpenRouter/DeepSeek, Nvidia, MiniMax, Ollama)
- * & In-Browser Local Semantic Knowledge Fallback
+ * & Snappy Token-by-Token Typewriter Streaming Engine
  * ============================================================================
  */
 
@@ -21,6 +21,7 @@ export function initTerminal() {
 
   const history = [];
   let historyIndex = -1;
+  let isGenerating = false;
 
   const COMMAND_REGISTRY = {
     help: () => [
@@ -142,7 +143,47 @@ export function initTerminal() {
     return lineEl;
   }
 
+  /**
+   * Snappy Token/Word Typewriter Streamer (Like ChatGPT)
+   */
+  async function streamOutputLines(lines) {
+    for (let i = 0; i < lines.length; i++) {
+      const lineText = lines[i];
+      if (!lineText) {
+        appendLine("");
+        continue;
+      }
+
+      // Split into words and punctuation tokens
+      const tokens = lineText.split(/(\s+)/);
+      const lineEl = document.createElement('div');
+      lineEl.className = 'terminal-line';
+      terminalBody.appendChild(lineEl);
+
+      const cursorSpan = document.createElement('span');
+      cursorSpan.className = 'terminal-stream-cursor';
+      cursorSpan.textContent = '▋';
+      lineEl.appendChild(cursorSpan);
+
+      for (let j = 0; j < tokens.length; j++) {
+        const token = tokens[j];
+        cursorSpan.insertAdjacentText('beforebegin', token);
+        terminalBody.scrollTop = terminalBody.scrollHeight;
+
+        // Snappy cadence: ~12ms per non-empty token
+        if (token.trim().length > 0) {
+          await new Promise(r => setTimeout(r, 12));
+        }
+      }
+
+      cursorSpan.remove();
+      terminalBody.scrollTop = terminalBody.scrollHeight;
+      await new Promise(r => setTimeout(r, 25));
+    }
+  }
+
   async function executeCommand(rawInput) {
+    if (isGenerating) return;
     const trimmed = rawInput.trim();
     if (!trimmed) return;
 
@@ -154,7 +195,7 @@ export function initTerminal() {
 
     const cmdLower = trimmed.toLowerCase();
 
-    // Built-in single keyword commands
+    // Built-in single keyword commands (instant response)
     if (COMMAND_REGISTRY[cmdLower]) {
       telemetry.logEvent('terminal_cmd', cmdLower, `Perintah Terminal: ${cmdLower}`);
       const outputLines = COMMAND_REGISTRY[cmdLower]();
@@ -188,10 +229,12 @@ export function initTerminal() {
       return;
     }
 
-    // Process via AI Engine (Vercel Serverless Multi-API Gateway + In-Browser Semantic Fallback)
+    // Process via AI Engine with Snappy Streaming Output
+    isGenerating = true;
+    terminalInput.disabled = true;
     telemetry.logEvent('terminal_ai_query', trimmed.slice(0, 40), `Pertanyaan AI: ${trimmed}`);
 
-    const thinkingLine = appendLine("[AI Assistant] Menghubungi mesin kecerdasan buatan...", false, '', true);
+    const thinkingLine = appendLine("[AI Assistant] Menyusun jawaban...", false, '', true);
 
     try {
       const responses = await terminalAI.ask(trimmed);
@@ -199,19 +242,23 @@ export function initTerminal() {
         thinkingLine.remove();
       }
 
-      responses.forEach(line => appendLine(line));
+      await streamOutputLines(responses);
     } catch (err) {
       if (thinkingLine && thinkingLine.parentNode) {
         thinkingLine.remove();
       }
       appendLine(`[AI Fallback] Terjadi kendala respon. Mengalihkan ke database lokal.`);
+    } finally {
+      isGenerating = false;
+      terminalInput.disabled = false;
+      terminalInput.focus();
     }
 
     appendLine("");
   }
 
   // Initial welcome message
-  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.5.0 — Multi-AI Cascade]");
+  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.8.0 — AI Streaming Engine]");
   appendLine("Ketik 'help' untuk daftar perintah atau tanyakan apapun dengan bahasa alami.");
   appendLine("");
 
