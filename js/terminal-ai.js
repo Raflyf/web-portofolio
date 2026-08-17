@@ -357,7 +357,9 @@ class TerminalAIEngine {
           resolvedModel,
           requestedModel,
           isFailover,
-          provider
+          provider,
+          effort: data.effort || this.reasoningEffort,
+          category: data.category || 'general'
         };
 
         // Log resolved model execution (tracks what model was used in Auto mode)

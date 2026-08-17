@@ -804,13 +804,14 @@ export function initTerminal() {
           const info = terminalAI.lastExecutionInfo;
           const cleanModel = info.resolvedModel.split('/').pop().replace(/-/g, ' ').toUpperCase();
           const cleanReq = (info.requestedModel || '').split('/').pop().replace(/-/g, ' ').toUpperCase();
+          const effortLabel = info.effort ? ` [Effort: ${info.effort.toUpperCase()}]` : '';
 
           if (info.isAuto) {
-            authorEl.textContent = `⚡ Auto Router ➔ ${cleanModel} (${info.provider})`;
+            authorEl.textContent = `⚡ Auto Router ➔ ${cleanModel}${effortLabel} (${info.provider})`;
           } else if (info.isFailover) {
-            authorEl.textContent = `⚡ ${cleanReq} ➔ Fallback: ${cleanModel}`;
+            authorEl.textContent = `⚡ ${cleanReq} ➔ Fallback: ${cleanModel}${effortLabel}`;
           } else {
-            authorEl.textContent = `⚡ ${cleanModel} (${info.provider})`;
+            authorEl.textContent = `⚡ ${cleanModel}${effortLabel} (${info.provider})`;
           }
         }
       }
