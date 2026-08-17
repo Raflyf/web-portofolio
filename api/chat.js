@@ -78,13 +78,14 @@ async function searchWebContext(query) {
 }
 
 function pickAutoModel(query, hasImages = false) {
+  // Priority 1: If multimodal images are attached, route to highest-IQ Vision Frontier model
   if (hasImages) {
-    return 'qwen/qwen-2-vl-72b-instruct';
+    return 'google/gemma-3-27b-it';
   }
 
   const q = query.toLowerCase();
   
-  // 1. Code & programming intents
+  // Priority 2: Code & Programming Specialist Intents
   if (
     q.includes('code') || q.includes('koding') || q.includes('python') || q.includes('javascript') ||
     q.includes('fungsi') || q.includes('function') || q.includes('script') || q.includes('bug') ||
@@ -94,16 +95,7 @@ function pickAutoModel(query, hasImages = false) {
     return 'qwen/qwen-2.5-coder-32b-instruct';
   }
 
-  // 2. Deep reasoning & analytical logic intents
-  if (
-    q.includes('kenapa') || q.includes('mengapa') || q.includes('analisis') || q.includes('bandingkan') ||
-    q.includes('perbedaan') || q.includes('evaluasi') || q.includes('hitung') || q.includes('step by step') ||
-    q.includes('penalaran') || q.includes('arsitektur') || q.includes('paling canggih')
-  ) {
-    return 'deepseek/deepseek-chat';
-  }
-
-  // 3. General & portfolio inquiries
+  // Priority 3: Deep Analytical Reasoning, Complex Synthesis, PDF Analysis & General IQ (DeepSeek V3 671B)
   return 'deepseek/deepseek-chat';
 }
 
