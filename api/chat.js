@@ -450,7 +450,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'vision',
       effort: 'medium',
       omniCandidates: ['Vision-model', 'Deepseek-V4-Flash-Free', 'Codex'],
-      openRouterCandidates: ['nvidia/nemotron-nano-12b-v2-vl:free', 'google/gemma-3-27b-it']
+      openRouterCandidates: ['nvidia/nemotron-nano-12b-v2-vl:free', 'google/gemma-4-26b-a4b-it:free']
     };
   }
 
@@ -466,9 +466,14 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (isGreetingOrTrivial && docAttachments.length === 0) {
     return {
       category: 'trivial_casual',
-      effort: 'low', // Fast & concise, strictly saves flagship quota
+      effort: 'low',
       omniCandidates: ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'],
-      openRouterCandidates: ['nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
+      openRouterCandidates: [
+        'poolside/laguna-s-2.1:free',
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
+      ]
     };
   }
 
@@ -479,9 +484,15 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasCodeKeywords || hasCodeBlocks) {
     return {
       category: 'heavy_coding',
-      effort: 'high', // Deep, complete code output
+      effort: 'high',
       omniCandidates: ['Codex', 'Deepseek-V4-Flash-Free', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity'],
-      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b:free']
+      openRouterCandidates: [
+        'cohere/north-mini-code:free',
+        'openai/gpt-oss-20b:free',
+        'google/gemma-4-31b-it:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
+      ]
     };
   }
 
@@ -492,7 +503,12 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'project_architecture',
       effort: 'high',
       omniCandidates: ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity'],
-      openRouterCandidates: ['nvidia/nemotron-3-ultra-550b:free', 'openai/gpt-oss-20b:free', 'nvidia/nemotron-3-super-120b-a12b:free']
+      openRouterCandidates: [
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'google/gemma-4-31b-it:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
+      ]
     };
   }
 
@@ -502,18 +518,29 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasReasoningKeywords || len > 250) {
     return {
       category: 'deep_reasoning',
-      effort: 'thinking', // Deep analytical CoT
+      effort: 'thinking',
       omniCandidates: ['nemotron-3-ultra-free', 'Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'],
-      openRouterCandidates: ['nvidia/nemotron-3-ultra-550b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'openai/gpt-oss-20b:free']
+      openRouterCandidates: [
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'google/gemma-4-31b-it:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
+      ]
     };
   }
 
   // 5. Standard Explanatory / Tech concepts / News search / Comparisons (Medium Effort)
   return {
     category: 'standard_balanced',
-    effort: 'medium', // Balanced depth
-    omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
-    openRouterCandidates: ['nvidia/nemotron-3-ultra-550b:free', 'openai/gpt-oss-20b:free', 'nvidia/nemotron-3-super-120b-a12b:free']
+    effort: 'medium',
+    omniCandidates: ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
+    openRouterCandidates: [
+      'nvidia/nemotron-3-ultra-550b-a55b:free',
+      'google/gemma-4-31b-it:free',
+      'poolside/laguna-s-2.1:free',
+      'openai/gpt-oss-20b:free',
+      'nvidia/nemotron-3-super-120b-a12b:free'
+    ]
   };
 }
 
