@@ -461,50 +461,77 @@ class TerminalAIEngine {
     const isDeepReasoning = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200;
     const isGreeting = len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
 
-    // 1. OmniRoute Direct Attempt (for coding & deep reasoning)
+    // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
     const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
     const OMNI_KEY = decodeKey('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
 
-    if (OMNI_KEY && (isHeavyCoding || isDeepReasoning)) {
-      const preferredOmniModel = isHeavyCoding ? 'Codex' : 'Antigravity';
-      try {
-        const omniController = new AbortController();
-        const omniTimeout = setTimeout(() => omniController.abort(), 12000);
-        const res = await fetch(OMNI_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + OMNI_KEY
-          },
-          body: JSON.stringify({
-            model: preferredOmniModel,
-            messages: [
-              { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant di Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf). Jawab pertanyaan secara profesional dan terstruktur dalam Bahasa Indonesia.' },
-              { role: 'user', content: cleanQuery }
-            ],
-            stream: false,
-            max_tokens: 2500
-          }),
-          signal: omniController.signal
-        });
-        clearTimeout(omniTimeout);
-        if (res.ok) {
-          const data = await res.json();
-          const content = cleanOutput(data?.choices?.[0]?.message?.content);
-          if (content) {
-            this.lastExecutionInfo = {
-              isAuto: true,
-              resolvedModel: preferredOmniModel,
-              requestedModel: this.currentModel,
-              isFailover: false,
-              provider: 'OmniRoute Dedicated Server',
-              effort: isHeavyCoding ? 'HIGH' : 'THINKING',
-              category: isHeavyCoding ? 'heavy_coding' : 'deep_reasoning'
-            };
-            return content.split('\n');
+    let omniCandidates = [];
+    let targetEffort = 'MEDIUM';
+
+    if (isGreeting) {
+      targetEffort = 'LOW';
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
+    } else if (isHeavyCoding) {
+      targetEffort = 'HIGH';
+      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
+    } else if (isDeepReasoning) {
+      targetEffort = 'THINKING';
+      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
+    } else {
+      targetEffort = 'MEDIUM';
+      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+    }
+
+    // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna)
+    if (this.currentModel && this.currentModel !== 'auto') {
+      const explicit = this.currentModel.toLowerCase();
+      if (explicit.includes('codex') || explicit.includes('terra')) omniCandidates = ['Codex', ...omniCandidates];
+      else if (explicit.includes('antigravity') || explicit.includes('opus')) omniCandidates = ['Antigravity', ...omniCandidates];
+      else if (explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
+      else if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
+    }
+
+    if (OMNI_KEY) {
+      for (const omniModel of omniCandidates) {
+        try {
+          const omniController = new AbortController();
+          const omniTimeout = setTimeout(() => omniController.abort(), 10000);
+          const res = await fetch(OMNI_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + OMNI_KEY
+            },
+            body: JSON.stringify({
+              model: omniModel,
+              messages: [
+                { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant di Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf). Jawab pertanyaan secara profesional dan terstruktur dalam Bahasa Indonesia. Jangan gunakan monolog proses berpikir bahasa Inggris.' },
+                { role: 'user', content: cleanQuery }
+              ],
+              stream: false,
+              max_tokens: targetEffort === 'LOW' ? 600 : (targetEffort === 'HIGH' ? 3000 : 2000)
+            }),
+            signal: omniController.signal
+          });
+          clearTimeout(omniTimeout);
+          if (res.ok) {
+            const data = await res.json();
+            const content = cleanOutput(data?.choices?.[0]?.message?.content);
+            if (content && content.length > 5) {
+              this.lastExecutionInfo = {
+                isAuto: !this.currentModel || this.currentModel === 'auto',
+                resolvedModel: omniModel,
+                requestedModel: this.currentModel,
+                isFailover: false,
+                provider: 'OmniRoute Dedicated Server',
+                effort: targetEffort,
+                category: isHeavyCoding ? 'heavy_coding' : (isDeepReasoning ? 'deep_reasoning' : (isGreeting ? 'trivial_casual' : 'standard'))
+              };
+              return content.split('\n');
+            }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
     }
 
     // 2. OpenRouter Direct SOTA Pool (Nemotron 3 Super 120B / Ultra 550B / Nano 30B / GPT-OSS 20B)
@@ -514,7 +541,7 @@ class TerminalAIEngine {
     ].filter(Boolean);
 
     let OR_MODELS = [];
-    let targetEffort = 'MEDIUM';
+    targetEffort = targetEffort || 'MEDIUM';
 
     if (isGreeting) {
       targetEffort = 'LOW';
