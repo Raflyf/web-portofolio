@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Telemetry & Monitoring Panel — Rafly Firmansyah</title>
+  <title>Admin Telemetry & Observability Panel — Rafly Firmansyah</title>
   
   <!-- Security Headers & Strict CSP -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: https://*.supabase.co;">
@@ -11,8 +11,8 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/style.css?v=4.5.0">
-  <link rel="stylesheet" href="css/dashboard.css?v=4.5.0">
+  <link rel="stylesheet" href="css/style.css?v=5.0.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=5.0.0">
 
   <!-- Chart.js from Cloudflare CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -25,25 +25,26 @@
   <div class="pin-gateway-overlay" id="pin-gateway">
     <div class="pin-card" role="dialog" aria-labelledby="pin-title">
       <div class="pin-icon-wrap" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       </div>
 
-      <div>
-        <h1 class="pin-title" id="pin-title">Admin Monitoring Portal</h1>
-        <p class="pin-desc">Masukkan Master PIN keamanan untuk membuka akses grafik dan telemetri portofolio.</p>
+      <div class="pin-header-text">
+        <h1 class="pin-title" id="pin-title">Admin Observability Portal</h1>
+        <p class="pin-desc">Masukkan Master PIN keamanan untuk membuka akses metrik dan telemetri server.</p>
       </div>
 
       <form class="pin-form" id="pin-form">
         <input type="password" id="pin-input" class="pin-input" placeholder="••••••" maxlength="8" autofocus autocomplete="off" required aria-label="Master PIN Keamanan">
         <div class="pin-error" id="pin-error"></div>
         <button type="submit" class="pin-submit-btn">
-          <span>Buka Panel Monitoring</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          <span>Buka Panel Observabilitas</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
       </form>
 
-      <div style="font-family: var(--font-mono); font-size: 0.725rem; color: var(--text-dim);">
-        Standard SHA-256 Crypto & Brute-Force Lockout Protected
+      <div class="pin-crypto-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        <span>SHA-256 Web Crypto & Brute-Force Lockout Protected</span>
       </div>
     </div>
   </div>
@@ -55,6 +56,9 @@
     <div class="dash-container dash-header-wrap">
       <div class="dash-brand">
         <a href="index.html" class="dash-brand-title" title="Kembali ke Portofolio">
+          <span class="dash-brand-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          </span>
           Rafly <span>Firmansyah</span> / Telemetry
         </a>
         <div class="dash-status-pill">
@@ -73,7 +77,7 @@
         </select>
 
         <button type="button" id="dash-ping-btn" class="dash-btn" title="Kirim Sinyal Telemetri Uji Coba">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
           <span>Uji Ping</span>
         </button>
 
@@ -83,11 +87,11 @@
         </button>
 
         <button type="button" id="dash-config-btn" class="dash-btn" title="Konfigurasi Cloud Supabase">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
           <span>Cloud Sync</span>
         </button>
 
-        <button type="button" id="dash-logout-btn" class="dash-btn" title="Kunci Dashboard">
+        <button type="button" id="dash-logout-btn" class="dash-btn dash-btn-danger" title="Kunci Dashboard">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
           <span>Kunci</span>
         </button>
@@ -107,7 +111,7 @@
         <div class="kpi-card-header">
           <span class="kpi-label">Total Page Views</span>
           <div class="kpi-icon-badge">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </div>
         </div>
         <div class="kpi-value" id="kpi-views">0</div>
@@ -121,11 +125,11 @@
       <div class="kpi-card">
         <div class="kpi-card-header">
           <span class="kpi-label">Pengunjung Unik</span>
-          <div class="kpi-icon-badge" style="color:var(--accent-cyan);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <div class="kpi-icon-badge kpi-badge-cyan">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           </div>
         </div>
-        <div class="kpi-value" id="kpi-visitors" style="color:var(--accent-cyan);">0</div>
+        <div class="kpi-value text-cyan" id="kpi-visitors">0</div>
         <div class="kpi-meta">
           <span>Berdasarkan sesi unik</span>
         </div>
@@ -134,12 +138,12 @@
       <!-- 3. Link Clicks -->
       <div class="kpi-card">
         <div class="kpi-card-header">
-          <span class="kpi-label">Total Klik Tautan</span>
-          <div class="kpi-icon-badge" style="color:var(--accent-amber);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+          <span class="kpi-label">Total Interaksi Klik</span>
+          <div class="kpi-icon-badge kpi-badge-amber">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
           </div>
         </div>
-        <div class="kpi-value" id="kpi-clicks" style="color:var(--accent-amber);">0</div>
+        <div class="kpi-value text-amber" id="kpi-clicks">0</div>
         <div class="kpi-meta">
           <span>WhatsApp, GitHub, Proyek, PDF</span>
         </div>
@@ -149,11 +153,11 @@
       <div class="kpi-card">
         <div class="kpi-card-header">
           <span class="kpi-label">Konversi Kontak</span>
-          <div class="kpi-icon-badge" style="color:var(--accent-rose);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          <div class="kpi-icon-badge kpi-badge-rose">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
           </div>
         </div>
-        <div class="kpi-value" id="kpi-contacts" style="color:var(--accent-rose);">0</div>
+        <div class="kpi-value text-rose" id="kpi-contacts">0</div>
         <div class="kpi-meta">
           <span>Kirim Form & Chat WA</span>
         </div>
@@ -163,11 +167,11 @@
       <div class="kpi-card">
         <div class="kpi-card-header">
           <span class="kpi-label">Rasio Interaktivitas</span>
-          <div class="kpi-icon-badge" style="color:oklch(0.80 0.18 280);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <div class="kpi-icon-badge kpi-badge-emerald">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
           </div>
         </div>
-        <div class="kpi-value" id="kpi-engagement" style="color:oklch(0.80 0.18 280);">0.0</div>
+        <div class="kpi-value text-emerald" id="kpi-engagement">0.0</div>
         <div class="kpi-meta">
           <span>Rata-rata aksi per pengunjung</span>
         </div>
@@ -181,7 +185,7 @@
         <div class="chart-card-header">
           <div class="chart-title-wrap">
             <h2 class="chart-title">Tren Kunjungan Portofolio</h2>
-            <span class="chart-subtitle">Fluktuasi harian page views & sesi pengunjung unik</span>
+            <span class="chart-subtitle">Fluktuasi harian page views dan sesi pengunjung unik</span>
           </div>
         </div>
         <div class="chart-canvas-box">
@@ -254,71 +258,75 @@
     <section class="omniroute-topology-card" aria-label="Status Gateway OmniRoute & Topologi Model Combos">
       <div class="omniroute-header-wrap">
         <div class="chart-title-wrap">
-          <h2 class="chart-title">OmniRoute AI Gateway — Private Host Architecture</h2>
-          <span class="chart-subtitle">Endpoint Dedicated Laptop Server via Cloudflare Quick Tunnel (Tier #1 Primary Priority)</span>
+          <div class="omniroute-badge-row">
+            <span class="tech-tag">OMNIROUTE ARCHITECTURE</span>
+            <span class="tech-tag tag-primary">TIER 1 PRIMARY GATEWAY</span>
+          </div>
+          <h2 class="chart-title">OmniRoute Dedicated Host & Pipeline Topology</h2>
+          <span class="chart-subtitle">Private Model Inference Server via Cloudflare Quick Tunnel (Local Laptop Infrastructure)</span>
         </div>
         <div class="omniroute-live-pill">
-          <span class="omniroute-live-dot"></span>
-          <span>HOST LIVE: CLOUDFLARE TUNNEL</span>
+          <span class="omniroute-live-dot" aria-hidden="true"></span>
+          <span>HOST STATUS: ACTIVE TUNNEL</span>
         </div>
       </div>
 
       <div class="omniroute-combos-grid">
         <!-- Priority 1: Codex -->
         <div class="omniroute-combo-tile">
-          <span class="omniroute-combo-priority-badge" style="border-color:rgba(16,185,129,0.5);color:var(--accent-emerald);">PRIORITY #1</span>
-          <div class="omniroute-combo-name">
-            <span>👑 Codex</span>
+          <div class="omniroute-tile-top">
+            <span class="omniroute-priority-badge badge-emerald">PRIORITY 1</span>
+            <span class="omniroute-engine-tag">gpt-5.6-terra</span>
           </div>
-          <div class="omniroute-combo-engine">Engine: gpt-5.6-terra (OpenAI)</div>
+          <div class="omniroute-combo-name">Codex Architecture</div>
           <div class="omniroute-combo-desc">Spesialis penalaran koding berat, rekayasa software, dan arsitektur sistem berskala besar.</div>
         </div>
 
         <!-- Priority 2: Antigravity -->
         <div class="omniroute-combo-tile">
-          <span class="omniroute-combo-priority-badge" style="border-color:rgba(6,182,212,0.5);color:var(--accent-cyan);">PRIORITY #2</span>
-          <div class="omniroute-combo-name">
-            <span>🧠 Antigravity</span>
+          <div class="omniroute-tile-top">
+            <span class="omniroute-priority-badge badge-cyan">PRIORITY 2</span>
+            <span class="omniroute-engine-tag">claude-opus-4.6</span>
           </div>
-          <div class="omniroute-combo-engine">Engine: claude-opus-4-6-thinking</div>
-          <div class="omniroute-combo-desc">Penalaran analitis mendalam (Deep CoT Thinking), sintesis riset ilmiah, dan telaah dokumen komprehensif.</div>
+          <div class="omniroute-combo-name">Antigravity CoT</div>
+          <div class="omniroute-combo-desc">Penalaran analitis mendalam (Deep Chain-of-Thought), sintesis riset ilmiah, dan telaah dokumen komprehensif.</div>
         </div>
 
         <!-- Priority 3: DeepSeek V4 Flash -->
         <div class="omniroute-combo-tile">
-          <span class="omniroute-combo-priority-badge" style="border-color:rgba(245,158,11,0.5);color:var(--accent-amber);">PRIORITY #3</span>
-          <div class="omniroute-combo-name">
-            <span>⚡ Deepseek-V4-Flash-Free</span>
+          <div class="omniroute-tile-top">
+            <span class="omniroute-priority-badge badge-amber">PRIORITY 3</span>
+            <span class="omniroute-engine-tag">deepseek-v4-flash</span>
           </div>
-          <div class="omniroute-combo-engine">Engine: deepseek-v4-flash-free</div>
-          <div class="omniroute-combo-desc">Inferensi algoritma dan pemecahan masalah cepat dengan efisiensi token tinggi.</div>
+          <div class="omniroute-combo-name">DeepSeek V4 Flash</div>
+          <div class="omniroute-combo-desc">Inferensi algoritma dan pemecahan masalah cepat dengan kuota terbesar dan failover dinamis 4 detik.</div>
         </div>
 
         <!-- Priority 4: Nemotron Laguna -->
         <div class="omniroute-combo-tile">
-          <span class="omniroute-combo-priority-badge" style="border-color:rgba(16,185,129,0.5);color:var(--accent-emerald);">PRIORITY #4</span>
-          <div class="omniroute-combo-name">
-            <span>🟢 Nemotron-Laguna</span>
+          <div class="omniroute-tile-top">
+            <span class="omniroute-priority-badge badge-emerald">PRIORITY 4</span>
+            <span class="omniroute-engine-tag">nemotron-laguna</span>
           </div>
-          <div class="omniroute-combo-engine">Engine: nemotron-laguna (Nvidia)</div>
+          <div class="omniroute-combo-name">Nemotron Laguna</div>
           <div class="omniroute-combo-desc">Penalaran presisi tinggi, evaluasi benchmark AI Arena, dan sintesis bahasa terstruktur.</div>
         </div>
 
         <!-- Priority 5: Vision Model -->
         <div class="omniroute-combo-tile">
-          <span class="omniroute-combo-priority-badge" style="border-color:rgba(168,85,247,0.5);color:oklch(0.75 0.18 280);">VISION PRIORITY</span>
-          <div class="omniroute-combo-name">
-            <span>👁️ Vision-model</span>
+          <div class="omniroute-tile-top">
+            <span class="omniroute-priority-badge badge-cyan">MULTIMODAL</span>
+            <span class="omniroute-engine-tag">minimax-m3</span>
           </div>
-          <div class="omniroute-combo-engine">Engine: minimax-m3 (MiniMax)</div>
+          <div class="omniroute-combo-name">Vision Multimodal</div>
           <div class="omniroute-combo-desc">Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi.</div>
         </div>
       </div>
 
-      <div style="font-size:0.775rem;color:var(--text-muted);display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;border-top:1px dashed rgba(255,255,255,0.08);padding-top:0.75rem;">
-        <span>🛡️ <strong>Failover Tiers:</strong></span>
-        <span style="background:var(--bg-base);padding:2px 8px;border-radius:4px;border:1px solid var(--border-card);">Tier 2: OpenRouter 3-Key SOTA Cloud Pool</span>
-        <span style="background:var(--bg-base);padding:2px 8px;border-radius:4px;border:1px solid var(--border-card);">Tier 3: In-Browser Semantic Engine (Offline)</span>
+      <div class="omniroute-footer-tiers">
+        <span class="tier-label">Failover Cascade:</span>
+        <span class="tier-badge">Tier 2: OpenRouter SOTA Cloud Pool (GPT-OSS 20B / Nemotron 30B / Nemotron 120B)</span>
+        <span class="tier-badge">Tier 3: In-Browser Semantic Engine (Offline Resilient)</span>
       </div>
     </section>
 
@@ -330,7 +338,7 @@
           <span class="chart-subtitle">Frekuensi eksekusi per model secara menyeluruh (Pilihan Manual + Resolusi Auto Cloud Router)</span>
         </div>
         <div class="ai-matrix-total-badge" id="ai-matrix-total-badge">
-          Total Interaksi AI: <strong id="ai-matrix-total-count" style="color:var(--accent-emerald);">0x</strong>
+          Total Interaksi AI: <strong id="ai-matrix-total-count" class="text-emerald">0x</strong>
         </div>
       </div>
 
@@ -347,7 +355,7 @@
           <span class="chart-subtitle">Basis data pengetahuan dan fakta yang dipelajari AI dari pencarian web real-time & masukan pengguna</span>
         </div>
         <div class="ai-matrix-total-badge" id="ai-memory-total-badge">
-          Basis Data RAG: <strong id="ai-memory-total-count" style="color:var(--accent-emerald);">Sinkronisasi...</strong>
+          Basis Data RAG: <strong id="ai-memory-total-count" class="text-emerald">Sinkronisasi...</strong>
         </div>
       </div>
 
@@ -362,10 +370,10 @@
       <div class="table-header-row">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Log Aktivitas Pengunjung Terkini</h2>
-          <span class="chart-subtitle">Aliran event interaksi real-time tanpa menyimpan PII</span>
+          <span class="chart-subtitle">Aliran event interaksi real-time tanpa menyimpan data privasi (PII)</span>
         </div>
 
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <div class="table-controls-wrap">
           <div class="table-search-box">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             <input type="text" id="table-search-input" class="table-search-input" placeholder="Cari event atau target...">
@@ -381,9 +389,11 @@
           </select>
 
           <button type="button" id="export-csv-btn" class="dash-btn" title="Unduh data dalam format CSV">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             <span>Ekspor CSV</span>
           </button>
           <button type="button" id="export-json-btn" class="dash-btn" title="Unduh data dalam format JSON">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             <span>Ekspor JSON</span>
           </button>
         </div>
@@ -413,19 +423,19 @@
        ========================================================================= -->
   <div class="dash-modal" id="changepin-modal">
     <div class="dash-modal-card" role="dialog" aria-labelledby="changepin-title">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 id="changepin-title" style="font-size:1.15rem; font-weight:700; color:var(--text-heading);">Ganti Master PIN Keamanan</h3>
-        <button type="button" id="changepin-close-btn" class="dash-btn" style="padding:0.3rem 0.6rem;">&times;</button>
+      <div class="modal-header-row">
+        <h3 id="changepin-title" class="modal-title">Ganti Master PIN Keamanan</h3>
+        <button type="button" id="changepin-close-btn" class="dash-modal-close" aria-label="Tutup modal">&times;</button>
       </div>
 
-      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+      <p class="modal-desc">
         Perbarui Master PIN akses dashboard. PIN baru akan di-hash menggunakan algoritma SHA-256 dan disimpan aman di peramban Anda.
       </p>
 
-      <form id="changepin-form" style="display:flex; flex-direction:column; gap:1rem;">
+      <form id="changepin-form" class="modal-form">
         <div>
-          <label for="new-pin-input" style="font-size:0.8rem; font-weight:600; color:var(--text-heading); display:block; margin-bottom:0.35rem;">Master PIN Baru (4-8 Digit)</label>
-          <input type="password" id="new-pin-input" class="pin-input" style="font-size:1.1rem;" placeholder="••••••" maxlength="8" required>
+          <label for="new-pin-input" class="modal-label">Master PIN Baru (4-8 Digit)</label>
+          <input type="password" id="new-pin-input" class="pin-input" placeholder="••••••" maxlength="8" required>
         </div>
 
         <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
@@ -440,24 +450,24 @@
        ========================================================================= -->
   <div class="dash-modal" id="config-modal">
     <div class="dash-modal-card" role="dialog" aria-labelledby="config-title">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 id="config-title" style="font-size:1.15rem; font-weight:700; color:var(--text-heading);">Konfigurasi Supabase Cloud</h3>
-        <button type="button" id="config-close-btn" class="dash-btn" style="padding:0.3rem 0.6rem;">&times;</button>
+      <div class="modal-header-row">
+        <h3 id="config-title" class="modal-title">Konfigurasi Supabase Cloud</h3>
+        <button type="button" id="config-close-btn" class="dash-modal-close" aria-label="Tutup modal">&times;</button>
       </div>
 
-      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
-        Sinkronkan telemetri ke cloud Supabase pribadi secara gratis untuk memantau trafik dari berbagai perangkat secara terpusat.
+      <p class="modal-desc">
+        Sinkronkan telemetri ke cloud Supabase pribadi untuk memantau trafik dari berbagai perangkat secara terpusat.
       </p>
 
-      <form id="config-form" style="display:flex; flex-direction:column; gap:1rem;">
+      <form id="config-form" class="modal-form">
         <div>
-          <label for="supabase-url-input" style="font-size:0.8rem; font-weight:600; color:var(--text-heading); display:block; margin-bottom:0.35rem;">Supabase Project URL</label>
-          <input type="url" id="supabase-url-input" class="pin-input" style="font-size:0.9rem; text-align:left; letter-spacing:normal;" value="https://rphyzcqwpkxtzllvymss.supabase.co" placeholder="https://rphyzcqwpkxtzllvymss.supabase.co" required>
+          <label for="supabase-url-input" class="modal-label">Supabase Project URL</label>
+          <input type="url" id="supabase-url-input" class="pin-input text-left" value="https://rphyzcqwpkxtzllvymss.supabase.co" placeholder="https://rphyzcqwpkxtzllvymss.supabase.co" required>
         </div>
 
         <div>
-          <label for="supabase-key-input" style="font-size:0.8rem; font-weight:600; color:var(--text-heading); display:block; margin-bottom:0.35rem;">Supabase Anon Public API Key</label>
-          <input type="text" id="supabase-key-input" class="pin-input" style="font-size:0.9rem; text-align:left; letter-spacing:normal;" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU" placeholder="eyJhbGciOiJIUzI1NiIsInR5..." required>
+          <label for="supabase-key-input" class="modal-label">Supabase Anon Public API Key</label>
+          <input type="text" id="supabase-key-input" class="pin-input text-left" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU" placeholder="eyJhbGciOiJIUzI1NiIsInR5..." required>
         </div>
 
         <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
@@ -465,11 +475,13 @@
         </button>
       </form>
     </div>
+  </div>
+
   <!-- Floating Smooth Back-to-Top Button -->
   <button id="floating-back-to-top" class="floating-back-to-top" aria-label="Gulir kembali ke paling atas halaman">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script type="module" src="js/dashboard.js?v=4.5.0"></script>
+  <script type="module" src="js/dashboard.js?v=5.0.0"></script>
 </body>
 </html>
