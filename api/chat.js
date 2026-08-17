@@ -224,7 +224,6 @@ async function searchWebContext(query) {
   if (!query || typeof query !== 'string' || query.trim().length < 3) return '';
 
   const qLower = query.toLowerCase().trim();
-  // Skip search only on specific internal terminal navigation keywords
   if (['clear', 'help', 'skills', 'projects', 'certifs', 'benchmarks', 'cls', 'about'].includes(qLower)) {
     return '';
   }
@@ -232,35 +231,35 @@ async function searchWebContext(query) {
   try {
     const cleanSearchQuery = query.replace(/[^\w\s]/gi, ' ').trim().slice(0, 100);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 4000);
 
     // Multi-source concurrent live internet search
-    const [ddgHtmlRes, wikiIdRes, wikiEnRes, ddgInstantRes] = await Promise.allSettled([
-      fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(cleanSearchQuery)}`, {
+    const [googleNewsRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=id&gl=ID&ceid=ID:id`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
       fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, { signal: controller.signal }),
-      fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, { signal: controller.signal }),
-      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleanSearchQuery)}&format=json&no_html=1&skip_disambig=1`, { signal: controller.signal })
+      fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, { signal: controller.signal })
     ]);
 
     clearTimeout(timeout);
 
     let snippets = [];
 
-    // 1. Parse Live Web Results from DuckDuckGo HTML
-    if (ddgHtmlRes.status === 'fulfilled' && ddgHtmlRes.value.ok) {
-      const html = await ddgHtmlRes.value.text().catch(() => '');
-      if (html) {
-        const snippetRegex = /<a[^>]*class="result__snippet[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
-        let match;
-        while ((match = snippetRegex.exec(html)) !== null && snippets.length < 3) {
-          const rawText = match[1].replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
-          if (rawText.length > 25) {
-            snippets.push(`[Web Live]: ${rawText}`);
+    // 1. Parse Google News Live Articles (Real-time Breaking News & Tech updates 2026)
+    if (googleNewsRes.status === 'fulfilled' && googleNewsRes.value.ok) {
+      const xml = await googleNewsRes.value.text().catch(() => '');
+      if (xml) {
+        const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
+        items.slice(0, 5).forEach((item) => {
+          const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+          const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+          const cleanTitle = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim() : '';
+          if (cleanTitle) {
+            snippets.push(`[Live Web / Berita Terkini (${dateMatch ? dateMatch[1] : '2026'})]: ${cleanTitle}`);
           }
-        }
+        });
       }
     }
 
@@ -270,7 +269,7 @@ async function searchWebContext(query) {
       const hits = wikiData?.query?.search || [];
       if (hits.length > 0) {
         hits.slice(0, 2).forEach(h => {
-          const cleanSnippet = h.snippet.replace(/<[^>]+>/g, '').trim();
+          const cleanSnippet = h.snippet.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
           if (cleanSnippet) {
             snippets.push(`[Wikipedia ID - ${h.title}]: ${cleanSnippet}`);
           }
@@ -278,13 +277,13 @@ async function searchWebContext(query) {
       }
     }
 
-    // 3. Parse English Wikipedia (Fallback / Tech)
-    if (snippets.length < 3 && wikiEnRes.status === 'fulfilled' && wikiEnRes.value.ok) {
+    // 3. Parse English Wikipedia (Fallback / Global Tech)
+    if (snippets.length < 4 && wikiEnRes.status === 'fulfilled' && wikiEnRes.value.ok) {
       const wikiData = await wikiEnRes.value.json().catch(() => null);
       const hits = wikiData?.query?.search || [];
       if (hits.length > 0) {
         hits.slice(0, 2).forEach(h => {
-          const cleanSnippet = h.snippet.replace(/<[^>]+>/g, '').trim();
+          const cleanSnippet = h.snippet.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
           if (cleanSnippet) {
             snippets.push(`[Wikipedia EN - ${h.title}]: ${cleanSnippet}`);
           }
@@ -292,16 +291,8 @@ async function searchWebContext(query) {
       }
     }
 
-    // 4. Parse DuckDuckGo Instant Topic / Abstract
-    if (ddgInstantRes.status === 'fulfilled' && ddgInstantRes.value.ok) {
-      const ddgData = await ddgInstantRes.value.json().catch(() => null);
-      if (ddgData && ddgData.AbstractText) {
-        snippets.push(`[Instant Answer]: ${ddgData.AbstractText}`);
-      }
-    }
-
     if (snippets.length > 0) {
-      return `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${snippets.join('\n')}\n(Gunakan hasil pencarian internet real-time di atas untuk menjawab secara akurat dan mutakhir.)\n`;
+      return `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${snippets.join('\n')}\n(PENTING: Gunakan hasil pencarian internet live di atas untuk menjawab secara akurat, faktual, dan mutakhir.)\n`;
     }
   } catch (_) {}
   return '';
@@ -563,15 +554,14 @@ export default async function handler(req, res) {
       }
 
       const orCandidates = [
-        'meta-llama/llama-3.3-70b-instruct:free',
         'deepseek/deepseek-chat:free',
         'deepseek/deepseek-r1:free',
+        'deepseek/deepseek-chat',
+        'meta-llama/llama-3.3-70b-instruct:free',
         'qwen/qwen-2.5-coder-32b-instruct:free',
         'google/gemini-2.0-flash-exp:free',
         orModel,
         `${orModel}:free`,
-        'mistralai/mistral-nemo:free',
-        'deepseek/deepseek-chat',
         'meta-llama/llama-3.3-70b-instruct'
       ].filter((v, i, a) => v && a.indexOf(v) === i && !v.startsWith('opencode/'));
 
