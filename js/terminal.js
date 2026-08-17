@@ -636,16 +636,36 @@ export function initTerminal() {
     terminalModalClose.addEventListener('click', closeTerminalModal);
   }
 
+  // Prevent clicks inside terminal card or dropdowns from closing the modal
+  if (terminalCard) {
+    terminalCard.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+
+  const modelSelect = document.getElementById('terminal-model-select');
+  if (modelSelect) {
+    ['click', 'mousedown', 'mouseup', 'change'].forEach(evt => {
+      modelSelect.addEventListener(evt, (e) => {
+        e.stopPropagation();
+      });
+    });
+  }
+
   if (terminalModal) {
+    // Only close if user genuinely clicks the outer backdrop area
     terminalModal.addEventListener('click', (e) => {
+      if (e.target !== terminalModal) return;
+
       const rect = terminalModal.getBoundingClientRect();
-      const isInDialog = (
-        rect.top <= e.clientY &&
-        e.clientY <= rect.top + rect.height &&
-        rect.left <= e.clientX &&
-        e.clientX <= rect.left + rect.width
+      const isClickedOutside = (
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom
       );
-      if (!isInDialog) {
+
+      if (isClickedOutside) {
         closeTerminalModal();
       }
     });
