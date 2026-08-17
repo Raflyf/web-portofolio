@@ -244,14 +244,15 @@ const SEMANTIC_PATTERNS = [
     ]
   },
   {
-    keywords: ['deepseek', 'deepseek v3', 'deepseek r1', 'reasoning', 'moe 671b'],
+    keywords: ['deepseek', 'deepseek v4', 'deepseek v4 flash', 'deepseek v3', 'deepseek r1', 'reasoning', 'moe 671b'],
     respond: () => [
-      "[FRONTIER AI REVOLUTION: DeepSeek V3 & DeepSeek R1]",
+      "[FRONTIER AI REVOLUTION: DeepSeek V4 Flash, DeepSeek R1 & DeepSeek V3]",
       "----------------------------------------------------------------",
-      "• DeepSeek V3 : Model MoE 671B (37B active) dengan Multi-Head Latent Attention (MLA)",
-      "• DeepSeek R1 : Model Reasoning Chain-of-Thought berskala besar via Reinforcement Learning",
-      "• Keunggulan  : Efisiensi pelatihan ekstrem FP8 dan performa setara model tertutup teratas",
-      "• Integrasi   : Tersedia di terminal lab portofolio ini."
+      "• DeepSeek V4 Flash : Generasi MoE frontier SOTA 2026 dengan inferensi ultra-cepat (OpenCode Cloud)",
+      "• DeepSeek R1 / R2  : Model Reasoning Chain-of-Thought berskala besar via Reinforcement Learning",
+      "• DeepSeek V3       : Model MoE 671B (37B active) dengan Multi-Head Latent Attention (MLA)",
+      "• Keunggulan        : Efisiensi pelatihan ekstrem FP8 dan performa setara model tertutup teratas",
+      "• Integrasi         : Terpasang aktif di terminal developer portofolio ini."
     ]
   },
   {

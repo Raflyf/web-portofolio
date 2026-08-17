@@ -101,8 +101,9 @@ WAKTU AKTIF & ENSIKLOPEDIA PERISTIWA DUNIA NYATA LENGKAP (2024 - 2026):
    - Moonshot AI:
      * Kimi k3 & Kimi k2.7 / k1.5: Pelopor Deep Reasoning Chain-of-Thought dengan context window ultra-panjang (2.000.000+ hingga 10.000.000 token) untuk riset akademik dan koding masif.
    - DeepSeek AI:
-     * DeepSeek V3 & V3.5: Model MoE 671B (37B active) dengan arsitektur terobosan Multi-Head Latent Attention (MLA) dan FP8 precision.
+     * DeepSeek V4 Flash & DeepSeek V4: Generasi frontier terbaru DeepSeek dengan arsitektur MoE generasi ke-4, inferensi waktu nyata ultra-cepat, dan efisiensi penalaran tingkat tinggi.
      * DeepSeek R1 & R2: Model reasoning murni berbasis Reinforcement Learning berskala besar yang menyaingi model tertutup o1/o3 pada komputasi terbuka.
+     * DeepSeek V3 & V3.5: Model MoE 671B (37B active) dengan arsitektur Multi-Head Latent Attention (MLA) dan FP8 precision.
    - xAI (Elon Musk):
      * Grok 3, Grok 3.5 & Grok 2: Dilatih pada superkomputer Colossus (100.000+ hingga 200.000 GPU Nvidia) dengan akses data real-time dan penalaran sains tingkat tinggi.
    - Meta AI:
@@ -311,7 +312,7 @@ function pickAutoModel(query, hasImages = false, reasoningEffort = 'auto') {
   }
 
   if (reasoningEffort === 'thinking') {
-    return 'deepseek/deepseek-chat';
+    return 'opencode/deepseek-v4-flash-free';
   }
 
   if (reasoningEffort === 'low') {
@@ -329,7 +330,7 @@ function pickAutoModel(query, hasImages = false, reasoningEffort = 'auto') {
     return 'qwen/qwen-2.5-coder-32b-instruct';
   }
 
-  return 'deepseek/deepseek-chat';
+  return 'opencode/deepseek-v4-flash-free';
 }
 
 export default async function handler(req, res) {
@@ -545,7 +546,45 @@ export default async function handler(req, res) {
     // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
 
-    // 2A. Nvidia NIM Ultra-Fast Gateway (If targeted or Auto fallback)
+    // 2A. OpenCode Gateway (DeepSeek V4 Flash Frontier)
+    const isTargetingOpenCode = targetModel.startsWith('opencode/') || targetModel.includes('deepseek-v4');
+    if (OPENCODE_KEY && (isTargetingOpenCode || targetModel === 'auto')) {
+      try {
+        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENCODE_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-v4-flash-free',
+            messages: baseTextMessages,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
+          })
+        }, 20000);
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data?.choices?.[0]?.message?.content;
+          if (content) {
+            return res.status(200).json({
+              success: true,
+              response: content,
+              model: 'deepseek-v4-flash-free',
+              provider: 'OpenCode DeepSeek V4 Flash'
+            });
+          }
+        } else {
+          const errTxt = await response.text();
+          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`OpenCode: ${err.message}`);
+      }
+    }
+
+    // 2B. Nvidia NIM Ultra-Fast Gateway (If targeted or Auto fallback)
     if (NVIDIA_KEY) {
       const nvCandidateModels = targetModel.startsWith('nvidia/')
         ? [targetModel.replace('nvidia/', '')]
@@ -589,7 +628,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2B. OpenRouter Multi-Model Cloud Pool
+    // 2C. OpenRouter Multi-Model Cloud Pool
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
       if (orModel.startsWith('ollamacloud/')) {
@@ -602,6 +641,7 @@ export default async function handler(req, res) {
         'qwen/qwen-2.5-72b-instruct',
         'qwen/qwen-2.5-coder-32b-instruct',
         'deepseek/deepseek-chat',
+        'deepseek/deepseek-r1',
         'mistralai/mistral-large-2407'
       ];
 
@@ -645,43 +685,6 @@ export default async function handler(req, res) {
         } catch (err) {
           providerErrors.push(`OpenRouter ${m}: ${err.message}`);
         }
-      }
-    }
-
-    // 2C. OpenCode Gateway
-    if (OPENCODE_KEY) {
-      try {
-        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENCODE_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'deepseek-v4-flash-free',
-            messages: baseTextMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig
-          })
-        }, 20000);
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: 'deepseek-v4-flash-free',
-              provider: 'OpenCode Gateway'
-            });
-          }
-        } else {
-          const errTxt = await response.text();
-          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-        }
-      } catch (err) {
-        providerErrors.push(`OpenCode: ${err.message}`);
       }
     }
 
