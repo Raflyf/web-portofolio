@@ -187,8 +187,7 @@ class DashboardApp {
     let isSupabaseConnected = false;
     if (config && config.url && config.anonKey) {
       try {
-        const timestamp = Date.now();
-        const endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=1000&_t=${timestamp}`;
+        const endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=1000`;
         const res = await fetch(endpoint, {
           headers: {
             'apikey': config.anonKey,
@@ -962,8 +961,7 @@ class DashboardApp {
         return;
       }
 
-      const timestamp = Date.now();
-      const res = await fetch(`${config.url}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=500&_t=${timestamp}`, {
+      const res = await fetch(`${config.url}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=500`, {
         headers: {
           'apikey': config.anonKey,
           'Authorization': `Bearer ${config.anonKey}`,
