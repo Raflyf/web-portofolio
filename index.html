@@ -587,6 +587,9 @@
               <label for="terminal-model-select" class="terminal-model-label">Model AI:</label>
               <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI">
                 <option value="auto" selected>⚡ Auto (Cerdas & Relevan Otomatis)</option>
+                <optgroup label="Multimodal Vision & Dokumen">
+                  <option value="qwen/qwen-2-vl-72b-instruct">Qwen 2 VL 72B (Vision & Dokumen)</option>
+                </optgroup>
                 <optgroup label="DeepSeek & OpenCode">
                   <option value="deepseek/deepseek-chat">DeepSeek V3 Chat (Riset & Umum)</option>
                   <option value="opencode/deepseek-v4-flash-free">DeepSeek V4 Flash (OpenCode Cloud)</option>
@@ -619,8 +622,8 @@
 
           <div class="terminal-permanent-banner" role="status" aria-live="polite">
             <div>
-              <span class="terminal-banner-tag">[CLI & AI Assistant Lab v4.8]</span>
-              <span>Pilih Model AI atau tanyakan apapun secara bebas & mendalam. Ketik <kbd style="background:var(--badge-bg);padding:1px 4px;border-radius:3px;">help</kbd> untuk bantuan perintah.</span>
+              <span class="terminal-banner-tag">[CLI & Multimodal AI Lab v5.2]</span>
+              <span>Pencarian web real-time 2026, analisis dokumen PDF/teks, & Vision AI aktif. Ketik <kbd style="background:var(--badge-bg);padding:1px 4px;border-radius:3px;">help</kbd> untuk bantuan.</span>
             </div>
           </div>
 
@@ -640,9 +643,20 @@
             <!-- Terminal Lines -->
           </div>
 
+          <!-- File Attachment Tray -->
+          <div id="terminal-file-tray" class="terminal-file-tray" style="display:none;" aria-live="polite"></div>
+
+          <!-- Hidden File Input for Image/PDF/Text Upload -->
+          <input type="file" id="terminal-file-input" accept="image/*,application/pdf,text/*,.txt,.csv,.json,.md,.py,.js,.html,.css,.sql,.ts,.jsx,.tsx" style="display:none;" aria-hidden="true">
+
           <form id="terminal-form" class="terminal-input-row">
             <span class="terminal-prompt" aria-hidden="true">rafly@lab:~$</span>
-            <input type="text" id="terminal-input" class="terminal-input" placeholder="Ketik perintah atau tanyakan apapun (misal: 'jelaskan arsitektur OpenPlagiarismChecker')..." autocomplete="off" spellcheck="false" aria-label="Input perintah terminal dan asisten AI">
+            <button type="button" id="terminal-attach-btn" class="terminal-attach-btn" title="Unggah Gambar, PDF, atau Dokumen" aria-label="Unggah Gambar, PDF, atau Dokumen">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            </button>
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="Ketik pertanyaan / perintah, atau lampirkan gambar & PDF..." autocomplete="off" spellcheck="false" aria-label="Input perintah terminal dan asisten AI">
             <button type="submit" id="terminal-submit-btn" class="terminal-submit-btn" aria-label="Kirim perintah atau pertanyaan">
               <span>Kirim</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -797,6 +811,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busted for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=5.1.0"></script>
+  <script type="module" src="js/main.js?v=5.2.0"></script>
 </body>
 </html>
