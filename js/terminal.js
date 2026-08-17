@@ -613,6 +613,8 @@ export function initTerminal() {
       terminalModal.setAttribute('open', '');
     }
 
+    document.body.classList.add('modal-open');
+    document.documentElement.classList.add('modal-open');
     if (terminalPopBtn) terminalPopBtn.style.display = 'none';
 
     setTimeout(() => {
@@ -638,6 +640,8 @@ export function initTerminal() {
       terminalModal.removeAttribute('open');
     }
 
+    document.body.classList.remove('modal-open');
+    document.documentElement.classList.remove('modal-open');
     if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
 
     setTimeout(() => {
@@ -687,6 +691,8 @@ export function initTerminal() {
   if (terminalModal) {
     // Native dialog close event sync
     terminalModal.addEventListener('close', () => {
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
       if (terminalInpageSlot && terminalCard && terminalCard.parentNode !== terminalInpageSlot) {
         terminalInpageSlot.appendChild(terminalCard);
       }
