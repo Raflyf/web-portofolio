@@ -1228,6 +1228,60 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   box-shadow: 0 0 8px var(--accent-emerald-glow);
 }
 
+/* Terminal Advanced Markdown Typography & Tables */
+.terminal-table-wrapper {
+  overflow-x: auto;
+  margin: 10px 0;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.terminal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  text-align: left;
+}
+
+.terminal-table th {
+  padding: 8px 12px;
+  font-weight: 700;
+  color: var(--accent-emerald);
+  font-family: var(--font-mono);
+  background: rgba(16, 185, 129, 0.08);
+  border-bottom: 1px solid var(--border-card);
+  white-space: nowrap;
+}
+
+.terminal-table td {
+  padding: 8px 12px;
+  color: var(--text-body);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.terminal-table tr:hover {
+  background: rgba(16, 185, 129, 0.03);
+}
+
+.terminal-code-box {
+  background: #090d16;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.terminal-hr {
+  border: none;
+  border-top: 1px solid var(--border-card);
+  margin: 12px 0;
+}
+
 .terminal-model-select option,
 .terminal-model-select optgroup {
   background-color: var(--bg-primary);
