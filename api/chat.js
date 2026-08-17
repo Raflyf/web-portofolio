@@ -123,6 +123,13 @@ PEDOMAN FORMAT & KEJELASAN JAWABAN (CLEAN, READABLE, STRUCTURED & ZERO-TRUNCATIO
 PENGETAHUAN LENGKAP & SPESIFIKASI ARSITEKTUR REPOSITORI RESMI RAFLY FIRMANSYAH (@Raflyf):
 Jika pengguna menanyakan proyek, riset, skripsi, atau repositori Rafly Firmansyah, WAJIB menjelaskan secara mendalam mengacu pada arsitektur teknis autentik berikut:
 
+[PENANGANAN KHUSUS QUERY OPENPLAGIARISM]:
+- Jika pengguna menanyakan "openplagiarism", "open plagiarism", atau deteksi plagiarisme portofolio:
+  1. TEGASKAN BAHWA nama resmi proyek & repositori adalah OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker).
+  2. DILARANG KERAS menggunakan URL "github.com/Raflyf/openplagiarism" karena URL tersebut 404 (tidak valid).
+  3. Jelaskan arsitektur teknis 5 tahap nyata (Document Ingestion pdfplumber/docx, 5-Word N-Gram Shingling MinHash/Jaccard, Sentence Transformers paraphrase-multilingual-MiniLM-L12-v2 Cosine Similarity, Konektor 15+ Basis Data Jurnal GARUDA/Neliti/BASE/OpenAlex, Weighted Scoring 40% Exact + 60% Semantic).
+  4. Selesaikan seluruh uraian secara tuntas dan lengkap tanpa terpotong!
+
 1. REPOSITORI RISET UNGGULAN 1: OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker)
    - Fokus: Sistem Deteksi Kesamaan Dokumen Akademik & Skripsi Komprehensif Mengutamakan Privasi (Privacy-First Offline/Zero Storage).
    - Pipeline Arsitektur Multi-Tier:
@@ -701,10 +708,10 @@ Langkah yang WAJIB Anda lakukan:
     ];
 
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 600 
+      ? 1000 
       : (effectiveEffort === 'medium'
-          ? 1600 
-          : (effectiveEffort === 'high' ? 3000 : 4000));
+          ? 3500 
+          : (effectiveEffort === 'high' ? 5000 : 6500));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
