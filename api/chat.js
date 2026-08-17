@@ -618,15 +618,29 @@ export default async function handler(req, res) {
     const sendSuccess = (content, modelName, providerName) => {
       let cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
-      // Strip leaked English internal monologue / scratchpad (e.g. from Nemotron / DeepSeek R1)
-      const reasoningKeywords = /^(?:First|Let me|I should|I need to|The user|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Okay|Let's)\b/i;
-      if (reasoningKeywords.test(cleaned)) {
-        const indonesianMarker = /(?:(?:\n|\A)(?:Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|[#|]|\d+\.))/i;
-        const match = cleaned.search(indonesianMarker);
-        if (match !== -1 && match > 0) {
-          cleaned = cleaned.slice(match).trim();
+      // 1. Check for explicit output markers like Thus: "..." or Response:
+      const markerMatch = cleaned.match(/(?:Thus|Therefore|Response|Answer|Jawaban|In Indonesian|Output):\s*["']?([\s\S]+?)["']?$/i);
+      if (markerMatch && markerMatch[1] && markerMatch[1].trim().length > 10) {
+        cleaned = markerMatch[1].trim().replace(/^["']|["']$/g, '').trim();
+      } else {
+        // 2. Check for English reasoning monologue start
+        const reasoningKeywords = /^(?:Okay|First|Let me|I should|I need to|The user|Looking back|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Let's|Checking|So the user|The system message)\b/i;
+        if (reasoningKeywords.test(cleaned)) {
+          const indonesianMarker = /(?:(?:\n|\A)(?:Terima kasih|Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|Pada|[#|]|\d+\.)\s)/i;
+          const match = cleaned.search(indonesianMarker);
+          if (match !== -1 && match > 0) {
+            cleaned = cleaned.slice(match).trim();
+          } else {
+            const lines = cleaned.split('\n');
+            const filtered = lines.filter(l => !/^(?:Okay|First|Let me|I should|I need to|The user|Looking|Wait|Checking|So the user|Therefore|Thus|The system message|In their message|Given that|However|Alternatively|So, my response)\b/i.test(l.trim()));
+            if (filtered.length > 0) {
+              cleaned = filtered.join('\n').trim();
+            }
+          }
         }
       }
+
+      cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
 
       const isSpecific = (model && model !== 'auto');
       const isFailover = isSpecific && !modelName.toLowerCase().includes(targetModel.toLowerCase().split('/').pop().replace(/-free$/i, ''));
