@@ -353,18 +353,48 @@ export function initTerminal() {
    * Terminal Markdown Parser & Sanitizer
    * Converts Markdown asterisks, headings, lists, and code blocks into styled terminal elements
    */
+  let inCodeBlock = false;
+  let codeBlockLang = '';
+
   function formatMarkdownText(raw) {
     if (!raw) return '';
+
+    const trimmed = raw.trim();
+
+    // Code block opening or closing fence: ```python, ```js, ```
+    if (trimmed.startsWith('```')) {
+      if (!inCodeBlock) {
+        inCodeBlock = true;
+        codeBlockLang = trimmed.slice(3).trim().toUpperCase() || 'CODE';
+        return `<div class="terminal-code-header"><span class="terminal-code-lang">${codeBlockLang}</span></div>`;
+      } else {
+        inCodeBlock = false;
+        codeBlockLang = '';
+        return `<div style="height:4px;border-bottom:1px solid var(--border-subtle);margin-bottom:6px;"></div>`;
+      }
+    }
+
     // Escape HTML first for XSS safety
     let escaped = raw
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    // Headings (### Title or ## Title)
-    escaped = escaped.replace(/^###\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.05em;display:block;margin-top:6px;margin-bottom:2px;">$1</strong>');
-    escaped = escaped.replace(/^##\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.1em;display:block;margin-top:8px;margin-bottom:2px;">$1</strong>');
-    escaped = escaped.replace(/^#\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:800;font-size:1.15em;display:block;margin-top:10px;margin-bottom:3px;">$1</strong>');
+    // Inside code block styling & basic syntax highlights
+    if (inCodeBlock) {
+      // Comments (# or //)
+      escaped = escaped.replace(/(#.*$|\/\/.*$)/g, '<span style="color:#6ee7b7;opacity:0.85;font-style:italic;">$1</span>');
+      // Strings ("..." or '...')
+      escaped = escaped.replace(/(["'][^"']*?["'])/g, '<span style="color:#fde047;">$1</span>');
+      // Keywords
+      escaped = escaped.replace(/\b(def|class|import|from|return|if|elif|else|for|while|try|except|const|let|var|function|async|await)\b/g, '<span style="color:#38bdf8;font-weight:700;">$1</span>');
+      return `<div class="terminal-code-line"><span style="color:var(--text-muted);user-select:none;margin-right:10px;opacity:0.4;">&gt;</span>${escaped}</div>`;
+    }
+
+    // Headings (### Title, ## Title, # Title)
+    escaped = escaped.replace(/^###\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.05em;display:block;margin-top:8px;margin-bottom:3px;border-left:3px solid var(--accent-emerald);padding-left:6px;">$1</strong>');
+    escaped = escaped.replace(/^##\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.1em;display:block;margin-top:10px;margin-bottom:4px;border-left:3px solid var(--accent-emerald);padding-left:6px;">$1</strong>');
+    escaped = escaped.replace(/^#\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:800;font-size:1.15em;display:block;margin-top:12px;margin-bottom:4px;">$1</strong>');
 
     // Bold (**text** or __text__)
     escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>');
@@ -374,13 +404,13 @@ export function initTerminal() {
     escaped = escaped.replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>');
 
     // Inline Code (`code`)
-    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:1px 5px;border-radius:3px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.9em;">$1</code>');
+    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:2px 6px;border-radius:4px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.9em;font-weight:600;">$1</code>');
 
     // List bullets (- item or * item)
-    escaped = escaped.replace(/^[-*]\s+(.*$)/gim, '<span style="color:var(--accent-emerald);margin-right:6px;">&bull;</span>$1');
+    escaped = escaped.replace(/^[-*]\s+(.*$)/gim, '<span style="color:var(--accent-emerald);margin-right:8px;font-weight:700;">&bull;</span>$1');
 
     // Numbered lists (1. item)
-    escaped = escaped.replace(/^(\d+)\.\s+(.*$)/gim, '<span style="color:var(--accent-emerald);font-weight:700;margin-right:4px;">$1.</span>$2');
+    escaped = escaped.replace(/^(\d+)\.\s+(.*$)/gim, '<span style="color:var(--accent-emerald);font-weight:700;margin-right:6px;background:rgba(16,185,129,0.1);padding:1px 5px;border-radius:3px;">$1.</span>$2');
 
     return escaped;
   }
@@ -411,6 +441,10 @@ export function initTerminal() {
    * Snappy Token/Word Typewriter Streamer with Markdown Rendering
    */
   async function streamOutputLines(lines) {
+    // Reset code block state before streaming response
+    inCodeBlock = false;
+    codeBlockLang = '';
+
     for (let i = 0; i < lines.length; i++) {
       const lineText = lines[i];
       if (!lineText) {
@@ -435,7 +469,7 @@ export function initTerminal() {
         terminalBody.scrollTop = terminalBody.scrollHeight;
 
         if (token.trim().length > 0) {
-          await new Promise(r => setTimeout(r, 10));
+          await new Promise(r => setTimeout(r, 6));
         }
       }
 
@@ -443,8 +477,9 @@ export function initTerminal() {
       cursorSpan.remove();
       lineEl.innerHTML = formatMarkdownText(lineText);
       terminalBody.scrollTop = terminalBody.scrollHeight;
-      await new Promise(r => setTimeout(r, 15));
+      await new Promise(r => setTimeout(r, 10));
     }
+    inCodeBlock = false;
   }
 
   async function executeCommand(rawInput) {
