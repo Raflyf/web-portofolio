@@ -46,7 +46,9 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
 - SINGLE EXCEPTION: Only switch languages if the user explicitly and directly commands you to do so (e.g. "Ganti ke bahasa Indonesia", "Switch to Indonesian").`
     : `[ATURAN MUTLAK PENGUNCIAN BAHASA SESI: BAHASA INDONESIA]
 - Status Bahasa Sesi Aktif Terkunci: BAHASA INDONESIA.
-- Anda WAJIB menjawab SELURUH pertanyaan pengguna dalam BAHASA INDONESIA yang lugas, profesional, berstruktur rapi, dan mudah dipahami.
+- Anda WAJIB menjawab SELURUH pertanyaan pengguna dalam BAHASA INDONESIA yang lugas, profesional, berstruktur rapi, dan mudah dipahami SEJAK KATA PERTAMA.
+- DILARANG KERAS mengeluarkan monolog internal atau proses berpikir dalam bahasa Inggris (seperti "Okay, the user is asking...", "Let me recall...", "Looking at the live search data...", "First, looking at...", "Hmm, wait...").
+- Langsung sajikan jawaban akhir yang terstruktur, komprehensif, dan matang dalam Bahasa Indonesia tanpa mencantumkan coretan pemikiran internal bahasa Inggris.
 - Sekalipun pengguna bertanya menggunakan bahasa lain (seperti bahasa Inggris atau bahasa daerah), Anda TETAP WAJIB MENJAWAB DALAM BAHASA INDONESIA.
 - PENGECUALIAN TUNGGAL: HANYA beralih bahasa jika pengguna secara langsung dan eksplisit memerintahkan Anda (misalnya "Switch to English", "Gunakan bahasa Inggris").`;
 
@@ -469,11 +471,22 @@ export default async function handler(req, res) {
     const webMemories = searchResult.rawSnippets || [];
 
     const sendSuccess = (content, modelName, providerName) => {
+      let cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+      // Strip leaked English internal monologue / scratchpad
+      const monologueRegex = /^(?:Okay|Alright|Let me|The user is asking|Looking at the live search|First, looking at|Hmm,|Wait, check)[\s\S]*?(?=\n\n(?:[A-Z0-9#\-\*•]|Berikut|Model|Berdasarkan|Untuk|Saat ini|Halo|Hai|Tentu))/i;
+      if (monologueRegex.test(cleaned)) {
+        const after = cleaned.replace(monologueRegex, '').trim();
+        if (after.length > 20) {
+          cleaned = after;
+        }
+      }
+
       const isSpecific = (model && model !== 'auto');
       const isFailover = isSpecific && !modelName.toLowerCase().includes(targetModel.toLowerCase().split('/').pop().replace(/-free$/i, ''));
       return res.status(200).json({
         success: true,
-        response: content,
+        response: cleaned,
         model: modelName,
         requestedModel: model,
         isFailover: isFailover,
