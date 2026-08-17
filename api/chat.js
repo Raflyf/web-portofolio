@@ -148,85 +148,152 @@ async function fetchWithTimeout(url, options, timeoutMs = 10000) {
 }
 
 /**
- * Real-Time Autonomous Web & Encyclopedic Knowledge Searcher (Multi-Provider)
+ * Massive Real-Time Multi-Source Web & Encyclopedic Knowledge Engine
+ * Aggregates Google News ID/EN, DuckDuckGo Abstract, and Wikipedia ID/EN concurrently.
  */
 async function searchWebContext(query) {
-  if (!query || typeof query !== 'string' || query.trim().length < 3) return '';
+  if (!query || typeof query !== 'string' || query.trim().length < 3) {
+    return { formattedPrompt: '', rawSnippets: [] };
+  }
 
   const qLower = query.toLowerCase().trim();
   if (['clear', 'help', 'skills', 'projects', 'certifs', 'benchmarks', 'cls', 'about'].includes(qLower)) {
-    return '';
+    return { formattedPrompt: '', rawSnippets: [] };
   }
 
   try {
-    // Mempercepat timeout pencarian dari 4000ms ke 1500ms agar respons tidak tertahan lama
     const cleanSearchQuery = query.replace(/[^\w\s]/gi, ' ').trim().slice(0, 100);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1500);
+    const timeout = setTimeout(() => controller.abort(), 2000);
 
-    // Multi-source concurrent live internet search
-    const [googleNewsRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
+    // 5-Source Concurrent Multi-Index Search
+    const [googleNewsIdRes, googleNewsEnRes, ddgRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
+      // 1. Google News Indonesia RSS
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=id&gl=ID&ceid=ID:id`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
-      fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, { signal: controller.signal }),
-      fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, { signal: controller.signal })
+      // 2. Google News Global / US RSS (Latest Global Tech & AI Releases)
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=en-US&gl=US&ceid=US:en`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: controller.signal
+      }),
+      // 3. DuckDuckGo Instant Answer / Abstract
+      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleanSearchQuery)}&format=json&no_html=1&skip_disambig=1`, {
+        signal: controller.signal
+      }),
+      // 4. Indonesian Wikipedia
+      fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
+        signal: controller.signal
+      }),
+      // 5. English Wikipedia
+      fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
+        signal: controller.signal
+      })
     ]);
 
     clearTimeout(timeout);
 
     let snippets = [];
+    let rawSnippets = [];
 
-    // 1. Parse Google News Live Articles (Real-time Breaking News & Tech updates 2026)
-    if (googleNewsRes.status === 'fulfilled' && googleNewsRes.value.ok) {
-      const xml = await googleNewsRes.value.text().catch(() => '');
+    // Helper to sanitize XML / HTML entities
+    const cleanStr = (str) => {
+      if (!str) return '';
+      return str.replace(/<[^>]+>/g, '')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .trim();
+    };
+
+    // 1. Process Google News Global / US
+    if (googleNewsEnRes.status === 'fulfilled' && googleNewsEnRes.value.ok) {
+      const xml = await googleNewsEnRes.value.text().catch(() => '');
       if (xml) {
         const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-        items.slice(0, 5).forEach((item) => {
+        items.slice(0, 4).forEach((item) => {
           const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
           const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
-          const cleanTitle = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim() : '';
-          if (cleanTitle) {
-            snippets.push(`[Live Web / Berita Terkini (${dateMatch ? dateMatch[1] : '2026'})]: ${cleanTitle}`);
+          const title = cleanStr(titleMatch ? titleMatch[1] : '');
+          if (title) {
+            const dateStr = dateMatch ? dateMatch[1] : '2026';
+            snippets.push(`[Live Global News (${dateStr})]: ${title}`);
+            rawSnippets.push(`[Global News]: ${title}`);
           }
         });
       }
     }
 
-    // 2. Parse Indonesian Wikipedia
+    // 2. Process Google News Indonesia
+    if (googleNewsIdRes.status === 'fulfilled' && googleNewsIdRes.value.ok) {
+      const xml = await googleNewsIdRes.value.text().catch(() => '');
+      if (xml) {
+        const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
+        items.slice(0, 3).forEach((item) => {
+          const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+          const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+          const title = cleanStr(titleMatch ? titleMatch[1] : '');
+          if (title) {
+            const dateStr = dateMatch ? dateMatch[1] : '2026';
+            snippets.push(`[Live Berita Indonesia (${dateStr})]: ${title}`);
+            rawSnippets.push(`[Berita ID]: ${title}`);
+          }
+        });
+      }
+    }
+
+    // 3. Process DuckDuckGo Abstract / Instant Answer
+    if (ddgRes.status === 'fulfilled' && ddgRes.value.ok) {
+      const ddgData = await ddgRes.value.json().catch(() => null);
+      if (ddgData && ddgData.AbstractText) {
+        const abstract = cleanStr(ddgData.AbstractText);
+        if (abstract) {
+          snippets.push(`[DuckDuckGo Knowledge - ${ddgData.Heading || 'Topic'}]: ${abstract}`);
+          rawSnippets.push(`[DuckDuckGo]: ${abstract}`);
+        }
+      }
+    }
+
+    // 4. Process Indonesian Wikipedia
     if (wikiIdRes.status === 'fulfilled' && wikiIdRes.value.ok) {
       const wikiData = await wikiIdRes.value.json().catch(() => null);
       const hits = wikiData?.query?.search || [];
       if (hits.length > 0) {
         hits.slice(0, 2).forEach(h => {
-          const cleanSnippet = h.snippet.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
-          if (cleanSnippet) {
-            snippets.push(`[Wikipedia ID - ${h.title}]: ${cleanSnippet}`);
+          const snippet = cleanStr(h.snippet);
+          if (snippet) {
+            snippets.push(`[Wikipedia ID - ${h.title}]: ${snippet}`);
           }
         });
       }
     }
 
-    // 3. Parse English Wikipedia (Fallback / Global Tech)
-    if (snippets.length < 4 && wikiEnRes.status === 'fulfilled' && wikiEnRes.value.ok) {
+    // 5. Process English Wikipedia
+    if (snippets.length < 5 && wikiEnRes.status === 'fulfilled' && wikiEnRes.value.ok) {
       const wikiData = await wikiEnRes.value.json().catch(() => null);
       const hits = wikiData?.query?.search || [];
       if (hits.length > 0) {
         hits.slice(0, 2).forEach(h => {
-          const cleanSnippet = h.snippet.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim();
-          if (cleanSnippet) {
-            snippets.push(`[Wikipedia EN - ${h.title}]: ${cleanSnippet}`);
+          const snippet = cleanStr(h.snippet);
+          if (snippet) {
+            snippets.push(`[Wikipedia EN - ${h.title}]: ${snippet}`);
           }
         });
       }
     }
 
+    let formattedPrompt = '';
     if (snippets.length > 0) {
-      return `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${snippets.join('\n')}\n(PENTING: Gunakan hasil pencarian internet live di atas untuk menjawab secara akurat, faktual, dan mutakhir.)\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${snippets.join('\n')}\n(PENTING: Gunakan hasil pencarian internet live di atas untuk menjawab secara akurat, faktual, dan mutakhir.)\n`;
     }
-  } catch (_) {}
-  return '';
+
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 3) };
+  } catch (_) {
+    return { formattedPrompt: '', rawSnippets: [] };
+  }
 }
 
 function pickAutoModel(query, hasImages = false, reasoningEffort = 'auto') {
@@ -327,9 +394,19 @@ export default async function handler(req, res) {
     const imageAttachments = Array.isArray(attachments) ? attachments.filter(a => a.isImage || (a.type && a.type.startsWith('image/'))) : [];
     const docAttachments = Array.isArray(attachments) ? attachments.filter(a => !a.isImage && (!a.type || !a.type.startsWith('image/'))) : [];
     const hasImages = imageAttachments.length > 0;
+    const searchResult = await searchWebContext(query);
+    const webContext = searchResult.formattedPrompt;
+    const webMemories = searchResult.rawSnippets || [];
 
-    // Retrieve real-time search context if text query warrants it
-    const webContext = await searchWebContext(query);
+    const sendSuccess = (content, modelName, providerName) => {
+      return res.status(200).json({
+        success: true,
+        response: content,
+        model: modelName,
+        provider: providerName,
+        webMemories: webMemories
+      });
+    };
 
     // Build assembled text prompt with document attachments
     let assembledQuery = query;
@@ -423,12 +500,7 @@ Langkah yang WAJIB Anda lakukan:
               const data = await response.json();
               const content = data?.choices?.[0]?.message?.content;
               if (content) {
-                return res.status(200).json({
-                  success: true,
-                  response: content,
-                  model: vm,
-                  provider: 'OpenRouter Vision'
-                });
+                return sendSuccess(content, vm, 'OpenRouter Vision');
               }
             } else {
               const errTxt = await response.text();
@@ -463,12 +535,7 @@ Langkah yang WAJIB Anda lakukan:
             const nvData = await nvResp.json();
             const nvText = nvData?.choices?.[0]?.message?.content;
             if (nvText) {
-              return res.status(200).json({
-                success: true,
-                response: nvText,
-                model: 'nvidia/meta/llama-3.2-11b-vision-instruct',
-                provider: 'Nvidia NIM Vision'
-              });
+              return sendSuccess(nvText, 'nvidia/meta/llama-3.2-11b-vision-instruct', 'Nvidia NIM Vision');
             }
           } else {
             const errTxt = await nvResp.text();
@@ -506,12 +573,7 @@ Langkah yang WAJIB Anda lakukan:
           const data = await response.json();
           const content = data?.choices?.[0]?.message?.content;
           if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: 'deepseek-v4-flash-free',
-              provider: 'OpenCode DeepSeek V4 Flash'
-            });
+            return sendSuccess(content, 'deepseek-v4-flash-free', 'OpenCode DeepSeek V4 Flash');
           }
         } else {
           const errTxt = await response.text();
@@ -568,12 +630,7 @@ Langkah yang WAJIB Anda lakukan:
             const data = await response.json();
             const content = data?.choices?.[0]?.message?.content;
             if (content) {
-              return res.status(200).json({
-                success: true,
-                response: content,
-                model: m,
-                provider: 'OpenRouter Multi-AI Gateway'
-              });
+              return sendSuccess(content, m, 'OpenRouter Multi-AI Gateway');
             }
           } else {
             const errTxt = await response.text();
@@ -611,12 +668,7 @@ Langkah yang WAJIB Anda lakukan:
             const data = await response.json();
             const content = data?.choices?.[0]?.message?.content;
             if (content) {
-              return res.status(200).json({
-                success: true,
-                response: content,
-                model: nvModel,
-                provider: 'Nvidia NIM Engine'
-              });
+              return sendSuccess(content, nvModel, 'Nvidia NIM Engine');
             }
           } else {
             const errTxt = await response.text();
@@ -653,12 +705,7 @@ Langkah yang WAJIB Anda lakukan:
           const data = await response.json();
           const content = data?.choices?.[0]?.message?.content;
           if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: olModel,
-              provider: 'Ollama Cloud AI'
-            });
+            return sendSuccess(content, olModel, 'Ollama Cloud AI');
           }
         } else {
           const errTxt = await response.text();
@@ -690,12 +737,7 @@ Langkah yang WAJIB Anda lakukan:
           const data = await response.json();
           const content = data?.reply || data?.choices?.[0]?.message?.text;
           if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: 'minimax-01',
-              provider: 'MiniMax AI'
-            });
+            return sendSuccess(content, 'minimax-01', 'MiniMax AI');
           }
         } else {
           const errTxt = await response.text();

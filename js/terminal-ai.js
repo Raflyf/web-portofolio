@@ -313,12 +313,21 @@ class TerminalAIEngine {
       if (res.ok && data?.success && data?.response) {
         let finalResponse = data.response;
         
-        // Extract and Save Memory (Continuous RAG)
+        // Extract and Save Memory (Continuous RAG - User Learnings)
         const memoryMatch = finalResponse.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
         if (memoryMatch && memoryMatch[1]) {
           const newFact = memoryMatch[1].trim();
           this.saveAIMemory(newFact);
           finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+        }
+
+        // Automatically accumulate verified live web knowledge into long-term memory
+        if (Array.isArray(data.webMemories) && data.webMemories.length > 0) {
+          data.webMemories.forEach(mem => {
+            if (typeof mem === 'string' && mem.trim().length > 10) {
+              this.saveAIMemory(mem.trim());
+            }
+          });
         }
 
         // Record conversation turn for dynamic context
