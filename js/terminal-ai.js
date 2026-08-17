@@ -139,7 +139,7 @@ const SEMANTIC_PATTERNS = [
 // ============================================================================
 class TerminalAIEngine {
   constructor() {
-    this.currentModel = localStorage.getItem('ai_selected_model') || 'deepseek/deepseek-chat';
+    this.currentModel = localStorage.getItem('ai_selected_model') || 'auto';
     this.customKey = localStorage.getItem('ai_custom_key') || '';
     this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
   }
