@@ -856,10 +856,28 @@ Langkah yang WAJIB Anda lakukan:
           }, omniTimeout);
 
           if (response.ok) {
-            const data = await response.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
-              return sendSuccess(content, `${omniModel} (${data.model || 'OmniRoute'})`, 'OmniRoute Dedicated Server');
+            const rawText = await response.text();
+            let content = '';
+            let resolvedName = omniModel;
+            try {
+              const data = JSON.parse(rawText);
+              content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.delta?.content || '';
+              if (data.model) resolvedName = `${omniModel} (${data.model})`;
+            } catch (_) {
+              // SSE stream parsing
+              const lines = rawText.split('\n');
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
+                  try {
+                    const chunk = JSON.parse(trimmed.slice(6));
+                    content += chunk?.choices?.[0]?.delta?.content || chunk?.choices?.[0]?.message?.content || '';
+                  } catch (_) {}
+                }
+              }
+            }
+            if (content && content.trim().length > 0) {
+              return sendSuccess(content.trim(), resolvedName, 'OmniRoute Dedicated Server');
             }
           } else {
             const errTxt = await response.text();
