@@ -237,6 +237,7 @@ class DashboardApp {
     this.renderCharts();
     this.renderIntelligenceLists();
     this.renderAllAIModelsMatrix();
+    this.renderAIMemoryList();
     this.renderActivityTable();
   }
 
@@ -622,228 +623,103 @@ class DashboardApp {
     if (!gridEl) return;
 
     const MODELS_CATALOG = [
-      // 0. Auto Router
+      // 0. Pure Intelligent Auto Router
       {
         id: 'auto-router',
-        name: 'Auto Cloud Cascades',
+        name: 'Auto Cloud Gateway',
         category: 'Router',
-        tag: 'Multi-Gateway Benchmark Cascades',
+        tag: 'Intelligent SOTA Auto-Router',
         icon: '⚡',
         color: 'var(--accent-cyan)',
-        match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router')
+        match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
       },
 
-      // 1. Frontier Reasoning (DeepSeek & OpenCode)
+      // 1. SOTA Flagships & High-Capacity Reasoning
       {
-        id: 'deepseek-v3',
-        name: 'DeepSeek V3 Chat',
-        category: 'Reasoning',
-        tag: 'MoE 671B — #1 Benchmark',
-        icon: '⚡',
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-chat') || `${t} ${l}`.toLowerCase().includes('deepseek v3') || `${t} ${l}`.toLowerCase().includes('deepseek/deepseek-chat')
+        id: 'nemotron-3-super-120b',
+        name: 'Nvidia Nemotron 3 Super 120B',
+        category: 'Flagship #1',
+        tag: '#1 SOTA Flagship (264ms)',
+        icon: '🟢',
+        color: 'oklch(0.75 0.18 145)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-3-super') || `${t} ${l}`.toLowerCase().includes('120b') || `${t} ${l}`.toLowerCase().includes('nemotron 70b')
       },
       {
-        id: 'deepseek-v4',
+        id: 'nemotron-3-ultra-550b',
+        name: 'Nvidia Nemotron 3 Ultra 550B',
+        category: 'Giant MoE',
+        tag: '550B Giant MoE Architecture',
+        icon: '🟢',
+        color: 'oklch(0.75 0.18 145)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-3-ultra') || `${t} ${l}`.toLowerCase().includes('550b')
+      },
+      {
+        id: 'deepseek-v4-flash',
         name: 'DeepSeek V4 Flash',
         category: 'Reasoning',
-        tag: 'OpenCode Cloud Frontier',
+        tag: 'OpenCode Dual-Account Rotator',
         icon: '⚡',
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-v4') || `${t} ${l}`.toLowerCase().includes('opencode')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-v4') || `${t} ${l}`.toLowerCase().includes('opencode') || `${t} ${l}`.toLowerCase().includes('deepseek')
       },
       {
-        id: 'deepseek-r1',
-        name: 'DeepSeek R1',
-        category: 'Reasoning',
-        tag: 'Thinking CoT 671B Reasoning',
+        id: 'nemotron-3-nano-omni-30b',
+        name: 'Nemotron 3 Nano Omni 30B',
+        category: 'Reasoning CoT',
+        tag: 'Chain-of-Thought Reasoning',
         icon: '🧬',
         color: 'oklch(0.80 0.18 280)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-r1') || `${t} ${l}`.toLowerCase().includes('thinking') || `${t} ${l}`.toLowerCase().includes('reasoning')
-      },
-
-      // 2. Nvidia NIM Frontier AI
-      {
-        id: 'nvidia-nemotron-70b',
-        name: 'Nvidia Nemotron 70B Ultra',
-        category: 'Nvidia NIM',
-        tag: 'Arena Top 70B Ultra',
-        icon: '🟢',
-        color: 'oklch(0.75 0.18 145)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron') || `${t} ${l}`.toLowerCase().includes('llama-3.1-nemotron')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nano-omni') || `${t} ${l}`.toLowerCase().includes('reasoning') || `${t} ${l}`.toLowerCase().includes('30b') || `${t} ${l}`.toLowerCase().includes('r1')
       },
       {
-        id: 'nvidia-llama-3.3-70b',
-        name: 'Nvidia Llama 3.3 70B',
-        category: 'Nvidia NIM',
-        tag: 'High Precision NIM',
-        icon: '🟢',
-        color: 'oklch(0.75 0.18 145)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nvidia/meta/llama-3.3') || `${t} ${l}`.toLowerCase().includes('nvidia llama 3.3')
-      },
-
-      // 3. MiniMax AI
-      {
-        id: 'minimax-01',
-        name: 'MiniMax-01 / M3',
-        category: 'MiniMax',
-        tag: 'MoE 456B — 4M Context',
-        icon: '🌟',
-        color: 'var(--accent-rose)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('minimax')
-      },
-
-      // 4. Global Frontier Flagship (Meta, Mistral, Qwen, Nous)
-      {
-        id: 'hermes-3-405b',
-        name: 'Hermes 3 Llama 405B',
+        id: 'google-gemma-4-26b',
+        name: 'Google Gemma 4 26B',
         category: 'Flagship',
-        tag: 'Model Open Terbesar Dunia',
-        icon: '👑',
-        color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('hermes-3') || `${t} ${l}`.toLowerCase().includes('405b')
-      },
-      {
-        id: 'meta-llama-3.3-70b',
-        name: 'Meta Llama 3.3 70B',
-        category: 'Flagship',
-        tag: 'Meta Open Flagship',
-        icon: '🦙',
-        color: 'var(--accent-amber)',
-        match: (t, l) => (`${t} ${l}`.toLowerCase().includes('meta-llama/llama-3.3') || `${t} ${l}`.toLowerCase().includes('meta llama 3.3')) && !`${t} ${l}`.toLowerCase().includes('nvidia')
-      },
-      {
-        id: 'mistral-large-2',
-        name: 'Mistral Large 2',
-        category: 'Flagship',
-        tag: '123B Flagship MoE',
-        icon: '🌪️',
-        color: 'oklch(0.78 0.16 55)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('mistral-large') || `${t} ${l}`.toLowerCase().includes('mistral large')
-      },
-      {
-        id: 'qwen-2.5-72b',
-        name: 'Qwen 2.5 72B',
-        category: 'Flagship',
-        tag: 'Multilingual SOTA',
-        icon: '🌐',
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen-2.5-72b') || `${t} ${l}`.toLowerCase().includes('qwen 2.5 72b')
-      },
-      {
-        id: 'qwen-2.5-coder-32b',
-        name: 'Qwen 2.5 Coder 32B',
-        category: 'Flagship',
-        tag: '#1 Coding Benchmark',
-        icon: '💻',
-        color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen-2.5-coder') || `${t} ${l}`.toLowerCase().includes('qwen coder') || `${t} ${l}`.toLowerCase().includes('coder 32b')
-      },
-      {
-        id: 'google-gemma-2-27b',
-        name: 'Google Gemma 2 27B',
-        category: 'Flagship',
-        tag: 'Google Open Weights',
+        tag: 'Gemma 4 SOTA Architecture',
         icon: '💎',
         color: 'oklch(0.75 0.18 220)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-2-27b') || `${t} ${l}`.toLowerCase().includes('gemma 2 27b')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-4') || `${t} ${l}`.toLowerCase().includes('gemma 4') || `${t} ${l}`.toLowerCase().includes('26b')
       },
       {
-        id: 'mistral-small-24b',
-        name: 'Mistral Small 24B',
-        category: 'Flagship',
-        tag: 'Ultra Fast (~330ms)',
-        icon: '⚡',
-        color: 'oklch(0.78 0.16 55)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('mistral-small') || `${t} ${l}`.toLowerCase().includes('mistral small')
+        id: 'openai-gpt-oss-20b',
+        name: 'OpenAI GPT-OSS 20B',
+        category: 'Open Weights',
+        tag: 'OpenAI Open-Weights Frontier',
+        icon: '🌟',
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gpt-oss') || `${t} ${l}`.toLowerCase().includes('gpt oss') || `${t} ${l}`.toLowerCase().includes('20b')
       },
       {
-        id: 'mistral-nemo-12b',
-        name: 'Mistral NeMo 12B',
-        category: 'Flagship',
-        tag: 'Nvidia x Mistral (~340ms)',
-        icon: '⚡',
-        color: 'oklch(0.78 0.16 55)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('mistral-nemo') || `${t} ${l}`.toLowerCase().includes('mistral nemo')
-      },
-      {
-        id: 'meta-llama-3.1-8b',
-        name: 'Meta Llama 3.1 8B',
-        category: 'Flagship',
-        tag: 'Ultra Cepat (~590ms)',
-        icon: '🦙',
+        id: 'cohere-north-mini-code',
+        name: 'Cohere North Mini Code',
+        category: 'Code Specialist',
+        tag: 'Specialized Agentic Coding',
+        icon: '💻',
         color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.1-8b') || `${t} ${l}`.toLowerCase().includes('llama 3.1 8b')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('north-mini') || `${t} ${l}`.toLowerCase().includes('cohere')
       },
 
-      // 5. Ollama Cloud AI
+      // 2. Multimodal Vision & Document AI
       {
-        id: 'ollama-kimi-k2.7',
-        name: 'Kimi K2.7 Code',
-        category: 'Ollama Cloud',
-        tag: 'Spesialis Koding Ollama',
-        icon: '☁️',
-        color: 'oklch(0.78 0.15 70)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('kimi') || `${t} ${l}`.toLowerCase().includes('kimi-k2.7')
-      },
-      {
-        id: 'ollama-gemma-31b',
-        name: 'Gemma 31B',
-        category: 'Ollama Cloud',
-        tag: 'Ollama Cloud Frontier',
-        icon: '☁️',
-        color: 'oklch(0.78 0.15 70)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma4:31b') || `${t} ${l}`.toLowerCase().includes('gemma 31b')
-      },
-
-      // 6. Multimodal Vision & Dokumen
-      {
-        id: 'qwen-2-vl-72b',
-        name: 'Qwen 2 VL 72B',
+        id: 'nemotron-nano-12b-vl',
+        name: 'Nemotron Nano 12B VL',
         category: 'Vision Multimodal',
-        tag: 'Vision #1 Global Benchmark',
+        tag: 'Vision AI #1 Global SOTA',
         icon: '👁️',
-        color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen-2-vl') || `${t} ${l}`.toLowerCase().includes('qwen 2 vl')
+        color: 'oklch(0.75 0.18 145)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('12b-v2-vl') || `${t} ${l}`.toLowerCase().includes('nano-12b-vl') || `${t} ${l}`.toLowerCase().includes('vision')
       },
       {
-        id: 'google-gemini-2.5-flash',
-        name: 'Google Gemini 2.5 Flash',
-        category: 'Vision Multimodal',
-        tag: 'Flash Multimodal Vision',
-        icon: '👁️',
-        color: 'oklch(0.75 0.18 220)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemini-2.5-flash') || `${t} ${l}`.toLowerCase().includes('gemini 2.5')
-      },
-      {
-        id: 'google-gemma-3-27b',
+        id: 'google-gemma-3-27b-vision',
         name: 'Google Gemma 3 27B Vision',
         category: 'Vision Multimodal',
-        tag: 'Vision Multimodal (~520ms)',
+        tag: 'High-Resolution Document & OCR',
         icon: '👁️',
         color: 'oklch(0.75 0.18 220)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-3-27b') || `${t} ${l}`.toLowerCase().includes('gemma 3 27b')
       },
-      {
-        id: 'google-gemma-3-12b',
-        name: 'Google Gemma 3 12B Vision',
-        category: 'Vision Multimodal',
-        tag: 'Vision Multimodal (~330ms)',
-        icon: '👁️',
-        color: 'oklch(0.75 0.18 220)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-3-12b') || `${t} ${l}`.toLowerCase().includes('gemma 3 12b')
-      },
-      {
-        id: 'nvidia-llama-3.2-11b-vision',
-        name: 'Nvidia Llama 3.2 11B Vision',
-        category: 'Vision Multimodal',
-        tag: 'NIM Vision Reasoning',
-        icon: '👁️',
-        color: 'oklch(0.75 0.18 145)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.2-11b-vision') || `${t} ${l}`.toLowerCase().includes('llama 3.2 11b vision')
-      },
 
-      // 7. Fallback Local Engine
+      // 3. Fallback Local & Offline Semantic Engine
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
@@ -967,6 +843,63 @@ class DashboardApp {
         </div>
       `;
     }).join('');
+  }
+
+  // =========================================================================
+  // 5C. AI CONTINUOUS RAG / LONG-TERM MEMORY LIVE EXPLORER
+  // =========================================================================
+  async renderAIMemoryList() {
+    const listEl = document.getElementById('ai-memories-list');
+    const countEl = document.getElementById('ai-memory-total-count');
+    if (!listEl) return;
+
+    try {
+      const config = this.supabaseConfig;
+      if (!config.url || !config.anonKey) {
+        listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Supabase tidak terkonfigurasi.</div>`;
+        return;
+      }
+
+      const res = await fetch(`${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=15`, {
+        headers: {
+          'apikey': config.anonKey,
+          'Authorization': `Bearer ${config.anonKey}`
+        }
+      });
+
+      if (!res.ok) {
+        listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Gagal memuat memori (HTTP ${res.status}).</div>`;
+        return;
+      }
+
+      const memories = await res.json();
+      if (!Array.isArray(memories) || memories.length === 0) {
+        listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Belum ada memori fakta yang tersimpan di database.</div>`;
+        if (countEl) countEl.textContent = '0 Fakta';
+        return;
+      }
+
+      if (countEl) countEl.textContent = `${memories.length} Fakta Terkini (Supabase RAG)`;
+
+      listEl.innerHTML = memories.map(m => {
+        const dateStr = new Date(m.created_at).toLocaleString('id-ID', {
+          day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+
+        return `
+          <div class="ranked-item" style="background:var(--bg-base);padding:0.75rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border-card);display:flex;flex-direction:column;gap:0.35rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:var(--text-muted);flex-wrap:wrap;gap:0.5rem;">
+              <span style="color:var(--accent-emerald);font-family:var(--font-mono);font-weight:600;">🧠 Sesi: ${this.sanitize(m.session_id || 'unknown')}</span>
+              <span style="font-family:var(--font-mono);">${dateStr}</span>
+            </div>
+            <div style="color:var(--text-heading);font-size:0.85rem;line-height:1.5;">${this.sanitize(m.fact_text)}</div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Error memuat memori: ${this.sanitize(e.message)}</div>`;
+    }
   }
 
   // =========================================================================
