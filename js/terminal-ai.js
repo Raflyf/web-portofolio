@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.27.0';
-import { telemetry } from './telemetry.js?v=10.27.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.29.0';
+import { telemetry } from './telemetry.js?v=10.29.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -711,63 +711,67 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       }
     };
 
-    // 1. Primary Direct Route: Dedicated OmniRoute Gateway (Cloudflare Tunnel - 5 Verified Combos)
+    // 1. ABSOLUTE PRIORITY #1: Dedicated OmniRoute Gateway Pool (Multi-Model Nemotron & DeepSeek Pipeline)
     const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
     const OMNI_KEY = atob('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
 
-    try {
-      const omniController = new AbortController();
-      const omniTimeout = setTimeout(() => omniController.abort(), 18000);
+    let omniCandidates = [];
+    if (this.currentModel && this.currentModel !== 'auto') {
+      omniCandidates = [this.currentModel, 'nemotron-3-ultra-free', 'nemotron-laguna', 'nemotron-super-free', 'Deepseek-V4-Flash-Free'];
+    } else if (isDeepReasoning) {
+      omniCandidates = ['nemotron-3-ultra-free', 'nemotron-super-free', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
+    } else if (isProjectExplaining || isHeavyCoding) {
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'qwen-2.5-coder-free', 'nemotron-3-ultra-free'];
+    } else {
+      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Deepseek-V4-Flash-Free'];
+    }
 
-      let omniModel = 'nemotron-laguna';
-      if (this.currentModel && this.currentModel !== 'auto') {
-        omniModel = this.currentModel;
-      } else if (isProjectExplaining || isHeavyCoding) {
-        omniModel = 'qwen-2.5-coder-free';
-      } else if (isDeepReasoning) {
-        omniModel = 'nemotron-3-ultra-free';
-      }
+    for (const omniModel of omniCandidates) {
+      try {
+        const omniController = new AbortController();
+        const omniTimeout = setTimeout(() => omniController.abort(), 60000);
 
-      const omniRes = await fetch(OMNI_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OMNI_KEY}`
-        },
-        body: JSON.stringify({
-          model: omniModel,
-          messages: [
-            { role: 'system', content: fullSystemPrompt },
-            { role: 'user', content: userMessageContent }
-          ],
-          max_tokens: calculatedMaxTokens,
-          temperature: 0.25,
-          stream: false
-        }),
-        signal: omniController.signal
-      });
+        const omniRes = await fetch(OMNI_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OMNI_KEY}`
+          },
+          body: JSON.stringify({
+            model: omniModel,
+            messages: [
+              { role: 'system', content: fullSystemPrompt },
+              { role: 'user', content: userMessageContent }
+            ],
+            max_tokens: calculatedMaxTokens,
+            temperature: 0.25,
+            stream: false
+          }),
+          signal: omniController.signal
+        });
 
-      clearTimeout(omniTimeout);
+        clearTimeout(omniTimeout);
 
-      if (omniRes.ok) {
-        const rawText = await omniRes.text();
-        const content = cleanOutput(extractContentFromResponseText(rawText));
-        if (content && content.length > 5) {
-          this.lastExecutionInfo = {
-            isAuto: !this.currentModel || this.currentModel === 'auto',
-            resolvedModel: omniModel,
-            requestedModel: this.currentModel,
-            isFailover: false,
-            provider: 'OmniRoute Dedicated Tunnel',
-            effort: targetEffort,
-            category: isProjectExplaining ? 'project_architecture' : (isDeepReasoning ? 'deep_reasoning' : 'general')
-          };
-          return content.split('\n');
+        if (omniRes.ok) {
+          const rawText = await omniRes.text();
+          const content = cleanOutput(extractContentFromResponseText(rawText));
+          if (content && content.length > 5) {
+            this.lastExecutionInfo = {
+              isAuto: !this.currentModel || this.currentModel === 'auto',
+              resolvedModel: omniModel,
+              requestedModel: this.currentModel,
+              isFailover: false,
+              provider: 'OmniRoute Dedicated Gateway',
+              effort: targetEffort,
+              category: isProjectExplaining ? 'project_architecture' : (isDeepReasoning ? 'deep_reasoning' : 'general')
+            };
+            return content.split('\n');
+          }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
 
-    // 2. Secondary Direct Route: OpenCode Cloud Pool
+    // 2. Secondary Direct Route: OpenCode Cloud Pool (Nemotron & DeepSeek)
     const OC_KEYS = [
       atob('c2stTW01NmMyZFpnZmVYVUxsQjk2c3g0alZOOHltU2djamNrc2lEd3ZrS241QWFNMWRCY2JpR0ZwdVVkWkRoZVZJNQ=='),
       atob('c2stWVdUc2JDaTBicEJISW9pS2xiQjBnYjRUYnZZMXB5a0k0aEJCQWxFSkROEHE1ODhPT3pSZXB6RFVja29TNWtDSQ==')
@@ -775,7 +779,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     for (const ocKey of OC_KEYS) {
       try {
         const ocController = new AbortController();
-        const ocTimeout = setTimeout(() => ocController.abort(), 12000);
+        const ocTimeout = setTimeout(() => ocController.abort(), 15000);
         const ocRes = await fetch('https://opencode.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -783,7 +787,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
             'Authorization': 'Bearer ' + ocKey
           },
           body: JSON.stringify({
-            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'deepseek/deepseek-chat',
+            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
             messages: [
               { role: 'system', content: fullSystemPrompt },
               { role: 'user', content: userMessageContent }
@@ -801,7 +805,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
           if (content && content.length > 5) {
             this.lastExecutionInfo = {
               isAuto: !this.currentModel || this.currentModel === 'auto',
-              resolvedModel: 'deepseek/deepseek-chat',
+              resolvedModel: 'nvidia/nemotron-nano-9b',
               requestedModel: this.currentModel,
               isFailover: true,
               provider: 'OpenCode Direct Failover',
@@ -814,7 +818,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       } catch (_) {}
     }
 
-    // 3. Tertiary Direct Route: OpenRouter Free Pool
+    // 3. Tertiary Direct Route: OpenRouter Free Pool (Nemotron & DeepSeek)
     const OR_KEYS = [
       atob('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
       atob('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw==')
@@ -822,7 +826,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     for (const orKey of OR_KEYS) {
       try {
         const orController = new AbortController();
-        const orTimeout = setTimeout(() => orController.abort(), 12000);
+        const orTimeout = setTimeout(() => orController.abort(), 15000);
         const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -832,7 +836,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
             'X-Title': 'Rafly Portfolio Lab'
           },
           body: JSON.stringify({
-            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'google/gemma-3-27b-it',
+            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
             messages: [
               { role: 'system', content: fullSystemPrompt },
               { role: 'user', content: userMessageContent }
@@ -850,7 +854,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
           if (content && content.length > 5) {
             this.lastExecutionInfo = {
               isAuto: !this.currentModel || this.currentModel === 'auto',
-              resolvedModel: 'google/gemma-3-27b-it',
+              resolvedModel: 'nvidia/nemotron-nano-9b',
               requestedModel: this.currentModel,
               isFailover: true,
               provider: 'OpenRouter Direct Failover',
@@ -881,7 +885,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
               'X-Title': 'Rafly Portfolio Lab'
             },
             body: JSON.stringify({
-              model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'google/gemma-3-27b-it',
+              model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
               messages: [
                 { role: 'system', content: fullSystemPrompt },
                 { role: 'user', content: userMessageContent }
