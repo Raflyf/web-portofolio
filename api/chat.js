@@ -18,37 +18,50 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
     effortDirective = isEnglish ? `
 [CHAIN-OF-THOUGHT / HIGH-IQ REASONING MODE ACTIVATED]:
 - Deliver an exceptionally rigorous, in-depth analytical breakdown with deep technical precision.
-- Focus deeply on 3 to 5 top architectural choices/models with comprehensive comparison tables and actionable conclusions.
+- Focus on 3 to 5 top architectural choices/models with comprehensive comparison tables, benchmark trade-offs, and actionable conclusions.
 - Ensure your entire response is 100% complete and fully concludes without truncation.
 ` : `
-[MODE PENALARAN MENDALAM & ANALISIS TINGKAT TINGGI (HIGH-IQ THINKING)]:
-- Pengguna mengaktifkan Mode Penalaran Mendalam / Thinking CoT.
-- Sajikan analisis teknis berbobot tinggi, komparasi arsitektural mendalam, dan tolok ukur benchmark kuantitatif untuk 3–5 pilihan terbaik.
-- Langsung sajikan jawaban terstruktur dengan format Markdown yang kaya (tabel komparasi komprehensif, poin-poin penjelasan tajam, blok kode/rumus jika relevan) dan selesaikan secara tuntas 100%.
+[MODE PENALARAN ANALITIS TINGKAT TINGGI (THINKING COT)]:
+- Pengguna memilih Mode Thinking CoT.
+- Sajikan penalaran analitis multi-perspektif, bedah logika algoritma, matriks komparasi teknis komprehensif, evaluasi kritis, dan rekomendasi berdasar data benchmark nyata untuk 3–5 pilihan terbaik.
+- Sajikan jawaban terstruktur dengan format Markdown yang kaya (tabel komparasi komprehensif, poin-poin penjelasan tajam, blok kode/rumus jika relevan) dan selesaikan secara tuntas 100%.
 `;
   } else if (reasoningEffort === 'high') {
-    effortDirective = `
-[MODE DEEP RESEARCH & MAXIMUM EFFORT]:
-- Berikan analisis riset mendalam, rinci, dan komprehensif untuk 3–5 topik/model utama dengan tabel komparatif lengkap dan kesimpulan yang tuntas 100%.
+    effortDirective = isEnglish ? `
+[MODE DEEP RESEARCH & COMPREHENSIVE EFFORT]:
+- Provide an extensive, highly comprehensive deep-dive analysis from end-to-end with complete comparative tables, trade-offs, and technical breakdowns.
+- Ensure full depth and conclude 100% cleanly.
+` : `
+[MODE RISET MENDALAM & MENYELURUH (HIGH EFFORT)]:
+- Pengguna memilih Mode Riset Mendalam / High Effort.
+- Sajikan analisis komprehensif dari hulu ke hilir dengan cakupan mendalam, tabel komparatif lengkap, trade-offs arsitektural, dan spesifikasi teknis terperinci untuk 3–5 topik utama.
+- Pastikan jawaban berbobot teknis tinggi dan selesai tuntas 100%.
 `;
   } else if (reasoningEffort === 'low') {
     effortDirective = isEnglish ? `
-[MODE FAST & ACTIONABLE CONCISE RESPONSE]:
-- The user has selected Fast/Concise mode.
-- Give the direct, actionable answer immediately without preamble or lengthy meta-criteria.
-- List the exact items, key specs, and access links directly in clear bullet points or a concise table.
-- Ensure the answer is 100% complete and fully concludes without truncation.
+[MODE FAST & ULTRA-CONCISE (LOW EFFORT)]:
+- The user has selected Low / Fast mode.
+- You MUST give an ULTRA-CONCISE, direct answer (Maximum 1-2 short paragraphs OR 1 compact bullet list/table without preamble).
+- Directly output the core conclusion/recommendations. DO NOT write extensive essays or long definitions.
+- Keep it brief, snappy, and 100% complete.
 ` : `
-[MODE CEPAT & LANGSUNG KE INTI (FAST & ACTIONABLE)]:
-- Pengguna memilih Mode Cepat / Ringkas.
-- DILARANG bertele-tele membuat kriteria pembuka yang panjang atau menulis definisi pengantar yang mubazir.
-- LANGSUNG berikan jawaban inti, daftar rekomendasi spesifik, poin-poin utama, atau solusi praktis secara to-the-point dan selesaikan secara tuntas 100%.
+[MODE CEPAT & ULTRA-RINGKAS (LOW EFFORT)]:
+- Pengguna memilih Mode Low (Jawaban Singkat, Cepat, dan Padat).
+- WAJIB berikan jawaban yang SANGAT RINGKAS (Maksimal 1-2 paragraf pendek ATAU 1 tabel/daftar ringkas tanpa prolog bertele-tele).
+- LANGSUNG sebutkan inti jawaban, poin utama, atau daftar rekomendasi secara to-the-point dalam format ringkas dan padat.
+- DILARANG KERAS menguraikan penjelasan panjang lebar atau menulis esai bertingkat.
 `;
   } else {
-    effortDirective = `
-[MODE STANDAR / BALANCED]:
-- Berikan jawaban yang seimbang, jelas, informatif, dan terstruktur rapi.
-- Fokuskan pada 3–4 poin atau rekomendasi utama beserta tabel ringkasan, dan pastikan jawaban selesai tuntas 100% tanpa terpotong.
+    effortDirective = isEnglish ? `
+[MODE BALANCED & STANDARD DEPTH (MEDIUM)]:
+- Provide a well-balanced, informative, clearly structured response.
+- Highlight 3-4 essential points or a standard comparison table with concise explanations, completing 100% cleanly.
+` : `
+[MODE STANDAR / SEDANG (BALANCED DEPTH - MEDIUM)]:
+- Pengguna memilih Mode Sedang / Standar.
+- Sajikan jawaban berbobot sedang yang jelas, terstruktur, dan proporsional.
+- Uraikan 3–4 poin esensial atau sajikan tabel komparasi standar beserta ringkasan penjelasan singkat.
+- Panjang jawaban moderat (tidak terlalu singkat seperti mode low, dan tidak sepanjang mode high), serta selesai tuntas 100%.
 `;
   }
 
@@ -548,8 +561,12 @@ Langkah yang WAJIB Anda lakukan:
       { role: 'user', content: finalUserPrompt }
     ];
 
-    const maxTokensConfig = reasoningEffort === 'low' ? 2048 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 4096 : 3000);
-    const tempConfig = reasoningEffort === 'low' ? 0.2 : (reasoningEffort === 'thinking' ? 0.3 : 0.3);
+    const maxTokensConfig = reasoningEffort === 'low' 
+      ? 600 
+      : (reasoningEffort === 'medium' || reasoningEffort === 'auto' || !reasoningEffort
+          ? 1600 
+          : (reasoningEffort === 'high' ? 3000 : 4000));
+    const tempConfig = reasoningEffort === 'low' ? 0.15 : (reasoningEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
     // 1. MULTIMODAL VISION ROUTE (If images are attached)
