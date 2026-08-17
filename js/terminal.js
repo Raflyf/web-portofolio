@@ -597,43 +597,76 @@ export function initTerminal() {
 
   function openTerminalModal() {
     if (!terminalModal || !terminalModalSlot || !terminalCard) return;
-    terminalModalSlot.appendChild(terminalCard);
-    if (typeof terminalModal.showModal === 'function') {
-      terminalModal.showModal();
-    } else {
+    try {
+      if (terminalCard.parentNode !== terminalModalSlot) {
+        terminalModalSlot.appendChild(terminalCard);
+      }
+      if (!terminalModal.open) {
+        if (typeof terminalModal.showModal === 'function') {
+          terminalModal.showModal();
+        } else {
+          terminalModal.setAttribute('open', '');
+        }
+      }
+    } catch (err) {
+      console.warn('showModal fallback:', err);
       terminalModal.setAttribute('open', '');
     }
+
     if (terminalPopBtn) terminalPopBtn.style.display = 'none';
+
     setTimeout(() => {
-      terminalInput.focus();
-      terminalBody.scrollTop = terminalBody.scrollHeight;
-    }, 100);
+      if (terminalInput) terminalInput.focus();
+      if (terminalBody) terminalBody.scrollTop = terminalBody.scrollHeight;
+    }, 60);
   }
 
   function closeTerminalModal() {
     if (!terminalModal || !terminalInpageSlot || !terminalCard) return;
-    terminalInpageSlot.appendChild(terminalCard);
-    if (typeof terminalModal.close === 'function') {
-      terminalModal.close();
-    } else {
+    try {
+      if (terminalCard.parentNode !== terminalInpageSlot) {
+        terminalInpageSlot.appendChild(terminalCard);
+      }
+      if (terminalModal.open) {
+        if (typeof terminalModal.close === 'function') {
+          terminalModal.close();
+        } else {
+          terminalModal.removeAttribute('open');
+        }
+      }
+    } catch (err) {
       terminalModal.removeAttribute('open');
     }
+
     if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
+
     setTimeout(() => {
-      terminalBody.scrollTop = terminalBody.scrollHeight;
-    }, 50);
+      if (terminalBody) terminalBody.scrollTop = terminalBody.scrollHeight;
+    }, 40);
   }
 
   if (floatingTerminalBtn) {
-    floatingTerminalBtn.addEventListener('click', openTerminalModal);
+    floatingTerminalBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openTerminalModal();
+    });
   }
 
   if (terminalPopBtn) {
-    terminalPopBtn.addEventListener('click', openTerminalModal);
+    terminalPopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openTerminalModal();
+    });
   }
 
   if (terminalModalClose) {
-    terminalModalClose.addEventListener('click', closeTerminalModal);
+    terminalModalClose.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeTerminalModal();
+    });
   }
 
   // Prevent clicks inside terminal card or dropdowns from closing the modal
@@ -653,26 +686,35 @@ export function initTerminal() {
   }
 
   if (terminalModal) {
-    // Only close if user genuinely clicks the outer backdrop area
+    // Native dialog close event sync
+    terminalModal.addEventListener('close', () => {
+      if (terminalInpageSlot && terminalCard && terminalCard.parentNode !== terminalInpageSlot) {
+        terminalInpageSlot.appendChild(terminalCard);
+      }
+      if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
+    });
+
+    // Native cancel event (ESC key)
+    terminalModal.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      closeTerminalModal();
+    });
+
+    // Outer backdrop click
     terminalModal.addEventListener('click', (e) => {
       if (e.target !== terminalModal) return;
 
       const rect = terminalModal.getBoundingClientRect();
-      const isClickedOutside = (
+      const isOutside = (
         e.clientX < rect.left ||
         e.clientX > rect.right ||
         e.clientY < rect.top ||
         e.clientY > rect.bottom
       );
 
-      if (isClickedOutside) {
+      if (isOutside) {
         closeTerminalModal();
       }
-    });
-
-    terminalModal.addEventListener('cancel', (e) => {
-      e.preventDefault();
-      closeTerminalModal();
     });
   }
 }
