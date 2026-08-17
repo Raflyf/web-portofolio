@@ -28,20 +28,35 @@ class TelemetryEngine {
     return sid;
   }
 
+  cleanKey(val) {
+    if (!val) return '';
+    return String(val)
+      .trim()
+      .replace(/^['"`]+|['"`]+$/g, '')
+      .replace(/;+$/, '')
+      .trim();
+  }
+
   loadSupabaseConfig() {
+    const defaultUrl = 'https://rphyzcqwpkxtzllvymss.supabase.co';
+    const defaultKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
     try {
       const raw = localStorage.getItem(CONFIG_KEY);
-      const parsed = raw ? JSON.parse(raw) : {};
-      return {
-        url: parsed.url || 'https://rphyzcqwpkxtzllvymss.supabase.co',
-        anonKey: parsed.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
-      };
-    } catch {
-      return {
-        url: 'https://rphyzcqwpkxtzllvymss.supabase.co',
-        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
-      };
-    }
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed) {
+          const url = this.cleanKey(parsed.url);
+          const anonKey = this.cleanKey(parsed.anonKey);
+          if (url && anonKey) {
+            return {
+              url: url.startsWith('http') ? url.replace(/\/+$/, '') : `https://${url.replace(/\/+$/, '')}`,
+              anonKey
+            };
+          }
+        }
+      }
+    } catch {}
+    return { url: defaultUrl, anonKey: defaultKey };
   }
 
   detectDeviceType() {
