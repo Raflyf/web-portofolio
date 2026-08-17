@@ -111,6 +111,7 @@ class TerminalAIEngine {
     this.customKey = localStorage.getItem('ai_custom_key') || null;
     this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
     this.sessionLanguage = sessionStorage.getItem('ai_session_lang') || null;
+    this.conversationHistory = [];
   }
 
   detectOrUpdateLanguage(query) {
@@ -217,7 +218,8 @@ class TerminalAIEngine {
           customKey: this.customKey,
           customProvider: this.customProvider,
           attachments: attachments,
-          sessionLanguage: currentLang
+          sessionLanguage: currentLang,
+          history: this.conversationHistory.slice(-6)
         }),
         signal: controller.signal
       });
@@ -227,6 +229,12 @@ class TerminalAIEngine {
       const data = await res.json().catch(() => null);
 
       if (res.ok && data?.success && data?.response) {
+        // Record conversation turn for dynamic context
+        this.conversationHistory.push({ role: 'user', content: cleanQuery });
+        this.conversationHistory.push({ role: 'assistant', content: data.response });
+        if (this.conversationHistory.length > 10) {
+          this.conversationHistory = this.conversationHistory.slice(-10);
+        }
         return data.response.split('\n');
       }
 
