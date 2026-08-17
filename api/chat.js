@@ -85,9 +85,10 @@ WAKTU AKTIF & ENSIKLOPEDIA PERISTIWA DUNIA NYATA LENGKAP (2024 - 2026):
      * Gemma 3 & Gemma 2 (27B/12B/4B): Model open weights multimodal vision teratas.
      * Veo 2 / Veo 3 & Imagen 3: Generasi video sinematik 4K dan sintesis visual fotorealistik.
    - OpenAI:
-     * GPT-5 preview & GPT-4.5 (Orion): Lompatan pemahaman bahasa alami dan multimodal tingkat lanjut.
-     * OpenAI o4, o3, dan o3-mini: Model penalaran mendalam (*deep reasoning*) dengan alokasi waktu berpikir fleksibel (*inference-time compute*) untuk sains, matematika, dan koding kompleks.
-     * GPT-4o & Sora 2: Ekosistem AI multimodal dan video dunia nyata.
+     * GPT-5 series / GPT-5.6 (Sol, Terra, Luna): Generasi model multi-tier OpenAI dengan varian adaptif untuk penalaran komputasi tinggi, efisiensi agen, dan pemrosesan multimodal instan.
+     * OpenAI o3, o4, o3-mini, dan o1 (Strawberry): Model penalaran mendalam (*deep reasoning*) berbasis Reinforcement Learning dan alokasi waktu berpikir (*thinking tokens / inference-time compute*) untuk matematika, sains, dan koding kompleks.
+     * GPT-4.5 (Orion) & GPT-4o: Model multimodal terpadu teks, visi, dan audio real-time berlatensi instan.
+     * Sora 2: Model generasi video dunia nyata berkualitas tinggi.
    - Anthropic:
      * Claude 3.7 Sonnet (Hybrid Reasoning with Extended Thinking) & Claude 3.7 Opus: Model nomor 1 dunia dalam penalaran kode mandiri, Computer Use, dan arsitektur agen otonom.
      * Claude 3.5 Sonnet & Claude 3.5 Haiku: Model cepat, presisi, dan andal untuk koding dan analisis berkas.
@@ -427,10 +428,15 @@ export default async function handler(req, res) {
       content: String(h.content || '').slice(0, 4000)
     })) : [];
 
+    let finalUserPrompt = assembledQuery;
+    if (webContext) {
+      finalUserPrompt = `${webContext}\n\n[PERTANYAAN PENGGUNA]:\n${assembledQuery}\n\n(PENTING: Jawablah dengan mengintegrasikan fakta internet real-time dan pengetahuan terkini 2026 di atas!)`;
+    }
+
     const baseTextMessages = [
       { role: 'system', content: systemPromptWithSearch },
       ...formattedHistory,
-      { role: 'user', content: assembledQuery }
+      { role: 'user', content: finalUserPrompt }
     ];
 
     const maxTokensConfig = reasoningEffort === 'low' ? 1024 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 2048 : 1500);
@@ -441,7 +447,7 @@ export default async function handler(req, res) {
     // ========================================================================
     if (hasImages) {
       const userContent = [
-        { type: 'text', text: assembledQuery || 'Deskripsikan dan analisis gambar ini secara komprehensif dan mendalam.' }
+        { type: 'text', text: finalUserPrompt || 'Deskripsikan dan analisis gambar ini secara komprehensif dan mendalam.' }
       ];
 
       for (const img of imageAttachments) {
@@ -452,7 +458,58 @@ export default async function handler(req, res) {
         });
       }
 
-      // 1A. Nvidia Vision Gateway
+      // 1A. OpenRouter Multimodal Vision Cascade
+      if (OPENROUTER_KEY) {
+        const visionModels = [
+          'google/gemini-2.0-flash-exp:free',
+          'google/gemma-3-27b-it',
+          'google/gemini-2.5-flash',
+          'qwen/qwen-2-vl-72b-instruct'
+        ];
+
+        for (const vm of visionModels) {
+          try {
+            const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENROUTER_KEY}`,
+                'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
+                'X-Title': 'Rafly Firmansyah AI Vision Lab'
+              },
+              body: JSON.stringify({
+                model: vm,
+                messages: [
+                  { role: 'system', content: systemPromptWithSearch },
+                  { role: 'user', content: userContent }
+                ],
+                max_tokens: maxTokensConfig,
+                temperature: tempConfig
+              })
+            }, 22000);
+
+            if (response.ok) {
+              const data = await response.json();
+              const content = data?.choices?.[0]?.message?.content;
+              if (content) {
+                return res.status(200).json({
+                  success: true,
+                  response: content,
+                  model: vm,
+                  provider: 'OpenRouter Vision'
+                });
+              }
+            } else {
+              const errTxt = await response.text();
+              providerErrors.push(`OpenRouter Vision ${vm} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+            }
+          } catch (err) {
+            providerErrors.push(`OpenRouter Vision ${vm}: ${err.message}`);
+          }
+        }
+      }
+
+      // 1B. Nvidia Vision Gateway
       if (NVIDIA_KEY) {
         try {
           const nvResp = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -490,145 +547,13 @@ export default async function handler(req, res) {
           providerErrors.push(`Nvidia Vision: ${err.message}`);
         }
       }
-
-      // 1B. OpenRouter Multimodal Vision Cascade
-      if (OPENROUTER_KEY) {
-        const visionModels = [
-          'google/gemma-3-27b-it',
-          'google/gemini-2.5-flash',
-          'qwen/qwen-2-vl-72b-instruct'
-        ];
-
-        for (const vm of visionModels) {
-          try {
-            const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENROUTER_KEY}`,
-                'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
-                'X-Title': 'Rafly Firmansyah AI Vision Lab'
-              },
-              body: JSON.stringify({
-                model: vm,
-                messages: [
-                  { role: 'system', content: systemPromptWithSearch },
-                  { role: 'user', content: userContent }
-                ],
-                max_tokens: maxTokensConfig,
-                temperature: tempConfig
-              })
-            }, 20000);
-
-            if (response.ok) {
-              const data = await response.json();
-              const content = data?.choices?.[0]?.message?.content;
-              if (content) {
-                return res.status(200).json({
-                  success: true,
-                  response: content,
-                  model: vm,
-                  provider: 'Vision Multimodal Engine'
-                });
-              }
-            } else {
-              const errTxt = await response.text();
-              providerErrors.push(`Vision ${vm} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-            }
-          } catch (err) {
-            providerErrors.push(`Vision ${vm}: ${err.message}`);
-          }
-        }
-      }
     }
 
     // ========================================================================
     // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
 
-    // 2A. OpenCode Gateway (DeepSeek V4 Flash Frontier)
-    const isTargetingOpenCode = targetModel.startsWith('opencode/') || targetModel.includes('deepseek-v4');
-    if (OPENCODE_KEY && (isTargetingOpenCode || targetModel === 'auto')) {
-      try {
-        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENCODE_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'deepseek-v4-flash-free',
-            messages: baseTextMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig
-          })
-        }, 20000);
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: 'deepseek-v4-flash-free',
-              provider: 'OpenCode DeepSeek V4 Flash'
-            });
-          }
-        } else {
-          const errTxt = await response.text();
-          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-        }
-      } catch (err) {
-        providerErrors.push(`OpenCode: ${err.message}`);
-      }
-    }
-
-    // 2B. Nvidia NIM Ultra-Fast Gateway (If targeted or Auto fallback)
-    if (NVIDIA_KEY) {
-      const nvCandidateModels = targetModel.startsWith('nvidia/')
-        ? [targetModel.replace('nvidia/', '')]
-        : ['meta/llama-3.3-70b-instruct', 'meta/llama-3.1-70b-instruct', 'meta/llama-3.1-8b-instruct'];
-
-      for (let nvModel of nvCandidateModels) {
-        if (nvModel.includes('nemotron')) nvModel = 'meta/llama-3.3-70b-instruct';
-        try {
-          const response = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${NVIDIA_KEY}`
-            },
-            body: JSON.stringify({
-              model: nvModel,
-              messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig
-            })
-          }, 25000);
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
-              return res.status(200).json({
-                success: true,
-                response: content,
-                model: nvModel,
-                provider: 'Nvidia NIM Engine'
-              });
-            }
-          } else {
-            const errTxt = await response.text();
-            providerErrors.push(`Nvidia ${nvModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`Nvidia ${nvModel}: ${err.message}`);
-        }
-      }
-    }
-
-    // 2C. OpenRouter Multi-Model Cloud Pool
+    // 2A. OpenRouter Multi-Model Cloud Pool (Prioritizing SOTA 70B & 671B Flagship Models)
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
       if (orModel.startsWith('opencode/')) {
@@ -638,14 +563,13 @@ export default async function handler(req, res) {
       }
 
       const orCandidates = [
-        orModel,
-        `${orModel}:free`,
         'meta-llama/llama-3.3-70b-instruct:free',
         'deepseek/deepseek-chat:free',
         'deepseek/deepseek-r1:free',
         'qwen/qwen-2.5-coder-32b-instruct:free',
         'google/gemini-2.0-flash-exp:free',
-        'meta-llama/llama-3.1-8b-instruct:free',
+        orModel,
+        `${orModel}:free`,
         'mistralai/mistral-nemo:free',
         'deepseek/deepseek-chat',
         'meta-llama/llama-3.3-70b-instruct'
@@ -689,6 +613,87 @@ export default async function handler(req, res) {
           }
         } catch (err) {
           providerErrors.push(`OpenRouter ${m}: ${err.message}`);
+        }
+      }
+    }
+
+    // 2B. OpenCode Gateway (If explicitly targeted)
+    const isTargetingOpenCode = targetModel.startsWith('opencode/') || targetModel.includes('deepseek-v4');
+    if (OPENCODE_KEY && isTargetingOpenCode) {
+      try {
+        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENCODE_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-v4-flash-free',
+            messages: baseTextMessages,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
+          })
+        }, 20000);
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data?.choices?.[0]?.message?.content;
+          if (content) {
+            return res.status(200).json({
+              success: true,
+              response: content,
+              model: 'deepseek-v4-flash-free',
+              provider: 'OpenCode DeepSeek V4 Flash'
+            });
+          }
+        } else {
+          const errTxt = await response.text();
+          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`OpenCode: ${err.message}`);
+      }
+    }
+
+    // 2C. Nvidia NIM Gateway (70B Flagship Models Only)
+    if (NVIDIA_KEY) {
+      const nvCandidateModels = targetModel.startsWith('nvidia/')
+        ? [targetModel.replace('nvidia/', '')]
+        : ['meta/llama-3.3-70b-instruct', 'meta/llama-3.1-70b-instruct'];
+
+      for (let nvModel of nvCandidateModels) {
+        try {
+          const response = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${NVIDIA_KEY}`
+            },
+            body: JSON.stringify({
+              model: nvModel,
+              messages: baseTextMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, 25000);
+
+          if (response.ok) {
+            const data = await response.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content) {
+              return res.status(200).json({
+                success: true,
+                response: content,
+                model: nvModel,
+                provider: 'Nvidia NIM Engine'
+              });
+            }
+          } else {
+            const errTxt = await response.text();
+            providerErrors.push(`Nvidia ${nvModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+          }
+        } catch (err) {
+          providerErrors.push(`Nvidia ${nvModel}: ${err.message}`);
         }
       }
     }
