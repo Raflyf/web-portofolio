@@ -453,12 +453,61 @@ class TerminalAIEngine {
       return cleaned;
     };
 
+    const SYSTEM_PROMPT_2026 = `Status Bahasa: BAHASA INDONESIA. Waktu Sistem Saat Ini: Senin, 17 Agustus 2026.
+Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Rafly Firmansyah (@Raflyf).
+
+[REGISTRI FAKTA RESMI MODEL AI FRONTIER TAHUN 2026]:
+- OpenAI: GPT-5.6 (Juli 2026), GPT-5.5 (April 2026), GPT-5 (Agustus 2025), GPT-4o.
+- Anthropic: Claude Opus 5 (Juli 2026), Claude Mythos 5 & Claude Fable 5 (Juni 2026), Claude Sonnet 5 (Juni 2026), Claude 3.5 Sonnet.
+- Google: Gemini 3.7 Flash (Agustus 2026), Gemini 3.6 Flash & Gemini 3.5 Flash-Lite (Juli 2026), Gemini 3.5 Flash (Mei 2026), Gemini 2.0 Flash.
+- DeepSeek: DeepSeek-V4 Flash & DeepSeek-V4 Pro (Agustus 2026), DeepSeek-V3 MoE 671B, DeepSeek-R1.
+- Nvidia: Nemotron 3 Super 120B, Nemotron 3 Ultra 550B MoE.
+
+[INSTRUKSI UTAMA]:
+- Jika ditanya perbandingan model AI terbaru atau posisi benchmark di LMSYS Chatbot Arena / Arena AI, sajikan perbandingan lengkap tahun 2026 dalam Tabel Markdown yang rapi dan komprehensif.
+- Jawab secara lugas, profesional, dan terstruktur tanpa menyisipkan monolog proses berpikir bahasa Inggris.`;
+
+    // Real-Time Client-Side Web Search Crawler
+    let searchContext = '';
+    try {
+      const searchCtrl = new AbortController();
+      const searchTimer = setTimeout(() => searchCtrl.abort(), 2500);
+      const wikiQuery = encodeURIComponent(cleanQuery.slice(0, 50));
+      const [wikiRes, hfRes] = await Promise.allSettled([
+        fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${wikiQuery}&format=json&origin=*`, { signal: searchCtrl.signal }),
+        fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(cleanQuery.split(' ')[0])}&limit=3`, { signal: searchCtrl.signal })
+      ]);
+      clearTimeout(searchTimer);
+
+      const snippets = [];
+      if (wikiRes.status === 'fulfilled' && wikiRes.value.ok) {
+        const wikiData = await wikiRes.value.json().catch(() => null);
+        const hits = wikiData?.query?.search || [];
+        if (hits.length > 0) {
+          const s = hits[0].snippet.replace(/<[^>]+>/g, '').trim();
+          if (s.length > 10) snippets.push(`[Wikipedia]: ${s}`);
+        }
+      }
+      if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
+        const hfData = await hfRes.value.json().catch(() => null);
+        if (Array.isArray(hfData) && hfData.length > 0) {
+          const names = hfData.slice(0, 3).map(m => m.id).join(', ');
+          snippets.push(`[Hugging Face Models]: ${names}`);
+        }
+      }
+      if (snippets.length > 0) {
+        searchContext = `\n\n[HASIL PENCARIAN REAL-TIME 2026]:\n${snippets.join('\n')}`;
+      }
+    } catch (_) {}
+
+    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${searchContext}`;
+
     const q = cleanQuery.toLowerCase();
     const len = q.length;
 
     // Intelligent Intent Detection
     const isHeavyCoding = /\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q);
-    const isDeepReasoning = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200;
+    const isDeepReasoning = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200;
     const isGreeting = len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
 
     // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
@@ -491,6 +540,8 @@ class TerminalAIEngine {
       else if (explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
     }
 
+    const calculatedMaxTokens = targetEffort === 'LOW' ? 600 : (targetEffort === 'THINKING' ? 4000 : (targetEffort === 'HIGH' ? 3500 : 2000));
+
     if (OMNI_KEY) {
       for (const omniModel of omniCandidates) {
         try {
@@ -507,11 +558,11 @@ class TerminalAIEngine {
             body: JSON.stringify({
               model: omniModel,
               messages: [
-                { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant di Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf). Jawab pertanyaan secara profesional dan terstruktur dalam Bahasa Indonesia. Jangan gunakan monolog proses berpikir bahasa Inggris.' },
+                { role: 'system', content: fullSystemPrompt },
                 { role: 'user', content: cleanQuery }
               ],
               stream: false,
-              max_tokens: targetEffort === 'LOW' ? 600 : (targetEffort === 'HIGH' ? 3000 : 2000)
+              max_tokens: calculatedMaxTokens
             }),
             signal: omniController.signal
           });
@@ -572,7 +623,7 @@ class TerminalAIEngine {
       for (const key of OR_KEYS) {
         try {
           const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 14000);
+          const orTimeout = setTimeout(() => orController.abort(), 16000);
           const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -584,10 +635,10 @@ class TerminalAIEngine {
             body: JSON.stringify({
               model: model,
               messages: [
-                { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf). Jawab pertanyaan pengguna secara akurat, terstruktur rapi dengan tabel atau poin-poin dalam Bahasa Indonesia. Jangan gunakan monolog proses berpikir bahasa Inggris.' },
+                { role: 'system', content: fullSystemPrompt },
                 { role: 'user', content: cleanQuery }
               ],
-              max_tokens: targetEffort === 'LOW' ? 500 : (targetEffort === 'HIGH' ? 2500 : 1600),
+              max_tokens: calculatedMaxTokens,
               temperature: 0.25
             }),
             signal: orController.signal
