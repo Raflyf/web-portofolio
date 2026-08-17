@@ -695,19 +695,20 @@ Langkah yang WAJIB Anda lakukan:
         ? [
             orModel,
             `${orModel}:free`,
-            'google/gemma-4-31b-it:free',
             'nvidia/nemotron-3-super-120b-a12b:free',
+            'nvidia/nemotron-3-ultra-550b-a55b:free',
             'google/gemma-4-26b-a4b-it:free',
+            'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
             'openai/gpt-oss-20b:free',
-            'z-ai/glm-5.2:free'
+            'cohere/north-mini-code:free'
           ].filter((v, i, a) => v && a.indexOf(v) === i && !v.startsWith('opencode/') && v !== 'openrouter/free' && !v.includes('safety'))
         : [
-            'google/gemma-4-31b-it:free',
             'nvidia/nemotron-3-super-120b-a12b:free',
-            'google/gemma-4-26b-a4b-it:free',
             'nvidia/nemotron-3-ultra-550b-a55b:free',
+            'google/gemma-4-26b-a4b-it:free',
+            'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
             'openai/gpt-oss-20b:free',
-            'z-ai/glm-5.2:free'
+            'cohere/north-mini-code:free'
           ].filter((v, i, a) => v && a.indexOf(v) === i && !v.startsWith('opencode/') && v !== 'openrouter/free' && !v.includes('safety'));
 
       for (const m of orCandidates) {
