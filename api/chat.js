@@ -336,13 +336,8 @@ async function searchWebContext(query, history = []) {
     // Helper to sanitize XML / HTML entities
     const cleanStr = (str) => {
       if (!str) return '';
-      return str.replace(/<[^>]+>/g, '')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .trim();
+      const entityMap = { '&quot;': '"', '&#39;': "'", '&amp;': '&', '&lt;': '<', '&gt;': '>', '&nbsp;': ' ' };
+      return str.replace(/<[^>]+>/g, '').replace(/&(?:quot|#39|amp|lt|gt|nbsp);/g, m => entityMap[m] || m).trim();
     };
 
     let snippets = [];
