@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.25.0';
-import { telemetry } from './telemetry.js?v=10.25.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.26.0';
+import { telemetry } from './telemetry.js?v=10.26.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -604,23 +604,8 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
   3. Jelaskan arsitektur teknis 5 tahap nyata (Document Ingestion pdfplumber/docx, 5-Word N-Gram Shingling MinHash/Jaccard, Sentence Transformers paraphrase-multilingual-MiniLM-L12-v2 Cosine Similarity, Konektor 15+ Basis Data Jurnal GARUDA/Neliti/BASE/OpenAlex, Weighted Scoring 40% Exact + 60% Semantic).
   4. Selesaikan seluruh uraian secara tuntas dan lengkap tanpa terpotong!
 
-[INSTRUKSI UTAMA & PROTOKOL ANTI-TRUNCATION]:
-- Selesaikan seluruh penjelasan, poin-poin, dan tabel perbandingan hingga tuntas 100% sebelum batas token berakhir. Dilarang memotong jawaban di tengah kalimat.
 - Jika pengguna melampirkan gambar atau screenshot, analisis dan jelaskan isi gambar secara spesifik dan faktual.
-- DILARANG KERAS mengeluarkan monolog penalaran internal (scratchpad/chain of thought) dalam Bahasa Inggris. LANGSUNG berikan jawaban akhir dalam Bahasa Indonesia yang bersih, to-the-point, dan profesional.
-
-[KEMAMPUAN INTERAKSI LANGSUNG DENGAN WEB PORTOFOLIO (CLIENT-SIDE WEB ACTIONS)]:
-Anda memiliki kemampuan untuk mengontrol antarmuka web portofolio ini secara langsung di peramban pengguna.
-Jika pengguna meminta atau menyuruh Anda untuk:
-1. Membuka repositori GitHub atau tautan web ➔ Sertakan tag: [ACTION:OPEN_URL:https://github.com/Raflyf/OpenPlagiarismChecker] (atau URL tujuan)
-2. Membuka modal detail proyek tertentu ➔ Sertakan tag: [ACTION:OPEN_PROJECT:openplagiarism] (pilihan: openplagiarism, spam_classifier, laser_pointer, fotokita_blur, web_portofolio)
-3. Membuka modal detail/kredensial sertifikat ➔ Sertakan tag: [ACTION:OPEN_CERTIFICATE:bnsp] (pilihan: bnsp, mikrotik, cisco_python, cisco_cloud, network_security)
-4. Mengisikan form pesan/kontak/diskusi ➔ Sertakan tag: [ACTION:FILL_CONTACT:name=NamaPengguna&email=email@domain.com&message=Isi pesan diskusi]
-5. Melakukan navigasi / scroll ke bagian tertentu halaman ➔ Sertakan tag: [ACTION:NAVIGATE:projects|skills|certificates|about|contact|timeline|benchmarks]
-6. Mengubah tema gelap/terang ➔ Sertakan tag: [ACTION:TOGGLE_THEME]
-7. Menyalin alamat email resmi Rafly ➔ Sertakan tag: [ACTION:COPY_EMAIL]
-
-Letakkan tag [ACTION:...] tersebut di dalam jawaban Anda. Sistem terminal browser akan mengeksekusinya secara otomatis di layar klien!`;
+- DILARANG KERAS mengeluarkan monolog penalaran internal (scratchpad/chain of thought) dalam Bahasa Inggris. LANGSUNG berikan jawaban akhir dalam Bahasa Indonesia yang bersih, to-the-point, dan profesional.`;
 
     const q = (cleanQuery || '').toLowerCase();
     const len = q.length;
