@@ -296,6 +296,7 @@ class TerminalAIEngine {
     try {
       const memoryContext = await this.fetchAIMemories();
       const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
       const apiEndpoint = (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
         ? 'https://raflyfirmansyah-portofolio.vercel.app/api/chat'
         : '/api/chat';
@@ -330,6 +331,11 @@ class TerminalAIEngine {
           const newFact = memoryMatch[1].trim();
           this.saveAIMemory(newFact);
           finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+        } else if (cleanQuery.length > 5 && finalResponse.length > 25 && !/^(halo|hai|tes|ping)\b/i.test(cleanQuery)) {
+          const topic = cleanQuery.substring(0, 70);
+          const firstLine = finalResponse.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalResponse.substring(0, 120);
+          const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
+          this.saveAIMemory(cleanFact);
         }
 
         // Automatically accumulate verified live web knowledge into long-term memory
@@ -503,6 +509,11 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       }
       if (snippets.length > 0) {
         searchContext = `\n\n[HASIL PENCARIAN REAL-TIME 2026]:\n${snippets.join('\n')}`;
+        snippets.forEach(s => {
+          if (s && s.length > 15) {
+            this.saveAIMemory(s);
+          }
+        });
       }
     } catch (_) {}
 
@@ -576,14 +587,14 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       for (const omniModel of omniCandidates) {
         try {
           const omniController = new AbortController();
-          // 4s timeout for DeepSeek so if it is currently down it immediately falls over without stalling
-          const timeoutMs = omniModel.toLowerCase().includes('deepseek') ? 4000 : 12000;
+          const timeoutMs = omniModel.toLowerCase().includes('deepseek') ? 4000 : 20000;
           const omniTimeout = setTimeout(() => omniController.abort(), timeoutMs);
           const res = await fetch(OMNI_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + OMNI_KEY
+              'Authorization': 'Bearer ' + OMNI_KEY,
+              'Accept': 'application/json'
             },
             body: JSON.stringify({
               model: omniModel,
@@ -602,6 +613,18 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
             const parsedText = parseOmniResponse(rawText);
             const content = cleanOutput(parsedText);
             if (content && content.length > 5) {
+              let finalContent = content;
+              const memoryMatch = finalContent.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
+              if (memoryMatch && memoryMatch[1]) {
+                this.saveAIMemory(memoryMatch[1].trim());
+                finalContent = finalContent.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+              } else if (!isGreeting && cleanQuery.length > 5 && finalContent.length > 25) {
+                const topic = cleanQuery.substring(0, 70);
+                const firstLine = finalContent.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalContent.substring(0, 120);
+                const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
+                this.saveAIMemory(cleanFact);
+              }
+
               this.lastExecutionInfo = {
                 isAuto: !this.currentModel || this.currentModel === 'auto',
                 resolvedModel: omniModel,
@@ -611,7 +634,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
                 effort: targetEffort,
                 category: isHeavyCoding ? 'heavy_coding' : (isDeepReasoning ? 'deep_reasoning' : (isGreeting ? 'trivial_casual' : 'standard'))
               };
-              return content.split('\n');
+              return finalContent.split('\n');
             }
           }
         } catch (_) {}
@@ -681,6 +704,18 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
             const rawContent = data?.choices?.[0]?.message?.content;
             const content = cleanOutput(rawContent);
             if (content && content.length > 5) {
+              let finalContent = content;
+              const memoryMatch = finalContent.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
+              if (memoryMatch && memoryMatch[1]) {
+                this.saveAIMemory(memoryMatch[1].trim());
+                finalContent = finalContent.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+              } else if (!isGreeting && cleanQuery.length > 5 && finalContent.length > 25) {
+                const topic = cleanQuery.substring(0, 70);
+                const firstLine = finalContent.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalContent.substring(0, 120);
+                const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
+                this.saveAIMemory(cleanFact);
+              }
+
               this.lastExecutionInfo = {
                 isAuto: true,
                 resolvedModel: model,
@@ -690,7 +725,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
                 effort: targetEffort,
                 category: isHeavyCoding ? 'heavy_coding' : (isDeepReasoning ? 'deep_reasoning' : 'standard')
               };
-              return content.split('\n');
+              return finalContent.split('\n');
             }
           }
         } catch (_) {}
