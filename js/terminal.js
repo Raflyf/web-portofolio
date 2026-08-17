@@ -34,19 +34,8 @@ export function initTerminal() {
 
   const effortSelect = document.getElementById('terminal-effort-select');
 
-  // Restore saved model dropdown selection
-  if (modelSelect) {
-    const savedModel = localStorage.getItem('ai_selected_model') || 'auto';
-    modelSelect.value = savedModel;
-
-    modelSelect.addEventListener('change', () => {
-      const chosen = modelSelect.value;
-      const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || chosen;
-      terminalAI.setModel(chosen);
-      appendLine(`[Model AI] Beralih ke: ${modelText}`);
-      appendLine("");
-    });
-  }
+  // Pure Intelligent Auto-Routing as permanent default
+  terminalAI.setModel('auto');
 
   // Restore saved effort & thinking mode selection
   if (effortSelect) {
@@ -58,7 +47,8 @@ export function initTerminal() {
       const chosen = effortSelect.value;
       const effortText = effortSelect.options[effortSelect.selectedIndex]?.text || chosen;
       terminalAI.setEffort(chosen);
-      appendLine(`[Mode Reasoning & Effort] Beralih ke: ${effortText}`);
+      localStorage.setItem('ai_selected_effort', chosen);
+      appendLine(`[Mode AI] Effort diatur ke: ${effortText}`);
       appendLine("");
     });
   }
@@ -532,12 +522,19 @@ export function initTerminal() {
   /**
    * Snappy Token/Word Typewriter Streamer with Markdown Rendering into Chat Bubble Container
    */
+  /**
+   * Snappy Adaptive Token/Word Streamer with Instant Markdown Rendering
+   */
   async function streamOutputLines(lines, targetContainer = null) {
     const container = targetContainer || terminalBody;
     inCodeBlock = false;
     codeBlockLang = '';
 
-    for (let i = 0; i < lines.length; i++) {
+    const totalLines = lines.length;
+    // Adaptive speed: faster chunking for long/deep analytical answers
+    const tokenDelay = totalLines > 15 ? 1 : 2;
+
+    for (let i = 0; i < totalLines; i++) {
       const lineText = lines[i];
       if (!lineText) {
         const spacer = document.createElement('div');
@@ -556,14 +553,15 @@ export function initTerminal() {
       lineEl.appendChild(cursorSpan);
 
       const tokens = lineText.split(/(\s+)/);
+      const chunkSize = Math.max(1, Math.min(3, Math.ceil(tokens.length / 30)));
 
-      for (let j = 0; j < tokens.length; j++) {
-        const token = tokens[j];
-        cursorSpan.insertAdjacentText('beforebegin', token);
+      for (let j = 0; j < tokens.length; j += chunkSize) {
+        const chunk = tokens.slice(j, j + chunkSize).join('');
+        cursorSpan.insertAdjacentText('beforebegin', chunk);
         terminalBody.scrollTop = terminalBody.scrollHeight;
 
-        if (token.trim().length > 0) {
-          await new Promise(r => setTimeout(r, 5));
+        if (chunk.trim().length > 0) {
+          await new Promise(r => setTimeout(r, tokenDelay));
         }
       }
 
@@ -571,7 +569,7 @@ export function initTerminal() {
       cursorSpan.remove();
       lineEl.innerHTML = formatMarkdownText(lineText);
       terminalBody.scrollTop = terminalBody.scrollHeight;
-      await new Promise(r => setTimeout(r, 8));
+      await new Promise(r => setTimeout(r, 2));
     }
     inCodeBlock = false;
   }
