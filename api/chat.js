@@ -607,28 +607,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Query prompt or file attachment is required' });
     }
 
-    const decodeKey = (b64) => {
-      try {
-        return Buffer.from(b64, 'base64').toString('utf-8');
-      } catch (_) {
-        return null;
-      }
-    };
-
     const OMNIROUTE_URL = (customKey && customProvider === 'omniroute') 
-      ? 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions'
-      : (process.env.OMNIROUTE_URL || 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions');
+      ? (process.env.OMNIROUTE_URL || '')
+      : (process.env.OMNIROUTE_URL || '');
 
     const OMNIROUTE_KEY = (customKey && customProvider === 'omniroute')
       ? customKey
-      : (process.env.OMNIROUTE_KEY || decodeKey('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q='));
+      : (process.env.OMNIROUTE_KEY || '');
 
     const OPENROUTER_KEYS = [
       (customKey && (customProvider === 'openrouter' || !customProvider)) ? customKey : null,
       process.env.OPENROUTER_API_KEY,
-      decodeKey('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
-      decodeKey('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw=='),
-      decodeKey('c2stb3ItdjEtN2EzYzM5ODZjY2JjMGI2NDEyYjE2Yzc4Yzc2MmNkNzU2OTYwNDc0ODNhMjdiMTg4MTllZmI1OTk0NGY4ZWQ0Mw==')
+      ...(process.env.OPENROUTER_API_KEYS ? process.env.OPENROUTER_API_KEYS.split(',').map(s => s.trim()) : [])
     ].filter((v, i, a) => v && a.indexOf(v) === i);
     const OPENROUTER_KEY = OPENROUTER_KEYS[0] || null;
 
@@ -639,8 +629,7 @@ export default async function handler(req, res) {
     const OPENCODE_KEYS = [
       (customKey && customProvider === 'opencode') ? customKey : null,
       process.env.OPENCODE_API_KEY,
-      'sk-Mm56c2dZ6feXULlB96sx4jVN8ymSgcjcksiDwvkKn5AaN1dBcbiGFpuUdZDheVI5',
-      'sk-YWTsbCi0bpBHIoiKlbB0gb4TbzY1pykI4hBBalEJ4Nyq588POzRepzDUckoS5kCI'
+      ...(process.env.OPENCODE_API_KEYS ? process.env.OPENCODE_API_KEYS.split(',').map(s => s.trim()) : [])
     ].filter((v, i, a) => v && a.indexOf(v) === i);
     const OPENCODE_KEY = OPENCODE_KEYS[0] || null;
 
