@@ -502,17 +502,16 @@ class DashboardApp {
     const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
     const tag = isAuto ? 'Auto: ' : '';
 
-    if (combined.includes('nemotron-4') || combined.includes('340b')) return `${tag}Nvidia Nemotron 4 (340B Flagship)`;
-    if (combined.includes('nemotron') || combined.includes('laguna') || combined.includes('ultra-free') || combined.includes('nvidia')) return `${tag}Nvidia Nemotron 3 Ultra`;
-    if (combined.includes('minimax-01') || (combined.includes('minimax') && !combined.includes('m3'))) return `${tag}MiniMax-01 (456B MoE)`;
-    if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo')) return `${tag}MiniMax-M3 Vision Multimodal`;
+    if (combined.includes('nemotron-3-super') || combined.includes('nemotron super') || combined.includes('120b')) return `${tag}Nvidia Nemotron 3 Super (120B)`;
+    if (combined.includes('nemotron-3-ultra') || combined.includes('nemotron ultra') || combined.includes('550b') || combined.includes('laguna') || combined.includes('ultra-free') || combined.includes('nemotron')) return `${tag}Nvidia Nemotron 3 Ultra (550B MoE)`;
+    if (combined.includes('llama-3.3') || combined.includes('llama 3.3') || combined.includes('70b')) return `${tag}Llama 3.3 70B Instruct`;
+    if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo') || combined.includes('minimax')) return `${tag}MiniMax-M3 Vision Multimodal`;
     if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
     if (combined.includes('deepseek-v3') || combined.includes('deepseek-chat') || combined.includes('671b')) return `${tag}DeepSeek V3 (671B MoE)`;
     if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash`;
     if (combined.includes('codex') || combined.includes('gpt-5')) return `${tag}Codex (GPT-5.6 Terra)`;
     if (combined.includes('antigravity') || combined.includes('opus') || combined.includes('claude')) return `${tag}Antigravity (Claude Opus 4.6)`;
     if (combined.includes('qwen') || combined.includes('coder') || combined.includes('koding')) return `${tag}Qwen 2.5 Coder (32B)`;
-    if (combined.includes('kimi')) return `${tag}Kimi K2.7 Coder (Ollama Cloud)`;
     if (combined.includes('local_semantic') || combined.includes('semantic engine')) return 'Auto: Local Semantic Fallback';
 
     if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
@@ -697,71 +696,60 @@ class DashboardApp {
 
       // 1. Nvidia NIM & Nemotron Family
       {
-        id: 'omniroute-nemotron-laguna',
-        name: 'Nvidia Nemotron 3 Ultra',
+        id: 'nemotron-3-ultra',
+        name: 'Nvidia Nemotron 3 Ultra (550B)',
         category: 'Nvidia SOTA',
-        tag: 'Laguna / 100+ Accounts Pool',
+        tag: '550B MoE Reasoning Flagship',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('laguna') || s.includes('nemotron-3-ultra') || s.includes('ultra-free') || (s.includes('nemotron') && !s.includes('340b'));
+          return s.includes('ultra') || s.includes('550b') || s.includes('laguna') || (s.includes('nemotron') && !s.includes('super'));
         }
       },
       {
-        id: 'nvidia-nemotron-340b',
-        name: 'Nvidia Nemotron 4 340B',
+        id: 'nemotron-3-super',
+        name: 'Nvidia Nemotron 3 Super (120B)',
         category: 'Nvidia NIM',
-        tag: '340B Flagship Instruct',
+        tag: '120B Enterprise Compute Engine',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-4') || `${t} ${l}`.toLowerCase().includes('340b')
-      },
-
-      // 2. MiniMax Frontier
-      {
-        id: 'minimax-01',
-        name: 'MiniMax-01 (456B MoE)',
-        category: 'MiniMax API',
-        tag: '456B MoE SOTA Flagship',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('minimax-01') || (s.includes('minimax') && !s.includes('m3') && !s.includes('vision'));
+          return s.includes('super') || s.includes('120b');
         }
       },
       {
-        id: 'omniroute-vision',
-        name: 'MiniMax-M3 Vision Multimodal',
-        category: 'Multimodal',
-        tag: 'Vision & OCR Document Engine',
-        icon: SVG_ICONS.vision,
+        id: 'llama-3.3-70b',
+        name: 'Llama 3.3 70B Instruct',
+        category: 'Nvidia / OpenRouter',
+        tag: '70B SOTA General Intelligence',
+        icon: SVG_ICONS.flagship,
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('mimo') || `${t} ${l}`.toLowerCase().includes('vision')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.3') || `${t} ${l}`.toLowerCase().includes('70b')
       },
 
-      // 3. DeepSeek Frontier Suite
+      // 2. DeepSeek Frontier Suite
+      {
+        id: 'deepseek-r1',
+        name: 'DeepSeek R1 (Thinking CoT)',
+        category: 'DeepSeek SOTA',
+        tag: 'SOTA Chain-of-Thought Reasoning',
+        icon: SVG_ICONS.cot,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-r1') || `${t} ${l}`.toLowerCase().includes('r1') || `${t} ${l}`.toLowerCase().includes('reasoning')
+      },
       {
         id: 'deepseek-v3',
         name: 'DeepSeek V3 (671B MoE)',
         category: 'DeepSeek SOTA',
-        tag: 'OpenRouter & Ollama Cloud',
+        tag: '671B MoE General Flagship',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-amber)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
           return (s.includes('deepseek-v3') || s.includes('deepseek-chat') || s.includes('671b')) && !s.includes('r1');
         }
-      },
-      {
-        id: 'deepseek-r1',
-        name: 'DeepSeek R1 (Thinking CoT)',
-        category: 'DeepSeek SOTA',
-        tag: 'Chain-of-Thought Reasoning',
-        icon: SVG_ICONS.cot,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-r1') || `${t} ${l}`.toLowerCase().includes('r1') || `${t} ${l}`.toLowerCase().includes('reasoning')
       },
       {
         id: 'omniroute-deepseek-v4',
@@ -776,7 +764,7 @@ class DashboardApp {
         }
       },
 
-      // 4. OpenAI & Anthropic Dedicated (OmniRoute)
+      // 3. OpenAI & Anthropic Dedicated (OmniRoute)
       {
         id: 'omniroute-codex',
         name: 'Codex (GPT-5.6 Terra)',
@@ -796,27 +784,30 @@ class DashboardApp {
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus') || `${t} ${l}`.toLowerCase().includes('sonnet')
       },
 
-      // 5. Ollama Cloud Specialists
+      // 4. Multimodal & Coding Specialists
+      {
+        id: 'minimax-m3',
+        name: 'MiniMax-M3 Vision Multimodal',
+        category: 'Multimodal',
+        tag: 'Ollama Cloud & MiniMax OCR',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('minimax-m3') || s.includes('vision-model') || s.includes('minimax') || s.includes('mimo') || s.includes('vision');
+        }
+      },
       {
         id: 'qwen-2.5-coder',
         name: 'Qwen 2.5 Coder (32B)',
-        category: 'Ollama / OpenRouter',
-        tag: 'Agentic Coding Specialist',
+        category: 'OpenRouter SOTA',
+        tag: 'Rank #1 Agentic Coding Specialist',
         icon: SVG_ICONS.code,
         color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen') || `${t} ${l}`.toLowerCase().includes('coder:32b')
-      },
-      {
-        id: 'kimi-k2.7',
-        name: 'Kimi K2.7 Coder',
-        category: 'Ollama Cloud',
-        tag: 'High-Context Analysis',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('kimi')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen') || `${t} ${l}`.toLowerCase().includes('coder:32b') || `${t} ${l}`.toLowerCase().includes('coder-32b')
       },
 
-      // 6. Local & Offline Fallback
+      // 5. Local & Offline Fallback
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
