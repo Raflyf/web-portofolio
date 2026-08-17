@@ -380,15 +380,21 @@ export function initTerminal() {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    // Inside code block styling & basic syntax highlights
+    // Inside code block styling & safe syntax highlights (No style-tag self collision)
     if (inCodeBlock) {
-      // Comments (# or //)
-      escaped = escaped.replace(/(#.*$|\/\/.*$)/g, '<span style="color:#6ee7b7;opacity:0.85;font-style:italic;">$1</span>');
-      // Strings ("..." or '...')
-      escaped = escaped.replace(/(["'][^"']*?["'])/g, '<span style="color:#fde047;">$1</span>');
-      // Keywords
-      escaped = escaped.replace(/\b(def|class|import|from|return|if|elif|else|for|while|try|except|const|let|var|function|async|await)\b/g, '<span style="color:#38bdf8;font-weight:700;">$1</span>');
-      return `<div class="terminal-code-line"><span style="color:var(--text-muted);user-select:none;margin-right:10px;opacity:0.4;">&gt;</span>${escaped}</div>`;
+      if (/^\s*(#|\/\/)/.test(raw)) {
+        return `<div class="terminal-code-line"><span style="color:var(--text-muted);user-select:none;margin-right:10px;opacity:0.4;">&gt;</span><span style="color:#6ee7b7;font-style:italic;opacity:0.9;">${escaped}</span></div>`;
+      }
+
+      let codeHtml = escaped
+        .replace(/(["'][^"']*?["'])/g, '§§STR_$1§§')
+        .replace(/\b(def|class|import|from|return|if|elif|else|for|while|try|except|const|let|var|function|async|await)\b/g, '§§KW_$1§§');
+
+      codeHtml = codeHtml
+        .replace(/§§STR_(.*?)§§/g, '<span style="color:#fde047;">$1</span>')
+        .replace(/§§KW_(.*?)§§/g, '<span style="color:#38bdf8;font-weight:700;">$1</span>');
+
+      return `<div class="terminal-code-line"><span style="color:var(--text-muted);user-select:none;margin-right:10px;opacity:0.4;">&gt;</span>${codeHtml}</div>`;
     }
 
     // Headings (### Title, ## Title, # Title)
