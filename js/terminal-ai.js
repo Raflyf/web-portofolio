@@ -675,7 +675,17 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       }
     } catch (_) {}
 
-    const fullSystemPrompt = SYSTEM_PROMPT_2026 + searchContext;
+    let longTermMemory = '';
+    try {
+      longTermMemory = await this.fetchAIMemories();
+    } catch (_) {}
+
+    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${searchContext}${longTermMemory}
+
+[INSTRUKSI MEMORI JANGKA PANJANG (ANTI DATA POISONING)]
+Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi baru, koreksi data, atau informasi relevan), sertakan tag berikut di baris paling bawah:
+\`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\``;
+
     const effortTokensMap = {
       'LOW': 2000,
       'MEDIUM': 4500,
@@ -709,6 +719,42 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       } catch (_) {
         return '';
       }
+    };
+
+    const dispatchSuccess = (rawContent, modelName, providerName) => {
+      let finalContent = cleanOutput(rawContent);
+      if (!finalContent || finalContent.length <= 5) return null;
+
+      // Extract and Save Memory to Supabase Continuous RAG
+      const memoryMatch = finalContent.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
+      if (memoryMatch && memoryMatch[1]) {
+        const newFact = memoryMatch[1].trim();
+        this.saveAIMemory(newFact);
+        finalContent = finalContent.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+      } else if (cleanQuery.length > 5 && finalContent.length > 25 && !/^(halo|hai|tes|ping)\b/i.test(cleanQuery)) {
+        const topic = cleanQuery.substring(0, 70);
+        const firstLine = finalContent.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalContent.substring(0, 120);
+        const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
+        this.saveAIMemory(cleanFact);
+      }
+
+      this.lastExecutionInfo = {
+        isAuto: !this.currentModel || this.currentModel === 'auto',
+        resolvedModel: modelName,
+        requestedModel: this.currentModel,
+        isFailover: providerName !== 'OmniRoute Dedicated Gateway',
+        provider: providerName,
+        effort: targetEffort,
+        category: isProjectExplaining ? 'project_architecture' : (isDeepReasoning ? 'deep_reasoning' : 'general')
+      };
+
+      if (telemetry) {
+        const target = (!this.currentModel || this.currentModel === 'auto') ? `auto:${modelName}` : (this.currentModel || modelName);
+        const label = `[${providerName} ➔ ${modelName}] ${cleanQuery.substring(0, 60)}`;
+        telemetry.logEvent('ai_query_resolved', target, label);
+      }
+
+      return finalContent.split('\n');
     };
 
     // 1. ABSOLUTE PRIORITY #1: Dedicated OmniRoute Gateway Pool (Multi-Model Nemotron & DeepSeek Pipeline)
@@ -756,18 +802,10 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
         if (omniRes.ok) {
           const rawText = await omniRes.text();
-          const content = cleanOutput(extractContentFromResponseText(rawText));
+          const content = extractContentFromResponseText(rawText);
           if (content && content.length > 5) {
-            this.lastExecutionInfo = {
-              isAuto: !this.currentModel || this.currentModel === 'auto',
-              resolvedModel: omniModel,
-              requestedModel: this.currentModel,
-              isFailover: false,
-              provider: 'OmniRoute Dedicated Gateway',
-              effort: targetEffort,
-              category: isProjectExplaining ? 'project_architecture' : (isDeepReasoning ? 'deep_reasoning' : 'general')
-            };
-            return content.split('\n');
+            const resLines = dispatchSuccess(content, omniModel, 'OmniRoute Dedicated Gateway');
+            if (resLines) return resLines;
           }
         } else {
           // If Cloudflare tunnel returns 502/503/521/522/524/530, server is offline
@@ -813,18 +851,10 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
         if (ocRes.ok) {
           const rawText = await ocRes.text();
-          const content = cleanOutput(extractContentFromResponseText(rawText));
+          const content = extractContentFromResponseText(rawText);
           if (content && content.length > 5) {
-            this.lastExecutionInfo = {
-              isAuto: !this.currentModel || this.currentModel === 'auto',
-              resolvedModel: 'nvidia/nemotron-nano-9b',
-              requestedModel: this.currentModel,
-              isFailover: true,
-              provider: 'OpenCode Direct Failover',
-              effort: targetEffort,
-              category: 'general'
-            };
-            return content.split('\n');
+            const resLines = dispatchSuccess(content, 'nvidia/nemotron-nano-9b', 'OpenCode Direct Failover');
+            if (resLines) return resLines;
           }
         }
       } catch (_) {}
@@ -873,18 +903,10 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
           if (orRes.ok) {
             const rawText = await orRes.text();
-            const content = cleanOutput(extractContentFromResponseText(rawText));
+            const content = extractContentFromResponseText(rawText);
             if (content && content.length > 5) {
-              this.lastExecutionInfo = {
-                isAuto: !this.currentModel || this.currentModel === 'auto',
-                resolvedModel: orM,
-                requestedModel: this.currentModel,
-                isFailover: true,
-                provider: 'OpenRouter 3-Key Cloud Pool',
-                effort: targetEffort,
-                category: 'general'
-              };
-              return content.split('\n');
+              const resLines = dispatchSuccess(content, orM, 'OpenRouter 3-Key Cloud Pool');
+              if (resLines) return resLines;
             }
           }
         } catch (_) {}
