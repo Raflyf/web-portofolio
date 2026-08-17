@@ -422,18 +422,23 @@ class DashboardApp {
 
   normalizeAIQuery(target = '', label = '') {
     const combined = `${target} ${label}`.toLowerCase();
-    if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return 'DeepSeek R1 (Thinking CoT)';
-    if (combined.includes('deepseek-chat') || combined.includes('deepseek-v3') || combined.includes('deepseek')) return 'DeepSeek V3 (671B MoE)';
-    if (combined.includes('qwen') || combined.includes('coder') || combined.includes('koding')) return 'Qwen 2.5 Coder (32B)';
-    if (combined.includes('llama-3.3') || combined.includes('llama 3.3')) return 'Meta Llama 3.3 (70B)';
-    if (combined.includes('nemotron') || combined.includes('nvidia')) return 'Nvidia Nemotron (70B Ultra)';
-    if (combined.includes('gemma') || combined.includes('vision') || combined.includes('gemini')) return 'Google Gemma 3 (27B Vision)';
-    if (combined.includes('minimax')) return 'MiniMax-01 (456B MoE)';
-    if (combined.includes('ollama') || combined.includes('kimi')) return 'Ollama Cloud Kimi K2.7';
-    if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Riset Plagiarism Checker';
-    if (combined.includes('skripsi') || combined.includes('nlp')) return 'Riset NLP & Skripsi S1';
-    if (combined.includes('kontak') || combined.includes('hubungi') || combined.includes('email') || combined.includes('wa')) return 'Pertanyaan Kontak & Karir';
-    if (combined.includes('sertifikat') || combined.includes('bnsp') || combined.includes('mikrotik')) return 'Kredensial Kompetensi';
+    const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
+    const tag = isAuto ? '⚡ Auto: ' : '';
+
+    if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
+    if (combined.includes('deepseek-chat') || combined.includes('deepseek-v3') || combined.includes('deepseek')) return `${tag}DeepSeek V3 (671B MoE)`;
+    if (combined.includes('qwen') || combined.includes('coder') || combined.includes('koding')) return `${tag}Qwen 2.5 Coder (32B)`;
+    if (combined.includes('llama-3.3') || combined.includes('llama 3.3')) return `${tag}Meta Llama 3.3 (70B)`;
+    if (combined.includes('nemotron') || combined.includes('nvidia')) return `${tag}Nvidia Nemotron (70B Ultra)`;
+    if (combined.includes('gemma') || combined.includes('vision') || combined.includes('gemini')) return `${tag}Google Gemma 3 (27B Vision)`;
+    if (combined.includes('minimax')) return `${tag}MiniMax-01 (456B MoE)`;
+    if (combined.includes('ollama') || combined.includes('kimi')) return `${tag}Ollama Cloud Kimi K2.7`;
+    if (combined.includes('local_semantic') || combined.includes('semantic engine')) return '⚡ Auto: Local Semantic Fallback';
+
+    if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
+    if (combined.includes('skripsi') || combined.includes('nlp')) return 'Tanya: Riset NLP & Skripsi';
+    if (combined.includes('kontak') || combined.includes('hubungi') || combined.includes('email') || combined.includes('wa')) return 'Tanya: Informasi Kontak';
+    if (combined.includes('sertifikat') || combined.includes('bnsp') || combined.includes('mikrotik')) return 'Tanya: Kredensial Kompetensi';
     if (combined.includes('help') || combined.includes('skills') || combined.includes('projects') || combined.includes('benchmarks')) return `CLI: $ ${target.toLowerCase()}`;
     return label ? (label.length > 28 ? label.substring(0, 26) + '...' : label) : (target || 'Konsultasi AI');
   }
@@ -465,16 +470,16 @@ class DashboardApp {
     const aiListEl = document.getElementById('ai-ranked-list');
     if (aiListEl) {
       const counts = {};
-      this.filteredEvents.filter(e => e.event_type === 'ai_query' || e.event_type === 'model_select' || e.event_type === 'terminal_cmd').forEach(e => {
+      this.filteredEvents.filter(e => e.event_type === 'ai_query' || e.event_type === 'ai_query_resolved' || e.event_type === 'model_select' || e.event_type === 'terminal_cmd').forEach(e => {
         const unified = this.normalizeAIQuery(e.event_target, e.event_label);
         counts[unified] = (counts[unified] || 0) + 1;
       });
 
       if (Object.keys(counts).length === 0) {
-        counts['DeepSeek V3 (671B MoE)'] = 0;
-        counts['Riset Plagiarism Checker'] = 0;
+        counts['⚡ Auto: DeepSeek V3 (671B MoE)'] = 0;
+        counts['⚡ Auto: Meta Llama 3.3 (70B)'] = 0;
+        counts['DeepSeek R1 (Thinking CoT)'] = 0;
         counts['Qwen 2.5 Coder (32B)'] = 0;
-        counts['Meta Llama 3.3 (70B)'] = 0;
       }
 
       const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
