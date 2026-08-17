@@ -427,7 +427,7 @@ export default async function handler(req, res) {
     ];
 
     const maxTokensConfig = reasoningEffort === 'low' ? 1024 : (reasoningEffort === 'thinking' || reasoningEffort === 'high' ? 2048 : 1500);
-    const tempConfig = reasoningEffort === 'low' ? 0.6 : (reasoningEffort === 'thinking' ? 0.7 : 0.8);
+    const tempConfig = reasoningEffort === 'low' ? 0.2 : (reasoningEffort === 'thinking' ? 0.4 : 0.3);
 
     // ========================================================================
     // 1. MULTIMODAL VISION ROUTE (If images are attached)
