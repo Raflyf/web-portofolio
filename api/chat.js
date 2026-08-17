@@ -179,60 +179,102 @@ export default async function handler(req, res) {
     // ========================================================================
     // 1. MULTIMODAL VISION ROUTE (If images are attached)
     // ========================================================================
-    if (hasImages && OPENROUTER_KEY) {
-      try {
-        const userContent = [
-          { type: 'text', text: assembledQuery || 'Deskripsikan dan analisis gambar ini secara komprehensif dan mendalam.' }
-        ];
+    if (hasImages) {
+      const userContent = [
+        { type: 'text', text: assembledQuery || 'Deskripsikan dan analisis gambar ini secara komprehensif dan mendalam.' }
+      ];
 
-        for (const img of imageAttachments) {
-          const imgUrl = img.data.startsWith('data:') ? img.data : `data:${img.type || 'image/jpeg'};base64,${img.data}`;
-          userContent.push({
-            type: 'image_url',
-            image_url: { url: imgUrl }
-          });
-        }
+      for (const img of imageAttachments) {
+        const imgUrl = img.data.startsWith('data:') ? img.data : `data:${img.type || 'image/jpeg'};base64,${img.data}`;
+        userContent.push({
+          type: 'image_url',
+          image_url: { url: imgUrl }
+        });
+      }
 
-        const visionModels = [
-          targetModel.includes('vl') || targetModel.includes('vision') ? targetModel : 'qwen/qwen-2-vl-72b-instruct',
-          'qwen/qwen-2-vl-72b-instruct'
-        ];
-
-        for (const vm of visionModels) {
-          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      // If user selected Nvidia Vision specifically
+      if (targetModel.includes('nvidia') && NVIDIA_KEY) {
+        try {
+          const nvResp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OPENROUTER_KEY}`,
-              'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
-              'X-Title': 'Rafly Firmansyah AI Vision Lab'
+              'Authorization': `Bearer ${NVIDIA_KEY}`
             },
             body: JSON.stringify({
-              model: vm,
+              model: 'meta/llama-3.2-11b-vision-instruct',
               messages: [
                 { role: 'system', content: systemPromptWithSearch },
                 { role: 'user', content: userContent }
               ],
-              max_tokens: 1800,
-              temperature: 0.7
+              max_tokens: 1800
             })
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
+          if (nvResp.ok) {
+            const nvData = await nvResp.json();
+            const nvText = nvData?.choices?.[0]?.message?.content;
+            if (nvText) {
               return res.status(200).json({
                 success: true,
-                response: content,
-                model: vm,
-                provider: 'Vision Multimodal Engine'
+                response: nvText,
+                model: 'nvidia/meta/llama-3.2-11b-vision-instruct',
+                provider: 'Nvidia NIM Vision'
               });
             }
           }
+        } catch (err) {
+          console.warn('Nvidia vision error, cascading to OpenRouter vision:', err.message);
         }
-      } catch (err) {
-        console.warn('Vision engine error:', err.message);
+      }
+
+      // OpenRouter Multimodal Vision Cascade (Gemma 3, Gemini 2.5 Flash, Qwen 2 VL)
+      if (OPENROUTER_KEY) {
+        const visionModels = [
+          targetModel.includes('vision') || targetModel.includes('vl') || targetModel.includes('gemma') || targetModel.includes('gemini') ? targetModel : 'google/gemma-3-27b-it',
+          'google/gemma-3-27b-it',
+          'google/gemma-3-12b-it',
+          'google/gemini-2.5-flash',
+          'qwen/qwen-2-vl-72b-instruct'
+        ];
+
+        for (const vm of visionModels) {
+          try {
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENROUTER_KEY}`,
+                'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
+                'X-Title': 'Rafly Firmansyah AI Vision Lab'
+              },
+              body: JSON.stringify({
+                model: vm,
+                messages: [
+                  { role: 'system', content: systemPromptWithSearch },
+                  { role: 'user', content: userContent }
+                ],
+                max_tokens: 1800,
+                temperature: 0.7
+              })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              const content = data?.choices?.[0]?.message?.content;
+              if (content) {
+                return res.status(200).json({
+                  success: true,
+                  response: content,
+                  model: vm,
+                  provider: 'Vision Multimodal Engine'
+                });
+              }
+            }
+          } catch (err) {
+            console.warn(`Vision model ${vm} failed, trying next...`);
+          }
+        }
       }
     }
 
