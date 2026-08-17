@@ -203,9 +203,10 @@ function pickAutoModel(query, hasImages = false, reasoningEffort = 'auto') {
 }
 
 export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Dynamic Standard-Compliant CORS Headers
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -231,6 +232,15 @@ export default async function handler(req, res) {
       history = [],
       reasoningEffort = 'auto'
     } = req.body || {};
+
+    // 1. Strict Payload Boundary Checks (Prevent memory exhaustion and DOS)
+    if (typeof query === 'string' && query.length > 50000) {
+      return res.status(413).json({ error: 'Payload Too Large: Query exceeds 50,000 character limit.' });
+    }
+
+    if (Array.isArray(attachments) && attachments.length > 10) {
+      return res.status(400).json({ error: 'Bad Request: Maximum 10 file attachments allowed per request.' });
+    }
 
     if (!query && (!attachments || attachments.length === 0)) {
       return res.status(400).json({ error: 'Query prompt or file attachment is required' });

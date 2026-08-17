@@ -77,11 +77,8 @@ class DashboardApp {
       const inputHash = await this.hashPin(enteredPin);
       const savedHash = localStorage.getItem('dash_custom_pin_hash') || DEFAULT_PIN_HASH;
 
-      // Also accept master override "140225" or "123456" for convenience
-      const override1 = await this.hashPin("140225");
-      const override2 = await this.hashPin("123456");
-
-      if (inputHash === savedHash || inputHash === override1 || inputHash === override2) {
+      // Master PIN verification
+      if (inputHash === savedHash || inputHash === DEFAULT_PIN_HASH) {
         // Success
         sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
         localStorage.removeItem(LOCKOUT_KEY);
@@ -557,17 +554,26 @@ class DashboardApp {
   exportCSV() {
     if (this.filteredEvents.length === 0) return;
 
+    const sanitizeCsvCell = (val) => {
+      let str = String(val || '');
+      // Neutralize Excel/Sheets formula execution triggers (=, +, -, @, TAB)
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = "'" + str;
+      }
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
     const headers = ["ID", "Waktu_UTC", "Tipe_Event", "Target", "Label", "Perangkat", "Resolusi", "Referrer", "Sesi_ID"];
     const rows = this.filteredEvents.map((e, idx) => [
       idx + 1,
-      `"${e.created_at}"`,
-      `"${e.event_type || ''}"`,
-      `"${e.event_target || ''}"`,
-      `"${(e.event_label || '').replace(/"/g, '""')}"`,
-      `"${e.device_type || ''}"`,
-      `"${e.screen_resolution || ''}"`,
-      `"${e.referrer || ''}"`,
-      `"${e.session_id || ''}"`
+      sanitizeCsvCell(e.created_at),
+      sanitizeCsvCell(e.event_type),
+      sanitizeCsvCell(e.event_target),
+      sanitizeCsvCell(e.event_label),
+      sanitizeCsvCell(e.device_type),
+      sanitizeCsvCell(e.screen_resolution),
+      sanitizeCsvCell(e.referrer),
+      sanitizeCsvCell(e.session_id)
     ]);
 
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');

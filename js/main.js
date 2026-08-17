@@ -168,12 +168,20 @@ function initInertiaSmoothWheel() {
   }
 
   window.addEventListener('wheel', (e) => {
+    // If modal is open, let native dialog scrolling take full control
+    if (document.body.classList.contains('modal-open') || document.documentElement.classList.contains('modal-open')) {
+      return;
+    }
+
     const path = e.composedPath ? e.composedPath() : [];
     const isScrollableChild = path.some(el => {
       if (!el || !el.classList) return false;
       return (
         el.classList.contains('terminal-body') ||
         el.classList.contains('modal-body') ||
+        el.classList.contains('terminal-modal-dialog') ||
+        el.classList.contains('cert-modal-dialog') ||
+        el.tagName === 'DIALOG' ||
         el.tagName === 'TEXTAREA' ||
         el.tagName === 'IFRAME'
       );
@@ -566,6 +574,12 @@ function initModals() {
 
   [activeProjectModal, activeCertModal].forEach(dialog => {
     if (!dialog) return;
+
+    dialog.addEventListener('close', () => {
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+    });
+
     dialog.addEventListener('click', (e) => {
       const rect = dialog.getBoundingClientRect();
       const isInDialog = (
@@ -660,6 +674,8 @@ function openProjectModal(project) {
     bodyEl.appendChild(actionsWrap);
   }
 
+  document.body.classList.add('modal-open');
+  document.documentElement.classList.add('modal-open');
   activeProjectModal.showModal();
 }
 
@@ -756,6 +772,8 @@ function openCertModal(cert) {
     bodyEl.appendChild(actionsWrap);
   }
 
+  document.body.classList.add('modal-open');
+  document.documentElement.classList.add('modal-open');
   activeCertModal.showModal();
 }
 

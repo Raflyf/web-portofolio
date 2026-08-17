@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pratinjau Dokumen Sertifikat — Rafly Firmansyah</title>
   
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='monospace' fill='%2310b981'>R</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=2.3.0">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css?v=3.8.0">
 
   <style>
     *, *::before, *::after {
@@ -310,13 +312,23 @@
       if (titleEl) titleEl.textContent = docTitle;
       document.title = `${docTitle} — Rafly Firmansyah`;
 
+      function isSafePath(p) {
+        if (!p || typeof p !== 'string') return false;
+        // Only allow relative paths inside certificates/ directory, block javascript:, http:, https:, data:, //
+        if (/^(https?:|\/\/|javascript:|data:)/i.test(p)) return false;
+        if (p.includes('..')) return false;
+        return p.startsWith('certificates/') || p.startsWith('assets/');
+      }
+
       // Determine images array
       let imagesList = [];
       if (rawImgs) {
-        imagesList = rawImgs.split(',').map(s => s.trim()).filter(Boolean);
-      } else if (rawImg) {
+        imagesList = rawImgs.split(',')
+          .map(s => s.trim())
+          .filter(s => isSafePath(s));
+      } else if (rawImg && isSafePath(rawImg)) {
         imagesList = [rawImg];
-      } else if (rawPdf) {
+      } else if (rawPdf && isSafePath(rawPdf)) {
         const base = rawPdf.replace(/^certificates\//, '').replace(/\.pdf$/, '');
         if (base === 'google-profil-bisnis-ecommerce-kominfo') {
           imagesList = [
@@ -328,14 +340,16 @@
         }
       }
 
-      if (rawPdf) {
+      if (rawPdf && isSafePath(rawPdf)) {
         downloadBtn.href = rawPdf;
       } else if (imagesList.length > 0) {
         downloadBtn.href = imagesList[0];
+      } else {
+        downloadBtn.style.display = 'none';
       }
 
       if (imagesList.length === 0) {
-        loaderEl.innerHTML = '<p style="color:var(--accent-amber);">Berkas dokumen tidak ditemukan.</p>';
+        loaderEl.innerHTML = '<p style="color:var(--accent-amber);">Berkas dokumen tidak ditemukan atau tautan tidak valid.</p>';
         return;
       }
 
