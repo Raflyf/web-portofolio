@@ -1,13 +1,14 @@
 /**
  * ============================================================================
  * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR
- * Provides an interactive CLI playground for visitors to explore Rafly's profile
- * With Command History (Up/Down), Tab Auto-complete, and Shortcut Chips
+ * CLI Playground & Natural Language AI Assistant for Rafly Firmansyah Portfolio
+ * With Multi-API Cascade (DeepSeek, Groq, Gemini, Ollama) & Local Semantic Fallback
  * ============================================================================
  */
 
 import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js';
 import { telemetry } from './telemetry.js';
+import { terminalAI } from './terminal-ai.js';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -22,16 +23,21 @@ export function initTerminal() {
 
   const COMMAND_REGISTRY = {
     help: () => [
-      "Perintah yang tersedia:",
+      "Perintah CLI yang tersedia:",
       "  about        - Ringkasan profil dan fokus riset",
       "  skills       - Matriks keterampilan teknis",
       "  projects     - Daftar proyek GitHub open-source",
-      "  certifs      - Daftar sertifikat & kredensial terverifikasi",
-      "  benchmarks   - Metrik pengujian model ML / AI",
+      "  certifs      - Daftar sertifikat & kredensial terverifikasi (10 Sertifikat)",
+      "  benchmarks   - Metrik pengujian model riset ML/AI",
+      "  aistatus     - Status engine AI & provider aktif",
+      "  setkey       - Simpan API key (contoh: setkey openrouter <key>)",
       "  telemetry    - Portal monitoring analitik & trafik admin",
       "  contact      - Informasi kontak resmi",
       "  whoami       - Status sesi saat ini",
-      "  clear        - Membersihkan layar terminal"
+      "  clear        - Membersihkan layar terminal",
+      "",
+      "TIPS: Anda juga bisa bertanya bebas dalam bahasa alami tanpa keyword!",
+      "Contoh: 'jelaskan arsitektur OpenPlagiarismChecker' atau 'apa saja unit BNSP?'"
     ],
     telemetry: () => {
       setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
@@ -58,7 +64,7 @@ export function initTerminal() {
     skills: () => [
       "[AI / ML]       Python, PyTorch, Scikit-Learn, XGBoost, Sentence-Transformers, NLP, N-Gram",
       "[VISION]        MediaPipe Vision, OpenCV, Image Processing, Edge Inference",
-      "[BACKEND]       Flask, Flask-SocketIO, REST APIs, WebSockets, PHP, MySQL",
+      "[BACKEND]       Flask, Flask-SocketIO, REST APIs, WebSockets, PHP, MySQL, Supabase",
       "[FRONTEND]      Vanilla JavaScript (ES6+), Modern HTML5/CSS3, OKLCH, Chart.js",
       "[NETWORKING]    MikroTik RouterOS (MTCNA), Network Security, Routing, Firewall"
     ],
@@ -72,7 +78,7 @@ export function initTerminal() {
       return lines;
     },
     certifs: () => {
-      const lines = ["KREDENSIAL & SERTIFIKASI TERVERIFIKASI:"];
+      const lines = ["KREDENSIAL & SERTIFIKASI TERVERIFIKASI (10 SERTIFIKAT):"];
       CERTIFICATES_DATA.forEach((c, idx) => {
         lines.push(`  ${idx + 1}. ${c.title} (${c.issuer} - ${c.date})`);
         lines.push(`     -> ID: ${c.credentialId}`);
@@ -102,15 +108,32 @@ export function initTerminal() {
     whoami: () => [
       "visitor@portfolio-client: guest (read-only privilege level)"
     ],
+    aistatus: () => {
+      const status = terminalAI.getStatus();
+      return [
+        "[AI ENGINE & PROVIDER POOL STATUS]",
+        "----------------------------------------------------------------",
+        `System Status        : ${status.status}`,
+        `Configured Providers : ${status.configuredProviders.length > 0 ? status.configuredProviders.join(', ') : 'Default Public Cloud & Local Engine'}`,
+        `Local Fallback Engine: ${status.fallbackEngine}`,
+        "",
+        "Anda dapat menyimpan API Key pribadi menggunakan perintah:",
+        "  $ setkey openrouter <api-key>",
+        "  $ setkey groq <api-key>",
+        "  $ setkey gemini <api-key>",
+        "  $ setkey deepseek <api-key>"
+      ];
+    },
     clear: () => {
       terminalBody.innerHTML = '';
       return [];
     }
   };
 
-  function appendLine(text, isPrompt = false, userCmd = '') {
+  function appendLine(text, isPrompt = false, userCmd = '', isThinking = false) {
     const lineEl = document.createElement('div');
     lineEl.className = 'terminal-line';
+    if (isThinking) lineEl.classList.add('terminal-thinking-line');
 
     if (isPrompt) {
       const promptSpan = document.createElement('span');
@@ -126,33 +149,70 @@ export function initTerminal() {
 
     terminalBody.appendChild(lineEl);
     terminalBody.scrollTop = terminalBody.scrollHeight;
+    return lineEl;
   }
 
-  function executeCommand(rawInput) {
+  async function executeCommand(rawInput) {
     const trimmed = rawInput.trim();
     if (!trimmed) return;
 
     history.push(trimmed);
     historyIndex = history.length;
 
-    const cmd = trimmed.toLowerCase();
     appendLine('', true, trimmed);
     terminalInput.value = '';
 
-    telemetry.logEvent('terminal_cmd', cmd, `Perintah Terminal: ${cmd}`);
+    const cmdLower = trimmed.toLowerCase();
 
-    if (COMMAND_REGISTRY[cmd]) {
-      const outputLines = COMMAND_REGISTRY[cmd]();
+    // Check built-in CLI commands
+    if (COMMAND_REGISTRY[cmdLower]) {
+      telemetry.logEvent('terminal_cmd', cmdLower, `Perintah Terminal: ${cmdLower}`);
+      const outputLines = COMMAND_REGISTRY[cmdLower]();
       outputLines.forEach(line => appendLine(line));
-    } else {
-      appendLine(`Perintah tidak dikenali: '${trimmed}'. Ketik 'help' untuk panduan.`);
+      appendLine("");
+      return;
     }
+
+    // Check setkey command: setkey <provider> <key>
+    if (cmdLower.startsWith('setkey ')) {
+      const parts = trimmed.split(/\s+/);
+      if (parts.length >= 3) {
+        const provider = parts[1];
+        const key = parts.slice(2).join(' ');
+        const msg = terminalAI.setKey(provider, key);
+        appendLine(msg);
+      } else {
+        appendLine("Format perintah salah. Contoh: setkey openrouter sk-or-v1-...");
+      }
+      appendLine("");
+      return;
+    }
+
+    // Process via AI Engine (Multi-API Cascade with Local Semantic Fallback)
+    telemetry.logEvent('terminal_ai_query', trimmed.slice(0, 40), `Pertanyaan AI: ${trimmed}`);
+
+    const thinkingLine = appendLine("[AI Assistant] Menganalisis respon...", false, '', true);
+
+    try {
+      const responses = await terminalAI.ask(trimmed);
+      if (thinkingLine && thinkingLine.parentNode) {
+        thinkingLine.remove();
+      }
+
+      responses.forEach(line => appendLine(line));
+    } catch (err) {
+      if (thinkingLine && thinkingLine.parentNode) {
+        thinkingLine.remove();
+      }
+      appendLine(`[AI Fallback] ${err.message || 'Terjadi kendala jaringan. Mengalihkan ke data lokal.'}`);
+    }
+
     appendLine("");
   }
 
   // Initial welcome message
-  appendLine("Sistem Terminal Interaktif Portofolio [Versi 2.5.0]");
-  appendLine("Ketik 'help' atau klik pintasan di bawah untuk eksplorasi.");
+  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.4.0 — AI Powered]");
+  appendLine("Ketik perintah CLI ('help', 'skills') atau tanyakan apapun dengan bahasa alami.");
   appendLine("");
 
   // Form submit listener
