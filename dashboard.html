@@ -267,6 +267,24 @@
       </div>
     </section>
 
+    <!-- Dedicated AI Long-Term Memory (Supabase Continuous RAG) Explorer -->
+    <section class="ai-models-matrix-card" aria-label="Memori Jangka Panjang AI Supabase">
+      <div class="table-header-row">
+        <div class="chart-title-wrap">
+          <h2 class="chart-title">Memori Jangka Panjang AI (Supabase Continuous RAG)</h2>
+          <span class="chart-subtitle">Basis data pengetahuan dan fakta yang dipelajari AI dari pencarian web real-time & masukan pengguna</span>
+        </div>
+        <div class="ai-matrix-total-badge" id="ai-memory-total-badge">
+          Basis Data RAG: <strong id="ai-memory-total-count" style="color:var(--accent-emerald);">Sinkronisasi...</strong>
+        </div>
+      </div>
+
+      <div class="ranked-list" id="ai-memories-list" style="display:flex;flex-direction:column;gap:0.75rem;">
+        <!-- Dynamically populated by js/dashboard.js -->
+        <div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Memuat basis data memori AI...</div>
+      </div>
+    </section>
+
     <!-- Activity Stream Table -->
     <section class="table-card" aria-label="Tabel Riwayat Aktivitas Pengunjung">
       <div class="table-header-row">
