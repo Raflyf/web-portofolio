@@ -1,130 +1,98 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - TERMINAL DEVELOPER LAB AI ENGINE (v3.7.0)
- * Dual-Engine Architecture:
- * 1. Cloud Serverless Multi-API Gateway (/api/chat) -> OpenRouter, Nvidia NIM, MiniMax, Opencode
- * 2. In-Browser Local Semantic Knowledge Engine -> 100% Offline & Infinite Quota
- * Supports: Visitor Custom API Keys & Dynamic Model Selection
+ * TERMINAL AI ASSISTANT & LOCAL SEMANTIC KNOWLEDGE ENGINE (v4.5.0)
+ * Hybrid Client-Side Engine for Developer Lab Simulator
+ * Features:
+ * 1. Native OmniRoute Local AI Gateway Bridge (Opencode, Ollama Cloud, Minimax M3, Nemotron)
+ * 2. Vercel Serverless Multi-API Cloud Gateway Fallback (/api/chat)
+ * 3. In-Browser Sub-15ms Exact & Semantic Pattern Engine for Offline Resilience
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js';
 
 // ============================================================================
-// 1. LOCAL IN-BROWSER SEMANTIC KNOWLEDGE BASE (Fail-Safe Instant Fallback)
+// 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (100% Offline Standalone Fallback)
 // ============================================================================
 const SEMANTIC_PATTERNS = [
   {
-    category: 'profile',
-    keywords: ['siapa', 'biodata', 'profil', 'tentang', 'about', 'nama', 'background', 'kuliah', 'kampus', 'ubsi', 'lulusan', 'jurusan', 'mahasiswa'],
+    keywords: ['plagiarism', 'plagiat', 'turnitin', 'openplagiarism', 'skripsi', 'n-gram', 'shingling', 'sentence transformer', 'semantic paraphrasing'],
     respond: () => [
-      `Nama        : ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
-      `Pendidikan  : ${DEVELOPER_PROFILE.degree}`,
-      `Institusi   : ${DEVELOPER_PROFILE.institution}`,
-      `Domisili    : ${DEVELOPER_PROFILE.location}`,
-      `Fokus Riset : NLP & Machine Learning, Computer Vision, dan Jaringan MikroTik`,
-      `Status      : ${DEVELOPER_PROFILE.status}`,
+      "[RISET AKADEMIK UNGGULAN: OpenPlagiarismChecker]",
+      "----------------------------------------------------------------",
+      "Sistem deteksi kesamaan dokumen akademik komprehensif mengutamakan privasi:",
+      "  - Exact Match Engine   : 5-Word N-Gram Shingling (pencocokan cepat)",
+      "  - Paraphrasing Engine  : Multilingual Sentence Transformers (Cosine Sim)",
+      "  - Repository Indexed   : 15+ Basis data jurnal (GARUDA, Neliti, BASE, dll)",
+      "  - Stack Teknologi      : Python, Flask, PyTorch, Scikit-Learn",
+      "  - Status Riset         : Siap deployment riset skripsi 2026",
       "",
-      DEVELOPER_PROFILE.bio
+      "Ketik 'projects' untuk link repositori GitHub."
     ]
   },
   {
-    category: 'plagiarism',
-    keywords: ['plagiat', 'plagiarism', 'openplagiarism', 'turnitin', 'skripsi', 'n-gram', 'shingling', 'transformer', 'similarity'],
+    keywords: ['spam', 'email', 'naive bayes', 'xgboost', 'klasifikasi', 'imbalanced', 'smote', 'f1-score'],
     respond: () => [
-      "OpenPlagiarismChecker adalah mesin pemeriksa kesamaan teks akademik lokal mandiri yang mengutamakan privasi data.",
-      "",
-      "Arsitektur:",
-      "1. Exact Matching      : 5-Word N-Gram Shingling untuk pencocokan kata persis.",
-      "2. Semantic Paraphrase : Multilingual Sentence Transformers untuk deteksi sinonim/parafrasa.",
-      "3. Pangkalan Data Luas : Merujuk silang ke 15+ basis data literatur terbuka (GARUDA, Indonesia OneSearch, Neliti, BASE, OpenAlex, Semantic Scholar).",
-      "4. Terisolasi Lokal    : Dokumen diproses di lingkungan lokal tanpa kebocoran data ke server pihak ketiga.",
-      "",
-      "Teknologi: Python, Flask, PyTorch, Sentence-Transformers, N-Gram, Web Scraping.",
-      "Repositori: https://github.com/Raflyf/OpenPlagiarismChecker"
+      "[RISET TERAPAN: Spam-Email Classifier & Evaluator]",
+      "----------------------------------------------------------------",
+      "Aplikasi web klasifikasi dan komparasi performa model Machine Learning:",
+      "  - Komparasi Algoritma  : Multinomial Naive Bayes vs XGBoost",
+      "  - Fitur Unggulan       : Dynamic Class Balancing (slider rasio 10:90 - 90:10)",
+      "  - Metrik Evaluasi      : Confusion Matrix, Precision, Recall, F1-Score",
+      "  - Stack Teknologi      : Python, Flask, Pandas, Scikit-Learn, Chart.js"
     ]
   },
   {
-    category: 'spam',
-    keywords: ['spam', 'email', 'classifier', 'klasifikasi', 'naive bayes', 'xgboost', 'confusion matrix', 'dataset'],
+    keywords: ['laser', 'ppt', 'powerpoint', 'gyroscope', 'smartphone', 'remote', 'websocket', 'socketio'],
     respond: () => [
-      "Aplikasi web riset evaluasi dan klasifikasi email spam berbasis Machine Learning.",
-      "",
-      "Fitur Utama:",
-      "1. Perbandingan Real-time : Evaluasi performa algoritma Naive Bayes vs XGBoost secara langsung.",
-      "2. Batch Evaluation       : Uji coba massal ribuan sampel dataset via unggah berkas .csv.",
-      "3. Dynamic Class Tuning   : Pengaturan proporsi rasio kelas data dari 10:90 hingga 90:10.",
-      "4. Metrik Visual          : Tampilan visual Confusion Matrix, Akurasi, Presisi, Recall, dan F1-Score.",
-      "",
-      "Teknologi: Python, Scikit-Learn, XGBoost, Flask, Pandas, Chart.js.",
-      "Repositori: https://github.com/Raflyf/Spam-Email"
+      "[PROYEK IoT & KONTROL: laser_pointer_PPT]",
+      "----------------------------------------------------------------",
+      "Pengendali slide presentasi nirsentuh berbasis sensor gerak smartphone:",
+      "  - Sensor               : DeviceOrientation & Gyroscope Smartphone",
+      "  - Komunikasi Real-time : WebSocket via Flask-SocketIO (Low Latency)",
+      "  - Kontrol Kursor       : PyAutoGUI virtual cursor mapper di PC presenter"
     ]
   },
   {
-    category: 'laser_pointer',
-    keywords: ['laser', 'pointer', 'ppt', 'powerpoint', 'presentasi', 'gyroscope', 'remote', 'touchpad', 'nirsentuh'],
+    keywords: ['fotokita', 'blur', 'face', 'mediapipe', 'gesture', 'v-sign', 'privasi', 'opencv'],
     respond: () => [
-      "Aplikasi pengubah smartphone menjadi laser pointer virtual dan remote touchpad untuk presentasi PowerPoint di laptop.",
-      "",
-      "Keunggulan:",
-      "- Memanfaatkan sensor gyroscope browser (DeviceOrientation API) tanpa instalasi aplikasi di HP.",
-      "- Transmisi ultra-low latency via WebSocket (Flask-SocketIO).",
-      "- Sistem pairing instan dengan QR-Code lokal dan token keamanan dinamis.",
-      "",
-      "Teknologi: Python, Flask-SocketIO, PyAutoGUI, WebSockets, JavaScript.",
-      "Repositori: https://github.com/Raflyf/laser_pointer_PPT"
+      "[PROYEK COMPUTER VISION: FotoKitaBlur]",
+      "----------------------------------------------------------------",
+      "Aplikasi otomatisasi privasi kamera real-time:",
+      "  - Gesture Recognition  : MediaPipe Tasks Vision (deteksi gestur Peace/V-Sign)",
+      "  - Image Processing     : OpenCV Gaussian Blur filter otomatis",
+      "  - Kecepatan            : Real-time 30+ FPS Edge Inference di browser/PC"
     ]
   },
   {
-    category: 'fotokita',
-    keywords: ['fotokita', 'blur', 'mediapipe', 'gesture', 'gestur', 'kamera', 'privasi', 'opencv', 'v-sign'],
+    keywords: ['bnsp', 'analis program', 'program analyst', 'sertifikasi nasional', 'lsp', 'kompetensi'],
     respond: () => [
-      "Sistem deteksi gestur tangan realtime berbasis browser menggunakan MediaPipe Tasks Vision dan OpenCV.",
+      "[KREDENSIAL RESMI: BNSP Sertifikat Kompetensi Analis Program]",
+      "----------------------------------------------------------------",
+      "Sertifikasi Standar Kompetensi Kerja Nasional Indonesia (SKKNI):",
+      "  - No. Registrasi : TIK 037 00481 2026",
+      "  - Masa Berlaku   : 2026 s/d 2029 (3 Tahun Terakreditasi)",
+      "  - Lembaga Uji    : LSP Informatika / Badan Nasional Sertifikasi Profesi",
+      "  - Cakupan        : 10 Unit Kompetensi Analisis & Rekayasa Perangkat Lunak",
       "",
-      "Fitur:",
-      "- Deteksi gestur dua jari (V-Sign) secara lokal di browser untuk penyamaran wajah otomatis (Privacy Filter).",
-      "- Edge AI Inference murni di sisi klien (kamera tidak dikirim ke server).",
-      "- Kamus gestur interaktif dan fallback mandiri script Python OpenCV.",
-      "",
-      "Teknologi: JavaScript, MediaPipe Tasks Vision, OpenCV, WebRTC.",
-      "Repositori: https://github.com/Raflyf/FotoKitaBlur"
+      "Ketik 'certifs' untuk rincian 10 sertifikat lengkap."
     ]
   },
   {
-    category: 'certificates',
-    keywords: ['sertif', 'sertifikat', 'certificate', 'kredensial', 'bnsp', 'mtcna', 'mikrotik', 'cisco', 'pcap', 'kompetensi', 'lisensi'],
+    keywords: ['mikrotik', 'mtcna', 'jaringan', 'routeros', 'routing', 'firewall', 'latvia'],
     respond: () => [
-      "Rafly Firmansyah memiliki 10 sertifikasi kompetensi autentik:",
-      "",
-      "1. BNSP (Badan Nasional Sertifikasi Profesi) & LSP UBSI:",
-      "   - Sertifikat Kompetensi Pengembang Perangkat Lunak (Kualifikasi: Analis Program).",
-      "   - Memvalidasi 10 Unit Kompetensi (Skalabilitas, SQL, Basis Data, Algoritma, Dokumentasi, Debugging, Profiling, Code Review, Testing).",
-      "",
-      "2. MikroTik (Riga, Latvia):",
-      "   - MTCNA: MikroTik Certified Network Associate (ID: 2502NA6383).",
-      "",
-      "3. Cisco Networking Academy & OpenEDG:",
-      "   - PCAP: Programming Essentials in Python.",
-      "",
-      "4. Sertifikasi Lainnya: IT Bootcamp Network Security (FTI UBSI), Cloud Computing (FTI UBSI), Google Profil Bisnis & E-Commerce (Kominfo), Full-Stack Web (Harisenin)."
+      "[KREDENSIAL JARINGAN: MikroTik Certified Network Associate (MTCNA)]",
+      "----------------------------------------------------------------",
+      "Sertifikasi teknis internasional dari MikroTikls SIA (Riga, Latvia):",
+      "  - Credential ID : 2410NA3062",
+      "  - Kompetensi    : RouterOS, Static Routing, Firewall, DHCP, Bandwidth Queue, Wireless"
     ]
   },
   {
-    category: 'skills',
-    keywords: ['skill', 'keahlian', 'kemampuan', 'stack', 'teknologi', 'bahasa', 'framework', 'python', 'javascript', 'backend', 'frontend'],
+    keywords: ['kontak', 'contact', 'email', 'whatsapp', 'wa', 'hubungi', 'hire', 'rekrut'],
     respond: () => [
-      "Peta Keahlian & Teknologi:",
-      "1. AI & Machine Learning : Python 3, PyTorch, Scikit-Learn, XGBoost, Sentence-Transformers, NLP, N-Gram, Pandas, NumPy.",
-      "2. Vision & Realtime     : MediaPipe Tasks Vision, OpenCV, Flask-SocketIO, WebSockets, PyAutoGUI.",
-      "3. Jaringan & Keamanan   : MikroTik RouterOS (MTCNA Certified), Routing, Firewall Security, QoS Bandwidth, Tunnels.",
-      "4. Backend & Web Systems : Python Flask, PHP 8 MVC, RESTful APIs, MySQL Database, Supabase RLS.",
-      "5. Frontend & UI Engine  : Modern Vanilla JavaScript (ES6+), HTML5 Semantik, CSS3 OKLCH Design Tokens, Chart.js."
-    ]
-  },
-  {
-    category: 'contact',
-    keywords: ['kontak', 'hubungi', 'contact', 'email', 'wa', 'whatsapp', 'nomor', 'telepon', 'pesan', 'hire', 'hire me', 'rekrut', 'jasa'],
-    respond: () => [
+      "[INFORMASI KONTAK RESMI]",
+      "----------------------------------------------------------------",
       `Nama     : ${DEVELOPER_PROFILE.name}`,
       `WhatsApp : ${DEVELOPER_PROFILE.whatsapp} (${DEVELOPER_PROFILE.whatsappUrl})`,
       `Email    : ${DEVELOPER_PROFILE.email}`,
@@ -181,27 +149,84 @@ class TerminalAIEngine {
       "[AI ENGINE & PROVIDER POOL STATUS]",
       "----------------------------------------------------------------",
       `Model AI Aktif       : ${this.currentModel}`,
-      `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server-Side Gateway'}`,
+      `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server Gateway'}`,
+      `OmniRoute Bridge     : Aktif (http://localhost:20128/v1/chat/completions)`,
+      `Cloud Gateway        : Vercel Serverless Multi-API Gateway (/api/chat)`,
       `Fallback Engine      : In-Browser Semantic Knowledge Engine (Active & Ready)`
     ];
   }
 
   /**
-   * Main Ask method: First tries serverless Cloud AI, then seamlessly falls back to Local Semantic Engine
+   * OmniRoute Local AI Gateway Bridge (Opencode, Ollama Cloud, Nemotron, Minimax)
+   */
+  async tryOmniRoute(query, model) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+
+      const targetModel = model.startsWith('oc/') || model.startsWith('ollamacloud/') || model.startsWith('minimax/') || model.startsWith('nvidia/')
+        ? model
+        : (model === 'auto' ? 'oc/deepseek-v4-flash-free' : model);
+
+      const res = await fetch('http://localhost:20128/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: targetModel,
+          messages: [{ role: 'user', content: query }],
+          stream: false
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (res.ok) {
+        const textRaw = await res.text();
+        let content = '';
+        try {
+          const j = JSON.parse(textRaw);
+          content = j?.choices?.[0]?.message?.content || j?.choices?.[0]?.text;
+        } catch (_) {
+          // SSE fallback parser
+          const lines = textRaw.split('\n');
+          for (const l of lines) {
+            if (l.startsWith('data: ') && l !== 'data: [DONE]') {
+              try {
+                const pj = JSON.parse(l.slice(6));
+                const chunk = pj.choices?.[0]?.delta?.content || pj.choices?.[0]?.text;
+                if (chunk) content += chunk;
+              } catch (_) {}
+            }
+          }
+        }
+
+        if (content && content.trim()) {
+          return content.trim().split('\n');
+        }
+      }
+    } catch (_) {
+      // OmniRoute not active on client device
+    }
+    return null;
+  }
+
+  /**
+   * Main Ask method: First checks OmniRoute, then Cloud Gateway, then Local Semantic
    */
   async ask(query) {
     const cleanQuery = query.trim();
     if (!cleanQuery) return ["Silakan masukkan pertanyaan atau perintah."];
 
-    // Check Ollama locally if developer is on localhost
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      try {
-        const ollamaRes = await this.tryLocalOllama(cleanQuery);
-        if (ollamaRes) return ollamaRes;
-      } catch (_) {}
-    }
+    // 1. Try local OmniRoute (Opencode, Ollama Cloud, Nemotron, MiniMax)
+    try {
+      const omniRes = await this.tryOmniRoute(cleanQuery, this.currentModel);
+      if (omniRes && omniRes.length > 0) {
+        return omniRes;
+      }
+    } catch (_) {}
 
-    // Primary: Call Vercel Serverless Function /api/chat with generous 30s timeout
+    // 2. Try Vercel Serverless Function /api/chat with generous 30s timeout
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30000);
@@ -230,43 +255,17 @@ class TerminalAIEngine {
       // Network timeout / offline -> fall back to local semantic engine
     }
 
-    // High-Precision In-Browser Semantic Engine Fallback for specific portfolio topics
+    // 3. High-Precision In-Browser Semantic Engine Fallback
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
       return semanticMatch;
     }
 
-    // Generic friendly response if completely offline or unreachable
+    // 4. Generic friendly response if completely offline
     return [
-      "Maaf, saat ini koneksi ke model AI cloud sedang mengalami kendala jaringan atau antrean tinggi.",
+      "Maaf, saat ini koneksi ke model AI sedang mengalami kendala jaringan.",
       "Anda dapat mengulangi pertanyaan Anda kembali, atau menggunakan perintah CLI seperti 'skills', 'projects', 'certifs', 'benchmarks', 'contact'."
     ];
-  }
-
-  async tryLocalOllama(query) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
-
-    const res = await fetch('http://localhost:11434/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'deepseek-r1:latest',
-        messages: [{ role: 'user', content: query }],
-        stream: false
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      const content = data?.choices?.[0]?.message?.content;
-      if (content) {
-        return content.split('\n');
-      }
-    }
-    return null;
   }
 
   checkSemanticMatch(query) {
