@@ -256,12 +256,26 @@ class TerminalAIEngine {
         if (this.conversationHistory.length > 10) {
           this.conversationHistory = this.conversationHistory.slice(-10);
         }
+
+        // Log resolved model execution (tracks what model was used in Auto mode)
+        if (telemetry) {
+          const isAuto = !this.currentModel || this.currentModel === 'auto';
+          const resolvedModel = data.model || 'deepseek/deepseek-chat';
+          const provider = data.provider || 'Gateway';
+          const target = isAuto ? `auto:${resolvedModel}` : (this.currentModel || resolvedModel);
+          const label = isAuto ? `[Auto ➔ ${resolvedModel} via ${provider}] ${cleanQuery.substring(0, 60)}` : `[${this.currentModel} via ${provider}] ${cleanQuery.substring(0, 60)}`;
+          telemetry.logEvent('ai_query_resolved', target, label);
+        }
+
         return data.response.split('\n');
       }
 
       // Check for high-priority local semantic knowledge match first
       const semanticMatch = this.checkSemanticMatch(cleanQuery);
       if (semanticMatch) {
+        if (telemetry) {
+          telemetry.logEvent('ai_query_resolved', 'auto:local_semantic', `[Auto ➔ Local Semantic Engine] ${cleanQuery.substring(0, 60)}`);
+        }
         return semanticMatch;
       }
 
