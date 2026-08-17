@@ -298,29 +298,9 @@ async function searchWebContext(query) {
 
 function pickAutoModel(query, hasImages = false, reasoningEffort = 'auto') {
   if (hasImages) {
-    return 'google/gemma-3-27b-it';
+    return 'openrouter/free';
   }
-
-  if (reasoningEffort === 'thinking') {
-    return 'opencode/deepseek-v4-flash-free';
-  }
-
-  if (reasoningEffort === 'low') {
-    return 'meta-llama/llama-3.1-8b-instruct';
-  }
-
-  const q = query.toLowerCase();
-  
-  if (
-    q.includes('code') || q.includes('koding') || q.includes('python') || q.includes('javascript') ||
-    q.includes('fungsi') || q.includes('function') || q.includes('script') || q.includes('bug') ||
-    q.includes('error') || q.includes('sql') || q.includes('api') || q.includes('class') ||
-    q.includes('regex') || q.includes('algoritma') || q.includes('quicksort') || q.includes('binary search')
-  ) {
-    return 'qwen/qwen-2.5-coder-32b-instruct';
-  }
-
-  return 'opencode/deepseek-v4-flash-free';
+  return 'openrouter/free';
 }
 
 export default async function handler(req, res) {
@@ -552,7 +532,7 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
 
     // 2A. OpenCode Gateway (If explicitly targeted)
-    const isTargetingOpenCode = targetModel.startsWith('opencode/') || targetModel.includes('deepseek-v4');
+    const isTargetingOpenCode = targetModel.startsWith('opencode/');
     if (OPENCODE_KEY && isTargetingOpenCode) {
       try {
         const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
@@ -594,15 +574,19 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       const orCandidates = [
+        'openrouter/free',
+        'google/gemma-4-31b-it:free',
+        'google/gemma-4-26b-a4b-it:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'nvidia/nemotron-3.5-lightning:free',
+        'openai/gpt-oss-20b:free',
+        'z-ai/glm-5.2:free',
+        'liquid/lfm-2.5-2.6b:free',
+        'dots-studio/dots-3-note-preview:free',
         'deepseek/deepseek-r1:free',
-        'google/gemini-2.0-flash-exp:free',
         'deepseek/deepseek-chat:free',
-        'qwen/qwen-2.5-coder-32b-instruct:free',
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'deepseek/deepseek-chat',
         orModel,
-        `${orModel}:free`,
-        'meta-llama/llama-3.3-70b-instruct'
+        `${orModel}:free`
       ].filter((v, i, a) => v && a.indexOf(v) === i && !v.startsWith('opencode/'));
 
       for (const m of orCandidates) {
