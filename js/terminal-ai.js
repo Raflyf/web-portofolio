@@ -658,17 +658,17 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     let omniCandidates = [];
 
     if (hasImages) {
-      omniCandidates = ['Vision-model', 'Codex', 'Antigravity'];
+      omniCandidates = ['Vision-model'];
     } else if (targetEffort === 'THINKING' || isDeepReasoning) {
-      omniCandidates = ['nemotron-3-ultra-free', 'Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex'];
     } else if (isProjectExplaining) {
-      omniCandidates = ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity'];
+      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex'];
     } else if (isHeavyCoding) {
-      omniCandidates = ['Codex', 'Deepseek-V4-Flash-Free', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity'];
+      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna'];
     } else if (targetEffort === 'LOW' || isGreeting) {
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Codex'];
     } else {
-      omniCandidates = ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex'];
     }
 
     // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, Ultra)
