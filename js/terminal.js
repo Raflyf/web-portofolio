@@ -576,6 +576,71 @@ export function initTerminal() {
     inCodeBlock = false;
   }
 
+  function getDynamicThinkingMessage(effort, attachments, query, model) {
+    const hasAttachments = attachments && attachments.length > 0;
+    if (hasAttachments) {
+      const hasImage = attachments.some(a => a.isImage || (a.type && a.type.startsWith('image/')));
+      const hasPdf = attachments.some(a => (a.name && a.name.endsWith('.pdf')) || (a.type && a.type.includes('pdf')));
+      if (hasImage && hasPdf) {
+        return "Menganalisis berkas gambar multimodal dan mengekstrak dokumen PDF terlampir...";
+      }
+      if (hasImage) {
+        return "Menganalisis fitur visual citra dan konteks spasial multimodal...";
+      }
+      if (hasPdf) {
+        return "Mengekstrak dan membaca dokumen PDF multi-halaman via PDF.js engine...";
+      }
+      return "Membaca dan memproses berkas dokumen terlampir...";
+    }
+
+    const qLower = (query || '').toLowerCase();
+    const isAuto = !model || model === 'auto';
+    const effortMode = effort || 'auto';
+
+    if (effortMode === 'thinking') {
+      return "Mengaktifkan Deep Chain-of-Thought (Penalaran logika multi-langkah mendalam)...";
+    }
+
+    if (effortMode === 'high') {
+      return "Menjalankan Deep Research & penelusuran fakta internet komprehensif...";
+    }
+
+    if (effortMode === 'low') {
+      return "Memproses inferensi cepat (Ultra-Fast Response Mode)...";
+    }
+
+    if (effortMode === 'medium') {
+      return "Menganalisis konteks dan menyusun jawaban terstruktur...";
+    }
+
+    // Auto Effort Adaptive Mode
+    if (isAuto) {
+      if (
+        qLower.includes('code') || qLower.includes('koding') || qLower.includes('python') ||
+        qLower.includes('javascript') || qLower.includes('fungsi') || qLower.includes('error') ||
+        qLower.includes('bug') || qLower.includes('sql') || qLower.includes('algoritma')
+      ) {
+        return "Merutekan ke spesialis koding & menyusun sintaks program...";
+      }
+      if (
+        qLower.includes('presiden') || qLower.includes('menteri') || qLower.includes('pemilu') ||
+        qLower.includes('berita') || qLower.includes('terbaru') || qLower.includes('2026') ||
+        qLower.includes('2025') || qLower.includes('siapa') || qLower.includes('kapan')
+      ) {
+        return "Menelusuri fakta internet real-time 2026 & merangkai analisis mutakhir...";
+      }
+      if (
+        qLower.includes('rafly') || qLower.includes('skripsi') || qLower.includes('plagiarism') ||
+        qLower.includes('proyek') || qLower.includes('sertifikat') || qLower.includes('bnsp')
+      ) {
+        return "Membaca basis data repositori riset & portofolio resmi...";
+      }
+      return "Menyesuaikan model AI paling optimal & menyusun jawaban...";
+    }
+
+    return "Menghubungkan ke model AI dan menyusun jawaban mendalam...";
+  }
+
   async function executeCommand(rawInput) {
     if (isGenerating) return;
     const trimmed = rawInput.trim();
@@ -646,9 +711,13 @@ export function initTerminal() {
 
     telemetry.logEvent('terminal_ai_query', (trimmed || 'multimodal_file').slice(0, 40), `Query AI: ${trimmed}`);
 
-    const thinkingMsg = currentAttachments.length > 0 
-      ? "Membaca dan menganalisis dokumen/gambar terlampir..." 
-      : "Menganalisis dan menyusun jawaban mendalam...";
+    // Dynamic Thinking Message based on effort mode, attachments, and query intent
+    const thinkingMsg = getDynamicThinkingMessage(
+      terminalAI.reasoningEffort,
+      currentAttachments,
+      trimmed,
+      terminalAI.currentModel
+    );
 
     const aiContainer = createAIBubbleContainer();
     const thinkingLine = appendLine(thinkingMsg, false, '', true, aiContainer);
