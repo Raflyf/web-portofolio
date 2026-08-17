@@ -1190,6 +1190,19 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   50% { opacity: 1; }
 }
 
+.terminal-stream-cursor {
+  color: var(--accent-emerald);
+  font-weight: 700;
+  display: inline-block;
+  animation: blinkStreamCursor 0.5s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blinkStreamCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .terminal-input-row {
   display: flex;
   align-items: center;
