@@ -536,22 +536,23 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
     if (isGreeting) {
       targetEffort = 'LOW';
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Deepseek-V4-Flash-Free', 'Codex'];
     } else if (isHeavyCoding) {
       targetEffort = 'HIGH';
-      omniCandidates = ['Codex', 'nemotron-laguna', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Codex', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     } else if (isDeepReasoning) {
       targetEffort = 'THINKING';
-      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else {
       targetEffort = 'MEDIUM';
-      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     }
 
-    // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna)
+    // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, Ultra)
     if (this.currentModel && this.currentModel !== 'auto') {
       const explicit = this.currentModel.toLowerCase();
-      if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
+      if (explicit.includes('ultra') || explicit.includes('550b')) omniCandidates = ['nemotron-3-ultra-free', ...omniCandidates];
+      else if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
       else if (explicit.includes('codex') || explicit.includes('terra')) omniCandidates = ['Codex', ...omniCandidates];
       else if (explicit.includes('antigravity') || explicit.includes('opus')) omniCandidates = ['Antigravity', ...omniCandidates];
       else if (explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
@@ -641,7 +642,57 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       }
     }
 
-    // 2. OpenRouter Direct SOTA Pool (Nemotron 3 Super 120B / Ultra 550B / Nano 30B / GPT-OSS 20B)
+    // 2. OpenCode Cloud Direct Dual-Account Pool (Nemotron 3 Ultra 550B & DeepSeek V4 Flash)
+    const OC_KEYS = [
+      decodeKey('c2stTW01NmMyZFpaNmZlWFVMbEI5NnN4NGpWTjh5bVNnY2pja3NpRHd2a0tuNUFhTjFkQmNiaUdGcHVVZFpEaGVWSTU='),
+      decodeKey('c2stWVdUc2JDaTBiYkhJb2lLbGJCMGdiNFRielExcHlrSTRoQkJhbEVKNE55cTU4OFBPelJlcHpEVWNrb1M1a0NJ')
+    ].filter(Boolean);
+
+    const OC_MODELS = ['nemotron-3-ultra-free', 'deepseek-v4-flash-free'];
+    for (const ocModel of OC_MODELS) {
+      for (const ocKey of OC_KEYS) {
+        try {
+          const ocController = new AbortController();
+          const ocTimeout = setTimeout(() => ocController.abort(), 12000);
+          const ocRes = await fetch('https://api.opencode.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + ocKey
+            },
+            body: JSON.stringify({
+              model: ocModel,
+              messages: [
+                { role: 'system', content: fullSystemPrompt },
+                { role: 'user', content: cleanQuery }
+              ],
+              max_tokens: calculatedMaxTokens
+            }),
+            signal: ocController.signal
+          });
+          clearTimeout(ocTimeout);
+          if (ocRes.ok) {
+            const ocData = await ocRes.json();
+            const rawContent = ocData?.choices?.[0]?.message?.content;
+            const content = cleanOutput(rawContent);
+            if (content && content.length > 5) {
+              this.lastExecutionInfo = {
+                isAuto: true,
+                resolvedModel: `opencode/${ocModel}`,
+                requestedModel: this.currentModel,
+                isFailover: true,
+                provider: 'OpenCode Cloud Pool',
+                effort: targetEffort,
+                category: 'standard'
+              };
+              return content.split('\n');
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
+    // 3. OpenRouter Direct SOTA Pool (Nemotron 3 Super 120B / Ultra 550B / Nano 30B / GPT-OSS 20B)
     const OR_KEYS = [
       decodeKey('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
       decodeKey('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw==')
@@ -654,6 +705,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       targetEffort = 'LOW';
       OR_MODELS = [
         'nvidia/nemotron-3-super-120b-a12b:free',
+        'nvidia/nemotron-3-ultra-550b:free',
         'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
         'openai/gpt-oss-20b:free'
       ];
@@ -661,6 +713,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       targetEffort = isHeavyCoding ? 'HIGH' : 'THINKING';
       OR_MODELS = [
         'nvidia/nemotron-3-super-120b-a12b:free',
+        'nvidia/nemotron-3-ultra-550b:free',
         'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
         'openai/gpt-oss-20b:free'
       ];
@@ -668,6 +721,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       targetEffort = 'MEDIUM';
       OR_MODELS = [
         'nvidia/nemotron-3-super-120b-a12b:free',
+        'nvidia/nemotron-3-ultra-550b:free',
         'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
         'openai/gpt-oss-20b:free'
       ];
