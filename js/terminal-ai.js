@@ -296,9 +296,11 @@ class TerminalAIEngine {
     try {
       const memoryContext = await this.fetchAIMemories();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120000);
+      const apiEndpoint = (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
+        ? 'https://raflyfirmansyah-portofolio.vercel.app/api/chat'
+        : '/api/chat';
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
