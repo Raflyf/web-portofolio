@@ -1,72 +1,17 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - TERMINAL DEVELOPER LAB AI ENGINE
- * Multi-API Cascade (DeepSeek/OpenRouter, Groq, Gemini, Ollama)
- * With High-Precision In-Browser Semantic Fallback Engine
+ * RAFLY FIRMANSYAH - TERMINAL DEVELOPER LAB AI ENGINE (v3.5.0)
+ * Dual-Engine Architecture:
+ * 1. Cloud Serverless Multi-API Gateway (/api/chat) -> OpenRouter, Nvidia NIM, MiniMax, Ollama
+ * 2. In-Browser Local Semantic Knowledge Engine -> 100% Offline & Infinite Quota
+ * Supports: Visitor Custom API Keys & Dynamic Model Selection
  * ============================================================================
  */
 
 import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js';
 
 // ============================================================================
-// 1. SYSTEM GROUNDING KNOWLEDGE
-// ============================================================================
-const SYSTEM_GROUNDING_PROMPT = `
-Anda adalah AI Assistant interaktif pada Terminal Developer Lab di website portofolio profesional Rafly Firmansyah (@Raflyf).
-Tugas Anda adalah menjawab pertanyaan pengunjung terminal dengan ramah, lugas, profesional, akurat, dan berbasis data nyata (tanpa halusinasi dan tanpa overclaim).
-
-DATA RESMI PROFIL RAFLY FIRMANSYAH:
-- Nama Lengkap: Rafly Firmansyah
-- Gelar/Pendidikan: Mahasiswa Program Sarjana (S1) Informatika di Universitas Bina Sarana Informatika (UBSI), Kampus Sukabumi
-- Lokasi: Cianjur / Sukabumi, Jawa Barat, Indonesia
-- Minat & Fokus: Kecerdasan Buatan (NLP, Machine Learning, Computer Vision), Jaringan Komputer MikroTik, dan Rekayasa Perangkat Lunak Modern
-- Status: Terbuka untuk proyek rekayasa perangkat lunak, riset AI/ML, dan kolaborasi profesional
-- Kontak Resmi:
-  * WhatsApp: 08991333323 (https://wa.me/628991333323)
-  * Email: raflyfirmansyah02@gmail.com
-  * GitHub: https://github.com/Raflyf
-  * Portofolio: https://raflyfirmansyah-portofolio.vercel.app/
-
-PROYEK UNGGULAN GITHUB:
-1. OpenPlagiarismChecker:
-   - Deskripsi: Mesin pemeriksa kesamaan teks akademik lokal mengutamakan privasi.
-   - Arsitektur: 5-word N-Gram Shingling (Exact matching) + Multilingual Sentence Transformers (Semantic paraphrasing).
-   - Indeks: 15+ basis data literatur publik (GARUDA, Indonesia OneSearch, Neliti, BASE, OpenAlex, Semantic Scholar).
-   - Stack: Python, Flask, PyTorch, Sentence-Transformers, N-Gram, Web Scraping.
-2. Spam-Email Detection System:
-   - Deskripsi: Aplikasi web evaluasi dan klasifikasi email spam berbasis Machine Learning.
-   - Arsitektur: Komparasi performa Naive Bayes vs XGBoost dengan tuning proporsi kelas dataset fleksibel (10:90 hingga 90:10) dan visualisasi Confusion Matrix.
-   - Stack: Python, Scikit-Learn, XGBoost, Flask, Pandas, Chart.js.
-3. laser_pointer_PPT:
-   - Deskripsi: Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan touchpad web via WebSocket.
-   - Stack: Python, Flask-SocketIO, PyAutoGUI, WebSockets, DeviceOrientation API.
-4. FotoKitaBlur:
-   - Deskripsi: Sistem deteksi gestur tangan realtime berbasis browser (MediaPipe Tasks Vision + OpenCV) untuk privasi kamera (blur otomatis saat V-Sign).
-   - Stack: JavaScript, MediaPipe Tasks Vision, OpenCV, WebRTC.
-5. Bespoke Web Portfolio:
-   - Deskripsi: Platform portofolio web rekayasa performa tinggi berarsitektur modular Vanilla JS, sistem desain OKLCH, kepatuhan aksesibilitas WCAG 2.2 AA, dan panel telemetri admin.
-
-KUMPULAN SERTIFIKASI & KOMPETENSI AUTENTIK (10 SERTIFIKAT):
-1. BNSP: Sertifikat Kompetensi Analis Program (Program Analyst) — Badan Nasional Sertifikasi Profesi & LSP UBSI (10 Unit Kompetensi terstandarisasi industri: Skalabilitas, SQL, Basis Data, Algoritma, Dokumentasi Kode, Debugging, Profiling, Code Review, Unit Testing, Integration Testing).
-2. MikroTik: MTCNA (MikroTik Certified Network Associate) — Mikrotikls SIA (Riga, Latvia).
-3. Cisco & OpenEDG: PCAP (Programming Essentials in Python).
-4. FTI UBSI: Seminar Cloud Computing and Blockchain.
-5. FTI UBSI: IT Bootcamp Software Development & Network Security.
-6. FTI UBSI: Seminar How to be a Cloud Computing Specialist.
-7. Kominfo RI: Google Profil Bisnis & E-Commerce (Digital Entrepreneurship Academy).
-8. UBSI HIMASI: Workshop Slicing UI with Tailwind CSS.
-9. Harisenin.com: Simulasi Kerja (SiM-K) Full-Stack Web Developer.
-10. Harisenin.com: Coding Camp Introduction to JavaScript for Beginners.
-
-PANDUAN MENJAWAB:
-- Jawablah dalam format terminal yang bersih (tanpa markup berlebihan).
-- Gunakan Bahasa Indonesia yang sopan dan percaya diri, atau sesuaikan dengan bahasa pertanyaan pengunjung.
-- Dilarang menggunakan emoji sama sekali.
-- Jika pengunjung menanyakan hal di luar profil Rafly, jawab secara singkat dan arahkan kembali ke eksplorasi portofolio.
-`;
-
-// ============================================================================
-// 2. LOCAL IN-BROWSER SEMANTIC KNOWLEDGE ENGINE (100% Offline & Infinite Quota)
+// 1. LOCAL IN-BROWSER SEMANTIC KNOWLEDGE BASE (Fail-Safe Instant Fallback)
 // ============================================================================
 const SEMANTIC_PATTERNS = [
   {
@@ -159,18 +104,17 @@ const SEMANTIC_PATTERNS = [
     category: 'certificates',
     keywords: ['sertif', 'sertifikat', 'certificate', 'kredensial', 'bnsp', 'mtcna', 'mikrotik', 'cisco', 'pcap', 'kompetensi', 'lisensi'],
     respond: () => [
-      "[KREDENSIAL & SERTIFIKASI RESMI TERVERIFIKASI]",
+      "[KREDENSIAL & SERTIFIKASI RESMI TERVERIFIKASI (10 SERTIFIKAT)]",
       "----------------------------------------------------------------",
-      "Rafly Firmansyah memiliki 10 sertifikasi kompetensi autentik:",
-      "",
-      "1. BNSP (Badan Nasional Sertifikasi Profesi):",
+      "1. BNSP (Badan Nasional Sertifikasi Profesi) & LSP UBSI:",
       "   - Sertifikat Kompetensi Pengembang Perangkat Lunak (Kualifikasi: Analis Program).",
-      "   - Memvalidasi 10 Unit Kompetensi (Skalabilitas, SQL, Algoritma, Debugging, Code Review, Testing, dll).",
+      "   - No. 62010 2514 0005487 2025 / Reg. TIK.1241.04242 2025.",
+      "   - 10 Unit Kompetensi: Skalabilitas, SQL, Basis Data, Algoritma, Dokumentasi, Debugging, Profiling, Code Review, Testing.",
       "",
-      "2. MTCNA (Mikrotikls SIA - Latvia):",
-      "   - MikroTik Certified Network Associate (Credential: 2502NA6383).",
+      "2. MikroTik (Riga, Latvia):",
+      "   - MTCNA: MikroTik Certified Network Associate (ID: 2502NA6383).",
       "",
-      "3. Cisco Networking Academy & OpenEDG Python Institute:",
+      "3. Cisco Networking Academy & OpenEDG:",
       "   - PCAP: Programming Essentials in Python.",
       "",
       "4. Sertifikasi Lainnya:",
@@ -179,7 +123,7 @@ const SEMANTIC_PATTERNS = [
       "   - Google Profil Bisnis & E-Commerce (Kominfo RI).",
       "   - Full-Stack Web SiM-K & JavaScript (Harisenin).",
       "",
-      "Dokumen resmi dapat dilihat di bagian 'Kredensial Resmi' pada halaman web ini."
+      "Pratinjau berkas PDF autentik dapat dilihat di section 'Kredensial Resmi'."
     ]
   },
   {
@@ -217,78 +161,186 @@ const SEMANTIC_PATTERNS = [
       "[SISTEM TERMINAL AKTIF]",
       "----------------------------------------------------------------",
       "Halo. Saya adalah asisten AI interaktif untuk portofolio Rafly Firmansyah.",
-      "Anda dapat menanyakan hal apapun terkait riwayat akademik, riset skripsi, sertifikasi BNSP/MikroTik, atau keahlian teknis Rafly.",
+      "Anda dapat menanyakan hal apapun (tentang portofolio maupun topik umum pemrograman/teknologi).",
       "",
       "Contoh pertanyaan:",
       "- 'Ceritakan tentang riset OpenPlagiarismChecker'",
       "- 'Apa saja unit kompetensi sertifikat BNSP Rafly?'",
+      "- 'Bagaimana cara kerja Naive Bayes vs XGBoost di riset Spam-Email?'",
       "- 'Bagaimana cara menghubungi Rafly via WhatsApp?'"
     ]
   }
 ];
 
 // ============================================================================
-// 3. MULTI-API CASCADE POOL CONFIGURATION
+// 2. TERMINAL AI CONTROLLER
 // ============================================================================
 class TerminalAIEngine {
   constructor() {
-    this.customKeys = {
-      openrouter: localStorage.getItem('ai_key_openrouter') || '',
-      groq: localStorage.getItem('ai_key_groq') || '',
-      gemini: localStorage.getItem('ai_key_gemini') || '',
-      deepseek: localStorage.getItem('ai_key_deepseek') || ''
-    };
-    this.status = 'Ready (Multi-Engine Active)';
+    this.currentModel = localStorage.getItem('ai_selected_model') || 'auto';
+    this.customKey = localStorage.getItem('ai_custom_key') || '';
+    this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
   }
 
-  setKey(provider, key) {
-    const prov = provider.toLowerCase().trim();
-    if (this.customKeys.hasOwnProperty(prov)) {
-      this.customKeys[prov] = key.trim();
-      localStorage.setItem(`ai_key_${prov}`, key.trim());
-      return `API Key untuk [${prov}] berhasil disimpan di localStorage lokal peramban Anda.`;
+  setModel(modelName) {
+    const m = modelName.toLowerCase().trim();
+    if (!m) {
+      return [
+        "[MODEL AI SELEKTOR]",
+        "----------------------------------------------------------------",
+        `Model Aktif Saat Ini : ${this.currentModel}`,
+        "",
+        "Pilihan Model Populer:",
+        "  $ model auto       - Otomatis memilih model tercepat & terhandal",
+        "  $ model deepseek   - DeepSeek V3 Chat (Riset & Coding)",
+        "  $ model r1         - DeepSeek R1 Reasoning Model",
+        "  $ model llama3     - Meta Llama 3.3 70B Instruct",
+        "  $ model qwen       - Qwen 2.5 72B Instruct",
+        "  $ model nvidia     - Nvidia NIM Engine",
+        "  $ model minimax    - MiniMax abab6.5s Model",
+        "",
+        "Atau ketik model ID lengkap (misal: model mistralai/mistral-large-2407)."
+      ];
     }
-    return `Provider '${prov}' tidak dikenal. Pilihan: openrouter, groq, gemini, deepseek`;
+
+    this.currentModel = m;
+    localStorage.setItem('ai_selected_model', m);
+    return [`Model AI berhasil diubah menjadi [${m}]. Query berikutnya akan menggunakan model ini.`];
+  }
+
+  setKey(providerOrKey, key) {
+    if (!key) {
+      // Single argument: assume API key for default OpenRouter
+      this.customKey = providerOrKey.trim();
+      this.customProvider = 'openrouter';
+      localStorage.setItem('ai_custom_key', this.customKey);
+      localStorage.setItem('ai_custom_provider', 'openrouter');
+      return ["API Key kustom Anda berhasil disimpan di peramban lokal (localStorage)."];
+    }
+
+    const prov = providerOrKey.toLowerCase().trim();
+    this.customProvider = prov;
+    this.customKey = key.trim();
+    localStorage.setItem('ai_custom_provider', prov);
+    localStorage.setItem('ai_custom_key', this.customKey);
+    return [`API Key untuk provider [${prov}] berhasil disimpan di peramban lokal Anda.`];
+  }
+
+  clearKey() {
+    this.customKey = '';
+    this.customProvider = '';
+    localStorage.removeItem('ai_custom_key');
+    localStorage.removeItem('ai_custom_provider');
+    return ["API Key kustom telah dihapus. Terminal akan kembali menggunakan server backend default."];
   }
 
   getStatus() {
-    return {
-      status: this.status,
-      configuredProviders: Object.entries(this.customKeys)
-        .filter(([_, k]) => Boolean(k))
-        .map(([p]) => p),
-      fallbackEngine: 'Local Semantic Knowledge Engine (Active)'
-    };
+    return [
+      "[AI ENGINE & PROVIDER POOL STATUS]",
+      "----------------------------------------------------------------",
+      `Model AI Aktif       : ${this.currentModel}`,
+      `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server-Side Env Cascade'}`,
+      `Fallback Engine      : In-Browser Semantic Knowledge Engine (Active & Ready)`,
+      "",
+      "Perintah Konfigurasi:",
+      "  $ model              - Tampilkan daftar model & ubah model aktif",
+      "  $ setkey <key>       - Gunakan API key pribadi Anda di browser ini",
+      "  $ clearkey           - Hapus API key pribadi dari browser"
+    ];
   }
 
   /**
-   * Main Query Function: Cascades through Cloud APIs, then Local Engine
+   * Main Ask method: First tries serverless Cloud AI, then seamlessly falls back to Local Semantic Engine
    */
   async ask(query) {
     const cleanQuery = query.trim();
     if (!cleanQuery) return ["Silakan masukkan pertanyaan atau perintah."];
 
-    // Check Local Semantic Engine first for rapid exact matches
+    // Check Ollama locally if developer is on localhost
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      try {
+        const ollamaRes = await this.tryLocalOllama(cleanQuery);
+        if (ollamaRes) return ollamaRes;
+      } catch (_) {}
+    }
+
+    // Call Vercel Serverless Function /api/chat
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6500);
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: cleanQuery,
+          model: this.currentModel,
+          customKey: this.customKey,
+          customProvider: this.customProvider
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.response) {
+          const providerTag = data.provider ? `[AI AGENT: ${data.provider.toUpperCase()}]` : `[AI AGENT]`;
+          return [
+            providerTag,
+            "----------------------------------------------------------------",
+            ...data.response.split('\n')
+          ];
+        }
+      }
+    } catch (_) {
+      // Network timeout / offline -> gracefully fall back to in-browser semantic engine
+    }
+
+    // High-Precision In-Browser Semantic Engine Fallback
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
-
-    // If custom API keys or cloud providers are configured, try calling them
-    const cloudResponse = await this.tryCloudCascade(cleanQuery);
-    if (cloudResponse && cloudResponse.length > 0) {
-      return cloudResponse;
-    }
-
-    // Default High-Precision Semantic Knowledge Fallback
     if (semanticMatch) {
-      return semanticMatch;
+      return [
+        "[AI ENGINE: LOCAL KNOWLEDGE BASE]",
+        "----------------------------------------------------------------",
+        ...semanticMatch.filter(l => !l.startsWith('[') && !l.startsWith('----'))
+      ];
     }
 
-    // Intelligent Synthesis Fallback for generic questions
     return this.generateSmartSynthesis(cleanQuery);
   }
 
-  /**
-   * Match user query against semantic pattern knowledge base
-   */
+  async tryLocalOllama(query) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1000);
+
+    const res = await fetch('http://localhost:11434/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'deepseek-r1:latest',
+        messages: [{ role: 'user', content: query }],
+        stream: false
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      const content = data?.choices?.[0]?.message?.content;
+      if (content) {
+        return [
+          "[AI AGENT: OLLAMA LOCAL]",
+          "----------------------------------------------------------------",
+          ...content.split('\n')
+        ];
+      }
+    }
+    return null;
+  }
+
   checkSemanticMatch(query) {
     const q = query.toLowerCase();
     const words = q.split(/[\s,?.!]+/).filter(Boolean);
@@ -320,190 +372,6 @@ class TerminalAIEngine {
     return null;
   }
 
-  /**
-   * Cascade through available Cloud AI endpoints with strict timeout
-   */
-  async tryCloudCascade(query) {
-    // 1. Check if Ollama is running locally on developer machine
-    try {
-      const ollamaRes = await this.callOllama(query);
-      if (ollamaRes) return ollamaRes;
-    } catch (_) {}
-
-    // 2. Check OpenRouter / DeepSeek
-    if (this.customKeys.openrouter || this.customKeys.deepseek) {
-      try {
-        const key = this.customKeys.openrouter || this.customKeys.deepseek;
-        const res = await this.callOpenRouter(query, key);
-        if (res) return res;
-      } catch (_) {}
-    }
-
-    // 3. Check Groq API
-    if (this.customKeys.groq) {
-      try {
-        const res = await this.callGroq(query, this.customKeys.groq);
-        if (res) return res;
-      } catch (_) {}
-    }
-
-    // 4. Check Gemini API
-    if (this.customKeys.gemini) {
-      try {
-        const res = await this.callGemini(query, this.customKeys.gemini);
-        if (res) return res;
-      } catch (_) {}
-    }
-
-    return null;
-  }
-
-  async callOllama(query) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1200);
-
-    const res = await fetch('http://localhost:11434/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'deepseek-r1:latest',
-        messages: [
-          { role: 'system', content: SYSTEM_GROUNDING_PROMPT },
-          { role: 'user', content: query }
-        ],
-        stream: false
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      const text = data?.choices?.[0]?.message?.content;
-      if (text) {
-        return [
-          "[AI AGENT: OLLAMA LOCAL ENGINE]",
-          "----------------------------------------------------------------",
-          ...text.split('\n')
-        ];
-      }
-    }
-    return null;
-  }
-
-  async callOpenRouter(query, apiKey) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4500);
-
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
-        'X-Title': 'Rafly Firmansyah Portfolio Terminal'
-      },
-      body: JSON.stringify({
-        model: 'deepseek/deepseek-chat:free',
-        messages: [
-          { role: 'system', content: SYSTEM_GROUNDING_PROMPT },
-          { role: 'user', content: query }
-        ],
-        max_tokens: 350
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      const text = data?.choices?.[0]?.message?.content;
-      if (text) {
-        return [
-          "[AI AGENT: DEEPSEEK CLOUD]",
-          "----------------------------------------------------------------",
-          ...text.split('\n')
-        ];
-      }
-    }
-    return null;
-  }
-
-  async callGroq(query, apiKey) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-
-    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: SYSTEM_GROUNDING_PROMPT },
-          { role: 'user', content: query }
-        ],
-        max_tokens: 350
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      const text = data?.choices?.[0]?.message?.content;
-      if (text) {
-        return [
-          "[AI AGENT: GROQ ENGINE]",
-          "----------------------------------------------------------------",
-          ...text.split('\n')
-        ];
-      }
-    }
-    return null;
-  }
-
-  async callGemini(query, apiKey) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: `${SYSTEM_GROUNDING_PROMPT}\n\nPertanyaan Pengunjung: ${query}` }
-            ]
-          }
-        ]
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-
-    if (res.ok) {
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) {
-        return [
-          "[AI AGENT: GEMINI FLASH]",
-          "----------------------------------------------------------------",
-          ...text.split('\n')
-        ];
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Smart general synthesis when no pattern or API responds
-   */
   generateSmartSynthesis(query) {
     return [
       "[ASISTEN TERMINAL PORTOFOLIO]",
@@ -512,13 +380,14 @@ class TerminalAIEngine {
       "",
       "Informasi Terkait Portofolio Rafly Firmansyah:",
       "- Mahasiswa S1 Informatika Universitas Bina Sarana Informatika (UBSI Sukabumi).",
-      "- Pemilik Sertifikasi Kompetensi BNSP Analis Program & MikroTik MTCNA.",
+      "- Pemilik Sertifikasi Kompetensi BNSP Analis Program (10 Unit) & MikroTik MTCNA.",
       "- Pengembang OpenPlagiarismChecker (Riset NLP) & Spam-Email Detection (ML).",
       "",
       "Anda dapat mencoba pertanyaan spesifik seperti:",
       "1. 'Apa itu OpenPlagiarismChecker?'",
       "2. 'Sertifikat apa saja yang dimiliki Rafly?'",
-      "3. 'Bagaimana cara menghubungi Rafly via WhatsApp?'",
+      "3. 'Bagaimana cara kerja Naive Bayes vs XGBoost di riset Spam-Email?'",
+      "4. 'Bagaimana cara menghubungi Rafly via WhatsApp?'",
       "Atau gunakan perintah CLI standar seperti 'skills', 'projects', 'certifs', 'benchmarks', 'clear'."
     ];
   }
