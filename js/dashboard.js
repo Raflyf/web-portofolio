@@ -26,6 +26,15 @@ class DashboardApp {
     this.supabaseConfig = this.getSupabaseConfig();
   }
 
+  cleanKey(val) {
+    if (!val) return '';
+    return String(val)
+      .trim()
+      .replace(/^['"`]+|['"`]+$/g, '')
+      .replace(/;+$/, '')
+      .trim();
+  }
+
   getSupabaseConfig() {
     const defaultUrl = 'https://rphyzcqwpkxtzllvymss.supabase.co';
     const defaultKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
@@ -33,7 +42,16 @@ class DashboardApp {
       const configRaw = localStorage.getItem(CONFIG_KEY);
       if (configRaw) {
         const parsed = JSON.parse(configRaw);
-        if (parsed.url && parsed.anonKey) return parsed;
+        if (parsed) {
+          const url = this.cleanKey(parsed.url);
+          const anonKey = this.cleanKey(parsed.anonKey);
+          if (url && anonKey) {
+            return {
+              url: url.startsWith('http') ? url.replace(/\/+$/, '') : `https://${url.replace(/\/+$/, '')}`,
+              anonKey
+            };
+          }
+        }
       }
     } catch (_) {}
     return { url: defaultUrl, anonKey: defaultKey };
@@ -159,25 +177,18 @@ class DashboardApp {
 
     // 2. Fetch remote Supabase events
     let remoteEvents = [];
-    const configRaw = localStorage.getItem(CONFIG_KEY);
-    const parsedConfig = configRaw ? JSON.parse(configRaw) : {};
-    const config = {
-      url: parsedConfig.url || 'https://rphyzcqwpkxtzllvymss.supabase.co',
-      anonKey: parsedConfig.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
-    };
+    const config = this.getSupabaseConfig();
 
     let isSupabaseConnected = false;
     if (config && config.url && config.anonKey) {
       try {
         const timestamp = Date.now();
-        const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=1000&_t=${timestamp}`;
+        const endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=1000&_t=${timestamp}`;
         const res = await fetch(endpoint, {
-          cache: 'no-store',
           headers: {
             'apikey': config.anonKey,
             'Authorization': `Bearer ${config.anonKey}`,
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+            'Accept': 'application/json'
           }
         });
         if (res.ok) {
@@ -187,6 +198,8 @@ class DashboardApp {
           } else {
             remoteEvents = [];
           }
+        } else {
+          console.warn('Supabase HTTP error:', res.status, res.statusText);
         }
       } catch (err) {
         console.warn('Gagal memuat Supabase, menggunakan cache lokal:', err);
@@ -197,6 +210,11 @@ class DashboardApp {
       syncStatusEl.textContent = isSupabaseConnected 
         ? 'Cloud Supabase Terhubung (Live Real-Time)' 
         : 'Penyimpanan Lokal Aktif (Offline Mode)';
+      const syncDotEl = document.querySelector('.dash-status-dot');
+      if (syncDotEl) {
+        syncDotEl.style.backgroundColor = isSupabaseConnected ? 'var(--accent-emerald)' : 'var(--accent-amber)';
+        syncDotEl.style.boxShadow = isSupabaseConnected ? '0 0 8px var(--accent-emerald)' : '0 0 8px var(--accent-amber)';
+      }
     }
 
     // 3. Deduplicating Hybrid Merge (Combines both sources seamlessly)
@@ -1260,7 +1278,7 @@ class DashboardApp {
           });
 
           if (res.ok) {
-            pingBtn.innerHTML = '<span style="color:var(--accent-emerald);">Terkirim ✓</span>';
+            pingBtn.innerHTML = '<span style="color:var(--accent-emerald);">Terkirim</span>';
             setTimeout(() => {
               this.loadDashboardData();
               pingBtn.disabled = false;
@@ -1271,7 +1289,10 @@ class DashboardApp {
           }
         } catch (err) {
           pingBtn.disabled = false;
-          pingBtn.innerHTML = '<span style="color:var(--accent-rose);">Gagal ✗</span>';
+          pingBtn.innerHTML = '<span style="color:var(--accent-rose);">Gagal</span>';
+          setTimeout(() => {
+            pingBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Uji Ping</span>';
+          }, 2000);
         }
       });
     }
@@ -1305,7 +1326,7 @@ class DashboardApp {
         const newHash = await this.hashPin(newPin);
         localStorage.setItem('dash_custom_pin_hash', newHash);
         changePinModal.classList.remove('is-open');
-        alert('Master PIN berhasil diperbarui!');
+        alert('Master PIN berhasil diperbarui.');
       });
     }
 
@@ -1350,8 +1371,8 @@ class DashboardApp {
         const config = this.getSupabaseConfig();
         const urlInput = document.getElementById('supabase-url-input');
         const keyInput = document.getElementById('supabase-key-input');
-        if (urlInput) urlInput.value = config.url || '';
-        if (keyInput) keyInput.value = config.anonKey || '';
+        if (urlInput) urlInput.value = this.cleanKey(config.url) || '';
+        if (keyInput) keyInput.value = this.cleanKey(config.anonKey) || '';
         configModal.classList.add('is-open');
       });
     }
@@ -1367,15 +1388,30 @@ class DashboardApp {
     }
 
     if (configForm) {
-      configForm.addEventListener('submit', (e) => {
+      configForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const url = document.getElementById('supabase-url-input').value.trim();
-        const anonKey = document.getElementById('supabase-key-input').value.trim();
+        const urlInput = document.getElementById('supabase-url-input');
+        const keyInput = document.getElementById('supabase-key-input');
+        const rawUrl = this.cleanKey(urlInput?.value);
+        const rawKey = this.cleanKey(keyInput?.value);
 
-        localStorage.setItem(CONFIG_KEY, JSON.stringify({ url, anonKey }));
-        this.supabaseConfig = { url, anonKey };
+        if (!rawUrl || !rawKey) {
+          alert('Harap masukkan URL dan Anon API Key Supabase yang valid.');
+          return;
+        }
+
+        const cleanConfig = {
+          url: rawUrl.startsWith('http') ? rawUrl.replace(/\/+$/, '') : `https://${rawUrl.replace(/\/+$/, '')}`,
+          anonKey: rawKey
+        };
+
+        localStorage.setItem(CONFIG_KEY, JSON.stringify(cleanConfig));
+        this.supabaseConfig = cleanConfig;
         configModal.classList.remove('is-open');
-        this.loadDashboardData();
+
+        const syncStatusEl = document.getElementById('sync-status');
+        if (syncStatusEl) syncStatusEl.textContent = 'Menyambungkan ke Cloud...';
+        await this.loadDashboardData();
       });
     }
   }
