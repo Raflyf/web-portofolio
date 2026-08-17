@@ -461,7 +461,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'heavy_coding',
       effort: 'high', // Deep, complete code output
       omniCandidates: ['Codex', 'nemotron-laguna', 'Antigravity', 'Deepseek-V4-Flash-Free'],
-      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
+      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
     };
   }
 
@@ -473,7 +473,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'deep_reasoning',
       effort: 'thinking', // Deep analytical CoT
       omniCandidates: ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
-      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
+      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
     };
   }
 
@@ -482,7 +482,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     category: 'standard_balanced',
     effort: 'medium', // Balanced depth
     omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
-    openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
+    openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
   };
 }
 
