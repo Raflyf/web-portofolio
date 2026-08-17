@@ -157,58 +157,64 @@ class TerminalAIEngine {
   }
 
   /**
-   * Main Ask method: First checks HF Cloud Gateway, then Vercel Serverless, then Local Semantic
+   * Main Ask method: Routes multimodal attachments and queries to cloud gateway
    */
-  async ask(query) {
+  async ask(query, attachments = []) {
     const cleanQuery = query.trim();
-    if (!cleanQuery) return ["Silakan masukkan pertanyaan atau perintah."];
+    if (!cleanQuery && (!attachments || attachments.length === 0)) {
+      return ["Silakan masukkan pertanyaan, perintah, atau unggah dokumen/gambar."];
+    }
 
-    // 1. Try Hugging Face Dedicated Cloud OmniRoute Gateway (24/7 Online)
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 18000);
+    const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
 
-      const base = 'https://rflyyyf-omniroute-gateway.hf.space';
-      const hfPost = await fetch(`${base}/gradio_api/call/chat_fn`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [cleanQuery, []] }),
-        signal: controller.signal
-      });
+    // 1. If NO attachments, try Hugging Face Cloud OmniRoute Gateway first
+    if (!hasAttachments) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 18000);
 
-      if (hfPost.ok) {
-        const postData = await hfPost.json();
-        if (postData?.event_id) {
-          const eventRes = await fetch(`${base}/gradio_api/call/chat_fn/${postData.event_id}`, {
-            signal: controller.signal
-          });
-          clearTimeout(timeout);
-          if (eventRes.ok) {
-            const rawEvent = await eventRes.text();
-            const lines = rawEvent.split('\n');
-            for (const l of lines) {
-              if (l.startsWith('data: ')) {
-                try {
-                  const arr = JSON.parse(l.slice(6));
-                  if (Array.isArray(arr) && arr.length > 0) {
-                    const text = arr[0];
-                    if (text && typeof text === 'string') {
-                      return text.trim().split('\n');
+        const base = 'https://rflyyyf-omniroute-gateway.hf.space';
+        const hfPost = await fetch(`${base}/gradio_api/call/chat_fn`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: [cleanQuery, []] }),
+          signal: controller.signal
+        });
+
+        if (hfPost.ok) {
+          const postData = await hfPost.json();
+          if (postData?.event_id) {
+            const eventRes = await fetch(`${base}/gradio_api/call/chat_fn/${postData.event_id}`, {
+              signal: controller.signal
+            });
+            clearTimeout(timeout);
+            if (eventRes.ok) {
+              const rawEvent = await eventRes.text();
+              const lines = rawEvent.split('\n');
+              for (const l of lines) {
+                if (l.startsWith('data: ')) {
+                  try {
+                    const arr = JSON.parse(l.slice(6));
+                    if (Array.isArray(arr) && arr.length > 0) {
+                      const text = arr[0];
+                      if (text && typeof text === 'string') {
+                        return text.trim().split('\n');
+                      }
                     }
-                  }
-                } catch (_) {}
+                  } catch (_) {}
+                }
               }
             }
           }
         }
-      }
-      clearTimeout(timeout);
-    } catch (_) {}
+        clearTimeout(timeout);
+      } catch (_) {}
+    }
 
-    // 2. Try Vercel Serverless Function /api/chat with generous 30s timeout
+    // 2. Try Vercel Serverless Function /api/chat with full multimodal & document support
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000);
+      const timeout = setTimeout(() => controller.abort(), 35000);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -217,7 +223,8 @@ class TerminalAIEngine {
           query: cleanQuery,
           model: this.currentModel,
           customKey: this.customKey,
-          customProvider: this.customProvider
+          customProvider: this.customProvider,
+          attachments: attachments
         }),
         signal: controller.signal
       });

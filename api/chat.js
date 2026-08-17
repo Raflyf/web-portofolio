@@ -1,27 +1,29 @@
 /**
  * ============================================================================
- * VERCEL SERVERLESS FUNCTION: /api/chat (v5.0.0)
+ * VERCEL SERVERLESS FUNCTION: /api/chat (v5.2.0)
  * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
- * Supports:
- * - ⚡ Auto (Smart Intent Routing)
- * - 🌟 DeepSeek V3 & OpenCode DeepSeek V4 Flash
- * - 🔮 Nvidia NIM (Nemotron 70B Ultra & Llama 3.3)
- * - ⚡ MiniMax AI (MiniMax-01 / M3 & abab6.5s)
- * - 🦙 Ollama Cloud (Kimi K2.7 Code & Gemma 31B)
- * - 🚀 Flagship Cloud (Meta Llama 3.3 70B, Mistral Large 2, Qwen 2.5 Coder, Qwen 2.5 72B)
+ * Features:
+ * - 🌐 Real-Time Web Search & Encyclopedic Knowledge (Live 2026 Context)
+ * - 🖼️ Multimodal Vision Recognition (Qwen 2 VL 72B Vision)
+ * - 📄 Document & PDF Analysis (Text & Code Ingestion)
+ * - ⚡ Smart Multi-Provider Cascade (OpenCode, Nvidia NIM, MiniMax, Ollama Cloud, OpenRouter)
  * ============================================================================
  */
 
 const SYSTEM_PROMPT = `
 Anda adalah AI Assistant canggih, cerdas, berpengetahuan luas, dan interaktif pada Terminal Developer Lab di portofolio resmi Rafly Firmansyah (@Raflyf).
 
+WAKTU & KAPABILITAS AKTIF:
+1. Waktu Sekarang: Tahun 2026.
+2. Akses Real-Time & Multimodal: Anda DILENGKAPI modul pencarian web real-time, pembaca dokumen PDF/teks/koding, serta penglihatan komputer multimodal (Vision AI) untuk menganalisis gambar.
+3. DILARANG MUTLAK menyisipkan batasan kuno fiktif seperti "cutoff 2024" atau "tidak bisa melihat gambar/mengakses internet". Anda sepenuhnya terhubung dan mampu menganalisis input multimodal.
+
 PEDOMAN UTAMA PENJAWABAN:
 1. Jawaban Mendalam, Lengkap & Komprehensif:
-   - Jika pengunjung menanyakan konsep teknis, sains, matematika, perbandingan arsitektur, coding, logika algoritma, esai, atau pertanyaan analitis, berikan penjelasan yang MENDALAM, TERSTRUKTUR, dan DETAIL (jangan memotong jawaban atau hanya memberi jawaban singkat/basic).
-   - Gunakan penjelasan langkah demi langkah (step-by-step), sertakan blok kode contoh jika relevan, berikan perbandingan kelebihan/kekurangan, dan elaborasi konteksnya secara komprehensif seperti model AI unggulan (GPT-4, Claude 3.5, Gemini 2.0).
+   - Berikan penjelasan yang MENDALAM, TERSTRUKTUR, dan DETAIL untuk konsep teknis, sains, coding, arsitektur, gambar terlampir, maupun dokumen PDF yang diunggah.
+   - Gunakan penjelasan langkah demi langkah (step-by-step) dan sertakan blok kode/analisis tabel jika relevan.
 2. Menjawab Bebas Segala Topik:
-   - Anda bebas dan mampu menjawab segala topik umum maupun teknis di luar portofolio.
-   - Jawab secara alami, luwes, dan kontekstual tanpa memaksakan format perintah CLI palsu.
+   - Anda bebas menjawab segala pertanyaan umum, sains, berita, maupun teknis dengan bahasa alami yang luwes.
 3. Representasi Data Resmi Rafly Firmansyah:
    - Jika ditanya mengenai profil, riset, atau proyek Rafly, gunakan data autentik berikut secara presisi:
      * Nama: Rafly Firmansyah (@Raflyf), Mahasiswa S1 Informatika Universitas Bina Sarana Informatika (UBSI Sukabumi).
@@ -38,7 +40,48 @@ PEDOMAN UTAMA PENJAWABAN:
    - Dilarang menggunakan emoji sama sekali.
 `;
 
-function pickAutoModel(query) {
+/**
+ * Real-Time Web & Encyclopedic Knowledge Searcher
+ */
+async function searchWebContext(query) {
+  const qLower = query.toLowerCase();
+  // Check if query seeks real-time / current facts
+  const needsSearch = (
+    qLower.includes('siapa') || qLower.includes('apa itu') || qLower.includes('kapan') ||
+    qLower.includes('terbaru') || qLower.includes('berita') || qLower.includes('presiden') ||
+    qLower.includes('tahun') || qLower.includes('2025') || qLower.includes('2026') ||
+    qLower.includes('definisi') || qLower.includes('sejarah') || qLower.includes('update')
+  );
+
+  if (!needsSearch) return '';
+
+  try {
+    const cleanSearchQuery = query.replace(/[^\w\s]/gi, ' ').trim().slice(0, 80);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+
+    const res = await fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      const hits = data?.query?.search || [];
+      if (hits.length > 0) {
+        const snippets = hits.slice(0, 2).map(h => `- ${h.title}: ${h.snippet.replace(/<[^>]+>/g, '')}`).join('\n');
+        return `\n\n[KONTEKS INFORMASI PENCARIAN REAL-TIME 2026]:\n${snippets}\n`;
+      }
+    }
+  } catch (_) {}
+  return '';
+}
+
+function pickAutoModel(query, hasImages = false) {
+  if (hasImages) {
+    return 'qwen/qwen-2-vl-72b-instruct';
+  }
+
   const q = query.toLowerCase();
   
   // 1. Code & programming intents
@@ -60,7 +103,7 @@ function pickAutoModel(query) {
     return 'deepseek/deepseek-chat';
   }
 
-  // 3. General & portfolio inquiries (High speed)
+  // 3. General & portfolio inquiries
   return 'deepseek/deepseek-chat';
 }
 
@@ -83,10 +126,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { query, model = 'auto', customKey = '', customProvider = '' } = req.body || {};
+    const { 
+      query = '', 
+      model = 'auto', 
+      customKey = '', 
+      customProvider = '',
+      attachments = [] 
+    } = req.body || {};
 
-    if (!query || typeof query !== 'string') {
-      return res.status(400).json({ error: 'Query prompt is required' });
+    if (!query && (!attachments || attachments.length === 0)) {
+      return res.status(400).json({ error: 'Query prompt or file attachment is required' });
     }
 
     const OPENROUTER_KEY = customKey && (customProvider === 'openrouter' || !customProvider) 
@@ -105,10 +154,90 @@ export default async function handler(req, res) {
       ? customKey 
       : process.env.MINIMAX_API_KEY;
 
-    let targetModel = model === 'auto' ? pickAutoModel(query) : model;
+    // Check for image attachments
+    const imageAttachments = Array.isArray(attachments) ? attachments.filter(a => a.isImage || (a.type && a.type.startsWith('image/'))) : [];
+    const docAttachments = Array.isArray(attachments) ? attachments.filter(a => !a.isImage && (!a.type || !a.type.startsWith('image/'))) : [];
+    const hasImages = imageAttachments.length > 0;
+
+    // Retrieve real-time search context if text query warrants it
+    const webContext = await searchWebContext(query);
+
+    // Build assembled text prompt with document attachments
+    let assembledQuery = query;
+    if (docAttachments.length > 0) {
+      const docTexts = docAttachments.map(d => `[DOKUMEN TERLAMPIR: ${d.name} (${d.type || 'text'})]:\n\`\`\`\n${d.data}\n\`\`\``).join('\n\n');
+      assembledQuery = `${docTexts}\n\n[INSTRUKSI / PERTANYAAN PENGGUNA]:\n${query || 'Analisis dan jelaskan isi dokumen terlampir di atas secara mendalam.'}`;
+    }
+
+    let targetModel = model === 'auto' ? pickAutoModel(query, hasImages) : model;
+    if (hasImages && targetModel === 'auto') {
+      targetModel = 'qwen/qwen-2-vl-72b-instruct';
+    }
+
+    const systemPromptWithSearch = `${SYSTEM_PROMPT}${webContext}`;
 
     // ========================================================================
-    // 1. OPENCODE GATEWAY
+    // 1. MULTIMODAL VISION ROUTE (If images are attached)
+    // ========================================================================
+    if (hasImages && OPENROUTER_KEY) {
+      try {
+        const userContent = [
+          { type: 'text', text: assembledQuery || 'Deskripsikan dan analisis gambar ini secara komprehensif dan mendalam.' }
+        ];
+
+        for (const img of imageAttachments) {
+          const imgUrl = img.data.startsWith('data:') ? img.data : `data:${img.type || 'image/jpeg'};base64,${img.data}`;
+          userContent.push({
+            type: 'image_url',
+            image_url: { url: imgUrl }
+          });
+        }
+
+        const visionModels = [
+          targetModel.includes('vl') || targetModel.includes('vision') ? targetModel : 'qwen/qwen-2-vl-72b-instruct',
+          'qwen/qwen-2-vl-72b-instruct'
+        ];
+
+        for (const vm of visionModels) {
+          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENROUTER_KEY}`,
+              'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
+              'X-Title': 'Rafly Firmansyah AI Vision Lab'
+            },
+            body: JSON.stringify({
+              model: vm,
+              messages: [
+                { role: 'system', content: systemPromptWithSearch },
+                { role: 'user', content: userContent }
+              ],
+              max_tokens: 1800,
+              temperature: 0.7
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content) {
+              return res.status(200).json({
+                success: true,
+                response: content,
+                model: vm,
+                provider: 'Vision Multimodal Engine'
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Vision engine error:', err.message);
+      }
+    }
+
+    // ========================================================================
+    // 2. OPENCODE GATEWAY
     // ========================================================================
     if (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || targetModel.startsWith('oc/')) {
       if (OPENCODE_KEY) {
@@ -122,8 +251,8 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               model: 'deepseek-v4-flash-free',
               messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: query }
+                { role: 'system', content: systemPromptWithSearch },
+                { role: 'user', content: assembledQuery }
               ],
               max_tokens: 1800
             })
@@ -149,7 +278,7 @@ export default async function handler(req, res) {
     }
 
     // ========================================================================
-    // 2. NVIDIA NIM GATEWAY
+    // 3. NVIDIA NIM GATEWAY
     // ========================================================================
     if (targetModel.startsWith('nvidia/')) {
       if (NVIDIA_KEY) {
@@ -168,8 +297,8 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               model: nvModel,
               messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: query }
+                { role: 'system', content: systemPromptWithSearch },
+                { role: 'user', content: assembledQuery }
               ],
               max_tokens: 1800,
               temperature: 0.7
@@ -196,7 +325,7 @@ export default async function handler(req, res) {
     }
 
     // ========================================================================
-    // 3. MINIMAX GATEWAY
+    // 4. MINIMAX GATEWAY
     // ========================================================================
     if (targetModel.startsWith('minimax/')) {
       if (MINIMAX_KEY) {
@@ -210,7 +339,7 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               model: 'minimax-01',
               messages: [
-                { sender_type: 'USER', sender_name: 'User', text: `${SYSTEM_PROMPT}\n\n${query}` }
+                { sender_type: 'USER', sender_name: 'User', text: `${systemPromptWithSearch}\n\n${assembledQuery}` }
               ]
             })
           });
@@ -235,10 +364,9 @@ export default async function handler(req, res) {
     }
 
     // ========================================================================
-    // 4. OLLAMA CLOUD / OPENROUTER (Primary 24/7 Global Cascade)
+    // 5. OPENROUTER 24/7 VERIFIED CLOUD POOL
     // ========================================================================
     if (OPENROUTER_KEY) {
-      // Map aliases
       let orModel = targetModel;
       if (orModel.startsWith('ollamacloud/')) {
         orModel = orModel.includes('code') ? 'qwen/qwen-2.5-coder-32b-instruct' : 'meta-llama/llama-3.3-70b-instruct';
@@ -249,6 +377,7 @@ export default async function handler(req, res) {
         'deepseek/deepseek-chat',
         'meta-llama/llama-3.3-70b-instruct',
         'mistralai/mistral-large-2407',
+        'qwen/qwen-2.5-coder-32b-instruct',
         'qwen/qwen-2.5-72b-instruct'
       ];
 
@@ -265,8 +394,8 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               model: m,
               messages: [
-                { role: 'system', content: SYSTEM_PROMPT },
-                { role: 'user', content: query }
+                { role: 'system', content: systemPromptWithSearch },
+                { role: 'user', content: assembledQuery }
               ],
               max_tokens: 1800,
               temperature: 0.7

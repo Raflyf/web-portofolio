@@ -1261,6 +1261,79 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   50% { opacity: 0; }
 }
 
+.terminal-file-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  background-color: var(--surface-card);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.terminal-file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--badge-bg);
+  border: 1px solid var(--accent-emerald);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.55rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-heading);
+  animation: fadeInTray 0.2s ease-out;
+}
+
+@keyframes fadeInTray {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.terminal-file-name {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--accent-emerald);
+}
+
+.terminal-file-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--duration-micro) var(--ease-out);
+}
+
+.terminal-file-remove:hover {
+  color: oklch(0.65 0.2 25);
+}
+
+.terminal-attach-btn {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-micro) var(--ease-out);
+}
+
+.terminal-attach-btn:hover {
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald-glow);
+}
+
 .terminal-input-row {
   display: flex;
   align-items: center;

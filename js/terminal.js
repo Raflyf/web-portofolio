@@ -1,9 +1,12 @@
 /**
  * ============================================================================
- * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v4.8.0)
- * CLI Playground & Natural Language AI Assistant for Rafly Firmansyah Portfolio
- * With 24/7 Cloud Multi-AI Cascade (DeepSeek V3/V4, Meta Llama 3.3, Mistral Large 2, Qwen Coder)
- * Interactive Dropdown, Permanent Header Banner, and Send Button
+ * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v5.2.0)
+ * CLI Playground, Multimodal Vision AI & Natural Language Assistant
+ * Supports:
+ * - 🌐 Real-Time Web Search (Live 2026 Encyclopedic Knowledge)
+ * - 🖼️ Image Vision Recognition & Analysis
+ * - 📄 PDF, Code, & Document Text Ingestion
+ * - ⚡ 14+ Verified Flagship & OpenCode/Nvidia/MiniMax/Ollama Models
  * ============================================================================
  */
 
@@ -18,12 +21,16 @@ export function initTerminal() {
   const chipButtons = document.querySelectorAll('.terminal-chip');
   const modelSelect = document.getElementById('terminal-model-select');
   const submitBtn = document.getElementById('terminal-submit-btn');
+  const attachBtn = document.getElementById('terminal-attach-btn');
+  const fileInput = document.getElementById('terminal-file-input');
+  const fileTray = document.getElementById('terminal-file-tray');
 
   if (!terminalBody || !terminalForm || !terminalInput) return;
 
   const history = [];
   let historyIndex = -1;
   let isGenerating = false;
+  let attachedFiles = [];
 
   // Restore saved model dropdown selection
   if (modelSelect) {
@@ -40,9 +47,96 @@ export function initTerminal() {
   }
 
   function renderWelcomeMessage() {
-    appendLine("Sistem Terminal Interaktif Portofolio [Versi 4.8.0 — Cloud Multi-AI Engine]");
-    appendLine("Pilih Model AI pada dropdown di atas atau tanyakan apapun secara bebas & mendalam.");
+    appendLine("Sistem Terminal Interaktif Portofolio [Versi 5.2.0 — Multimodal & Real-Time AI Engine]");
+    appendLine("Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!");
     appendLine("");
+  }
+
+  function renderFileTray() {
+    if (!fileTray) return;
+    if (attachedFiles.length === 0) {
+      fileTray.style.display = 'none';
+      fileTray.innerHTML = '';
+      return;
+    }
+
+    fileTray.style.display = 'flex';
+    fileTray.innerHTML = '';
+
+    attachedFiles.forEach((file, index) => {
+      const badge = document.createElement('div');
+      badge.className = 'terminal-file-badge';
+
+      const icon = file.isImage ? '🖼️' : '📄';
+      const sizeKb = (file.size / 1024).toFixed(1);
+
+      badge.innerHTML = `
+        <span>${icon}</span>
+        <span class="terminal-file-name" title="${file.name}">${file.name}</span>
+        <span style="font-size:0.75rem;opacity:0.7;">(${sizeKb} KB)</span>
+        <button type="button" class="terminal-file-remove" data-idx="${index}" aria-label="Hapus file ${file.name}">&times;</button>
+      `;
+
+      fileTray.appendChild(badge);
+    });
+
+    // Remove file handler
+    fileTray.querySelectorAll('.terminal-file-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.currentTarget.getAttribute('data-idx'), 10);
+        if (!isNaN(idx)) {
+          attachedFiles.splice(idx, 1);
+          renderFileTray();
+        }
+      });
+    });
+  }
+
+  // Handle file attachment button click
+  if (attachBtn && fileInput) {
+    attachBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        const isImg = file.type.startsWith('image/');
+
+        if (isImg) {
+          reader.onload = (event) => {
+            attachedFiles.push({
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              isImage: true,
+              data: event.target.result // Base64 data URL
+            });
+            renderFileTray();
+          };
+          reader.readAsDataURL(file);
+        } else {
+          // Read document/text/code
+          reader.onload = (event) => {
+            attachedFiles.push({
+              name: file.name,
+              type: file.type || 'text/plain',
+              size: file.size,
+              isImage: false,
+              data: event.target.result // Text content
+            });
+            renderFileTray();
+          };
+          reader.readAsText(file);
+        }
+      });
+
+      // Reset file input value so user can upload same file again if needed
+      fileInput.value = '';
+    });
   }
 
   const COMMAND_REGISTRY = {
@@ -61,8 +155,10 @@ export function initTerminal() {
       "  whoami       - Status sesi saat ini",
       "  clear        - Membersihkan riwayat layar terminal",
       "",
-      "TIPS: Gunakan dropdown 'Model AI' di pojok kanan atas untuk memilih model!",
-      "Atau tanyakan apapun secara mendalam dan bebas dengan bahasa alami."
+      "FITUR BARU v5.2:",
+      "  - Lampirkan Gambar / Dokumen / PDF dengan tombol klip [📎] di samping kolom input!",
+      "  - Pencarian Web Real-Time 2026 otomatis untuk pertanyaan informasi terkini.",
+      "  - Tanyakan apapun secara bebas & mendalam dengan bahasa alami."
     ],
     telemetry: () => {
       setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
@@ -204,18 +300,33 @@ export function initTerminal() {
   async function executeCommand(rawInput) {
     if (isGenerating) return;
     const trimmed = rawInput.trim();
-    if (!trimmed) return;
+    const currentAttachments = [...attachedFiles];
 
-    history.push(trimmed);
-    historyIndex = history.length;
+    if (!trimmed && currentAttachments.length === 0) return;
 
-    appendLine('', true, trimmed);
+    if (trimmed) {
+      history.push(trimmed);
+      historyIndex = history.length;
+    }
+
+    // Display user line in terminal
+    let displayPrompt = trimmed;
+    if (currentAttachments.length > 0) {
+      const attachNames = currentAttachments.map(a => `${a.isImage ? '🖼️' : '📄'} ${a.name}`).join(', ');
+      displayPrompt = trimmed ? `${trimmed} [Lampiran: ${attachNames}]` : `[Menganalisis Lampiran: ${attachNames}]`;
+    }
+
+    appendLine('', true, displayPrompt);
     terminalInput.value = '';
+
+    // Clear attached files tray
+    attachedFiles = [];
+    renderFileTray();
 
     const cmdLower = trimmed.toLowerCase();
 
-    // Built-in single keyword commands (instant response)
-    if (COMMAND_REGISTRY[cmdLower]) {
+    // Built-in single keyword commands (instant response if no files attached)
+    if (currentAttachments.length === 0 && COMMAND_REGISTRY[cmdLower]) {
       telemetry.logEvent('terminal_cmd', cmdLower, `Perintah Terminal: ${cmdLower}`);
       const outputLines = COMMAND_REGISTRY[cmdLower]();
       outputLines.forEach(line => appendLine(line));
@@ -239,16 +350,22 @@ export function initTerminal() {
       return;
     }
 
-    // Process via AI Engine with Snappy Streaming Output
+    // Process via Multimodal AI Engine with Snappy Streaming Output
     isGenerating = true;
     terminalInput.disabled = true;
     if (submitBtn) submitBtn.disabled = true;
-    telemetry.logEvent('terminal_ai_query', trimmed.slice(0, 40), `Pertanyaan AI: ${trimmed}`);
+    if (attachBtn) attachBtn.disabled = true;
 
-    const thinkingLine = appendLine("[AI Assistant] Menganalisis dan menyusun jawaban mendalam...", false, '', true);
+    telemetry.logEvent('terminal_ai_query', (trimmed || 'multimodal_file').slice(0, 40), `Query AI: ${trimmed}`);
+
+    const thinkingMsg = currentAttachments.length > 0 
+      ? "[Multimodal AI] Membaca dan menganalisis dokumen/gambar terlampir..." 
+      : "[AI Assistant] Menganalisis dan menyusun jawaban mendalam...";
+
+    const thinkingLine = appendLine(thinkingMsg, false, '', true);
 
     try {
-      const responses = await terminalAI.ask(trimmed);
+      const responses = await terminalAI.ask(trimmed, currentAttachments);
       if (thinkingLine && thinkingLine.parentNode) {
         thinkingLine.remove();
       }
@@ -263,6 +380,7 @@ export function initTerminal() {
       isGenerating = false;
       terminalInput.disabled = false;
       if (submitBtn) submitBtn.disabled = false;
+      if (attachBtn) attachBtn.disabled = false;
       terminalInput.focus();
     }
 
