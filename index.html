@@ -625,13 +625,13 @@
                   <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI">
                     <option value="auto" selected>⚡ Auto (Router Cerdas Berbasis Benchmark Tertinggi)</option>
                     
-                    <optgroup label="1. Active Free Cloud Frontier (100% Siaga)">
-                      <option value="google/gemma-4-31b-it:free">Google Gemma 4 (31B Instruction — #1 SOTA Free)</option>
-                      <option value="nvidia/nemotron-3-super-120b-a12b:free">Nvidia Nemotron 3 Super (120B Flagship)</option>
-                      <option value="google/gemma-4-26b-a4b-it:free">Google Gemma 4 (26B Fast Inference ~310ms)</option>
-                      <option value="nvidia/nemotron-3-ultra-550b-a55b:free">Nvidia Nemotron 3 Ultra (550B Giant MoE)</option>
+                    <optgroup label="1. Active Free Cloud Frontier (100% Teruji)">
+                      <option value="nvidia/nemotron-3-super-120b-a12b:free">Nvidia Nemotron 3 Super (120B Flagship — 264ms)</option>
+                      <option value="nvidia/nemotron-3-ultra-550b-a55b:free">Nvidia Nemotron 3 Ultra (550B Giant MoE — 607ms)</option>
+                      <option value="google/gemma-4-26b-a4b-it:free">Google Gemma 4 (26B Fast Inference — 1.1s)</option>
+                      <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">Nemotron 3 Omni Reasoning (30B CoT — 262ms)</option>
                       <option value="openai/gpt-oss-20b:free">OpenAI GPT-OSS (20B Open-Weights)</option>
-                      <option value="z-ai/glm-5.2:free">Z-AI GLM 5.2 (General Language)</option>
+                      <option value="cohere/north-mini-code:free">Cohere North Mini Code (424ms #1 Coding)</option>
                     </optgroup>
 
                     <optgroup label="2. Frontier Reasoning (DeepSeek & OpenCode)">
@@ -647,6 +647,7 @@
                     </optgroup>
 
                     <optgroup label="4. Multimodal Vision & Dokumen">
+                      <option value="nvidia/nemotron-nano-12b-v2-vl:free">Nemotron Nano 12B VL Vision (680ms)</option>
                       <option value="google/gemma-3-27b-it">Google Gemma 3 27B Vision (~520ms)</option>
                       <option value="google/gemini-2.5-flash">Google Gemini 2.5 Flash Vision</option>
                       <option value="qwen/qwen-2-vl-72b-instruct">Qwen 2 VL 72B (Vision #1 Global Benchmark)</option>
