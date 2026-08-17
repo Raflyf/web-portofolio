@@ -548,6 +548,30 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
     const calculatedMaxTokens = targetEffort === 'LOW' ? 600 : (targetEffort === 'THINKING' ? 4000 : (targetEffort === 'HIGH' ? 3500 : 2000));
 
+    const parseOmniResponse = (raw) => {
+      if (!raw) return '';
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.choices?.[0]?.message?.content) return parsed.choices[0].message.content;
+        if (parsed?.choices?.[0]?.delta?.content) return parsed.choices[0].delta.content;
+      } catch (_) {}
+
+      // SSE stream fallback parser
+      let full = '';
+      const lines = raw.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
+          try {
+            const chunk = JSON.parse(trimmed.slice(6));
+            const delta = chunk?.choices?.[0]?.delta?.content || chunk?.choices?.[0]?.message?.content || '';
+            full += delta;
+          } catch (_) {}
+        }
+      }
+      return full.trim();
+    };
+
     if (OMNI_KEY) {
       for (const omniModel of omniCandidates) {
         try {
@@ -574,8 +598,9 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
           });
           clearTimeout(omniTimeout);
           if (res.ok) {
-            const data = await res.json();
-            const content = cleanOutput(data?.choices?.[0]?.message?.content);
+            const rawText = await res.text();
+            const parsedText = parseOmniResponse(rawText);
+            const content = cleanOutput(parsedText);
             if (content && content.length > 5) {
               this.lastExecutionInfo = {
                 isAuto: !this.currentModel || this.currentModel === 'auto',
