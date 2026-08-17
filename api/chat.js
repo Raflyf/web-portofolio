@@ -148,10 +148,57 @@ async function fetchWithTimeout(url, options, timeoutMs = 10000) {
 }
 
 /**
+ * Intelligent Query Rewriter for Context-Aware Search
+ * Converts conversational follow-up questions into targeted factual search keywords.
+ */
+function formulateSmartSearchQuery(query, history = []) {
+  if (!query || typeof query !== 'string') return '';
+
+  const stopWords = /\b(coba|tolong|kamu|bisa|cari|carikan|informasi|informasinya|fakta|berita|tentang|mengenai|nya|apakah|bagaimana|apa|sih|dong|kan|bukannya|ya|di|pada|ke|dari|dan|atau|ini|itu|saat|waktu|tanggal|sekarang|hari ini|please|can|you|search|find|tell|me|about|the|what|is|are|today|now|latest|recent)\b/gi;
+  let cleaned = query.replace(stopWords, ' ').replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim();
+
+  // If query after removing stopwords is too short or empty (e.g. user just said "coba cari hari ini")
+  if (cleaned.length < 3 && Array.isArray(history) && history.length > 0) {
+    const pastUserQueries = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
+    for (const pastQ of pastUserQueries) {
+      const pastClean = pastQ.replace(stopWords, ' ').replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim();
+      if (pastClean.length >= 3) {
+        cleaned = pastClean;
+        break;
+      }
+    }
+  }
+
+  // Ensure high-relevance tech context if topic is AI/tech
+  const qLow = (query + ' ' + cleaned).toLowerCase();
+  if (qLow.includes('gpt') || qLow.includes('gemini') || qLow.includes('deepseek') || qLow.includes('claude') || qLow.includes('model') || qLow.includes('openai')) {
+    if (!cleaned.toLowerCase().includes('ai') && !cleaned.toLowerCase().includes('model')) {
+      cleaned += ' AI model';
+    }
+  }
+
+  return cleaned.slice(0, 100).trim();
+}
+
+/**
+ * Filter out lifestyle, horoscope, and tabloid junk from tech/factual search results
+ */
+function isJunkArticle(title) {
+  if (!title) return true;
+  const low = title.toLowerCase();
+  const junkWords = [
+    'zodiak', 'horoskop', 'ramalan', 'cantika.com', 'halodoc', 'gizi online', 
+    'sinopsis', 'sinetron', 'resep', 'diet', 'kopi hitam', 'shio', 'tahukah anda', 
+    'chord gitar', 'lirik lagu', 'bocoran togel', 'prediksi skor', 'jadwal bola'
+  ];
+  return junkWords.some(j => low.includes(j));
+}
+
+/**
  * Massive Real-Time Multi-Source Web & Encyclopedic Knowledge Engine
  * Aggregates Google News ID/EN, DuckDuckGo Abstract, and Wikipedia ID/EN concurrently.
  */
-async function searchWebContext(query) {
+async function searchWebContext(query, history = []) {
   if (!query || typeof query !== 'string' || query.trim().length < 3) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
@@ -161,20 +208,24 @@ async function searchWebContext(query) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
 
+  const cleanSearchQuery = formulateSmartSearchQuery(query, history);
+  if (!cleanSearchQuery || cleanSearchQuery.length < 2) {
+    return { formattedPrompt: '', rawSnippets: [] };
+  }
+
   try {
-    const cleanSearchQuery = query.replace(/[^\w\s]/gi, ' ').trim().slice(0, 100);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000);
+    const timeout = setTimeout(() => controller.abort(), 2200);
 
     // 5-Source Concurrent Multi-Index Search
-    const [googleNewsIdRes, googleNewsEnRes, ddgRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
-      // 1. Google News Indonesia RSS
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=id&gl=ID&ceid=ID:id`, {
+    const [googleNewsEnRes, googleNewsIdRes, ddgRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
+      // 1. Google News Global / US RSS (Latest Global Tech & AI Releases)
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=en-US&gl=US&ceid=US:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
-      // 2. Google News Global / US RSS (Latest Global Tech & AI Releases)
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=en-US&gl=US&ceid=US:en`, {
+      // 2. Google News Indonesia RSS
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery)}&hl=id&gl=ID&ceid=ID:id`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
@@ -214,11 +265,11 @@ async function searchWebContext(query) {
       const xml = await googleNewsEnRes.value.text().catch(() => '');
       if (xml) {
         const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-        items.slice(0, 4).forEach((item) => {
+        items.slice(0, 5).forEach((item) => {
           const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
           const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
           const title = cleanStr(titleMatch ? titleMatch[1] : '');
-          if (title) {
+          if (title && !isJunkArticle(title)) {
             const dateStr = dateMatch ? dateMatch[1] : '2026';
             snippets.push(`[Live Global News (${dateStr})]: ${title}`);
             rawSnippets.push(`[Global News]: ${title}`);
@@ -232,11 +283,11 @@ async function searchWebContext(query) {
       const xml = await googleNewsIdRes.value.text().catch(() => '');
       if (xml) {
         const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-        items.slice(0, 3).forEach((item) => {
+        items.slice(0, 4).forEach((item) => {
           const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
           const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
           const title = cleanStr(titleMatch ? titleMatch[1] : '');
-          if (title) {
+          if (title && !isJunkArticle(title)) {
             const dateStr = dateMatch ? dateMatch[1] : '2026';
             snippets.push(`[Live Berita Indonesia (${dateStr})]: ${title}`);
             rawSnippets.push(`[Berita ID]: ${title}`);
@@ -250,7 +301,7 @@ async function searchWebContext(query) {
       const ddgData = await ddgRes.value.json().catch(() => null);
       if (ddgData && ddgData.AbstractText) {
         const abstract = cleanStr(ddgData.AbstractText);
-        if (abstract) {
+        if (abstract && !isJunkArticle(abstract)) {
           snippets.push(`[DuckDuckGo Knowledge - ${ddgData.Heading || 'Topic'}]: ${abstract}`);
           rawSnippets.push(`[DuckDuckGo]: ${abstract}`);
         }
@@ -374,7 +425,7 @@ export default async function handler(req, res) {
     const imageAttachments = Array.isArray(attachments) ? attachments.filter(a => a.isImage || (a.type && a.type.startsWith('image/'))) : [];
     const docAttachments = Array.isArray(attachments) ? attachments.filter(a => !a.isImage && (!a.type || !a.type.startsWith('image/'))) : [];
     const hasImages = imageAttachments.length > 0;
-    const searchResult = await searchWebContext(query);
+    const searchResult = await searchWebContext(query, history);
     const webContext = searchResult.formattedPrompt;
     const webMemories = searchResult.rawSnippets || [];
 
