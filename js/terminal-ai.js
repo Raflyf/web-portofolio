@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.23.0';
-import { telemetry } from './telemetry.js?v=10.23.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.24.0';
+import { telemetry } from './telemetry.js?v=10.24.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -113,6 +113,20 @@ class TerminalAIEngine {
     this.sessionLanguage = sessionStorage.getItem('ai_session_lang') || null;
     this.reasoningEffort = localStorage.getItem('ai_selected_effort') || 'auto';
     this.conversationHistory = [];
+    this.currentAbortController = null;
+    this.isAborted = false;
+  }
+
+  abort() {
+    this.isAborted = true;
+    if (this.currentAbortController) {
+      try {
+        this.currentAbortController.abort();
+      } catch (_) {}
+      this.currentAbortController = null;
+      return true;
+    }
+    return false;
   }
 
   detectOrUpdateLanguage(query) {
@@ -290,6 +304,9 @@ class TerminalAIEngine {
       return ["Silakan masukkan pertanyaan, perintah, atau unggah dokumen/gambar."];
     }
 
+    this.isAborted = false;
+    this.currentAbortController = new AbortController();
+
     // Log AI Consultation Telemetry
     if (telemetry) {
       telemetry.logEvent('ai_query', this.currentModel || 'auto', cleanQuery.substring(0, 100));
@@ -301,6 +318,8 @@ class TerminalAIEngine {
     if (typeof window !== 'undefined' && !this.customKey) {
       try {
         const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
+        if (this.isAborted) return { isAborted: true };
+
         if (directRes && directRes.length > 0) {
           // Record conversation turn for dynamic context
           this.conversationHistory.push({ role: 'user', content: cleanQuery });
@@ -319,14 +338,18 @@ class TerminalAIEngine {
           }
           return directRes;
         }
-      } catch (_) {}
+      } catch (_) {
+        if (this.isAborted) return { isAborted: true };
+      }
     }
 
     // 1. Fallback: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
     try {
       const memoryContext = await this.fetchAIMemories();
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120000);
+      const controller = this.currentAbortController || new AbortController();
+      const timeout = setTimeout(() => {
+        if (!this.isAborted) controller.abort();
+      }, 120000);
       const apiEndpoint = (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
         ? 'https://raflyfirmansyah-portofolio.vercel.app/api/chat'
         : '/api/chat';
@@ -349,8 +372,10 @@ class TerminalAIEngine {
       });
 
       clearTimeout(timeout);
+      if (this.isAborted) return { isAborted: true };
 
       const data = await res.json().catch(() => null);
+      if (this.isAborted) return { isAborted: true };
 
       if (res.ok && data?.success && data?.response) {
         let finalResponse = data.response;
@@ -422,6 +447,7 @@ class TerminalAIEngine {
       // Dynamic Backend Error Display ➔ Direct Client Failover
       if (data && !data.success) {
         const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
+        if (this.isAborted) return { isAborted: true };
         if (directRes) {
           return directRes;
         }
@@ -432,7 +458,11 @@ class TerminalAIEngine {
         }
       }
     } catch (netErr) {
-      if (netErr.name === 'AbortError') {
+      if (this.isAborted || (netErr && netErr.name === 'AbortError' && this.isAborted)) {
+        return { isAborted: true };
+      }
+
+      if (netErr && netErr.name === 'AbortError') {
         return [
           `[TIMEOUT / 2 Menit]: Permintaan ke model AI melebihi batas waktu 2 menit.`,
           `Model sedang memproses komputasi berat. Silakan coba kembali atau pilih model lain.`
@@ -441,6 +471,7 @@ class TerminalAIEngine {
 
       // Direct Client Failover on Network / CORS Error
       const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
+      if (this.isAborted) return { isAborted: true };
       if (directRes) {
         return directRes;
       }
