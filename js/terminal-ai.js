@@ -564,64 +564,17 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 - DeepSeek: DeepSeek-V4 Flash & DeepSeek-V4 Pro (Agustus 2026), DeepSeek-V3 MoE 671B, DeepSeek-R1.
 - Nvidia: Nemotron 3 Super 120B, Nemotron 3 Ultra 550B MoE, Nemotron Laguna.
 
-[INSTRUKSI UTAMA]:
+[PENANGANAN KHUSUS QUERY OPENPLAGIARISM]:
+- Jika pengguna menanyakan "openplagiarism", "open plagiarism", atau deteksi plagiarisme portofolio:
+  1. TEGASKAN BAHWA nama resmi proyek & repositori adalah OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker).
+  2. DILARANG KERAS menggunakan URL "github.com/Raflyf/openplagiarism" karena URL tersebut 404 (tidak valid).
+  3. Jelaskan arsitektur teknis 5 tahap nyata (Document Ingestion pdfplumber/docx, 5-Word N-Gram Shingling MinHash/Jaccard, Sentence Transformers paraphrase-multilingual-MiniLM-L12-v2 Cosine Similarity, Konektor 15+ Basis Data Jurnal GARUDA/Neliti/BASE/OpenAlex, Weighted Scoring 40% Exact + 60% Semantic).
+  4. Selesaikan seluruh uraian secara tuntas dan lengkap tanpa terpotong!
+
+[INSTRUKSI UTAMA & PROTOKOL ANTI-TRUNCATION]:
+- Selesaikan seluruh penjelasan, poin-poin, dan tabel perbandingan hingga tuntas 100% sebelum batas token berakhir. Dilarang memotong jawaban di tengah kalimat.
 - Jika pengguna melampirkan gambar atau screenshot, analisis dan jelaskan isi gambar secara spesifik dan faktual.
 - DILARANG KERAS mengeluarkan monolog penalaran internal (scratchpad/chain of thought) dalam Bahasa Inggris. LANGSUNG berikan jawaban akhir dalam Bahasa Indonesia yang bersih, to-the-point, dan profesional.`;
-
-    // Real-Time Client-Side Web Search Crawler
-    let searchContext = '';
-    try {
-      const searchCtrl = new AbortController();
-      const searchTimer = setTimeout(() => searchCtrl.abort(), 2500);
-      const wikiQuery = encodeURIComponent(cleanQuery.slice(0, 50));
-      const [wikiRes, hfRes] = await Promise.allSettled([
-        fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${wikiQuery}&format=json&origin=*`, { signal: searchCtrl.signal }),
-        fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(cleanQuery.split(' ')[0])}&limit=3`, { signal: searchCtrl.signal })
-      ]);
-      clearTimeout(searchTimer);
-
-      const snippets = [];
-      if (wikiRes.status === 'fulfilled' && wikiRes.value.ok) {
-        const wikiData = await wikiRes.value.json().catch(() => null);
-        const hits = wikiData?.query?.search || [];
-        if (hits.length > 0) {
-          const s = hits[0].snippet.replace(/<[^>]+>/g, '').trim();
-          if (s.length > 10) snippets.push(`[Wikipedia]: ${s}`);
-        }
-      }
-      if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
-        const hfData = await hfRes.value.json().catch(() => null);
-        if (Array.isArray(hfData) && hfData.length > 0) {
-          const names = hfData.slice(0, 3).map(m => m.id).join(', ');
-          snippets.push(`[Hugging Face Models]: ${names}`);
-        }
-      }
-      if (snippets.length > 0) {
-        searchContext = `\n\n[HASIL PENCARIAN REAL-TIME 2026]:\n${snippets.join('\n')}`;
-        snippets.forEach(s => {
-          if (s && s.length > 15) {
-            this.saveAIMemory(s);
-          }
-        });
-      }
-    } catch (_) {}
-
-    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${searchContext}`;
-
-    const q = cleanQuery.toLowerCase();
-    const len = q.length;
-
-    // Detect if image attachment exists
-    const hasImages = Array.isArray(attachments) && attachments.some(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50));
-
-    // Construct Multimodal Payload
-    const userMessageContent = hasImages ? [
-      { type: 'text', text: cleanQuery || 'Analisis dan jelaskan isi gambar/dokumen ini secara mendalam.' },
-      ...attachments.filter(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50)).map(img => ({
-        type: 'image_url',
-        image_url: { url: img.base64.startsWith('data:') ? img.base64 : `data:${img.type || 'image/jpeg'};base64,${img.base64}` }
-      }))
-    ] : cleanQuery;
 
     // Intelligent Intent Detection
     const isProjectExplaining = !hasImages && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
@@ -629,31 +582,73 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     const isDeepReasoning = !hasImages && !isProjectExplaining && (/\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200);
     const isGreeting = !hasImages && len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
 
+    // Resolve Effort: Priority to UI Dropdown Selection if not 'auto'
+    const explicitEffort = (this.reasoningEffort && this.reasoningEffort !== 'auto') ? this.reasoningEffort.toUpperCase() : null;
+    let targetEffort = explicitEffort || (hasImages ? 'MEDIUM' : (isGreeting ? 'LOW' : (isDeepReasoning ? 'THINKING' : (isProjectExplaining || isHeavyCoding ? 'HIGH' : 'MEDIUM'))));
+
+    // Real-Time Client-Side Web Search Crawler (Filtered)
+    let searchContext = '';
+    try {
+      const stopWords = /^(saya|aku|kamu|anda|ingin|tolong|coba|bisa|minta|mohon|mau|apakah|apa|kenapa|mengapa|bagaimana|gimana|kapan|dimana|adalah|untuk|pada|di|ke|dari|dengan|kalo|jika|buat|buatkan|tampilkan|jelaskan|uraikan|proyek|project|tentang|soal|yg|yang|ada|ini|itu|dan|atau|web|porto|portofolio|github|nya)\b/gi;
+      const searchKeywords = cleanQuery.replace(stopWords, '').replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
+      
+      if (searchKeywords.length >= 3 && !isProjectExplaining) {
+        const searchCtrl = new AbortController();
+        const searchTimer = setTimeout(() => searchCtrl.abort(), 2500);
+        const firstTerm = searchKeywords.split(' ')[0];
+        const [wikiRes, hfRes] = await Promise.allSettled([
+          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchKeywords.slice(0, 40))}&format=json&origin=*`, { signal: searchCtrl.signal }),
+          fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(firstTerm)}&limit=3`, { signal: searchCtrl.signal })
+        ]);
+        clearTimeout(searchTimer);
+
+        const snippets = [];
+        if (wikiRes.status === 'fulfilled' && wikiRes.value.ok) {
+          const wikiData = await wikiRes.value.json().catch(() => null);
+          const hits = wikiData?.query?.search || [];
+          if (hits.length > 0) {
+            const s = hits[0].snippet.replace(/<[^>]+>/g, '').trim();
+            if (s.length > 10) snippets.push(`[Wikipedia]: ${s}`);
+          }
+        }
+        if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
+          const hfData = await hfRes.value.json().catch(() => null);
+          if (Array.isArray(hfData) && hfData.length > 0) {
+            const names = hfData.slice(0, 3).map(m => m.id).join(', ');
+            snippets.push(`[Hugging Face Models]: ${names}`);
+          }
+        }
+        if (snippets.length > 0) {
+          searchContext = `\n\n[HASIL PENCARIAN REAL-TIME 2026]:\n${snippets.join('\n')}`;
+          snippets.forEach(s => {
+            if (s && s.length > 15) {
+              this.saveAIMemory(s);
+            }
+          });
+        }
+      }
+    } catch (_) {}
+
+    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${searchContext}`;
+
     // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
     const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
     const OMNI_KEY = decodeKey('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
 
     let omniCandidates = [];
-    let targetEffort = 'MEDIUM';
 
     if (hasImages) {
-      targetEffort = 'MEDIUM';
       omniCandidates = ['Vision-model', 'Codex', 'Antigravity'];
-    } else if (isGreeting) {
-      targetEffort = 'LOW';
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
+    } else if (targetEffort === 'THINKING' || isDeepReasoning) {
+      omniCandidates = ['nemotron-3-ultra-free', 'Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else if (isProjectExplaining) {
-      targetEffort = 'HIGH';
       omniCandidates = ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity'];
     } else if (isHeavyCoding) {
-      targetEffort = 'HIGH';
       omniCandidates = ['Codex', 'Deepseek-V4-Flash-Free', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity'];
-    } else if (isDeepReasoning) {
-      targetEffort = 'THINKING';
-      omniCandidates = ['nemotron-3-ultra-free', 'Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
+    } else if (targetEffort === 'LOW' || isGreeting) {
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
     } else {
-      targetEffort = 'MEDIUM';
-      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     }
 
     // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, Ultra)
@@ -666,7 +661,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       else if (explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
     }
 
-    const calculatedMaxTokens = targetEffort === 'LOW' ? 600 : (targetEffort === 'THINKING' ? 4000 : (targetEffort === 'HIGH' ? 3500 : 2000));
+    const calculatedMaxTokens = targetEffort === 'LOW' ? 1000 : (targetEffort === 'THINKING' ? 6000 : (targetEffort === 'HIGH' ? 5000 : 3500));
 
     const parseOmniResponse = (raw) => {
       if (!raw) return '';
