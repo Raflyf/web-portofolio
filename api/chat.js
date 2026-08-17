@@ -1042,11 +1042,16 @@ Langkah yang WAJIB Anda lakukan:
       }
     }
 
-    // 2C. Nvidia NIM Gateway (70B Flagship Models Only)
+    // 2C. Nvidia NIM Gateway (Nemotron 3 Ultra, Super, & Llama 3.3 70B)
     if (NVIDIA_KEY) {
       const nvCandidateModels = targetModel.startsWith('nvidia/')
-        ? [targetModel.replace('nvidia/', '')]
-        : ['nvidia/nemotron-4-340b-instruct', 'nvidia/nemotron-nano-9b'];
+        ? [targetModel, targetModel.replace('nvidia/', '')]
+        : [
+            'nvidia/nemotron-3-ultra-550b-a55b',
+            'nvidia/nemotron-3-super-120b-a12b',
+            'nvidia/llama-3.3-nemotron-super-49b-v1',
+            'meta/llama-3.3-70b-instruct'
+          ];
 
       for (let nvModel of nvCandidateModels) {
         try {
@@ -1080,64 +1085,62 @@ Langkah yang WAJIB Anda lakukan:
       }
     }
 
-    // 2D. Ollama Cloud Gateway
+    // 2D. Ollama Cloud Gateway (Verified Nemotron 3 Ultra, Super & MiniMax-M3)
     if (OLLAMA_KEY) {
-      try {
-        let olModel = targetModel.startsWith('ollamacloud/') ? targetModel.replace('ollamacloud/', '') : 'kimi-k2.7-coder';
-        if (olModel.includes('kimi')) olModel = 'kimi-k2.7-coder';
-        else if (olModel.includes('gemma')) olModel = 'gemma:31b';
+      const olCandidateModels = ['nemotron-3-ultra', 'nemotron-3-super', 'minimax-m3'];
+      for (const olModel of olCandidateModels) {
+        try {
+          const response = await fetchWithTimeout('https://ollama.com/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OLLAMA_KEY}`
+            },
+            body: JSON.stringify({
+              model: olModel,
+              messages: baseTextMessages,
+              stream: false
+            })
+          }, 25000);
 
-        const response = await fetchWithTimeout('https://api.ollama.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OLLAMA_KEY}`
-          },
-          body: JSON.stringify({
-            model: olModel,
-            messages: baseTextMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig
-          })
-        }, 20000);
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content) {
-            return sendSuccess(content, olModel, 'Ollama Cloud AI');
+          if (response.ok) {
+            const data = await response.json();
+            const content = data?.message?.content;
+            if (content) {
+              return sendSuccess(content, olModel, 'Ollama Cloud SOTA Engine');
+            }
+          } else {
+            const errTxt = await response.text();
+            providerErrors.push(`Ollama Cloud ${olModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
           }
-        } else {
-          const errTxt = await response.text();
-          providerErrors.push(`Ollama Cloud HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+        } catch (err) {
+          providerErrors.push(`Ollama Cloud ${olModel}: ${err.message}`);
         }
-      } catch (err) {
-        providerErrors.push(`Ollama Cloud: ${err.message}`);
       }
     }
 
-    // 2E. MiniMax Gateway
+    // 2E. MiniMax Gateway (api.minimax.io)
     if (MINIMAX_KEY) {
       try {
-        const response = await fetchWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+        const response = await fetchWithTimeout('https://api.minimax.io/v1/text/chatcompletion_v2', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${MINIMAX_KEY}`
           },
           body: JSON.stringify({
-            model: 'minimax-01',
+            model: 'MiniMax-M3',
             messages: [
-              { sender_type: 'USER', sender_name: 'User', text: `${systemPromptWithSearch}\n\n${assembledQuery}` }
+              { role: 'user', content: `${systemPromptWithSearch}\n\n${assembledQuery}` }
             ]
           })
         }, 20000);
 
         if (response.ok) {
           const data = await response.json();
-          const content = data?.reply || data?.choices?.[0]?.message?.text;
+          const content = data?.choices?.[0]?.message?.content || data?.reply;
           if (content) {
-            return sendSuccess(content, 'minimax-01', 'MiniMax AI');
+            return sendSuccess(content, 'MiniMax-M3', 'MiniMax Frontier Engine');
           }
         } else {
           const errTxt = await response.text();
