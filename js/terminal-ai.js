@@ -208,6 +208,65 @@ class TerminalAIEngine {
     ];
   }
 
+  // ========================================================================
+  // AI CONTINUOUS RAG / LONG-TERM MEMORY (SUPABASE)
+  // ========================================================================
+  async fetchAIMemories() {
+    try {
+      const configStr = localStorage.getItem('portfolio_supabase_config');
+      if (!configStr) return '';
+      const config = JSON.parse(configStr);
+      if (!config.url || !config.anonKey) return '';
+
+      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=15`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'apikey': config.anonKey,
+          'Authorization': `Bearer ${config.anonKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) return '';
+      const data = await res.json();
+      if (!data || data.length === 0) return '';
+      
+      const facts = data.map(d => `- ${d.fact_text}`).join('\n');
+      return `\n\n[MEMORI JANGKA PANJANG AI (FAKTA YANG TELAH DIPELAJARI DARI PENGGUNA)]:\n${facts}\n(Gunakan fakta di atas jika relevan dengan pertanyaan saat ini.)`;
+    } catch (err) {
+      console.debug('[Memory] Fetch error:', err);
+      return '';
+    }
+  }
+
+  async saveAIMemory(fact) {
+    try {
+      const configStr = localStorage.getItem('portfolio_supabase_config');
+      if (!configStr) return;
+      const config = JSON.parse(configStr);
+      if (!config.url || !config.anonKey) return;
+
+      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories`;
+      const sessionId = sessionStorage.getItem('portfolio_session_id') || 'unknown';
+      
+      await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'apikey': config.anonKey,
+          'Authorization': `Bearer ${config.anonKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          fact_text: fact.substring(0, 1000),
+          session_id: sessionId
+        })
+      });
+    } catch (err) {
+      console.debug('[Memory] Save error:', err);
+    }
+  }
+
   /**
    * Main Ask method: Routes multimodal attachments and queries to cloud gateway
    */
@@ -226,6 +285,7 @@ class TerminalAIEngine {
 
     // 1. Primary: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
     try {
+      const memoryContext = await this.fetchAIMemories();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 120000);
 
@@ -240,7 +300,8 @@ class TerminalAIEngine {
           attachments: attachments,
           sessionLanguage: currentLang,
           reasoningEffort: this.reasoningEffort,
-          history: this.conversationHistory.slice(-6)
+          history: this.conversationHistory.slice(-6),
+          longTermMemory: memoryContext
         }),
         signal: controller.signal
       });
@@ -250,9 +311,19 @@ class TerminalAIEngine {
       const data = await res.json().catch(() => null);
 
       if (res.ok && data?.success && data?.response) {
+        let finalResponse = data.response;
+        
+        // Extract and Save Memory (Continuous RAG)
+        const memoryMatch = finalResponse.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
+        if (memoryMatch && memoryMatch[1]) {
+          const newFact = memoryMatch[1].trim();
+          this.saveAIMemory(newFact);
+          finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+        }
+
         // Record conversation turn for dynamic context
         this.conversationHistory.push({ role: 'user', content: cleanQuery });
-        this.conversationHistory.push({ role: 'assistant', content: data.response });
+        this.conversationHistory.push({ role: 'assistant', content: finalResponse });
         if (this.conversationHistory.length > 10) {
           this.conversationHistory = this.conversationHistory.slice(-10);
         }
@@ -274,7 +345,7 @@ class TerminalAIEngine {
           telemetry.logEvent('ai_query_resolved', target, label);
         }
 
-        return data.response.split('\n');
+        return finalResponse.split('\n');
       }
 
       // Check for high-priority local semantic knowledge match first
