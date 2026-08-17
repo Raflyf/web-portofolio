@@ -124,7 +124,7 @@ export const PROJECTS_DATA = [
     ],
     techStack: ["JavaScript (ES6+)", "HTML5 Semantic", "CSS3 / OKLCH", "GitHub Pages", "Responsive UI"],
     githubUrl: "https://github.com/Raflyf/web-portofolio",
-    demoUrl: "https://raflyf.github.io/web-portofolio/",
+    demoUrl: "https://raflyfirmansyah-portofolio.vercel.app/",
     stars: 1,
     license: "MIT",
     year: "2026"

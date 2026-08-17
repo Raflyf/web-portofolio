@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /dashboard.html
 
-Sitemap: https://raflyf.github.io/web-portofolio/sitemap.xml
+Sitemap: https://raflyfirmansyah-portofolio.vercel.app/sitemap.xml
