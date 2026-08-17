@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.18.0';
-import { telemetry } from './telemetry.js?v=10.18.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.21.0';
+import { telemetry } from './telemetry.js?v=10.21.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -509,7 +509,12 @@ class TerminalAIEngine {
       return cleaned.replace(/^["']|["']$/g, '').trim();
     };
 
-    const SYSTEM_PROMPT_2026 = `Status Bahasa: BAHASA INDONESIA. Waktu Sistem Saat Ini: Senin, 17 Agustus 2026.
+    const now = new Date();
+    const dynamicDateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const dynamicTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const currentYear = now.getFullYear();
+
+    const SYSTEM_PROMPT_2026 = `Status Bahasa: BAHASA INDONESIA. Waktu Sistem Saat Ini: ${dynamicDateStr}, pukul ${dynamicTimeStr} WIB.
 Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Rafly Firmansyah (@Raflyf).
 
 [ATURAN ANTI-HALUSINASI & INTEGRITAS DATA REPOSITORI]:
@@ -681,7 +686,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       else if (explicit.includes('vision') || explicit.includes('minimax') || explicit.includes('mimo')) omniCandidates = ['Vision-model', ...omniCandidates];
     }
 
-    const calculatedMaxTokens = targetEffort === 'LOW' ? 800 : (targetEffort === 'THINKING' ? 2600 : (targetEffort === 'HIGH' ? 2200 : 1800));
+    const calculatedMaxTokens = targetEffort === 'LOW' ? 2000 : (targetEffort === 'THINKING' ? 8192 : (targetEffort === 'HIGH' ? 6500 : 4500));
 
     const parseOmniResponse = (raw) => {
       if (!raw) return '';
@@ -713,7 +718,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
           const omniController = new AbortController();
           const timeoutMs = omniModel.toLowerCase().includes('deepseek')
             ? 3500
-            : (omniModel.toLowerCase().includes('antigravity') ? 42000 : 24000);
+            : (omniModel.toLowerCase().includes('antigravity') ? 55000 : 35000);
           const omniTimeout = setTimeout(() => omniController.abort(), timeoutMs);
           const res = await fetch(OMNI_URL, {
             method: 'POST',

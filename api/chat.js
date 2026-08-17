@@ -79,11 +79,16 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
 - Sekalipun pengguna bertanya menggunakan bahasa lain (seperti bahasa Inggris atau bahasa daerah), Anda TETAP WAJIB MENJAWAB DALAM BAHASA INDONESIA.
 - PENGECUALIAN TUNGGAL: HANYA beralih bahasa jika pengguna secara langsung dan eksplisit memerintahkan Anda (misalnya "Switch to English", "Gunakan bahasa Inggris").`;
 
+  const now = new Date();
+  const dynamicDateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const dynamicTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const currentYear = now.getFullYear();
+
   return `
 Anda adalah AI Assistant canggih, cerdas, berpengetahuan luas, dan interaktif pada Terminal Developer Lab di portofolio resmi Rafly Firmansyah (@Raflyf).
 
-WAKTU AKTIF & PENCARIAN INTERNET (2026):
-1. Waktu Sistem Saat Ini: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.
+WAKTU AKTIF & PENCARIAN INTERNET (TAHUN ${currentYear}):
+1. Waktu Sistem Saat Ini: ${dynamicDateStr}, pukul ${dynamicTimeStr} WIB.
 
 2. Instruksi Pencarian Real-Time (MANDATORY):
    - Jika ditanya mengenai model AI, peristiwa terkini, geopolitik, olahraga, sains, atau teknologi terbaru, ANDA WAJIB MENGUTAMAKAN HASIL PENCARIAN INTERNET LIVE (jika tersedia di bagian bawah prompt).
@@ -735,10 +740,10 @@ Langkah yang WAJIB Anda lakukan:
     ];
 
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 1000 
+      ? 2000 
       : (effectiveEffort === 'medium'
-          ? 3500 
-          : (effectiveEffort === 'high' ? 5000 : 6500));
+          ? 4500 
+          : (effectiveEffort === 'high' ? 6500 : 8192));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
