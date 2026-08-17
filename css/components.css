@@ -1141,6 +1141,44 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   color: var(--text-muted);
 }
 
+.terminal-model-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.terminal-model-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--accent-emerald);
+  font-weight: 600;
+}
+
+.terminal-model-select {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  background-color: var(--badge-bg);
+  color: var(--text-heading);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.5rem;
+  outline: none;
+  cursor: pointer;
+  transition: all var(--duration-micro) var(--ease-out);
+}
+
+.terminal-model-select:hover,
+.terminal-model-select:focus {
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 8px var(--accent-emerald-glow);
+}
+
+.terminal-model-select option,
+.terminal-model-select optgroup {
+  background-color: var(--bg-primary);
+  color: var(--text-body);
+}
+
 .terminal-chips-bar {
   display: flex;
   flex-wrap: wrap;
