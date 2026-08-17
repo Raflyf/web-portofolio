@@ -461,7 +461,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'trivial_casual',
       effort: 'low', // Fast & concise, strictly saves flagship quota
       omniCandidates: ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'],
-      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free']
+      openRouterCandidates: ['nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
     };
   }
 
@@ -473,29 +473,40 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'high', // Deep, complete code output
-      omniCandidates: ['Codex', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity', 'Deepseek-V4-Flash-Free'],
-      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
+      omniCandidates: ['Codex', 'Deepseek-V4-Flash-Free', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity'],
+      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b:free']
     };
   }
 
-  // 3. Deep Chain-of-Thought / High-IQ Reasoning / Mathematics / In-depth Research Analysis (Thinking CoT & Antigravity)
-  const hasReasoningKeywords = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q);
+  // 3. Project Explanations / Portfolio Architecture / Research Review (Nemotron 3 Ultra Flagship)
+  const hasProjectKeywords = /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
+  if (hasProjectKeywords) {
+    return {
+      category: 'project_architecture',
+      effort: 'high',
+      omniCandidates: ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity'],
+      openRouterCandidates: ['nvidia/nemotron-3-ultra-550b:free', 'openai/gpt-oss-20b:free', 'nvidia/nemotron-3-super-120b-a12b:free']
+    };
+  }
+
+  // 4. Deep Chain-of-Thought / High-IQ Reasoning / Mathematics / In-depth Research Analysis (Thinking CoT & Antigravity)
+  const hasReasoningKeywords = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q);
   
   if (hasReasoningKeywords || len > 250) {
     return {
       category: 'deep_reasoning',
       effort: 'thinking', // Deep analytical CoT
-      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
-      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
+      omniCandidates: ['nemotron-3-ultra-free', 'Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'],
+      openRouterCandidates: ['nvidia/nemotron-3-ultra-550b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'openai/gpt-oss-20b:free']
     };
   }
 
-  // 4. Standard Explanatory / Tech concepts / News search / Comparisons (Medium Effort)
+  // 5. Standard Explanatory / Tech concepts / News search / Comparisons (Medium Effort)
   return {
     category: 'standard_balanced',
     effort: 'medium', // Balanced depth
     omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
-    openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
+    openRouterCandidates: ['nvidia/nemotron-3-ultra-550b:free', 'openai/gpt-oss-20b:free', 'nvidia/nemotron-3-super-120b-a12b:free']
   };
 }
 
