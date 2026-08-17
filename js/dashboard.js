@@ -698,8 +698,8 @@ class DashboardApp {
       {
         id: 'nemotron-3-ultra',
         name: 'Nvidia Nemotron 3 Ultra (550B)',
-        category: 'Nvidia SOTA',
-        tag: '550B MoE Reasoning Flagship',
+        category: 'Nvidia SOTA Flagship',
+        tag: '550B MoE Architecture & Research',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
@@ -710,7 +710,7 @@ class DashboardApp {
       {
         id: 'nemotron-3-super',
         name: 'Nvidia Nemotron 3 Super (120B)',
-        category: 'Nvidia NIM',
+        category: 'Nvidia NIM & OpenRouter',
         tag: '120B Enterprise Compute Engine',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
@@ -729,42 +729,7 @@ class DashboardApp {
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.3') || `${t} ${l}`.toLowerCase().includes('70b')
       },
 
-      // 2. DeepSeek Frontier Suite
-      {
-        id: 'deepseek-r1',
-        name: 'DeepSeek R1 (Thinking CoT)',
-        category: 'DeepSeek SOTA',
-        tag: 'SOTA Chain-of-Thought Reasoning',
-        icon: SVG_ICONS.cot,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-r1') || `${t} ${l}`.toLowerCase().includes('r1') || `${t} ${l}`.toLowerCase().includes('reasoning')
-      },
-      {
-        id: 'deepseek-v3',
-        name: 'DeepSeek V3 (671B MoE)',
-        category: 'DeepSeek SOTA',
-        tag: '671B MoE General Flagship',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return (s.includes('deepseek-v3') || s.includes('deepseek-chat') || s.includes('671b')) && !s.includes('r1');
-        }
-      },
-      {
-        id: 'omniroute-deepseek-v4',
-        name: 'DeepSeek V4 Flash',
-        category: 'OpenCode Direct',
-        tag: 'Multi-Account 50+ Pool',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('v4-flash') || s.includes('flash-free') || (s.includes('deepseek') && !s.includes('v3') && !s.includes('r1') && !s.includes('chat'));
-        }
-      },
-
-      // 3. OpenAI & Anthropic Dedicated (OmniRoute)
+      // 2. OpenAI & Anthropic Dedicated (OmniRoute)
       {
         id: 'omniroute-codex',
         name: 'Codex (GPT-5.6 Terra)',
@@ -784,7 +749,7 @@ class DashboardApp {
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus') || `${t} ${l}`.toLowerCase().includes('sonnet')
       },
 
-      // 4. Multimodal & Coding Specialists
+      // 3. Multimodal & Vision Specialists
       {
         id: 'minimax-m3',
         name: 'MiniMax-M3 Vision Multimodal',
@@ -797,17 +762,8 @@ class DashboardApp {
           return s.includes('minimax-m3') || s.includes('vision-model') || s.includes('minimax') || s.includes('mimo') || s.includes('vision');
         }
       },
-      {
-        id: 'qwen-2.5-coder',
-        name: 'Qwen 2.5 Coder (32B)',
-        category: 'OpenRouter SOTA',
-        tag: 'Rank #1 Agentic Coding Specialist',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen') || `${t} ${l}`.toLowerCase().includes('coder:32b') || `${t} ${l}`.toLowerCase().includes('coder-32b')
-      },
 
-      // 5. Local & Offline Fallback
+      // 4. Local & Offline Fallback
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
