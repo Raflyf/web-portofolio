@@ -808,41 +808,42 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
     if (hasImages) {
       OR_MODELS = [
-        'nvidia/nemotron-nano-12b-v2-vl:free',
-        'google/gemma-3-27b-it'
+        'nvidia/nemotron-nano-12b-v2-vl:free'
       ];
-    } else if (isGreeting) {
-      targetEffort = 'LOW';
+    } else if (targetEffort === 'THINKING' || isDeepReasoning) {
       OR_MODELS = [
-        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'google/gemma-4-31b-it:free',
         'openai/gpt-oss-20b:free',
         'nvidia/nemotron-3-super-120b-a12b:free'
       ];
     } else if (isProjectExplaining) {
-      targetEffort = 'HIGH';
       OR_MODELS = [
-        'nvidia/nemotron-3-ultra-550b:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'google/gemma-4-31b-it:free',
         'openai/gpt-oss-20b:free',
         'nvidia/nemotron-3-super-120b-a12b:free'
       ];
     } else if (isHeavyCoding) {
-      targetEffort = 'HIGH';
       OR_MODELS = [
+        'cohere/north-mini-code:free',
         'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free',
-        'nvidia/nemotron-3-ultra-550b:free'
+        'google/gemma-4-31b-it:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
       ];
-    } else if (isDeepReasoning) {
-      targetEffort = 'THINKING';
+    } else if (targetEffort === 'LOW' || isGreeting) {
       OR_MODELS = [
-        'nvidia/nemotron-3-ultra-550b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free',
-        'openai/gpt-oss-20b:free'
+        'poolside/laguna-s-2.1:free',
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
       ];
     } else {
-      targetEffort = 'MEDIUM';
       OR_MODELS = [
-        'nvidia/nemotron-3-ultra-550b:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'google/gemma-4-31b-it:free',
+        'poolside/laguna-s-2.1:free',
         'openai/gpt-oss-20b:free',
         'nvidia/nemotron-3-super-120b-a12b:free'
       ];
