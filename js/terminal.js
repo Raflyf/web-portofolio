@@ -92,6 +92,121 @@ export function initTerminal() {
     });
   }
 
+  async function processIncomingFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return;
+
+    for (const file of files) {
+      const isImg = file.type.startsWith('image/');
+      const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+
+      if (isImg) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          attachedFiles.push({
+            name: file.name,
+            type: file.type || 'image/jpeg',
+            size: file.size,
+            isImage: true,
+            data: event.target.result // Base64 data URL
+          });
+          renderFileTray();
+        };
+        reader.readAsDataURL(file);
+      } else if (isPdf) {
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          let extractedText = '';
+
+          if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
+            const pdf = await loadingTask.promise;
+
+            for (let i = 1; i <= Math.min(pdf.numPages, 15); i++) {
+              const page = await pdf.getPage(i);
+              const textContent = await page.getTextContent();
+              const pageText = textContent.items.map(item => item.str).join(' ');
+              if (pageText.trim()) {
+                extractedText += `--- Halaman ${i} ---\n${pageText}\n\n`;
+              }
+            }
+          }
+
+          if (extractedText.trim().length > 30) {
+            attachedFiles.push({
+              name: file.name,
+              type: 'application/pdf',
+              size: file.size,
+              isImage: false,
+              data: extractedText.trim()
+            });
+            renderFileTray();
+          } else if (window.pdfjsLib) {
+            // Render first page as image for scanned / graphic PDFs
+            const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
+            const pdf = await loadingTask.promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+            attachedFiles.push({
+              name: file.name,
+              type: 'image/jpeg',
+              size: file.size,
+              isImage: true,
+              data: dataUrl
+            });
+            renderFileTray();
+          } else {
+            attachedFiles.push({
+              name: file.name,
+              type: 'text/plain',
+              size: file.size,
+              isImage: false,
+              data: `[Dokumen PDF: ${file.name} (${(file.size / 1024).toFixed(1)} KB)]`
+            });
+            renderFileTray();
+          }
+        } catch (pdfErr) {
+          console.warn('PDF.js error:', pdfErr);
+          const textReader = new FileReader();
+          textReader.onload = () => {
+            attachedFiles.push({
+              name: file.name,
+              type: 'text/plain',
+              size: file.size,
+              isImage: false,
+              data: `[Dokumen PDF: ${file.name}]`
+            });
+            renderFileTray();
+          };
+          textReader.readAsText(file);
+        }
+      } else {
+        // Read text/code/json/csv/markdown
+        const textReader = new FileReader();
+        textReader.onload = (event) => {
+          attachedFiles.push({
+            name: file.name,
+            type: file.type || 'text/plain',
+            size: file.size,
+            isImage: false,
+            data: event.target.result
+          });
+          renderFileTray();
+        };
+        textReader.readAsText(file);
+      }
+    }
+  }
+
   // Handle file attachment button click
   if (attachBtn && fileInput) {
     attachBtn.addEventListener('click', () => {
@@ -99,44 +214,39 @@ export function initTerminal() {
     });
 
     fileInput.addEventListener('change', (e) => {
-      const files = Array.from(e.target.files || []);
-      if (files.length === 0) return;
-
-      files.forEach(file => {
-        const reader = new FileReader();
-        const isImg = file.type.startsWith('image/');
-
-        if (isImg) {
-          reader.onload = (event) => {
-            attachedFiles.push({
-              name: file.name,
-              type: file.type,
-              size: file.size,
-              isImage: true,
-              data: event.target.result // Base64 data URL
-            });
-            renderFileTray();
-          };
-          reader.readAsDataURL(file);
-        } else {
-          // Read document/text/code
-          reader.onload = (event) => {
-            attachedFiles.push({
-              name: file.name,
-              type: file.type || 'text/plain',
-              size: file.size,
-              isImage: false,
-              data: event.target.result // Text content
-            });
-            renderFileTray();
-          };
-          reader.readAsText(file);
-        }
-      });
-
-      // Reset file input value so user can upload same file again if needed
+      processIncomingFiles(e.target.files);
       fileInput.value = '';
     });
+  }
+
+  // Handle Drag & Drop on Terminal Card
+  const terminalCard = document.querySelector('.terminal-card');
+  if (terminalCard) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      terminalCard.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        terminalCard.classList.add('drag-over');
+      }, false);
+    });
+
+    ['dragleave', 'dragend'].forEach(eventName => {
+      terminalCard.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        terminalCard.classList.remove('drag-over');
+      }, false);
+    });
+
+    terminalCard.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      terminalCard.classList.remove('drag-over');
+      const dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        processIncomingFiles(dt.files);
+      }
+    }, false);
   }
 
   const COMMAND_REGISTRY = {

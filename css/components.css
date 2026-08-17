@@ -1124,6 +1124,31 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   overflow: hidden;
   max-width: min(100%, 1020px);
   margin-inline: auto;
+  position: relative;
+  transition: border-color var(--duration-micro) var(--ease-out), box-shadow var(--duration-micro) var(--ease-out);
+}
+
+.terminal-card.drag-over {
+  border: 2px dashed var(--accent-emerald) !important;
+  box-shadow: 0 0 25px var(--accent-emerald-glow), inset 0 0 15px rgba(16, 185, 129, 0.1) !important;
+}
+
+.terminal-card.drag-over::after {
+  content: '📁 Lepaskan file untuk melampirkan (Gambar, PDF, Dokumen, Koding)...';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(10, 15, 20, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-emerald);
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  z-index: 50;
+  pointer-events: none;
+  border-radius: var(--radius-lg);
 }
 
 .terminal-header {
