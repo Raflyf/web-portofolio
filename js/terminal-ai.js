@@ -211,11 +211,23 @@ class TerminalAIEngine {
   // ========================================================================
   // AI CONTINUOUS RAG / LONG-TERM MEMORY (SUPABASE)
   // ========================================================================
-  async fetchAIMemories() {
+  getSupabaseConfig() {
     try {
       const configStr = localStorage.getItem('portfolio_supabase_config');
-      if (!configStr) return '';
-      const config = JSON.parse(configStr);
+      if (configStr) {
+        const parsed = JSON.parse(configStr);
+        if (parsed.url && parsed.anonKey) return parsed;
+      }
+    } catch (_) {}
+    return {
+      url: 'https://rphyzcqwpkxtzllvymss.supabase.co',
+      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU'
+    };
+  }
+
+  async fetchAIMemories() {
+    try {
+      const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) return '';
 
       const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=15`;
@@ -241,9 +253,7 @@ class TerminalAIEngine {
 
   async saveAIMemory(fact) {
     try {
-      const configStr = localStorage.getItem('portfolio_supabase_config');
-      if (!configStr) return;
-      const config = JSON.parse(configStr);
+      const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) return;
 
       const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories`;
