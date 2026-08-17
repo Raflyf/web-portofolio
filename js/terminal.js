@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.23.0';
-import { telemetry } from './telemetry.js?v=10.23.0';
-import { terminalAI } from './terminal-ai.js?v=10.23.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.24.0';
+import { telemetry } from './telemetry.js?v=10.24.0';
+import { terminalAI } from './terminal-ai.js?v=10.24.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -21,6 +21,7 @@ export function initTerminal() {
   const chipButtons = document.querySelectorAll('.terminal-chip');
   const modelSelect = document.getElementById('terminal-model-select');
   const submitBtn = document.getElementById('terminal-submit-btn');
+  const stopBtn = document.getElementById('terminal-stop-btn');
   const attachBtn = document.getElementById('terminal-attach-btn');
   const fileInput = document.getElementById('terminal-file-input');
   const fileTray = document.getElementById('terminal-file-tray');
@@ -31,8 +32,42 @@ export function initTerminal() {
   let historyIndex = -1;
   let isGenerating = false;
   let attachedFiles = [];
+  let lastSubmittedPrompt = '';
+  let activeThinkingLine = null;
 
   const effortSelect = document.getElementById('terminal-effort-select');
+
+  // Cancel/Stop button listener (Instantly abort AI thinking & restore prompt for revision)
+  if (stopBtn) {
+    stopBtn.addEventListener('click', () => {
+      if (!isGenerating) return;
+      terminalAI.abort();
+      isGenerating = false;
+
+      if (activeThinkingLine && activeThinkingLine.parentNode) {
+        activeThinkingLine.remove();
+        activeThinkingLine = null;
+      }
+
+      stopBtn.style.display = 'none';
+      if (submitBtn) {
+        submitBtn.style.display = 'inline-flex';
+        submitBtn.disabled = false;
+      }
+      if (attachBtn) attachBtn.disabled = false;
+      terminalInput.disabled = false;
+
+      // Restore previously submitted prompt back into input for quick editing
+      terminalInput.value = lastSubmittedPrompt || '';
+      terminalInput.focus();
+      if (terminalInput.setSelectionRange) {
+        terminalInput.setSelectionRange(terminalInput.value.length, terminalInput.value.length);
+      }
+
+      const aiContainer = createAIBubbleContainer('System Controller');
+      appendLine('⚡ [Permintaan Dibatalkan]: Anda dapat mengulangi atau merevisi pertanyaan di kotak input.', false, '', false, aiContainer);
+    });
+  }
 
   // Pure Intelligent Auto-Routing as permanent default
   terminalAI.setModel('auto');
@@ -879,9 +914,16 @@ export function initTerminal() {
     }
 
     // Process via Multimodal AI Engine with Snappy Streaming Output
+    lastSubmittedPrompt = trimmed;
     isGenerating = true;
     terminalInput.disabled = true;
-    if (submitBtn) submitBtn.disabled = true;
+    if (submitBtn) {
+      submitBtn.style.display = 'none';
+      submitBtn.disabled = true;
+    }
+    if (stopBtn) {
+      stopBtn.style.display = 'inline-flex';
+    }
     if (attachBtn) attachBtn.disabled = true;
 
     telemetry.logEvent('terminal_ai_query', (trimmed || 'multimodal_file').slice(0, 40), `Query AI: ${trimmed}`);
@@ -895,12 +937,17 @@ export function initTerminal() {
     );
 
     const aiContainer = createAIBubbleContainer();
-    const thinkingLine = appendLine(thinkingMsg, false, '', true, aiContainer);
+    activeThinkingLine = appendLine(thinkingMsg, false, '', true, aiContainer);
 
     try {
       const responses = await terminalAI.ask(trimmed, currentAttachments);
-      if (thinkingLine && thinkingLine.parentNode) {
-        thinkingLine.remove();
+      if (activeThinkingLine && activeThinkingLine.parentNode) {
+        activeThinkingLine.remove();
+        activeThinkingLine = null;
+      }
+
+      if (responses && responses.isAborted) {
+        return;
       }
 
       // Update AI Bubble Header with accurately resolved model & provider
@@ -923,16 +970,26 @@ export function initTerminal() {
         }
       }
 
-      await streamOutputLines(responses, aiContainer);
+      if (Array.isArray(responses)) {
+        await streamOutputLines(responses, aiContainer);
+      }
     } catch (err) {
-      if (thinkingLine && thinkingLine.parentNode) {
-        thinkingLine.remove();
+      if (activeThinkingLine && activeThinkingLine.parentNode) {
+        activeThinkingLine.remove();
+        activeThinkingLine = null;
+      }
+      if (terminalAI.isAborted) {
+        return;
       }
       appendLine(`[AI Fallback] Terjadi kendala respon. Mengalihkan ke database lokal.`, false, '', false, aiContainer);
     } finally {
       isGenerating = false;
       terminalInput.disabled = false;
-      if (submitBtn) submitBtn.disabled = false;
+      if (stopBtn) stopBtn.style.display = 'none';
+      if (submitBtn) {
+        submitBtn.style.display = 'inline-flex';
+        submitBtn.disabled = false;
+      }
       if (attachBtn) attachBtn.disabled = false;
       if (!isMobileDevice() && terminalInput) {
         terminalInput.focus();
