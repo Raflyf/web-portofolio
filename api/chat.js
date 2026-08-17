@@ -90,7 +90,9 @@ WAKTU AKTIF & ENSIKLOPEDIA PERISTIWA DUNIA NYATA LENGKAP (2024 - 2026):
      * GPT-4.5 (Orion) & GPT-4o: Model multimodal terpadu teks, visi, dan audio real-time berlatensi instan.
      * Sora 2: Model generasi video dunia nyata berkualitas tinggi.
    - Anthropic:
-     * Claude 3.7 Sonnet (Hybrid Reasoning with Extended Thinking) & Claude 3.7 Opus: Model nomor 1 dunia dalam penalaran kode mandiri, Computer Use, dan arsitektur agen otonom.
+     * Claude 5 Series (Claude Opus 5, Claude Sonnet 5, Claude Haiku 5): Generasi frontier ke-5 Anthropic dengan kapabilitas Autonomous Agentic Workflows, Computer Use 2.0, multi-agent coordination, dan pemrosesan repositori kode ultra-masif.
+     * Claude Fable 4 & Fable 5: Varian spesialis riset akademik, penalaran ilmiah mendalam, dan sintesis literatur ilmiah tanpa halusinasi (*zero-hallucination architecture*).
+     * Claude 3.7 Sonnet (Hybrid Reasoning with Extended Thinking) & Claude 3.7 Opus: Pelopor arsitektur penalaran terpadu dengan budget waktu berpikir fleksibel.
      * Claude 3.5 Sonnet & Claude 3.5 Haiku: Model cepat, presisi, dan andal untuk koding dan analisis berkas.
    - Zhipu AI / THUDM:
      * GLM-5.3 & GLM-5 / GLM-4.5: Frontier penalaran logika, agentic workflows, & multimodal bahasa Mandarin-Inggris-Indonesia.
