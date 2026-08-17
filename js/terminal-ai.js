@@ -212,13 +212,13 @@ class TerminalAIEngine {
   }
 
   /**
-   * Main Ask method: First checks OmniRoute, then Cloud Gateway, then Local Semantic
+   * Main Ask method: First checks Local OmniRoute, then HF Cloud Gateway, then Vercel Serverless, then Local Semantic
    */
   async ask(query) {
     const cleanQuery = query.trim();
     if (!cleanQuery) return ["Silakan masukkan pertanyaan atau perintah."];
 
-    // 1. Try local OmniRoute (Opencode, Ollama Cloud, Nemotron, MiniMax)
+    // 1. Try local OmniRoute (when running on laptop)
     try {
       const omniRes = await this.tryOmniRoute(cleanQuery, this.currentModel);
       if (omniRes && omniRes.length > 0) {
@@ -226,7 +226,33 @@ class TerminalAIEngine {
       }
     } catch (_) {}
 
-    // 2. Try Vercel Serverless Function /api/chat with generous 30s timeout
+    // 2. Try Hugging Face Dedicated Cloud OmniRoute Gateway (24/7 Online)
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
+      const hfRes = await fetch('https://rflyyyf-omniroute-gateway.hf.space/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: this.currentModel,
+          messages: [{ role: 'user', content: cleanQuery }]
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (hfRes.ok) {
+        const data = await hfRes.json();
+        const content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.text;
+        if (content) {
+          return content.split('\n');
+        }
+      }
+    } catch (_) {}
+
+    // 3. Try Vercel Serverless Function /api/chat with generous 30s timeout
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30000);
@@ -255,13 +281,13 @@ class TerminalAIEngine {
       // Network timeout / offline -> fall back to local semantic engine
     }
 
-    // 3. High-Precision In-Browser Semantic Engine Fallback
+    // 4. High-Precision In-Browser Semantic Engine Fallback
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
       return semanticMatch;
     }
 
-    // 4. Generic friendly response if completely offline
+    // 5. Generic friendly response if completely offline
     return [
       "Maaf, saat ini koneksi ke model AI sedang mengalami kendala jaringan.",
       "Anda dapat mengulangi pertanyaan Anda kembali, atau menggunakan perintah CLI seperti 'skills', 'projects', 'certifs', 'benchmarks', 'contact'."
