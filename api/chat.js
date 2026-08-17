@@ -502,7 +502,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'project_architecture',
       effort: 'high',
-      omniCandidates: ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
         'nvidia/nemotron-3-ultra-550b-a55b:free',
         'google/gemma-4-31b-it:free',
@@ -519,7 +519,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
-      omniCandidates: ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
         'nvidia/nemotron-3-ultra-550b-a55b:free',
         'google/gemma-4-31b-it:free',
@@ -533,7 +533,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   return {
     category: 'standard_balanced',
     effort: 'medium',
-    omniCandidates: ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
+    omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
     openRouterCandidates: [
       'nvidia/nemotron-3-ultra-550b-a55b:free',
       'google/gemma-4-31b-it:free',
