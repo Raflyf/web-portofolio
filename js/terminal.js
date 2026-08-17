@@ -26,7 +26,7 @@ export function initTerminal() {
 
   // Restore saved model dropdown selection
   if (modelSelect) {
-    const savedModel = localStorage.getItem('ai_selected_model') || 'deepseek/deepseek-chat';
+    const savedModel = localStorage.getItem('ai_selected_model') || 'auto';
     modelSelect.value = savedModel;
 
     modelSelect.addEventListener('change', () => {

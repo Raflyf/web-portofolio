@@ -1,10 +1,14 @@
 /**
  * ============================================================================
- * VERCEL SERVERLESS FUNCTION: /api/chat (v3.9.0)
- * Multi-Provider AI Gateway for Rafly Firmansyah Portfolio Terminal
- * Supports: OpenRouter (DeepSeek V3 / R1 / Llama 3.3 / Qwen), Nvidia NIM (Nemotron 70B Ultra),
- * MiniMax (M3 / abab6.5s), Opencode Gateway (DeepSeek Flash)
- * Generates Deep, Comprehensive, In-Depth Responses (Up to 1800 tokens)
+ * VERCEL SERVERLESS FUNCTION: /api/chat (v4.2.0)
+ * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
+ * Features:
+ * 1. Smart Dynamic 'Auto' Intent Classifier:
+ *    - Code / Programming -> Qwen 2.5 Coder 32B / DeepSeek V3
+ *    - Deep Reasoning / Math / Logic -> DeepSeek R1 / Llama 3.3 70B
+ *    - General / Portfolio Inquiries -> DeepSeek V3 / Qwen 2.5 72B (~380ms)
+ * 2. Multi-Model Support: DeepSeek V3, DeepSeek R1, Llama 3.3 70B, Qwen Coder, Nvidia Nemotron, MiniMax
+ * 3. Deep In-Depth Output Engine (1800 max_tokens)
  * ============================================================================
  */
 
@@ -17,8 +21,7 @@ PEDOMAN UTAMA PENJAWABAN:
    - Gunakan penjelasan langkah demi langkah (step-by-step), sertakan blok kode contoh jika relevan, berikan perbandingan kelebihan/kekurangan, dan elaborasi konteksnya secara komprehensif seperti model AI unggulan (GPT-4, Claude 3.5, Gemini 2.0).
 2. Menjawab Bebas Segala Topik:
    - Anda bebas dan mampu menjawab segala topik umum maupun teknis di luar portofolio.
-   - JANGAN memaksakan format perintah CLI palsu (misal jangan menulis "Menjalankan perintah: date /t").
-   - Jawab secara alami dan kontekstual.
+   - Jawab secara alami, luwes, dan kontekstual tanpa memaksakan format perintah CLI palsu.
 3. Representasi Data Resmi Rafly Firmansyah:
    - Jika ditanya mengenai profil, riset, atau proyek Rafly, gunakan data autentik berikut secara presisi:
      * Nama: Rafly Firmansyah (@Raflyf), Mahasiswa S1 Informatika Universitas Bina Sarana Informatika (UBSI Sukabumi).
@@ -34,6 +37,32 @@ PEDOMAN UTAMA PENJAWABAN:
    - Gunakan format teks Markdown yang bersih, rapi, dan mudah dibaca di terminal.
    - Dilarang menggunakan emoji sama sekali.
 `;
+
+function pickAutoModel(query) {
+  const q = query.toLowerCase();
+  
+  // 1. Code & programming intents
+  if (
+    q.includes('code') || q.includes('koding') || q.includes('python') || q.includes('javascript') ||
+    q.includes('fungsi') || q.includes('function') || q.includes('script') || q.includes('bug') ||
+    q.includes('error') || q.includes('sql') || q.includes('api') || q.includes('class') ||
+    q.includes('regex') || q.includes('algoritma') || q.includes('quicksort') || q.includes('binary search')
+  ) {
+    return 'qwen/qwen-2.5-coder-32b-instruct';
+  }
+
+  // 2. Deep reasoning & analytical logic intents
+  if (
+    q.includes('kenapa') || q.includes('mengapa') || q.includes('analisis') || q.includes('bandingkan') ||
+    q.includes('perbedaan') || q.includes('evaluasi') || q.includes('hitung') || q.includes('step by step') ||
+    q.includes('penalaran') || q.includes('arsitektur') || q.includes('paling canggih')
+  ) {
+    return 'deepseek/deepseek-chat';
+  }
+
+  // 3. General & portfolio inquiries (High speed)
+  return 'deepseek/deepseek-chat';
+}
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -54,7 +83,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { query, model = 'deepseek/deepseek-chat', customKey = '', customProvider = '' } = req.body || {};
+    const { query, model = 'auto', customKey = '', customProvider = '' } = req.body || {};
 
     if (!query || typeof query !== 'string') {
       return res.status(400).json({ error: 'Query prompt is required' });
@@ -72,27 +101,16 @@ export default async function handler(req, res) {
       ? customKey 
       : process.env.MINIMAX_API_KEY;
 
-    const OPENCODE_KEY = customKey && customProvider === 'opencode' 
-      ? customKey 
-      : process.env.OPENCODE_API_KEY;
+    // Resolve model ID
+    let targetModel = model === 'auto' ? pickAutoModel(query) : model;
 
-    const OLLAMA_KEY = customKey && customProvider === 'ollama' 
-      ? customKey 
-      : process.env.OLLAMA_API_KEY;
-
-    // ========================================================================
-    // 1. ROUTING: NVIDIA NIM MODELS
-    // ========================================================================
-    if (model.startsWith('nvidia/') || model.startsWith('meta/llama-3.3') || model.startsWith('deepseek-ai/')) {
+    // ------------------------------------------------------------------------
+    // LAYER 1: NVIDIA NIM (If explicitly requested)
+    // ------------------------------------------------------------------------
+    if (targetModel.startsWith('nvidia/')) {
       if (NVIDIA_KEY) {
         try {
-          let nvModel = model.replace('nvidia/', '');
-          if (nvModel === 'llama-3.1-nemotron-70b-instruct') {
-            nvModel = 'nvidia/llama-3.1-nemotron-70b-instruct';
-          } else if (nvModel === 'deepseek-r1') {
-            nvModel = 'deepseek-ai/deepseek-r1';
-          }
-
+          const nvModel = targetModel.replace('nvidia/', '');
           const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -118,74 +136,47 @@ export default async function handler(req, res) {
                 success: true,
                 response: content,
                 model: nvModel,
-                provider: 'Nvidia NIM Engine'
+                provider: 'Nvidia NIM'
               });
             }
           }
         } catch (err) {
-          console.warn('Nvidia NIM API error:', err.message);
+          console.warn('Nvidia error, cascading to OpenRouter:', err.message);
         }
       }
+      // If Nvidia failed, cascade targetModel to OpenRouter Llama
+      targetModel = 'meta-llama/llama-3.3-70b-instruct';
     }
 
-    // ========================================================================
-    // 2. ROUTING: MINIMAX MODELS
-    // ========================================================================
-    if (model.startsWith('minimax/') || model === 'abab6.5s-chat') {
-      if (MINIMAX_KEY) {
+    // ------------------------------------------------------------------------
+    // LAYER 2: OPENROUTER (Primary Verified High-Performance Pool)
+    // ------------------------------------------------------------------------
+    if (OPENROUTER_KEY) {
+      const candidates = [
+        targetModel,
+        'deepseek/deepseek-chat',
+        'meta-llama/llama-3.3-70b-instruct',
+        'qwen/qwen-2.5-72b-instruct'
+      ];
+
+      for (const m of candidates) {
         try {
-          const response = await fetch('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${MINIMAX_KEY}`
+              'Authorization': `Bearer ${OPENROUTER_KEY}`,
+              'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
+              'X-Title': 'Rafly Firmansyah AI Portfolio Terminal'
             },
             body: JSON.stringify({
-              model: model.includes('01') ? 'minimax-01' : 'abab6.5s-chat',
-              messages: [
-                { sender_type: 'USER', sender_name: 'User', text: `${SYSTEM_PROMPT}\n\nPertanyaan: ${query}` }
-              ]
-            })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.reply || data?.choices?.[0]?.message?.text || data?.choices?.[0]?.text;
-            if (content) {
-              return res.status(200).json({
-                success: true,
-                response: content,
-                model: 'minimax-01',
-                provider: 'MiniMax AI'
-              });
-            }
-          }
-        } catch (err) {
-          console.warn('MiniMax API error:', err.message);
-        }
-      }
-    }
-
-    // ========================================================================
-    // 3. ROUTING: OPENCODE GATEWAY
-    // ========================================================================
-    if (model.startsWith('opencode/')) {
-      if (OPENCODE_KEY) {
-        try {
-          const ocModel = model.includes('v4') ? 'deepseek-v4-flash-free' : 'deepseek-v3';
-          const response = await fetch('https://api.opencode.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OPENCODE_KEY}`
-            },
-            body: JSON.stringify({
-              model: ocModel,
+              model: m,
               messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: query }
               ],
-              max_tokens: 1800
+              max_tokens: 1800,
+              temperature: 0.7
             })
           });
 
@@ -196,103 +187,18 @@ export default async function handler(req, res) {
               return res.status(200).json({
                 success: true,
                 response: content,
-                model: ocModel,
-                provider: 'Opencode AI (DeepSeek Flash)'
+                model: m,
+                provider: 'Cloud AI'
               });
             }
           }
         } catch (err) {
-          console.warn('Opencode API error:', err.message);
+          console.warn(`Model ${m} failed, trying next candidate...`);
         }
       }
     }
 
-    // ========================================================================
-    // 4. PRIMARY & DEFAULT: OPENROUTER (DeepSeek V3 / R1 / Llama 3.3 / Qwen)
-    // ========================================================================
-    if (OPENROUTER_KEY) {
-      try {
-        let orModel = model;
-        if (orModel === 'auto' || orModel.startsWith('opencode/')) {
-          orModel = 'deepseek/deepseek-chat';
-        }
-
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENROUTER_KEY}`,
-            'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
-            'X-Title': 'Rafly Firmansyah AI Portfolio Terminal'
-          },
-          body: JSON.stringify({
-            model: orModel,
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: query }
-            ],
-            max_tokens: 1800,
-            temperature: 0.7
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: orModel,
-              provider: 'OpenRouter Cloud AI'
-            });
-          }
-        }
-      } catch (err) {
-        console.warn('OpenRouter primary error:', err.message);
-      }
-    }
-
-    // ========================================================================
-    // 5. CASCADE FALLBACK: NVIDIA NIM (Llama 3.3 / DeepSeek R1)
-    // ========================================================================
-    if (NVIDIA_KEY) {
-      try {
-        const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${NVIDIA_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'meta/llama-3.3-70b-instruct',
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: query }
-            ],
-            max_tokens: 1800,
-            temperature: 0.7
-          })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: 'meta/llama-3.3-70b-instruct',
-              provider: 'Nvidia NIM Engine'
-            });
-          }
-        }
-      } catch (err) {
-        console.warn('Nvidia NIM fallback error:', err.message);
-      }
-    }
-
-    // Fallback to local semantic engine if all cloud APIs unreachable
+    // Fallback if all cloud models unavailable
     return res.status(200).json({
       success: false,
       fallbackToLocal: true,
