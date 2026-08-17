@@ -11,9 +11,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.21.0';
-import { initTerminal } from './terminal.js?v=10.21.0';
-import { telemetry } from './telemetry.js?v=10.21.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.22.0';
+import { initTerminal } from './terminal.js?v=10.22.0';
+import { telemetry } from './telemetry.js?v=10.22.0';
 
 document.addEventListener('DOMContentLoaded', () => {
   telemetry.init();
@@ -1029,3 +1029,184 @@ function initScrollSpy() {
 
   sections.forEach(sec => observer.observe(sec));
 }
+
+/* ==========================================================================
+   13. WEB INTERACTION AGENT DISPATCHER (window.portfolioAgent)
+   Allows AI and Terminal to interact directly with DOM, Modals, Forms & Nav
+   ========================================================================== */
+window.portfolioAgent = {
+  openProject(keyword) {
+    const q = String(keyword || '').toLowerCase().trim();
+    const proj = PROJECTS_DATA.find(p => 
+      p.id.toLowerCase().includes(q) || 
+      p.title.toLowerCase().includes(q) ||
+      (q.includes('plagiar') && p.id.includes('plagiarism')) ||
+      (q.includes('spam') && p.id.includes('spam')) ||
+      (q.includes('laser') && p.id.includes('laser')) ||
+      (q.includes('foto') && p.id.includes('foto')) ||
+      (q.includes('porto') && p.id.includes('portofolio'))
+    ) || PROJECTS_DATA[0];
+
+    if (proj) {
+      // Close terminal modal if currently open to show project modal cleanly
+      const termModal = document.getElementById('terminal-modal');
+      if (termModal && termModal.open) {
+        termModal.close();
+      }
+      openProjectModal(proj);
+      showToast(`Membuka detail proyek: ${proj.title}`);
+      return { success: true, message: `Membuka detail proyek: ${proj.title}`, data: proj };
+    }
+    return { success: false, message: `Proyek tidak ditemukan.` };
+  },
+
+  openCertificate(keyword) {
+    const q = String(keyword || '').toLowerCase().trim();
+    const cert = CERTIFICATES_DATA.find(c => 
+      c.id.toLowerCase().includes(q) || 
+      c.title.toLowerCase().includes(q) ||
+      c.issuer.toLowerCase().includes(q) ||
+      (q.includes('bnsp') && c.id.includes('bnsp')) ||
+      (q.includes('mikrotik') && c.id.includes('mikrotik')) ||
+      (q.includes('mtcna') && c.id.includes('mikrotik')) ||
+      (q.includes('python') && c.id.includes('python')) ||
+      (q.includes('cisco') && c.id.includes('cisco')) ||
+      (q.includes('cloud') && c.id.includes('cloud')) ||
+      (q.includes('security') && c.id.includes('security'))
+    ) || CERTIFICATES_DATA[0];
+
+    if (cert) {
+      const termModal = document.getElementById('terminal-modal');
+      if (termModal && termModal.open) {
+        termModal.close();
+      }
+      openCertModal(cert);
+      showToast(`Membuka kredensial sertifikat: ${cert.title}`);
+      return { success: true, message: `Membuka kredensial sertifikat: ${cert.title}`, data: cert };
+    }
+    return { success: false, message: `Sertifikat tidak ditemukan.` };
+  },
+
+  fillContactForm({ name, email, message } = {}) {
+    const nameInput = document.getElementById('contact-name');
+    const emailInput = document.getElementById('contact-email');
+    const msgInput = document.getElementById('contact-message');
+    const form = document.getElementById('contact-form');
+
+    if (name && nameInput) {
+      nameInput.value = name;
+      nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (email && emailInput) {
+      emailInput.value = email;
+      emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    if (message && msgInput) {
+      msgInput.value = message;
+      msgInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    const termModal = document.getElementById('terminal-modal');
+    if (termModal && termModal.open) {
+      termModal.close();
+    }
+
+    const contactSec = document.getElementById('contact');
+    if (contactSec) {
+      const topPos = contactSec.getBoundingClientRect().top + window.pageYOffset - 80;
+      smoothScrollTo(topPos, 700);
+    }
+
+    if (form) {
+      form.classList.add('agent-highlight-ring');
+      setTimeout(() => form.classList.remove('agent-highlight-ring'), 4500);
+    }
+    if (msgInput) {
+      setTimeout(() => msgInput.focus(), 750);
+    }
+
+    showToast('Form pesan & diskusi telah diisi otomatis oleh AI!');
+    return { success: true, message: 'Formulir pesan berhasil diisi dan diarahkan ke bagian Hubungi.' };
+  },
+
+  navigateTo(sectionId) {
+    const cleanId = String(sectionId || '').replace(/^#/, '').trim().toLowerCase();
+    const target = document.getElementById(cleanId);
+    if (target) {
+      const termModal = document.getElementById('terminal-modal');
+      if (termModal && termModal.open) {
+        termModal.close();
+      }
+      const topPos = target.getBoundingClientRect().top + window.pageYOffset - 80;
+      smoothScrollTo(topPos, 700);
+      target.classList.add('agent-highlight-pulse');
+      setTimeout(() => target.classList.remove('agent-highlight-pulse'), 3000);
+      showToast(`Navigasi ke bagian #${cleanId}`);
+      return { success: true, message: `Navigasi ke bagian #${cleanId}` };
+    }
+    return { success: false, message: `Bagian #${cleanId} tidak ditemukan.` };
+  },
+
+  openUrl(url) {
+    if (!url) return { success: false };
+    const cleanUrl = String(url).trim();
+    const win = window.open(cleanUrl, '_blank', 'noopener,noreferrer');
+    if (win) {
+      showToast(`Membuka tautan: ${cleanUrl}`);
+      return { success: true, message: `Membuka tautan eksternal: ${cleanUrl}` };
+    } else {
+      window.location.href = cleanUrl;
+      return { success: true, message: `Mengarahkan ke tautan: ${cleanUrl}` };
+    }
+  },
+
+  toggleTheme() {
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+      themeBtn.click();
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      showToast(`Tema tampilan diubah ke: ${currentTheme}`);
+      return { success: true, message: `Tema tampilan diubah ke: ${currentTheme}` };
+    }
+    return { success: false };
+  },
+
+  copyEmail() {
+    const copyBtn = document.getElementById('copy-email-btn');
+    if (copyBtn) {
+      copyBtn.click();
+      return { success: true, message: 'Email raflyfirmansyah02@gmail.com disalin ke clipboard.' };
+    }
+    return { success: false };
+  },
+
+  executeAction(type, payload = {}) {
+    const act = String(type || '').toUpperCase().trim();
+    switch (act) {
+      case 'OPEN_PROJECT':
+        return this.openProject(typeof payload === 'object' ? (payload.keyword || payload.id || payload.title) : payload);
+      case 'OPEN_CERTIFICATE':
+      case 'OPEN_CERTIF':
+      case 'OPEN_CERT':
+        return this.openCertificate(typeof payload === 'object' ? (payload.keyword || payload.id || payload.title) : payload);
+      case 'FILL_CONTACT':
+      case 'FILL_MESSAGE':
+        return this.fillContactForm(typeof payload === 'object' ? payload : { message: payload });
+      case 'NAVIGATE':
+      case 'SCROLL_TO':
+      case 'GOTO':
+        return this.navigateTo(typeof payload === 'object' ? (payload.section || payload.id) : payload);
+      case 'OPEN_URL':
+      case 'OPEN_LINK':
+      case 'OPEN_GITHUB':
+        return this.openUrl(typeof payload === 'object' ? payload.url : payload);
+      case 'TOGGLE_THEME':
+        return this.toggleTheme();
+      case 'COPY_EMAIL':
+        return this.copyEmail();
+      default:
+        return { success: false, message: `Aksi ${type} tidak dikenal.` };
+    }
+  }
+};
+

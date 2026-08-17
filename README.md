@@ -22,7 +22,16 @@ Dibangun dengan **HTML5 Semantik**, **Modern Vanilla CSS (OKLCH + Motion Tokens)
 - **Penguncian Bahasa Sesi (*Session Language Lock*):** Mengunci bahasa seluruh percakapan berdasarkan bahasa masukan pertama (Bahasa Indonesia / English) secara konsisten.
 - **Vercel Serverless Gateway (`api/chat.js`):** Menjaga kerahasiaan API Key dengan *Serverless Functions*, pembatasan muatan DOS, dan standar CORS W3C.
 
-### 2. Optimasi Responsif & Mobile Viewport Maximizer
+### 2. Engine Interaksi Web Langsung Berbasis AI Agent (`window.portfolioAgent`)
+- **Kontrol DOM Otomatis Berbasis Perintah AI:** Memungkinkan asisten AI dan terminal berinteraksi langsung dengan antarmuka web peramban pengguna secara nyata:
+  - `Membuka Modal Proyek`: Membuka jendela dialog detail spesifikasi arsitektur proyek (`[ACTION:OPEN_PROJECT:openplagiarism]`).
+  - `Membuka Kredensial Sertifikat`: Membuka modal kredensial dan penampil dokumen sertifikasi resmi (`[ACTION:OPEN_CERTIFICATE:bnsp]`).
+  - `Pengisian Otomatis Form Kontak & Diskusi`: Mengisi kolom nama, email, dan pesan pada formulir `#contact-form` serta mengarahkan layar dengan efek sorotan cincin emerald (`[ACTION:FILL_CONTACT:name=...&email=...&message=...]`).
+  - `Navigasi Halaman Presisi`: Menjalankan *smooth scroll* dinamis ke bagian mana pun di situs web (`#projects`, `#skills`, `#certificates`, `#about`, `#contact`, `#timeline`, `#benchmarks`).
+  - `Kontrol Tautan Eksternal & Tema`: Membuka profil/repositori GitHub resmi, mengubah mode tema tampilan (gelap/terang), dan menyalin email dengan 1 perintah.
+- **Badge Indikator Aksi Web (`.chat-action-badge`):** Memberikan konfirmasi visual instan pada balon percakapan terminal ketika sebuah aksi DOM berhasil dieksekusi.
+
+### 3. Optimasi Responsif & Mobile Viewport Maximizer
 - **Tampilan Full-Height Imersif di HP (`< 768px`):** Modal terminal pada perangkat mobile menggunakan `100dvh` dengan `flex: 1` penuh pada `.terminal-body` untuk memberikan ruang vertikal maksimal pada area percakapan chat.
 - **Pintasan Perintah Geser Horizontal:** Bilah pintasan (`.terminal-chips-bar`) disusun dalam 1 baris geser horizontal ramping (*horizontal scroll*) dengan scrollbar tersembunyi.
 - **Input Form Adaptif:** Memangkas padding dan menyembunyikan label prompt pada layar sempit (`< 480px`) agar kotak ketik mendapatkan lebar penuh.
