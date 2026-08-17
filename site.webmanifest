@@ -1,0 +1,21 @@
+{
+  "name": "Rafly Firmansyah — Portofolio Resmi",
+  "short_name": "Rafly Firmansyah",
+  "description": "Portofolio resmi Rafly Firmansyah (@Raflyf) — Mahasiswa S1 Informatika UBSI & AI/ML Software Developer.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0f17",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/assets/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

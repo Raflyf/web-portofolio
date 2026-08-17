@@ -1155,22 +1155,25 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .terminal-header {
-  background-color: var(--bg-secondary);
-  padding: 0.65rem var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--surface-card);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .terminal-title {
   font-family: var(--font-mono);
   font-size: var(--fs-caption);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .terminal-model-picker {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }
@@ -1180,6 +1183,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   font-size: var(--fs-caption);
   color: var(--accent-emerald);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .terminal-model-select {
@@ -1189,9 +1193,11 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   color: var(--text-heading);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-sm);
-  padding: 0.2rem 0.5rem;
+  padding: 0.25rem 0.5rem;
   outline: none;
   cursor: pointer;
+  max-width: 250px;
+  text-overflow: ellipsis;
   transition: all var(--duration-micro) var(--ease-out);
 }
 
