@@ -1,11 +1,10 @@
 /**
  * ============================================================================
- * TERMINAL AI ASSISTANT & KNOWLEDGE ENGINE (v4.8.0)
+ * TERMINAL AI ASSISTANT & KNOWLEDGE ENGINE (v5.3.0)
  * Hybrid Client-Side Engine for Developer Lab Simulator
  * Features:
- * 1. Hugging Face 24/7 Dedicated Cloud OmniRoute Gateway
- * 2. Vercel Serverless Multi-API Cloud Gateway (/api/chat)
- * 3. In-Browser Sub-15ms Exact & Semantic Pattern Engine for Offline Resilience
+ * 1. Vercel Serverless Multi-Provider AI Gateway (/api/chat)
+ * 2. In-Browser Sub-15ms Exact & Semantic Pattern Engine for Offline Resilience
  * ============================================================================
  */
 
@@ -419,52 +418,9 @@ class TerminalAIEngine {
       ];
     }
 
-    // 2. Secondary Fallback: Hugging Face Gradio Cloud Space (if no attachments)
-    const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
-    if (!hasAttachments) {
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
-
-        const base = 'https://rflyyyf-omniroute-gateway.hf.space';
-        const hfPost = await fetch(`${base}/gradio_api/call/chat_fn`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: [cleanQuery, []] }),
-          signal: controller.signal
-        });
-
-        if (hfPost.ok) {
-          const postData = await hfPost.json();
-          if (postData?.event_id) {
-            const eventRes = await fetch(`${base}/gradio_api/call/chat_fn/${postData.event_id}`, {
-              signal: controller.signal
-            });
-            clearTimeout(timeout);
-            if (eventRes.ok) {
-              const rawEvent = await eventRes.text();
-              const lines = rawEvent.split('\n');
-              for (const l of lines) {
-                if (l.startsWith('data: ')) {
-                  try {
-                    const arr = JSON.parse(l.slice(6));
-                    if (Array.isArray(arr) && arr.length > 0) {
-                      const text = arr[0];
-                      if (text && typeof text === 'string') {
-                        return text.trim().split('\n');
-                      }
-                    }
-                  } catch (_) {}
-                }
-              }
-            }
-          }
-        }
-        clearTimeout(timeout);
-      } catch (_) {}
     }
 
-    // 3. High-Precision In-Browser Semantic Engine Fallback
+    // 2. High-Precision In-Browser Semantic Engine Fallback
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
       return semanticMatch;
