@@ -24,6 +24,11 @@ class DashboardApp {
     this.selectedEventType = 'all';
     this.pollInterval = null;
     this.supabaseConfig = this.getSupabaseConfig();
+    this.memories = [];
+    this.memoryCurrentPage = 1;
+    this.memoryPageSize = 10;
+    this.tableCurrentPage = 1;
+    this.tablePageSize = 10;
   }
 
   cleanKey(val) {
@@ -946,54 +951,139 @@ class DashboardApp {
   async renderAIMemoryList() {
     const listEl = document.getElementById('ai-memories-list');
     const countEl = document.getElementById('ai-memory-total-count');
+    const pagEl = document.getElementById('ai-memories-pagination');
     if (!listEl) return;
 
     try {
       const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) {
         listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Supabase tidak terkonfigurasi.</div>`;
+        if (pagEl) pagEl.innerHTML = '';
         return;
       }
 
-      const res = await fetch(`${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=15`, {
+      const timestamp = Date.now();
+      const res = await fetch(`${config.url}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=500&_t=${timestamp}`, {
         headers: {
           'apikey': config.anonKey,
-          'Authorization': `Bearer ${config.anonKey}`
+          'Authorization': `Bearer ${config.anonKey}`,
+          'Accept': 'application/json'
         }
       });
 
       if (!res.ok) {
         listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Gagal memuat memori (HTTP ${res.status}).</div>`;
+        if (pagEl) pagEl.innerHTML = '';
         return;
       }
 
       const memories = await res.json();
-      if (!Array.isArray(memories) || memories.length === 0) {
+      this.memories = Array.isArray(memories) ? memories : [];
+
+      if (this.memories.length === 0) {
         listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Belum ada memori fakta yang tersimpan di database.</div>`;
         if (countEl) countEl.textContent = '0 Fakta';
+        if (pagEl) pagEl.innerHTML = '';
         return;
       }
 
-      if (countEl) countEl.textContent = `${memories.length} Fakta Terkini (Supabase RAG)`;
+      if (countEl) countEl.textContent = `${this.memories.length} Fakta Terkini (Supabase RAG)`;
 
-      listEl.innerHTML = memories.map(m => {
-        const dateStr = new Date(m.created_at).toLocaleString('id-ID', {
-          day: '2-digit', month: 'short', year: 'numeric',
-          hour: '2-digit', minute: '2-digit'
-        });
-
-        return `
-          <div class="ranked-item" style="background:var(--bg-primary);padding:0.75rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-card);display:flex;flex-direction:column;gap:0.35rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:var(--text-muted);flex-wrap:wrap;gap:0.5rem;">
-              <span style="color:var(--accent-emerald);font-family:var(--font-mono);font-weight:600;">Sesi: ${this.sanitize(m.session_id || 'unknown')}</span>
-              <span style="font-family:var(--font-mono);color:var(--text-dim);">${dateStr}</span>
-            </div>
-            <div style="color:var(--text-heading);font-size:0.825rem;line-height:1.5;">${this.sanitize(m.fact_text)}</div>
-          </div>
-        `;
-      }).join('');
+      this.renderPaginatedMemories();
     } catch (e) {
       listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Error memuat memori: ${this.sanitize(e.message)}</div>`;
+      if (pagEl) pagEl.innerHTML = '';
+    }
+  }
+
+  renderPaginatedMemories() {
+    const listEl = document.getElementById('ai-memories-list');
+    const pagEl = document.getElementById('ai-memories-pagination');
+    if (!listEl) return;
+
+    const total = this.memories.length;
+    const totalPages = Math.max(1, Math.ceil(total / this.memoryPageSize));
+    if (this.memoryCurrentPage > totalPages) this.memoryCurrentPage = totalPages;
+    if (this.memoryCurrentPage < 1) this.memoryCurrentPage = 1;
+
+    const startIdx = (this.memoryCurrentPage - 1) * this.memoryPageSize;
+    const endIdx = Math.min(startIdx + this.memoryPageSize, total);
+    const pageItems = this.memories.slice(startIdx, endIdx);
+
+    listEl.innerHTML = pageItems.map(m => {
+      const dateStr = new Date(m.created_at).toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      return `
+        <div class="ranked-item" style="background:var(--bg-primary);padding:0.75rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-card);display:flex;flex-direction:column;gap:0.35rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:var(--text-muted);flex-wrap:wrap;gap:0.5rem;">
+            <span style="color:var(--accent-emerald);font-family:var(--font-mono);font-weight:600;">Sesi: ${this.sanitize(m.session_id || 'unknown')}</span>
+            <span style="font-family:var(--font-mono);color:var(--text-dim);">${dateStr}</span>
+          </div>
+          <div style="color:var(--text-heading);font-size:0.825rem;line-height:1.5;">${this.sanitize(m.fact_text)}</div>
+        </div>
+      `;
+    }).join('');
+
+    if (pagEl) {
+      if (totalPages <= 1) {
+        pagEl.innerHTML = `<span class="pagination-info">Menampilkan ${total} dari ${total} fakta</span>`;
+        return;
+      }
+
+      let pageButtonsHtml = '';
+      for (let i = 1; i <= totalPages; i++) {
+        pageButtonsHtml += `
+          <button type="button" class="pagination-btn ${i === this.memoryCurrentPage ? 'active' : ''}" data-mempage="${i}" aria-label="Halaman ${i}">
+            ${i}
+          </button>
+        `;
+      }
+
+      pagEl.innerHTML = `
+        <span class="pagination-info">Menampilkan ${startIdx + 1}-${endIdx} dari ${total} fakta (Halaman ${this.memoryCurrentPage}/${totalPages})</span>
+        <div class="pagination-controls">
+          <button type="button" class="pagination-btn" id="mem-prev-btn" ${this.memoryCurrentPage === 1 ? 'disabled' : ''} aria-label="Halaman Sebelumnya">
+            Prev
+          </button>
+          ${pageButtonsHtml}
+          <button type="button" class="pagination-btn" id="mem-next-btn" ${this.memoryCurrentPage === totalPages ? 'disabled' : ''} aria-label="Halaman Selanjutnya">
+            Next
+          </button>
+        </div>
+      `;
+
+      const prevBtn = pagEl.querySelector('#mem-prev-btn');
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (this.memoryCurrentPage > 1) {
+            this.memoryCurrentPage--;
+            this.renderPaginatedMemories();
+          }
+        });
+      }
+
+      const nextBtn = pagEl.querySelector('#mem-next-btn');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (this.memoryCurrentPage < totalPages) {
+            this.memoryCurrentPage++;
+            this.renderPaginatedMemories();
+          }
+        });
+      }
+
+      pagEl.querySelectorAll('.pagination-btn[data-mempage]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const page = parseInt(btn.getAttribute('data-mempage'), 10);
+          if (page && page !== this.memoryCurrentPage) {
+            this.memoryCurrentPage = page;
+            this.renderPaginatedMemories();
+          }
+        });
+      });
     }
   }
 
@@ -1002,6 +1092,7 @@ class DashboardApp {
   // =========================================================================
   renderActivityTable() {
     const tbody = document.getElementById('activity-table-body');
+    const pagEl = document.getElementById('table-pagination');
     if (!tbody) return;
 
     let displayList = this.filteredEvents;
@@ -1020,7 +1111,9 @@ class DashboardApp {
       });
     }
 
-    if (displayList.length === 0) {
+    const total = displayList.length;
+
+    if (total === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">
@@ -1028,11 +1121,20 @@ class DashboardApp {
           </td>
         </tr>
       `;
+      if (pagEl) pagEl.innerHTML = '';
       return;
     }
 
+    const totalPages = Math.max(1, Math.ceil(total / this.tablePageSize));
+    if (this.tableCurrentPage > totalPages) this.tableCurrentPage = totalPages;
+    if (this.tableCurrentPage < 1) this.tableCurrentPage = 1;
+
+    const startIdx = (this.tableCurrentPage - 1) * this.tablePageSize;
+    const endIdx = Math.min(startIdx + this.tablePageSize, total);
+    const pageItems = displayList.slice(startIdx, endIdx);
+
     tbody.innerHTML = '';
-    displayList.slice(0, 100).forEach(e => {
+    pageItems.forEach(e => {
       const tr = document.createElement('tr');
       const timeStr = new Date(e.created_at).toLocaleString('id-ID', {
         day: '2-digit', month: 'short',
@@ -1053,6 +1155,72 @@ class DashboardApp {
 
       tbody.appendChild(tr);
     });
+
+    if (pagEl) {
+      if (totalPages <= 1) {
+        pagEl.innerHTML = `<span class="pagination-info">Menampilkan ${total} dari ${total} aktivitas</span>`;
+        return;
+      }
+
+      let pageButtonsHtml = '';
+      const maxButtons = 7;
+      let startPage = Math.max(1, this.tableCurrentPage - Math.floor(maxButtons / 2));
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+      if (endPage - startPage + 1 < maxButtons) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pageButtonsHtml += `
+          <button type="button" class="pagination-btn ${i === this.tableCurrentPage ? 'active' : ''}" data-tablepage="${i}" aria-label="Halaman ${i}">
+            ${i}
+          </button>
+        `;
+      }
+
+      pagEl.innerHTML = `
+        <span class="pagination-info">Menampilkan ${startIdx + 1}-${endIdx} dari ${total} aktivitas (Halaman ${this.tableCurrentPage}/${totalPages})</span>
+        <div class="pagination-controls">
+          <button type="button" class="pagination-btn" id="table-prev-btn" ${this.tableCurrentPage === 1 ? 'disabled' : ''} aria-label="Halaman Sebelumnya">
+            Prev
+          </button>
+          ${pageButtonsHtml}
+          <button type="button" class="pagination-btn" id="table-next-btn" ${this.tableCurrentPage === totalPages ? 'disabled' : ''} aria-label="Halaman Selanjutnya">
+            Next
+          </button>
+        </div>
+      `;
+
+      const prevBtn = pagEl.querySelector('#table-prev-btn');
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (this.tableCurrentPage > 1) {
+            this.tableCurrentPage--;
+            this.renderActivityTable();
+          }
+        });
+      }
+
+      const nextBtn = pagEl.querySelector('#table-next-btn');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (this.tableCurrentPage < totalPages) {
+            this.tableCurrentPage++;
+            this.renderActivityTable();
+          }
+        });
+      }
+
+      pagEl.querySelectorAll('.pagination-btn[data-tablepage]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const page = parseInt(btn.getAttribute('data-tablepage'), 10);
+          if (page && page !== this.tableCurrentPage) {
+            this.tableCurrentPage = page;
+            this.renderActivityTable();
+          }
+        });
+      });
+    }
   }
 
   sanitize(str) {
@@ -1348,6 +1516,7 @@ class DashboardApp {
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         this.searchTerm = e.target.value;
+        this.tableCurrentPage = 1;
         this.renderActivityTable();
       });
     }
@@ -1356,6 +1525,7 @@ class DashboardApp {
     if (typeFilter) {
       typeFilter.addEventListener('change', (e) => {
         this.selectedEventType = e.target.value;
+        this.tableCurrentPage = 1;
         this.renderActivityTable();
       });
     }
