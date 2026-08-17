@@ -735,8 +735,12 @@ export function initTerminal() {
         if (authorEl && terminalAI.lastExecutionInfo) {
           const info = terminalAI.lastExecutionInfo;
           const cleanModel = info.resolvedModel.split('/').pop().replace(/-/g, ' ').toUpperCase();
+          const cleanReq = (info.requestedModel || '').split('/').pop().replace(/-/g, ' ').toUpperCase();
+
           if (info.isAuto) {
             authorEl.textContent = `⚡ Auto Router ➔ ${cleanModel} (${info.provider})`;
+          } else if (info.isFailover) {
+            authorEl.textContent = `⚡ ${cleanReq} ➔ Fallback: ${cleanModel}`;
           } else {
             authorEl.textContent = `⚡ ${cleanModel} (${info.provider})`;
           }
