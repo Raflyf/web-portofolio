@@ -2,7 +2,8 @@
  * ============================================================================
  * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR
  * CLI Playground & Natural Language AI Assistant for Rafly Firmansyah Portfolio
- * With Multi-API Cascade (DeepSeek, Groq, Gemini, Ollama) & Local Semantic Fallback
+ * With Multi-API Cascade (OpenRouter/DeepSeek, Nvidia, MiniMax, Ollama)
+ * & In-Browser Local Semantic Knowledge Fallback
  * ============================================================================
  */
 
@@ -29,8 +30,10 @@ export function initTerminal() {
       "  projects     - Daftar proyek GitHub open-source",
       "  certifs      - Daftar sertifikat & kredensial terverifikasi (10 Sertifikat)",
       "  benchmarks   - Metrik pengujian model riset ML/AI",
+      "  model        - Pilih/ganti model AI (DeepSeek, Llama3, Nvidia, MiniMax, dll)",
       "  aistatus     - Status engine AI & provider aktif",
-      "  setkey       - Simpan API key (contoh: setkey openrouter <key>)",
+      "  setkey       - Masukkan API key pribadi Anda di browser ini",
+      "  clearkey     - Hapus API key pribadi dari browser",
       "  telemetry    - Portal monitoring analitik & trafik admin",
       "  contact      - Informasi kontak resmi",
       "  whoami       - Status sesi saat ini",
@@ -108,22 +111,9 @@ export function initTerminal() {
     whoami: () => [
       "visitor@portfolio-client: guest (read-only privilege level)"
     ],
-    aistatus: () => {
-      const status = terminalAI.getStatus();
-      return [
-        "[AI ENGINE & PROVIDER POOL STATUS]",
-        "----------------------------------------------------------------",
-        `System Status        : ${status.status}`,
-        `Configured Providers : ${status.configuredProviders.length > 0 ? status.configuredProviders.join(', ') : 'Default Public Cloud & Local Engine'}`,
-        `Local Fallback Engine: ${status.fallbackEngine}`,
-        "",
-        "Anda dapat menyimpan API Key pribadi menggunakan perintah:",
-        "  $ setkey openrouter <api-key>",
-        "  $ setkey groq <api-key>",
-        "  $ setkey gemini <api-key>",
-        "  $ setkey deepseek <api-key>"
-      ];
-    },
+    aistatus: () => terminalAI.getStatus(),
+    model: () => terminalAI.setModel(''),
+    clearkey: () => terminalAI.clearKey(),
     clear: () => {
       terminalBody.innerHTML = '';
       return [];
@@ -164,7 +154,7 @@ export function initTerminal() {
 
     const cmdLower = trimmed.toLowerCase();
 
-    // Check built-in CLI commands
+    // Built-in single keyword commands
     if (COMMAND_REGISTRY[cmdLower]) {
       telemetry.logEvent('terminal_cmd', cmdLower, `Perintah Terminal: ${cmdLower}`);
       const outputLines = COMMAND_REGISTRY[cmdLower]();
@@ -173,25 +163,35 @@ export function initTerminal() {
       return;
     }
 
-    // Check setkey command: setkey <provider> <key>
-    if (cmdLower.startsWith('setkey ')) {
-      const parts = trimmed.split(/\s+/);
-      if (parts.length >= 3) {
-        const provider = parts[1];
-        const key = parts.slice(2).join(' ');
-        const msg = terminalAI.setKey(provider, key);
-        appendLine(msg);
-      } else {
-        appendLine("Format perintah salah. Contoh: setkey openrouter sk-or-v1-...");
-      }
+    // Command: model <name>
+    if (cmdLower.startsWith('model ')) {
+      const modelName = trimmed.slice(6).trim();
+      const output = terminalAI.setModel(modelName);
+      output.forEach(line => appendLine(line));
       appendLine("");
       return;
     }
 
-    // Process via AI Engine (Multi-API Cascade with Local Semantic Fallback)
+    // Command: setkey <key> or setkey <provider> <key>
+    if (cmdLower.startsWith('setkey ')) {
+      const parts = trimmed.split(/\s+/);
+      let output;
+      if (parts.length === 2) {
+        output = terminalAI.setKey(parts[1]);
+      } else if (parts.length >= 3) {
+        output = terminalAI.setKey(parts[1], parts.slice(2).join(' '));
+      } else {
+        output = ["Format: setkey <api-key> atau setkey <provider> <api-key>"];
+      }
+      output.forEach(line => appendLine(line));
+      appendLine("");
+      return;
+    }
+
+    // Process via AI Engine (Vercel Serverless Multi-API Gateway + In-Browser Semantic Fallback)
     telemetry.logEvent('terminal_ai_query', trimmed.slice(0, 40), `Pertanyaan AI: ${trimmed}`);
 
-    const thinkingLine = appendLine("[AI Assistant] Menganalisis respon...", false, '', true);
+    const thinkingLine = appendLine("[AI Assistant] Menghubungi mesin kecerdasan buatan...", false, '', true);
 
     try {
       const responses = await terminalAI.ask(trimmed);
@@ -204,15 +204,15 @@ export function initTerminal() {
       if (thinkingLine && thinkingLine.parentNode) {
         thinkingLine.remove();
       }
-      appendLine(`[AI Fallback] ${err.message || 'Terjadi kendala jaringan. Mengalihkan ke data lokal.'}`);
+      appendLine(`[AI Fallback] Terjadi kendala respon. Mengalihkan ke database lokal.`);
     }
 
     appendLine("");
   }
 
   // Initial welcome message
-  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.4.0 — AI Powered]");
-  appendLine("Ketik perintah CLI ('help', 'skills') atau tanyakan apapun dengan bahasa alami.");
+  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.5.0 — Multi-AI Cascade]");
+  appendLine("Ketik 'help' untuk daftar perintah atau tanyakan apapun dengan bahasa alami.");
   appendLine("");
 
   // Form submit listener
