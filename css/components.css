@@ -1750,8 +1750,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 
 .floating-terminal-btn {
   position: fixed;
-  bottom: 2rem;
-  right: 5.75rem;
+  bottom: 5.75rem;
+  right: 2rem;
   height: 3rem;
   padding: 0 1.15rem;
   border-radius: var(--radius-full);
@@ -1805,8 +1805,15 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 @media (max-width: 768px) {
+  .floating-back-to-top {
+    bottom: 1.5rem;
+    right: 1.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
   .floating-terminal-btn {
-    bottom: 5.5rem;
+    bottom: 4.85rem;
     right: 1.25rem;
     padding: 0;
     width: 2.75rem;
