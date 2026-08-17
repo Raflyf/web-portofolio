@@ -224,14 +224,55 @@ class TerminalAIEngine {
 
       clearTimeout(timeout);
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.response) {
-          return data.response.split('\n');
-        }
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.success && data?.response) {
+        return data.response.split('\n');
       }
-    } catch (_) {
-      // Network timeout / offline -> fall back to Hugging Face or local semantic engine
+
+      // Check for high-priority local semantic knowledge match first
+      const semanticMatch = this.checkSemanticMatch(cleanQuery);
+      if (semanticMatch) {
+        return semanticMatch;
+      }
+
+      // Dynamic Backend Error Display
+      if (data && !data.success) {
+        const errorLines = [
+          `[ERROR GATEWAY: ${data.error || 'Kegagalan Pemrosesan Model AI'}]`,
+          `----------------------------------------------------------------`,
+          `Model Aktif : ${data.model || this.currentModel}`,
+          `Status HTTP : ${res.status} ${res.statusText || ''}`
+        ];
+
+        if (Array.isArray(data.details) && data.details.length > 0) {
+          errorLines.push(`Rincian Provider Kegagalan:`);
+          data.details.forEach(d => errorLines.push(`  - ${d}`));
+        } else if (data.message) {
+          errorLines.push(`Pesan Sistem : ${data.message}`);
+        }
+
+        errorLines.push("");
+        errorLines.push("Anda dapat beralih ke model AI lain pada menu dropdown di atas atau mengulangi perintah.");
+        return errorLines;
+      }
+    } catch (netErr) {
+      if (netErr.name === 'AbortError') {
+        return [
+          `[TIMEOUT / 45 Detik]: Permintaan ke model AI melebihi batas waktu 45 detik.`,
+          `Model sedang memproses komputasi berat. Silakan coba kembali atau pilih model lain.`
+        ];
+      }
+
+      const semanticMatch = this.checkSemanticMatch(cleanQuery);
+      if (semanticMatch) {
+        return semanticMatch;
+      }
+
+      return [
+        `[CLIENT NETWORK ERROR]: Gagal terhubung ke endpoint /api/chat (${netErr.message}).`,
+        `Pastikan koneksi internet stabil atau nonaktifkan pemblokir skrip.`
+      ];
     }
 
     // 2. Secondary Fallback: Hugging Face Gradio Cloud Space (if no attachments)
