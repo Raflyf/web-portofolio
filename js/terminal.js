@@ -404,7 +404,8 @@ export function initTerminal() {
       return placeholder;
     });
 
-    // 3. Parse Markdown Tables
+    // 3. Protect Markdown Tables
+    const tableBlocks = [];
     content = content.replace(/((?:^[ \t]*\|[^\n]+\|[ \t]*\n?)+)/gm, (tableMatch) => {
       const rawLines = tableMatch.trim().split('\n').map(l => l.trim()).filter(l => l.startsWith('|') && l.endsWith('|'));
       if (rawLines.length < 2) return tableMatch;
@@ -420,26 +421,33 @@ export function initTerminal() {
       const headers = parseRow(rawLines[0]);
       const bodyRows = rawLines.slice(2).map(parseRow);
 
-      let tableHtml = `
-        <div class="terminal-table-wrapper">
-          <table class="terminal-table">
-            <thead>
-              <tr>
-                ${headers.map(h => `<th>${h}</th>`).join('')}
-              </tr>
-            </thead>
-            <tbody>
-              ${bodyRows.map((cols) => `
-                <tr>
-                  ${cols.map(c => `<td>${c}</td>`).join('')}
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
+      const placeholder = `§§TABLE_BLOCK_${tableBlocks.length}§§`;
+      const formatCell = (c) => {
+        return c
+          .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
+          .replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:0.85em;">$1</code>');
+      };
 
-      return tableHtml;
+      const tableHtml = `
+<div class="terminal-table-wrapper">
+  <table class="terminal-table">
+    <thead>
+      <tr>
+        ${headers.map(h => `<th>${formatCell(h)}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${bodyRows.map((cols) => `
+        <tr>
+          ${cols.map(c => `<td>${formatCell(c)}</td>`).join('')}
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+</div>`;
+
+      tableBlocks.push(tableHtml);
+      return placeholder;
     });
 
     // 4. Process lines for Typography & Headings
@@ -447,7 +455,7 @@ export function initTerminal() {
     const processedLines = lines.map(line => {
       let l = line.trim();
       if (!l) return '<div style="height:0.35rem;"></div>';
-      if (l.startsWith('§§CODE_BLOCK_') || l.startsWith('<div class="terminal-table-wrapper"')) return l;
+      if (l.startsWith('§§CODE_BLOCK_') || l.startsWith('§§TABLE_BLOCK_')) return l;
 
       // Horizontal Rule
       if (/^(\-{3,}|\*{3,}|_{3,})$/.test(l)) {
@@ -496,9 +504,12 @@ export function initTerminal() {
       .replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>')
       .replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:2px 6px;border-radius:4px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.85em;font-weight:600;">$1</code>');
 
-    // Restore Code blocks
+    // Restore Code and Table blocks
     codeBlocks.forEach((cb, idx) => {
       content = content.replace(`§§CODE_BLOCK_${idx}§§`, cb);
+    });
+    tableBlocks.forEach((tb, idx) => {
+      content = content.replace(`§§TABLE_BLOCK_${idx}§§`, tb);
     });
 
     return content;
