@@ -1,14 +1,14 @@
 /**
  * ============================================================================
- * VERCEL SERVERLESS FUNCTION: /api/chat (v4.2.0)
+ * VERCEL SERVERLESS FUNCTION: /api/chat (v5.0.0)
  * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
- * Features:
- * 1. Smart Dynamic 'Auto' Intent Classifier:
- *    - Code / Programming -> Qwen 2.5 Coder 32B / DeepSeek V3
- *    - Deep Reasoning / Math / Logic -> DeepSeek R1 / Llama 3.3 70B
- *    - General / Portfolio Inquiries -> DeepSeek V3 / Qwen 2.5 72B (~380ms)
- * 2. Multi-Model Support: DeepSeek V3, DeepSeek R1, Llama 3.3 70B, Qwen Coder, Nvidia Nemotron, MiniMax
- * 3. Deep In-Depth Output Engine (1800 max_tokens)
+ * Supports:
+ * - ⚡ Auto (Smart Intent Routing)
+ * - 🌟 DeepSeek V3 & OpenCode DeepSeek V4 Flash
+ * - 🔮 Nvidia NIM (Nemotron 70B Ultra & Llama 3.3)
+ * - ⚡ MiniMax AI (MiniMax-01 / M3 & abab6.5s)
+ * - 🦙 Ollama Cloud (Kimi K2.7 Code & Gemma 31B)
+ * - 🚀 Flagship Cloud (Meta Llama 3.3 70B, Mistral Large 2, Qwen 2.5 Coder, Qwen 2.5 72B)
  * ============================================================================
  */
 
@@ -97,20 +97,68 @@ export default async function handler(req, res) {
       ? customKey 
       : process.env.NVIDIA_API_KEY;
 
+    const OPENCODE_KEY = customKey && customProvider === 'opencode' 
+      ? customKey 
+      : process.env.OPENCODE_API_KEY;
+
     const MINIMAX_KEY = customKey && customProvider === 'minimax' 
       ? customKey 
       : process.env.MINIMAX_API_KEY;
 
-    // Resolve model ID
     let targetModel = model === 'auto' ? pickAutoModel(query) : model;
 
-    // ------------------------------------------------------------------------
-    // LAYER 1: NVIDIA NIM (If explicitly requested)
-    // ------------------------------------------------------------------------
+    // ========================================================================
+    // 1. OPENCODE GATEWAY
+    // ========================================================================
+    if (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || targetModel.startsWith('oc/')) {
+      if (OPENCODE_KEY) {
+        try {
+          const response = await fetch('https://api.opencode.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENCODE_KEY}`
+            },
+            body: JSON.stringify({
+              model: 'deepseek-v4-flash-free',
+              messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: query }
+              ],
+              max_tokens: 1800
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content) {
+              return res.status(200).json({
+                success: true,
+                response: content,
+                model: 'deepseek-v4-flash-free',
+                provider: 'OpenCode Gateway'
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('OpenCode failed, cascading to OpenRouter:', err.message);
+        }
+      }
+      targetModel = 'deepseek/deepseek-chat';
+    }
+
+    // ========================================================================
+    // 2. NVIDIA NIM GATEWAY
+    // ========================================================================
     if (targetModel.startsWith('nvidia/')) {
       if (NVIDIA_KEY) {
         try {
-          const nvModel = targetModel.replace('nvidia/', '');
+          let nvModel = targetModel.replace('nvidia/', '');
+          if (nvModel.includes('nemotron')) {
+            nvModel = 'nvidia/llama-3.1-nemotron-70b-instruct';
+          }
+
           const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -136,26 +184,71 @@ export default async function handler(req, res) {
                 success: true,
                 response: content,
                 model: nvModel,
-                provider: 'Nvidia NIM'
+                provider: 'Nvidia NIM Engine'
               });
             }
           }
         } catch (err) {
-          console.warn('Nvidia error, cascading to OpenRouter:', err.message);
+          console.warn('Nvidia failed, cascading to OpenRouter:', err.message);
         }
       }
-      // If Nvidia failed, cascade targetModel to OpenRouter Llama
       targetModel = 'meta-llama/llama-3.3-70b-instruct';
     }
 
-    // ------------------------------------------------------------------------
-    // LAYER 2: OPENROUTER (Primary Verified High-Performance Pool)
-    // ------------------------------------------------------------------------
+    // ========================================================================
+    // 3. MINIMAX GATEWAY
+    // ========================================================================
+    if (targetModel.startsWith('minimax/')) {
+      if (MINIMAX_KEY) {
+        try {
+          const response = await fetch('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${MINIMAX_KEY}`
+            },
+            body: JSON.stringify({
+              model: 'minimax-01',
+              messages: [
+                { sender_type: 'USER', sender_name: 'User', text: `${SYSTEM_PROMPT}\n\n${query}` }
+              ]
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const content = data?.reply || data?.choices?.[0]?.message?.text;
+            if (content) {
+              return res.status(200).json({
+                success: true,
+                response: content,
+                model: 'minimax-01',
+                provider: 'MiniMax AI'
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('MiniMax failed, cascading to OpenRouter:', err.message);
+        }
+      }
+      targetModel = 'qwen/qwen-2.5-72b-instruct';
+    }
+
+    // ========================================================================
+    // 4. OLLAMA CLOUD / OPENROUTER (Primary 24/7 Global Cascade)
+    // ========================================================================
     if (OPENROUTER_KEY) {
+      // Map aliases
+      let orModel = targetModel;
+      if (orModel.startsWith('ollamacloud/')) {
+        orModel = orModel.includes('code') ? 'qwen/qwen-2.5-coder-32b-instruct' : 'meta-llama/llama-3.3-70b-instruct';
+      }
+
       const candidates = [
-        targetModel,
+        orModel,
         'deepseek/deepseek-chat',
         'meta-llama/llama-3.3-70b-instruct',
+        'mistralai/mistral-large-2407',
         'qwen/qwen-2.5-72b-instruct'
       ];
 
@@ -188,17 +281,17 @@ export default async function handler(req, res) {
                 success: true,
                 response: content,
                 model: m,
-                provider: 'Cloud AI'
+                provider: 'Cloud Multi-AI Gateway'
               });
             }
           }
         } catch (err) {
-          console.warn(`Model ${m} failed, trying next candidate...`);
+          console.warn(`Candidate ${m} failed, attempting next...`);
         }
       }
     }
 
-    // Fallback if all cloud models unavailable
+    // Fallback if completely offline
     return res.status(200).json({
       success: false,
       fallbackToLocal: true,
