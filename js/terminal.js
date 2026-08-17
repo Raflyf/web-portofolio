@@ -659,6 +659,21 @@ export function initTerminal() {
         thinkingLine.remove();
       }
 
+      // Update AI Bubble Header with accurately resolved model & provider
+      if (aiContainer) {
+        const bubbleEl = aiContainer.closest('.chat-msg__bubble');
+        const authorEl = bubbleEl ? bubbleEl.querySelector('.chat-msg__author--ai span') : null;
+        if (authorEl && terminalAI.lastExecutionInfo) {
+          const info = terminalAI.lastExecutionInfo;
+          const cleanModel = info.resolvedModel.split('/').pop().replace(/-/g, ' ').toUpperCase();
+          if (info.isAuto) {
+            authorEl.textContent = `⚡ Auto Router ➔ ${cleanModel} (${info.provider})`;
+          } else {
+            authorEl.textContent = `⚡ ${cleanModel} (${info.provider})`;
+          }
+        }
+      }
+
       await streamOutputLines(responses, aiContainer);
     } catch (err) {
       if (thinkingLine && thinkingLine.parentNode) {
