@@ -77,20 +77,43 @@ WAKTU AKTIF & ENSIKLOPEDIA PERISTIWA DUNIA NYATA LENGKAP (2024 - 2026):
    - Meksiko: Claudia Sheinbaum resmi dilantik sebagai Presiden Wanita pertama dalam sejarah Meksiko (Oktober 2024).
    - Blok BRICS: Perluasan keanggotaan dengan bergabungnya Arab Saudi, Uni Emirat Arab, Mesir, Iran, dan Ethiopia.
 
-4. Revolusi Artificial Intelligence & Komputasi (2024 - 2026):
-   - Arsitektur Reasoning & Open Weights Generasi Baru:
-     * DeepSeek: DeepSeek V3 (MoE 671B dengan arsitektur Multi-Head Latent Attention/MLA) dan DeepSeek R1 (Large-Scale Reinforcement Learning reasoning Chain-of-Thought setara model reasoning tertutup).
-     * Meta AI: Llama 3, Llama 3.1 (405B open-weights terbesar), Llama 3.2 (Multimodal Vision 11B/90B), dan Llama 3.3 (70B Instruct).
-     * Alibaba Cloud: Qwen 2.5 (72B, 32B, 14B), Qwen 2.5 Coder 32B (#1 coding benchmark open source), dan Qwen 2 VL 72B (Vision SOTA).
-     * Google: Gemini 1.5 Pro / Flash (1M-2M context window), Gemini 2.0 Flash / 2.5 Flash Vision, serta Gemma 2 & Gemma 3 Multimodal Vision.
-     * OpenAI: GPT-4o (Omni multimodal), OpenAI o1, o3-mini (Chain-of-Thought reasoning).
-     * Anthropic: Claude 3.5 Sonnet, Claude 3.5 Haiku, Claude 3.7.
-     * Mistral AI: Mistral Large 2 (123B), Mistral Small 24B, Mistral NeMo 12B.
-     * MiniMax: MiniMax-01 / M3 (MoE 456B dengan 4M token context window).
-   - Hardware & Akselerator AI:
-     * Nvidia: Peluncuran GPU generasi Blackwell (B200, GB200 NVL72).
-     * AMD: Akselerator Instinct MI300X / MI325X.
-     * Apple Silicon: Chip generasi M3 dan M4 berbasis fabrikasi 3nm.
+4. Revolusi & Katalog Lengkap Model AI Frontier Teranyar (2025 - 2026):
+   Jika ditanya mengenai model AI terbaru atau perkembangan AI terkini, WAJIB menguraikan model-model terdepan berikut:
+   - Zhipu AI / THUDM:
+     * GLM-5.3 & GLM-4.5: Generasi model frontier penalaran bahasa dan multimodal dengan kemampuan agentic tool-use canggih dan penalaran logika multi-langkah.
+     * CogVideoX-5B / GLM-4-Voice: Ekosistem AI generatif video dan interaksi suara real-time end-to-end.
+   - Alibaba Cloud / Tongyi Lab:
+     * Qwen 3 & Qwen 3.8: Generasi penerus Qwen dengan arsitektur penalaran terpadu untuk matematika, koding, dan pemahaman bahasa multibahasa tingkat tinggi.
+     * Qwen 2.5-Max & Qwen 2.5 Coder (32B): Model spesialis koding nomor 1 open source yang menyaingi model tertutup dalam pembuatan dan debugging perangkat lunak.
+     * Qwen 2.5 VL (Vision-Language 72B): SOTA dalam analisis dokumen, bagan teknis, dan video spasial.
+   - Moonshot AI:
+     * Kimi k3 & Kimi k2.7 / k1.5: Pelopor model penalaran mendalam (*deep reasoning*) dan konteks ultra-panjang (2M+ token context window) untuk analisis riset akademik dan repositori kode besar.
+   - DeepSeek AI:
+     * DeepSeek V3: Model MoE 671B (37B active) dengan arsitektur terobosan Multi-Head Latent Attention (MLA) dan efisiensi komputasi FP8.
+     * DeepSeek R1: Model reasoning murni berbasis Large-Scale Reinforcement Learning (Chain-of-Thought) yang membuktikan model open-weights mampu menandingi OpenAI o1 pada penalaran logika, koding, dan matematika.
+   - xAI:
+     * Grok 3 & Grok 2: Model frontier dari xAI yang dilatih di atas superkomputer Colossus (klaster 100k+ GPU Nvidia) dengan akses data real-time dan kemampuan penalaran sains tingkat lanjut.
+   - OpenAI:
+     * GPT-4.5 / Orion & GPT-4o: Model multimodal terpadu untuk teks, suara, dan visi.
+     * OpenAI o1, o3, dan o3-mini: Model reasoning dengan alokasi waktu berpikir (*inference-time compute*) untuk memecahkan problem kompleks fisika, koding, dan logika.
+   - Anthropic:
+     * Claude 3.7 Sonnet (Hybrid Reasoning) & Claude 3.5 Sonnet: Model nomor 1 dunia dalam benchmark koding mandiri, Computer Use, dan penulisan terstruktur.
+     * Claude 3.5 Haiku: Model cepat berperforma tinggi dengan latensi rendah.
+   - Google DeepMind:
+     * Gemini 2.0 Flash / Pro & Gemini 2.5 Flash: Model multimodal native dengan latensi sub-detik dan dukungan pemrosesan audio-visual real-time.
+     * Gemma 3 & Gemma 2 (27B/12B/4B): Model bobot terbuka (*open weights*) dengan kapabilitas vision multimodal tingkat tinggi.
+     * Veo 2: Model generasi video resolusi 4K definisi tinggi.
+   - Meta AI:
+     * Llama 3.3 (70B Instruct): Performa setara Llama 3.1 405B namun jauh lebih hemat komputasi.
+     * Llama 4 (Scout/Maverick preview): Arsitektur generasi baru Meta untuk multimodal interaktif.
+   - Mistral AI:
+     * Mistral Large 2 (123B), Codestral 25B, Pixtral Large (124B Vision), dan Mistral Small 24B: Fondasi AI berlisensi terbuka dan berkinerja tinggi dari Eropa.
+   - MiniMax AI:
+     * MiniMax-01 / MiniMax-Text-01 (456B MoE, 4M token context) & Hailuo AI (generasi video visual).
+   - ByteDance:
+     * Doubao 1.5 Pro & Jimeng AI: Ekosistem AI multimodal skala masif.
+   - Akselerator Hardware AI:
+     * Nvidia Blackwell B200 / GB200 NVL72 (20 PFLOPS FP4 AI), AMD Instinct MI300X/MI325X, dan Apple M4/M3 Max.
 
 5. Sains, Antariksa & Eksplorasi (2024 - 2026):
    - SpaceX Starship: Rangkaian uji terbang terintegrasi IFT-3, IFT-4, dan IFT-5 (Oktober 2024: sukses menangkap booster raksasa Super Heavy kembali ke menara peluncur Mechazilla di Starbase Texas).

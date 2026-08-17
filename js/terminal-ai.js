@@ -147,6 +147,69 @@ const SEMANTIC_PATTERNS = [
     ]
   },
   {
+    keywords: ['model ai', 'ai terbaru', 'model ai terbaru', 'ai 2026', 'frontier ai', 'llm terbaru'],
+    respond: () => [
+      "[KATALOG & REVOLUSI MODEL AI FRONTIER TERBARU 2025 - 2026]",
+      "----------------------------------------------------------------",
+      "Berikut adalah generasi model AI teranyar dan tercanggih di dunia:",
+      "",
+      "1. Zhipu AI / THUDM :",
+      "   • GLM-5.3 & GLM-4.5 : Model penalaran logika & agentic tool-use terdepan.",
+      "   • CogVideoX-5B      : Model video generatif open weights sinematik.",
+      "",
+      "2. Alibaba Cloud / Tongyi Lab :",
+      "   • Qwen 3 & Qwen 3.8 : Generasi arsitektur penalaran terpadu matematika & bahasa.",
+      "   • Qwen 2.5 Coder 32B : Juara #1 coding benchmark open source.",
+      "   • Qwen 2.5 VL 72B   : Multimodal Vision teratas untuk bagan, dokumen & spasial.",
+      "",
+      "3. Moonshot AI :",
+      "   • Kimi k3 & Kimi k2.7 : Model Deep Reasoning dengan konteks 2M+ token untuk riset kode.",
+      "",
+      "4. DeepSeek AI :",
+      "   • DeepSeek V3 (MoE 671B MLA) & DeepSeek R1 (Large-Scale RL Reasoning CoT).",
+      "",
+      "5. xAI (Elon Musk) :",
+      "   • Grok 3 & Grok 2   : Dilatih pada klaster superkomputer Colossus (100k+ Nvidia GPUs).",
+      "",
+      "6. Anthropic & OpenAI :",
+      "   • Claude 3.7 Sonnet (Hybrid Reasoning) & Claude 3.5 Sonnet.",
+      "   • OpenAI o1, o3, o3-mini & GPT-4.5 Orion.",
+      "",
+      "7. Google DeepMind :",
+      "   • Gemini 2.0 / 2.5 Flash, Gemma 3 Vision Multimodal, dan Veo 2 Video."
+    ]
+  },
+  {
+    keywords: ['glm', 'glm 5', 'glm 5.3', 'glm 4.5', 'zhipu'],
+    respond: () => [
+      "[ZHIPU AI / THUDM: GLM-5.3 & GLM-4.5]",
+      "----------------------------------------------------------------",
+      "• Spesialisasi : Frontier Multimodal, Agentic Workflows, & Penalaran Logika.",
+      "• Arsitektur   : MoE generasi baru dengan efisiensi inferensi tinggi.",
+      "• Fitur Kunci  : Dukungan ekosistem CogVideoX (video) dan GLM-4-Voice (suara real-time)."
+    ]
+  },
+  {
+    keywords: ['qwen 3', 'qwen 3.8', 'qwen 2.5 coder', 'alibaba cloud', 'tongyi'],
+    respond: () => [
+      "[ALIBABA CLOUD: Qwen 3, Qwen 3.8 & Qwen 2.5 Coder]",
+      "----------------------------------------------------------------",
+      "• Qwen 3 & Qwen 3.8  : Penalaran terpadu matematika, koding, dan bahasa multibahasa.",
+      "• Qwen 2.5 Coder 32B : Model koding open source nomor 1 di dunia.",
+      "• Qwen 2.5 VL 72B    : Multimodal Vision teratas untuk analisis citra dan dokumen teknis."
+    ]
+  },
+  {
+    keywords: ['kimi', 'kimi k3', 'kimi k2.7', 'moonshot'],
+    respond: () => [
+      "[MOONSHOT AI: Kimi k3 & Kimi k2.7]",
+      "----------------------------------------------------------------",
+      "• Spesialisasi : Deep Reasoning Chain-of-Thought & Konteks Ekstrem Panjang.",
+      "• Context Window: 2.000.000+ Token (mampu memproses ratusan berkas kode & dokumen sekaligus).",
+      "• Fokus Riset  : Analisis literatur ilmiah, sintesis data masif, dan koding kompleks."
+    ]
+  },
+  {
     keywords: ['deepseek', 'deepseek v3', 'deepseek r1', 'reasoning', 'moe 671b'],
     respond: () => [
       "[FRONTIER AI REVOLUTION: DeepSeek V3 & DeepSeek R1]",
