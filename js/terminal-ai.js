@@ -1,10 +1,10 @@
 /**
  * ============================================================================
- * TERMINAL AI ASSISTANT & LOCAL SEMANTIC KNOWLEDGE ENGINE (v4.5.0)
+ * TERMINAL AI ASSISTANT & KNOWLEDGE ENGINE (v4.8.0)
  * Hybrid Client-Side Engine for Developer Lab Simulator
  * Features:
- * 1. Native OmniRoute Local AI Gateway Bridge (Opencode, Ollama Cloud, Minimax M3, Nemotron)
- * 2. Vercel Serverless Multi-API Cloud Gateway Fallback (/api/chat)
+ * 1. Hugging Face 24/7 Dedicated Cloud OmniRoute Gateway
+ * 2. Vercel Serverless Multi-API Cloud Gateway (/api/chat)
  * 3. In-Browser Sub-15ms Exact & Semantic Pattern Engine for Offline Resilience
  * ============================================================================
  */
@@ -12,7 +12,7 @@
 import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js';
 
 // ============================================================================
-// 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (100% Offline Standalone Fallback)
+// 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
 // ============================================================================
 const SEMANTIC_PATTERNS = [
   {
@@ -150,86 +150,23 @@ class TerminalAIEngine {
       "----------------------------------------------------------------",
       `Model AI Aktif       : ${this.currentModel}`,
       `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server Gateway'}`,
-      `OmniRoute Bridge     : Aktif (http://localhost:20128/v1/chat/completions)`,
-      `Cloud Gateway        : Vercel Serverless Multi-API Gateway (/api/chat)`,
+      `HF Cloud Gateway     : Aktif (rflyyyf-omniroute-gateway.hf.space)`,
+      `Cloud Multi-AI       : Vercel Serverless Multi-API Gateway (/api/chat)`,
       `Fallback Engine      : In-Browser Semantic Knowledge Engine (Active & Ready)`
     ];
   }
 
   /**
-   * OmniRoute Local AI Gateway Bridge (Opencode, Ollama Cloud, Nemotron, Minimax)
-   */
-  async tryOmniRoute(query, model) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 20000);
-
-      const targetModel = model.startsWith('oc/') || model.startsWith('ollamacloud/') || model.startsWith('minimax/') || model.startsWith('nvidia/')
-        ? model
-        : (model === 'auto' ? 'oc/deepseek-v4-flash-free' : model);
-
-      const res = await fetch('http://localhost:20128/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: targetModel,
-          messages: [{ role: 'user', content: query }],
-          stream: false
-        }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeout);
-
-      if (res.ok) {
-        const textRaw = await res.text();
-        let content = '';
-        try {
-          const j = JSON.parse(textRaw);
-          content = j?.choices?.[0]?.message?.content || j?.choices?.[0]?.text;
-        } catch (_) {
-          // SSE fallback parser
-          const lines = textRaw.split('\n');
-          for (const l of lines) {
-            if (l.startsWith('data: ') && l !== 'data: [DONE]') {
-              try {
-                const pj = JSON.parse(l.slice(6));
-                const chunk = pj.choices?.[0]?.delta?.content || pj.choices?.[0]?.text;
-                if (chunk) content += chunk;
-              } catch (_) {}
-            }
-          }
-        }
-
-        if (content && content.trim()) {
-          return content.trim().split('\n');
-        }
-      }
-    } catch (_) {
-      // OmniRoute not active on client device
-    }
-    return null;
-  }
-
-  /**
-   * Main Ask method: First checks Local OmniRoute, then HF Cloud Gateway, then Vercel Serverless, then Local Semantic
+   * Main Ask method: First checks HF Cloud Gateway, then Vercel Serverless, then Local Semantic
    */
   async ask(query) {
     const cleanQuery = query.trim();
     if (!cleanQuery) return ["Silakan masukkan pertanyaan atau perintah."];
 
-    // 1. Try local OmniRoute (when running on laptop)
-    try {
-      const omniRes = await this.tryOmniRoute(cleanQuery, this.currentModel);
-      if (omniRes && omniRes.length > 0) {
-        return omniRes;
-      }
-    } catch (_) {}
-
-    // 2. Try Hugging Face Dedicated Cloud OmniRoute Gateway (24/7 Online)
+    // 1. Try Hugging Face Dedicated Cloud OmniRoute Gateway (24/7 Online)
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 20000);
+      const timeout = setTimeout(() => controller.abort(), 18000);
 
       const base = 'https://rflyyyf-omniroute-gateway.hf.space';
       const hfPost = await fetch(`${base}/gradio_api/call/chat_fn`, {
@@ -268,7 +205,7 @@ class TerminalAIEngine {
       clearTimeout(timeout);
     } catch (_) {}
 
-    // 3. Try Vercel Serverless Function /api/chat with generous 30s timeout
+    // 2. Try Vercel Serverless Function /api/chat with generous 30s timeout
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30000);
@@ -297,13 +234,13 @@ class TerminalAIEngine {
       // Network timeout / offline -> fall back to local semantic engine
     }
 
-    // 4. High-Precision In-Browser Semantic Engine Fallback
+    // 3. High-Precision In-Browser Semantic Engine Fallback
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
       return semanticMatch;
     }
 
-    // 5. Generic friendly response if completely offline
+    // 4. Generic friendly response if completely offline
     return [
       "Maaf, saat ini koneksi ke model AI sedang mengalami kendala jaringan.",
       "Anda dapat mengulangi pertanyaan Anda kembali, atau menggunakan perintah CLI seperti 'skills', 'projects', 'certifs', 'benchmarks', 'contact'."

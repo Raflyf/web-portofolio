@@ -1122,7 +1122,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-  max-width: var(--container-narrow);
+  max-width: min(100%, 1020px);
   margin-inline: auto;
 }
 
@@ -1204,12 +1204,32 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   color: var(--accent-emerald);
 }
 
+.terminal-permanent-banner {
+  padding: var(--space-xs) var(--space-md);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.terminal-banner-tag {
+  color: var(--accent-emerald);
+  font-weight: 700;
+}
+
 .terminal-body {
   padding: var(--space-md);
   font-family: var(--font-mono);
   font-size: var(--fs-body-sm);
   line-height: 1.6;
-  max-height: 380px;
+  min-height: 360px;
+  height: clamp(380px, 54vh, 580px);
   overflow-y: auto;
   color: var(--text-body);
   display: flex;
@@ -1265,6 +1285,39 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   font-size: var(--fs-body-sm);
   color: var(--text-heading);
   outline: none;
+}
+
+.terminal-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, var(--accent-emerald), oklch(0.68 0.18 160));
+  color: oklch(0.12 0.04 165);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-micro) var(--ease-out);
+  white-space: nowrap;
+}
+
+.terminal-submit-btn:hover {
+  box-shadow: 0 0 12px var(--accent-emerald-glow);
+  transform: translateY(-1px);
+}
+
+.terminal-submit-btn:active {
+  transform: translateY(0);
+}
+
+.terminal-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ==========================================================================

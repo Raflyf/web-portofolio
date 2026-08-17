@@ -587,14 +587,9 @@
               <label for="terminal-model-select" class="terminal-model-label">Model AI:</label>
               <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI">
                 <option value="auto" selected>⚡ Auto (Cerdas & Relevan Otomatis)</option>
-                <optgroup label="OmniRoute (Opencode & Ollama Cloud)">
-                  <option value="oc/deepseek-v4-flash-free">DeepSeek V4 Flash Free (Opencode)</option>
-                  <option value="ollamacloud/minimax-m3">MiniMax M3 (Ollama Cloud)</option>
-                  <option value="oc/nemotron-3-ultra-free">Nemotron 3 Ultra Free (Opencode)</option>
-                  <option value="ollamacloud/kimi-k2.7-code">Kimi K2.7 Code (Ollama Cloud)</option>
-                </optgroup>
-                <optgroup label="Cloud Flagship (24/7 Global)">
+                <optgroup label="Model Bahasa Unggulan (24/7 Global)">
                   <option value="deepseek/deepseek-chat">DeepSeek V3 Chat (Riset & Umum)</option>
+                  <option value="deepseek/deepseek-v4-flash">DeepSeek V4 Flash (OpenCode Cloud)</option>
                   <option value="meta-llama/llama-3.3-70b-instruct">Meta Llama 3.3 70B (Komprehensif)</option>
                   <option value="mistralai/mistral-large-2407">Mistral Large 2 (Flagship)</option>
                   <option value="qwen/qwen-2.5-coder-32b-instruct">Qwen 2.5 Coder 32B (Spesialis Coding)</option>
@@ -602,6 +597,13 @@
                   <option value="meta-llama/llama-3.1-8b-instruct">Meta Llama 3.1 8B (Ultra Cepat ~370ms)</option>
                 </optgroup>
               </select>
+            </div>
+          </div>
+
+          <div class="terminal-permanent-banner" role="status" aria-live="polite">
+            <div>
+              <span class="terminal-banner-tag">[CLI & AI Assistant Lab v4.8]</span>
+              <span>Pilih Model AI atau tanyakan apapun secara bebas & mendalam. Ketik <kbd style="background:var(--badge-bg);padding:1px 4px;border-radius:3px;">help</kbd> untuk bantuan perintah.</span>
             </div>
           </div>
 
@@ -623,7 +625,14 @@
 
           <form id="terminal-form" class="terminal-input-row">
             <span class="terminal-prompt" aria-hidden="true">rafly@lab:~$</span>
-            <input type="text" id="terminal-input" class="terminal-input" placeholder="Ketik perintah (misal: 'skills') atau tanyakan apapun (misal: 'ceritakan riset plagiarisme')..." autocomplete="off" spellcheck="false" aria-label="Input perintah terminal dan asisten AI">
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="Ketik perintah atau tanyakan apapun (misal: 'jelaskan arsitektur OpenPlagiarismChecker')..." autocomplete="off" spellcheck="false" aria-label="Input perintah terminal dan asisten AI">
+            <button type="submit" id="terminal-submit-btn" class="terminal-submit-btn" aria-label="Kirim perintah atau pertanyaan">
+              <span>Kirim</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
           </form>
         </div>
       </div>
@@ -771,6 +780,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busted for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=4.7.0"></script>
+  <script type="module" src="js/main.js?v=4.8.0"></script>
 </body>
 </html>
