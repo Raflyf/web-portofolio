@@ -467,42 +467,7 @@ class DashboardApp {
   }
 
   renderIntelligenceLists() {
-    // 1. AI Model & Topic Intelligence
-    const aiListEl = document.getElementById('ai-ranked-list');
-    if (aiListEl) {
-      const counts = {};
-      this.filteredEvents.filter(e => e.event_type === 'ai_query' || e.event_type === 'ai_query_resolved' || e.event_type === 'model_select' || e.event_type === 'terminal_cmd').forEach(e => {
-        const unified = this.normalizeAIQuery(e.event_target, e.event_label);
-        counts[unified] = (counts[unified] || 0) + 1;
-      });
-
-      if (Object.keys(counts).length === 0) {
-        counts['⚡ Auto: DeepSeek V3 (671B MoE)'] = 0;
-        counts['⚡ Auto: Meta Llama 3.3 (70B)'] = 0;
-        counts['DeepSeek R1 (Thinking CoT)'] = 0;
-        counts['Qwen 2.5 Coder (32B)'] = 0;
-      }
-
-      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      const maxVal = Math.max(1, ...sorted.map(c => c[1]));
-
-      aiListEl.innerHTML = sorted.map(([name, count]) => {
-        const pct = Math.round((count / maxVal) * 100);
-        return `
-          <div class="ranked-item">
-            <div class="ranked-item-header">
-              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(name)}">🤖 ${this.sanitize(name)}</span>
-              <span class="ranked-item-count">${count}x</span>
-            </div>
-            <div class="ranked-progress-bg">
-              <div class="ranked-progress-fill" style="width:${pct}%;background-color:var(--accent-cyan);"></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // 2. Project Exploration Leaderboard
+    // 1. Project Exploration Leaderboard
     const projectListEl = document.getElementById('project-ranked-list');
     if (projectListEl) {
       const counts = {};
