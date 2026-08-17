@@ -464,7 +464,7 @@ class DashboardApp {
   normalizeAIQuery(target = '', label = '') {
     const combined = `${target} ${label}`.toLowerCase();
     const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
-    const tag = isAuto ? '⚡ Auto: ' : '';
+    const tag = isAuto ? 'Auto: ' : '';
 
     if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
     if (combined.includes('deepseek-chat') || combined.includes('deepseek-v3') || combined.includes('deepseek')) return `${tag}DeepSeek V3 (671B MoE)`;
@@ -474,7 +474,7 @@ class DashboardApp {
     if (combined.includes('gemma') || combined.includes('vision') || combined.includes('gemini')) return `${tag}Google Gemma 3 (27B Vision)`;
     if (combined.includes('minimax')) return `${tag}MiniMax-01 (456B MoE)`;
     if (combined.includes('ollama') || combined.includes('kimi')) return `${tag}Ollama Cloud Kimi K2.7`;
-    if (combined.includes('local_semantic') || combined.includes('semantic engine')) return '⚡ Auto: Local Semantic Fallback';
+    if (combined.includes('local_semantic') || combined.includes('semantic engine')) return 'Auto: Local Semantic Fallback';
 
     if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
     if (combined.includes('skripsi') || combined.includes('nlp')) return 'Tanya: Riset NLP & Skripsi';
@@ -622,6 +622,16 @@ class DashboardApp {
     const totalCountEl = document.getElementById('ai-matrix-total-count');
     if (!gridEl) return;
 
+    const SVG_ICONS = {
+      router: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
+      code: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+      cot: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>`,
+      fast: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+      flagship: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+      vision: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+      offline: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`
+    };
+
     const MODELS_CATALOG = [
       // 0. Pure Intelligent Auto Router (Main Gateway)
       {
@@ -629,7 +639,7 @@ class DashboardApp {
         name: 'Auto Cloud Gateway',
         category: 'Router',
         tag: 'Intelligent SOTA Cascade',
-        icon: '⚡',
+        icon: SVG_ICONS.router,
         color: 'var(--accent-cyan)',
         match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
       },
@@ -640,7 +650,7 @@ class DashboardApp {
         name: 'Codex (GPT-5.6 Terra)',
         category: 'OmniRoute #1',
         tag: 'Tier 1 Priority: Heavy Coding',
-        icon: '👑',
+        icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('codex') || `${t} ${l}`.toLowerCase().includes('gpt-5.6') || `${t} ${l}`.toLowerCase().includes('terra')
       },
@@ -649,7 +659,7 @@ class DashboardApp {
         name: 'Antigravity (Claude Opus 4.6)',
         category: 'OmniRoute #2',
         tag: 'Tier 1 Priority: Deep CoT',
-        icon: '🧠',
+        icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus')
       },
@@ -658,7 +668,7 @@ class DashboardApp {
         name: 'DeepSeek V4 Flash (OmniRoute)',
         category: 'OmniRoute Dedicated',
         tag: 'Tier 1 Priority: Fast Logic',
-        icon: '⚡',
+        icon: SVG_ICONS.fast,
         color: 'var(--accent-amber)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
@@ -670,8 +680,8 @@ class DashboardApp {
         name: 'Nemotron Laguna (OmniRoute)',
         category: 'OmniRoute #4',
         tag: 'Tier 1 Priority: Nvidia Laguna SOTA',
-        icon: '🟢',
-        color: 'oklch(0.75 0.18 145)',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('laguna') || `${t} ${l}`.toLowerCase().includes('nemotron-laguna')
       },
       {
@@ -679,19 +689,19 @@ class DashboardApp {
         name: 'Vision-model (MiniMax M3)',
         category: 'OmniRoute #5',
         tag: 'Tier 1 Priority: Multimodal Vision',
-        icon: '👁️',
-        color: 'oklch(0.75 0.18 280)',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('minimax')
       },
 
-      // 1. SOTA Flagships & High-Capacity Reasoning
+      // 2. SOTA Flagships & High-Capacity Reasoning
       {
         id: 'nemotron-3-super-120b',
         name: 'Nvidia Nemotron 3 Super 120B',
         category: 'Flagship #1',
         tag: '#1 SOTA Flagship (264ms)',
-        icon: '🟢',
-        color: 'oklch(0.75 0.18 145)',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-3-super') || `${t} ${l}`.toLowerCase().includes('120b') || `${t} ${l}`.toLowerCase().includes('nemotron 70b')
       },
       {
@@ -699,8 +709,8 @@ class DashboardApp {
         name: 'Nvidia Nemotron 3 Ultra 550B',
         category: 'Giant MoE',
         tag: '550B Giant MoE Architecture',
-        icon: '🟢',
-        color: 'oklch(0.75 0.18 145)',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-3-ultra') || `${t} ${l}`.toLowerCase().includes('550b')
       },
       {
@@ -708,8 +718,8 @@ class DashboardApp {
         name: 'DeepSeek V4 Flash (OpenCode Cloud)',
         category: 'OpenCode Direct',
         tag: 'Dual-Account Cloud Rotator',
-        icon: '⚡',
-        color: 'var(--accent-emerald)',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-amber)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
           return s.includes('opencode') || (!s.includes('omniroute') && (s.includes('deepseek-v4') || s.includes('deepseek/')));
@@ -720,8 +730,8 @@ class DashboardApp {
         name: 'Nemotron 3 Nano Omni 30B',
         category: 'Reasoning CoT',
         tag: 'Chain-of-Thought Reasoning',
-        icon: '🧬',
-        color: 'oklch(0.80 0.18 280)',
+        icon: SVG_ICONS.cot,
+        color: 'var(--accent-cyan)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('nano-omni') || `${t} ${l}`.toLowerCase().includes('reasoning') || `${t} ${l}`.toLowerCase().includes('30b') || `${t} ${l}`.toLowerCase().includes('r1')
       },
       {
@@ -729,7 +739,7 @@ class DashboardApp {
         name: 'OpenAI GPT-OSS 20B',
         category: 'Open Weights',
         tag: 'OpenAI Open-Weights Frontier',
-        icon: '🌟',
+        icon: SVG_ICONS.code,
         color: 'var(--accent-cyan)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('gpt-oss') || `${t} ${l}`.toLowerCase().includes('gpt oss') || `${t} ${l}`.toLowerCase().includes('20b')
       },
@@ -738,19 +748,19 @@ class DashboardApp {
         name: 'Cohere North Mini Code',
         category: 'Code Specialist',
         tag: 'Specialized Agentic Coding',
-        icon: '💻',
+        icon: SVG_ICONS.code,
         color: 'var(--accent-amber)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('north-mini') || `${t} ${l}`.toLowerCase().includes('cohere')
       },
 
-      // 2. Multimodal Vision & Document AI
+      // 3. Multimodal Vision & Document AI
       {
         id: 'nemotron-nano-12b-vl',
         name: 'Nemotron Nano 12B VL',
         category: 'Vision Multimodal',
         tag: 'Vision AI #1 Global SOTA',
-        icon: '👁️',
-        color: 'oklch(0.75 0.18 145)',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('12b-v2-vl') || `${t} ${l}`.toLowerCase().includes('nano-12b-vl') || `${t} ${l}`.toLowerCase().includes('vision')
       },
       {
@@ -758,18 +768,18 @@ class DashboardApp {
         name: 'Google Gemma 3 27B Vision',
         category: 'Vision Multimodal',
         tag: 'High-Resolution Document & OCR',
-        icon: '👁️',
-        color: 'oklch(0.75 0.18 220)',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-3-27b') || `${t} ${l}`.toLowerCase().includes('gemma 3 27b')
       },
 
-      // 3. Fallback Local & Offline Semantic Engine
+      // 4. Fallback Local & Offline Semantic Engine
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
         category: 'Offline Fallback',
         tag: 'In-Browser Sub-15ms Pattern Matcher',
-        icon: '💾',
+        icon: SVG_ICONS.offline,
         color: 'var(--text-muted)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('local_semantic') || `${t} ${l}`.toLowerCase().includes('semantic pattern')
       }
@@ -837,27 +847,19 @@ class DashboardApp {
         const entries = Object.entries(autoResolvedBreakdown);
         if (entries.length > 0) {
           const listHtml = entries.map(([modelName, count]) => `
-            <div class="ai-model-auto-item">
-              <span>➔ ${this.sanitize(modelName)}</span>
-              <strong>${count}x</strong>
+            <div class="ai-model-auto-item" style="display:flex;justify-content:space-between;padding:0.2rem 0;font-size:0.75rem;font-family:var(--font-mono);border-bottom:1px dashed var(--border-subtle);">
+              <span style="color:var(--text-muted);">${this.sanitize(modelName)}</span>
+              <strong style="color:var(--accent-emerald);">${count}x</strong>
             </div>
           `).join('');
 
           autoBreakdownHtml = `
-            <div class="ai-model-auto-breakdown">
-              <div class="ai-model-auto-title">
-                <span>⚡ Model Terpilih Saat Mode Auto:</span>
+            <div class="ai-model-auto-breakdown" style="margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid var(--border-subtle);">
+              <div style="font-size:0.7rem;font-weight:700;color:var(--text-dim);margin-bottom:0.25rem;text-transform:uppercase;">
+                Model Terpilih Saat Mode Auto:
               </div>
               <div class="ai-model-auto-list">
                 ${listHtml}
-              </div>
-            </div>
-          `;
-        } else {
-          autoBreakdownHtml = `
-            <div class="ai-model-auto-breakdown">
-              <div class="ai-model-auto-title" style="color:var(--text-muted);">
-                <span>⚡ Menunggu query Auto berikutnya</span>
               </div>
             </div>
           `;
@@ -867,19 +869,24 @@ class DashboardApp {
       return `
         <div class="ai-model-card">
           <div class="ai-model-card-header">
-            <div class="ai-model-name-wrap">
-              <span class="ai-model-name">${m.icon} ${this.sanitize(m.name)}</span>
-              <span class="ai-model-tag">${this.sanitize(m.tag)}</span>
+            <span class="ai-model-category-tag">${this.sanitize(m.category)}</span>
+            <span class="ai-model-count" style="color:${m.color};">${m.total}x</span>
+          </div>
+
+          <div class="ai-model-name-wrap">
+            <div style="display:flex;align-items:center;gap:0.45rem;color:${m.color};">
+              ${m.icon}
+              <span class="ai-model-name">${this.sanitize(m.name)}</span>
             </div>
-            <span class="ai-model-count-badge" style="color:${m.color};">${m.total}x</span>
+            <span class="ai-model-tag" style="font-size:0.7rem;color:var(--text-dim);">${this.sanitize(m.tag)}</span>
           </div>
 
-          <div class="ai-model-progress-bg">
-            <div class="ai-model-progress-fill" style="width:${pct}%;background-color:${m.color};"></div>
+          <div class="ai-model-bar-wrap">
+            <div class="ai-model-bar-fill" style="width:${pct}%;background-color:${m.color};"></div>
           </div>
 
-          <div class="ai-model-breakdown">
-            <span>Manual: <strong>${m.manualCount}x</strong></span>
+          <div class="ai-model-breakdown" style="display:flex;justify-content:space-between;font-size:0.725rem;color:var(--text-dim);font-family:var(--font-mono);">
+            <span>Manual: <strong style="color:var(--text-body);">${m.manualCount}x</strong></span>
             <span>Auto: <strong style="color:var(--accent-cyan);">${m.autoCount}x</strong></span>
           </div>
 
