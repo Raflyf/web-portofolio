@@ -30,7 +30,10 @@
   <meta name="twitter:image" content="https://raflyfirmansyah-portofolio.vercel.app/assets/og-cover.jpg">
 
   <!-- Security: Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://formsubmit.co https://*.supabase.co https://openrouter.ai https://api.groq.com https://generativelanguage.googleapis.com http://localhost:11434; frame-src 'self' data: blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://cdnjs.cloudflare.com https://formsubmit.co https://*.supabase.co https://openrouter.ai https://api.groq.com https://generativelanguage.googleapis.com http://localhost:11434; frame-src 'self' data: blob:; worker-src 'self' blob: https://cdnjs.cloudflare.com;">
+
+  <!-- PDF.js Engine for Client-Side Document & PDF Processing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <!-- Stylesheets (Cache-Busting for Instant CDN Refresh) -->
   <link rel="stylesheet" href="css/style.css?v=3.4.0">
@@ -815,6 +818,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busted for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=5.3.0"></script>
+  <script type="module" src="js/main.js?v=5.4.0"></script>
 </body>
 </html>
