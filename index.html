@@ -586,8 +586,12 @@
             <div class="terminal-model-picker">
               <label for="terminal-model-select" class="terminal-model-label">Model AI:</label>
               <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI">
-                <optgroup label="DeepSeek / OpenRouter (Tercepat & Cerdas)">
-                  <option value="deepseek/deepseek-chat" selected>DeepSeek V3 Chat</option>
+                <optgroup label="Opencode Gateway">
+                  <option value="opencode/deepseek-v4-flash-free" selected>DeepSeek V4 Flash Free (Opencode)</option>
+                  <option value="opencode/deepseek-v3">Opencode DeepSeek V3 Flash</option>
+                </optgroup>
+                <optgroup label="DeepSeek / OpenRouter (Cerdas & Cepat)">
+                  <option value="deepseek/deepseek-chat">DeepSeek V3 Chat</option>
                   <option value="deepseek/deepseek-r1">DeepSeek R1 (Reasoning)</option>
                   <option value="meta-llama/llama-3.3-70b-instruct">Meta Llama 3.3 70B</option>
                   <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B Instruct</option>
@@ -596,9 +600,6 @@
                   <option value="nvidia/llama-3.1-nemotron-70b-instruct">Nvidia Nemotron 70B Ultra</option>
                   <option value="meta/llama-3.3-70b-instruct">Nvidia Llama 3.3 70B</option>
                   <option value="deepseek-ai/deepseek-r1">Nvidia DeepSeek R1</option>
-                </optgroup>
-                <optgroup label="Opencode Gateway">
-                  <option value="opencode/deepseek-v3">Opencode DeepSeek V3 Flash</option>
                 </optgroup>
                 <optgroup label="MiniMax AI">
                   <option value="minimax/minimax-01">MiniMax-01 / M3</option>
@@ -774,6 +775,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busted for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=4.0.0"></script>
+  <script type="module" src="js/main.js?v=4.1.0"></script>
 </body>
 </html>

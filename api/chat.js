@@ -172,6 +172,7 @@ export default async function handler(req, res) {
     if (model.startsWith('opencode/')) {
       if (OPENCODE_KEY) {
         try {
+          const ocModel = model.includes('v4') ? 'deepseek-v4-flash-free' : 'deepseek-v3';
           const response = await fetch('https://api.opencode.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -179,7 +180,7 @@ export default async function handler(req, res) {
               'Authorization': `Bearer ${OPENCODE_KEY}`
             },
             body: JSON.stringify({
-              model: 'deepseek-v3',
+              model: ocModel,
               messages: [
                 { role: 'system', content: SYSTEM_PROMPT },
                 { role: 'user', content: query }
@@ -195,8 +196,8 @@ export default async function handler(req, res) {
               return res.status(200).json({
                 success: true,
                 response: content,
-                model: 'deepseek-v3',
-                provider: 'Opencode AI'
+                model: ocModel,
+                provider: 'Opencode AI (DeepSeek Flash)'
               });
             }
           }
