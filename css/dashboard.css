@@ -1124,3 +1124,69 @@ body {
   color: var(--accent-emerald);
   transform: translateY(-2px);
 }
+
+/* ==========================================================================
+   7. DATA PAGINATION SYSTEM
+   ========================================================================== */
+.table-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  margin-top: 0.85rem;
+  border-top: 1px solid var(--border-card);
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.pagination-info {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding-inline: 0.6rem;
+  background-color: var(--surface-overlay);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  color: var(--text-body);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--accent-emerald);
+  color: var(--text-heading);
+  background-color: var(--surface-card);
+}
+
+.pagination-btn.active {
+  background-color: var(--accent-emerald);
+  border-color: var(--accent-emerald);
+  color: #042f2e;
+  font-weight: 700;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: var(--border-card);
+}
+
