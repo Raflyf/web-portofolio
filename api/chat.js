@@ -531,37 +531,52 @@ Langkah yang WAJIB Anda lakukan:
     // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
 
-    // 2A. OpenCode Gateway (If explicitly targeted)
-    const isTargetingOpenCode = targetModel.startsWith('opencode/');
-    if (OPENCODE_KEY && isTargetingOpenCode) {
-      try {
-        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENCODE_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'deepseek-v4-flash-free',
-            messages: baseTextMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig
-          })
-        }, 20000);
+    // 2A. Hugging Face Dedicated OmniRoute Cloud Space (150+ OpenCode Accounts Pool)
+    try {
+      const hfBase = 'https://rflyyyf-omniroute-gateway.hf.space';
+      const hfController = new AbortController();
+      const hfTimeout = setTimeout(() => hfController.abort(), 20000);
 
-        if (response.ok) {
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content) {
-            return sendSuccess(content, 'deepseek-v4-flash-free', 'OpenCode DeepSeek V4 Flash');
+      const hfPost = await fetch(`${hfBase}/gradio_api/call/chat_fn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: [finalUserPrompt, []] }),
+        signal: hfController.signal
+      });
+
+      if (hfPost.ok) {
+        const postData = await hfPost.json();
+        if (postData?.event_id) {
+          const eventRes = await fetch(`${hfBase}/gradio_api/call/chat_fn/${postData.event_id}`, {
+            signal: hfController.signal
+          });
+          clearTimeout(hfTimeout);
+          if (eventRes.ok) {
+            const rawEvent = await eventRes.text();
+            const lines = rawEvent.split('\n');
+            for (const l of lines) {
+              if (l.startsWith('data: ')) {
+                try {
+                  const arr = JSON.parse(l.slice(6));
+                  if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'string') {
+                    const text = arr[0].trim();
+                    if (text && text !== 'Offline' && !text.toLowerCase().startsWith('error:')) {
+                      return sendSuccess(text, 'deepseek-v4-flash-free', 'OmniRoute Dedicated HF Gateway (150 Accounts Pool)');
+                    } else if (text === 'Offline') {
+                      providerErrors.push('OmniRoute HF Space: Status is currently Offline / Sleeping on Hugging Face.');
+                    }
+                  }
+                } catch (_) {}
+              }
+            }
           }
-        } else {
-          const errTxt = await response.text();
-          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
         }
-      } catch (err) {
-        providerErrors.push(`OpenCode: ${err.message}`);
+      } else {
+        clearTimeout(hfTimeout);
+        providerErrors.push(`OmniRoute HF Space HTTP ${hfPost.status}`);
       }
+    } catch (hfErr) {
+      providerErrors.push(`OmniRoute HF Space: ${hfErr.message}`);
     }
 
     // 2B. OpenRouter Multi-Model Cloud Pool (Prioritizing SOTA 70B & 671B Flagship Models)
