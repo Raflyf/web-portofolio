@@ -284,7 +284,8 @@ export default async function handler(req, res) {
       attachments = [],
       sessionLanguage = 'id',
       history = [],
-      reasoningEffort = 'auto'
+      reasoningEffort = 'auto',
+      longTermMemory = ''
     } = req.body || {};
 
     // 1. Strict Payload Boundary Checks (Prevent memory exhaustion and DOS)
@@ -342,7 +343,12 @@ export default async function handler(req, res) {
       targetModel = 'google/gemma-3-27b-it';
     }
 
-    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, reasoningEffort)}${webContext}`;
+    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, reasoningEffort)}${webContext}${longTermMemory}
+    
+[INSTRUKSI MEMORI JANGKA PANJANG]
+Anda dilengkapi dengan Memori Jangka Panjang (Supabase RAG). Jika dari percakapan ini Anda mendapatkan **fakta penting baru** dari pengguna (misalnya koreksi tentang versi AI, informasi personal, atau penemuan penting) yang pantas diingat selamanya, Anda WAJIB menambahkan tag berikut di baris paling bawah jawaban Anda:
+\`[SAVE_MEMORY: tuliskan fakta singkat yang ingin disimpan di sini]\`
+Jangan gunakan tag ini jika tidak ada informasi baru yang krusial.`;
 
     // Assemble conversation history
     const formattedHistory = Array.isArray(history) ? history.map(h => ({

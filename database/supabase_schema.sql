@@ -65,3 +65,44 @@ FOR DELETE
 TO anon
 USING (false);
 
+-- ============================================================================
+-- 5. AI MEMORY (Continuous RAG / Long-Term Knowledge)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS public.ai_memories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    fact_text TEXT NOT NULL,
+    session_id TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_memories_created_at ON public.ai_memories (created_at DESC);
+
+ALTER TABLE public.ai_memories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public anonymous insert memory"
+ON public.ai_memories
+FOR INSERT
+TO anon
+WITH CHECK (
+    char_length(fact_text) <= 1000 AND
+    (session_id IS NULL OR char_length(session_id) <= 64)
+);
+
+CREATE POLICY "Allow public anonymous read memory"
+ON public.ai_memories
+FOR SELECT
+TO anon
+USING (true);
+
+CREATE POLICY "Deny public update memory"
+ON public.ai_memories
+FOR UPDATE
+TO anon
+USING (false);
+
+CREATE POLICY "Deny public delete memory"
+ON public.ai_memories
+FOR DELETE
+TO anon
+USING (false);
