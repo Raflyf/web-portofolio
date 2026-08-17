@@ -587,56 +587,67 @@
                 <span></span><span></span><span></span>
               </div>
               <div class="terminal-title">rafly@portfolio-lab:~ (bash / AI Engine)</div>
-              <div style="display:flex;align-items:center;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <button id="terminal-pop-btn" class="terminal-pop-btn" type="button" title="Buka Pop-up Jendela Terminal" aria-label="Buka Pop-up Jendela Terminal">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 3 9 21"></polyline></svg>
                   <span>Pop-up</span>
                 </button>
                 <div class="terminal-model-picker">
-              <label for="terminal-model-select" class="terminal-model-label">Model AI:</label>
-              <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI">
-                <option value="auto" selected>⚡ Auto (Router Cerdas Berbasis Benchmark Tertinggi)</option>
-                
-                <optgroup label="1. Frontier Reasoning (DeepSeek & OpenCode)">
-                  <option value="deepseek/deepseek-chat">DeepSeek V3 Chat (MoE 671B — #1 Benchmark)</option>
-                  <option value="opencode/deepseek-v4-flash-free">DeepSeek V4 Flash (OpenCode Cloud Frontier)</option>
-                </optgroup>
+                  <label for="terminal-model-select" class="terminal-model-label">Model AI:</label>
+                  <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI">
+                    <option value="auto" selected>⚡ Auto (Router Cerdas Berbasis Benchmark Tertinggi)</option>
+                    
+                    <optgroup label="1. Frontier Reasoning (DeepSeek & OpenCode)">
+                      <option value="deepseek/deepseek-chat">DeepSeek V3 Chat (MoE 671B — #1 Benchmark)</option>
+                      <option value="opencode/deepseek-v4-flash-free">DeepSeek V4 Flash (OpenCode Cloud Frontier)</option>
+                    </optgroup>
 
-                <optgroup label="2. Nvidia NIM Frontier AI">
-                  <option value="nvidia/llama-3.1-nemotron-70b-instruct">Nvidia Nemotron 70B Ultra (Arena Top 70B)</option>
-                  <option value="nvidia/meta/llama-3.3-70b-instruct">Nvidia Llama 3.3 70B (High Precision)</option>
-                </optgroup>
+                    <optgroup label="2. Nvidia NIM Frontier AI">
+                      <option value="nvidia/llama-3.1-nemotron-70b-instruct">Nvidia Nemotron 70B Ultra (Arena Top 70B)</option>
+                      <option value="nvidia/meta/llama-3.3-70b-instruct">Nvidia Llama 3.3 70B (High Precision)</option>
+                    </optgroup>
 
-                <optgroup label="3. MiniMax AI (MoE 456B)">
-                  <option value="minimax/minimax-01">MiniMax-01 / M3 (MoE 456B — 4M Context)</option>
-                </optgroup>
+                    <optgroup label="3. MiniMax AI (MoE 456B)">
+                      <option value="minimax/minimax-01">MiniMax-01 / M3 (MoE 456B — 4M Context)</option>
+                    </optgroup>
 
-                <optgroup label="4. Global Frontier Flagship (Meta, Mistral, Qwen, Nous)">
-                  <option value="nousresearch/hermes-3-llama-3.1-405b">Hermes 3 Llama 405B (Model Terbesar Dunia)</option>
-                  <option value="meta-llama/llama-3.3-70b-instruct">Meta Llama 3.3 70B (Flagship)</option>
-                  <option value="mistralai/mistral-large-2407">Mistral Large 2 (123B Flagship)</option>
-                  <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B (Multilingual SOTA)</option>
-                  <option value="qwen/qwen-2.5-coder-32b-instruct">Qwen 2.5 Coder 32B (#1 Coding Benchmark)</option>
-                  <option value="google/gemma-2-27b-it">Google Gemma 2 27B</option>
-                  <option value="mistralai/mistral-small-24b-instruct-2501">Mistral Small 24B (~330ms)</option>
-                  <option value="mistralai/mistral-nemo">Mistral NeMo 12B (~340ms)</option>
-                  <option value="meta-llama/llama-3.1-8b-instruct">Meta Llama 3.1 8B (Ultra Cepat ~590ms)</option>
-                </optgroup>
+                    <optgroup label="4. Global Frontier Flagship (Meta, Mistral, Qwen, Nous)">
+                      <option value="nousresearch/hermes-3-llama-3.1-405b">Hermes 3 Llama 405B (Model Terbesar Dunia)</option>
+                      <option value="meta-llama/llama-3.3-70b-instruct">Meta Llama 3.3 70B (Flagship)</option>
+                      <option value="mistralai/mistral-large-2407">Mistral Large 2 (123B Flagship)</option>
+                      <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B (Multilingual SOTA)</option>
+                      <option value="qwen/qwen-2.5-coder-32b-instruct">Qwen 2.5 Coder 32B (#1 Coding Benchmark)</option>
+                      <option value="google/gemma-2-27b-it">Google Gemma 2 27B</option>
+                      <option value="mistralai/mistral-small-24b-instruct-2501">Mistral Small 24B (~330ms)</option>
+                      <option value="mistralai/mistral-nemo">Mistral NeMo 12B (~340ms)</option>
+                      <option value="meta-llama/llama-3.1-8b-instruct">Meta Llama 3.1 8B (Ultra Cepat ~590ms)</option>
+                    </optgroup>
 
-                <optgroup label="5. Ollama Cloud AI">
-                  <option value="ollamacloud/kimi-k2.7-code">Kimi K2.7 Code (Spesialis Koding)</option>
-                  <option value="ollamacloud/gemma4:31b">Gemma 31B (Ollama Cloud)</option>
-                </optgroup>
+                    <optgroup label="5. Ollama Cloud AI">
+                      <option value="ollamacloud/kimi-k2.7-code">Kimi K2.7 Code (Spesialis Koding)</option>
+                      <option value="ollamacloud/gemma4:31b">Gemma 31B (Ollama Cloud)</option>
+                    </optgroup>
 
-                <optgroup label="6. Multimodal Vision & Dokumen (Benchmark MMMU Tertinggi)">
-                  <option value="qwen/qwen-2-vl-72b-instruct">Qwen 2 VL 72B (Vision #1 Global Benchmark)</option>
-                  <option value="google/gemini-2.5-flash">Google Gemini 2.5 Flash Vision</option>
-                  <option value="google/gemma-3-27b-it">Google Gemma 3 27B Vision (~520ms)</option>
-                  <option value="google/gemma-3-12b-it">Google Gemma 3 12B Vision (~330ms)</option>
-                  <option value="nvidia/meta/llama-3.2-11b-vision-instruct">Nvidia Llama 3.2 11B Vision NIM</option>
-                </optgroup>
-              </select>
-            </div>
+                    <optgroup label="6. Multimodal Vision & Dokumen (Benchmark MMMU Tertinggi)">
+                      <option value="qwen/qwen-2-vl-72b-instruct">Qwen 2 VL 72B (Vision #1 Global Benchmark)</option>
+                      <option value="google/gemini-2.5-flash">Google Gemini 2.5 Flash Vision</option>
+                      <option value="google/gemma-3-27b-it">Google Gemma 3 27B Vision (~520ms)</option>
+                      <option value="google/gemma-3-12b-it">Google Gemma 3 12B Vision (~330ms)</option>
+                      <option value="nvidia/meta/llama-3.2-11b-vision-instruct">Nvidia Llama 3.2 11B Vision NIM</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div class="terminal-model-picker">
+                  <label for="terminal-effort-select" class="terminal-model-label">Effort / Mode:</label>
+                  <select id="terminal-effort-select" class="terminal-model-select" aria-label="Pilih Reasoning Effort dan Thinking Mode">
+                    <option value="auto" selected>⚖️ Auto (Balanced Depth)</option>
+                    <option value="thinking">🧬 Thinking CoT (Deep Chain-of-Thought)</option>
+                    <option value="high">🔥 High (Deep Research)</option>
+                    <option value="medium">🎯 Medium (Standard)</option>
+                    <option value="low">⚡ Low (Fast Response)</option>
+                  </select>
+                </div>
+              </div>
           </div>
         </div>
 
@@ -853,6 +864,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busted for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=7.0.0"></script>
+  <script type="module" src="js/main.js?v=7.1.0"></script>
 </body>
 </html>

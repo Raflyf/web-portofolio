@@ -10,8 +10,33 @@
  * ============================================================================
  */
 
-function buildSystemPrompt(sessionLanguage = 'id') {
+function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
   const isEnglish = sessionLanguage === 'en';
+
+  let effortDirective = '';
+  if (reasoningEffort === 'thinking') {
+    effortDirective = isEnglish ? `
+[CHAIN-OF-THOUGHT / THINKING MODE ACTIVATED]:
+- The user has selected High-IQ Thinking / Chain-of-Thought (CoT) Mode.
+- Provide a rigorous, step-by-step analytical reasoning breakdown before concluding.
+- Break down mathematical formulas, algorithmic complexities, architectural trade-offs, and verify every step thoroughly.
+` : `
+[MODE THINKING & PENALARAN BERTAHAP (CHAIN-OF-THOUGHT)]:
+- Pengguna mengaktifkan Mode Thinking / CoT Tingkat Tinggi.
+- Sajikan penalaran analitis langkah demi langkah (Step-by-Step Reasoning) sebelum memberikan jawaban lengkap.
+- Uraikan rumus matematis, kompleksitas algoritma, trade-off arsitektur, dan pembuktian teknis secara mendalam.
+`;
+  } else if (reasoningEffort === 'high') {
+    effortDirective = `
+[MODE DEEP RESEARCH & MAXIMUM EFFORT]:
+- Berikan analisis riset mendalam, rinci, menyeluruh, dan komprehensif dari hulu ke hilir dengan cakupan maksimal.
+`;
+  } else if (reasoningEffort === 'low') {
+    effortDirective = `
+[MODE FAST & CONCISE RESPONSE]:
+- Berikan jawaban yang padat, lugas, cepat dipahami, dan langsung ke inti solusi.
+`;
+  }
 
   const languageDirective = isEnglish
     ? `[MANDATORY SESSION LANGUAGE LOCK: ENGLISH]
@@ -34,6 +59,7 @@ WAKTU & KAPABILITAS AKTIF:
 3. DILARANG MUTLAK menyisipkan batasan kuno fiktif seperti "cutoff 2024" atau "tidak bisa melihat gambar/mengakses internet". Anda sepenuhnya terhubung dan mampu menganalisis input multimodal.
 
 ${languageDirective}
+${effortDirective}
 
 PEDOMAN FORMAT & KEJELASAN JAWABAN (CLEAN, READABLE & STRUCTURED):
 1. Format Yang Sangat Rapi & Mudah Dipahami:
@@ -149,9 +175,17 @@ async function searchWebContext(query) {
   return '';
 }
 
-function pickAutoModel(query, hasImages = false) {
+function pickAutoModel(query, hasImages = false, reasoningEffort = 'auto') {
   if (hasImages) {
     return 'google/gemma-3-27b-it';
+  }
+
+  if (reasoningEffort === 'thinking') {
+    return 'deepseek/deepseek-chat';
+  }
+
+  if (reasoningEffort === 'low') {
+    return 'meta-llama/llama-3.1-8b-instruct';
   }
 
   const q = query.toLowerCase();
@@ -194,7 +228,8 @@ export default async function handler(req, res) {
       customProvider = '',
       attachments = [],
       sessionLanguage = 'id',
-      history = []
+      history = [],
+      reasoningEffort = 'auto'
     } = req.body || {};
 
     if (!query && (!attachments || attachments.length === 0)) {
@@ -238,12 +273,12 @@ export default async function handler(req, res) {
       assembledQuery = `${docTexts}\n\n[INSTRUKSI / PERTANYAAN PENGGUNA]:\n${query || 'Analisis dan jelaskan isi dokumen terlampir di atas secara mendalam.'}`;
     }
 
-    let targetModel = model === 'auto' ? pickAutoModel(query, hasImages) : model;
+    let targetModel = model === 'auto' ? pickAutoModel(query, hasImages, reasoningEffort) : model;
     if (hasImages && targetModel === 'auto') {
       targetModel = 'google/gemma-3-27b-it';
     }
 
-    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage)}${webContext}`;
+    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, reasoningEffort)}${webContext}`;
 
     // Assemble conversation history
     const formattedHistory = Array.isArray(history) ? history.map(h => ({
@@ -256,6 +291,9 @@ export default async function handler(req, res) {
       ...formattedHistory,
       { role: 'user', content: assembledQuery }
     ];
+
+    const maxTokensConfig = reasoningEffort === 'low' ? 4096 : 8192;
+    const tempConfig = reasoningEffort === 'low' ? 0.6 : (reasoningEffort === 'thinking' ? 0.7 : 0.8);
 
     // ========================================================================
     // 1. MULTIMODAL VISION ROUTE (If images are attached)
@@ -288,9 +326,9 @@ export default async function handler(req, res) {
                 { role: 'system', content: systemPromptWithSearch },
                 { role: 'user', content: userContent }
               ],
-              max_tokens: 8192
+              max_tokens: maxTokensConfig
             })
-          }, 12000);
+          }, 20000);
 
           if (nvResp.ok) {
             const nvData = await nvResp.json();
@@ -336,10 +374,10 @@ export default async function handler(req, res) {
                   { role: 'system', content: systemPromptWithSearch },
                   { role: 'user', content: userContent }
                 ],
-                max_tokens: 8192,
-                temperature: 0.7
+                max_tokens: maxTokensConfig,
+                temperature: tempConfig
               })
-            }, 12000);
+            }, 20000);
 
             if (response.ok) {
               const data = await response.json();
@@ -385,10 +423,10 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               model: nvModel,
               messages: baseTextMessages,
-              max_tokens: 8192,
-              temperature: 0.8
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
             })
-          }, 10000);
+          }, 20000);
 
           if (response.ok) {
             const data = await response.json();
@@ -429,6 +467,14 @@ export default async function handler(req, res) {
 
       for (const m of orCandidates) {
         try {
+          const openRouterPayload = {
+            model: m,
+            messages: baseTextMessages,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig,
+            ...(reasoningEffort === 'thinking' || reasoningEffort === 'high' ? { reasoning: { effort: 'high' } } : {})
+          };
+
           const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -437,13 +483,8 @@ export default async function handler(req, res) {
               'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
               'X-Title': 'Rafly Firmansyah AI Portfolio Terminal'
             },
-            body: JSON.stringify({
-              model: m,
-              messages: baseTextMessages,
-              max_tokens: 8192,
-              temperature: 0.8
-            })
-          }, 9000);
+            body: JSON.stringify(openRouterPayload)
+          }, 22000);
 
           if (response.ok) {
             const data = await response.json();
@@ -478,10 +519,10 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             model: 'deepseek-v4-flash-free',
             messages: baseTextMessages,
-            max_tokens: 8192,
-            temperature: 0.8
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
           })
-        }, 10000);
+        }, 20000);
 
         if (response.ok) {
           const data = await response.json();
@@ -519,10 +560,10 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             model: olModel,
             messages: baseTextMessages,
-            max_tokens: 8192,
-            temperature: 0.8
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
           })
-        }, 10000);
+        }, 20000);
 
         if (response.ok) {
           const data = await response.json();
@@ -559,7 +600,7 @@ export default async function handler(req, res) {
               { sender_type: 'USER', sender_name: 'User', text: `${systemPromptWithSearch}\n\n${assembledQuery}` }
             ]
           })
-        }, 10000);
+        }, 20000);
 
         if (response.ok) {
           const data = await response.json();

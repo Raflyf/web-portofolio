@@ -32,6 +32,8 @@ export function initTerminal() {
   let isGenerating = false;
   let attachedFiles = [];
 
+  const effortSelect = document.getElementById('terminal-effort-select');
+
   // Restore saved model dropdown selection
   if (modelSelect) {
     const savedModel = localStorage.getItem('ai_selected_model') || 'auto';
@@ -42,6 +44,21 @@ export function initTerminal() {
       const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || chosen;
       terminalAI.setModel(chosen);
       appendLine(`[Model AI] Beralih ke: ${modelText}`);
+      appendLine("");
+    });
+  }
+
+  // Restore saved effort & thinking mode selection
+  if (effortSelect) {
+    const savedEffort = localStorage.getItem('ai_selected_effort') || 'auto';
+    effortSelect.value = savedEffort;
+    terminalAI.setEffort(savedEffort);
+
+    effortSelect.addEventListener('change', () => {
+      const chosen = effortSelect.value;
+      const effortText = effortSelect.options[effortSelect.selectedIndex]?.text || chosen;
+      terminalAI.setEffort(chosen);
+      appendLine(`[Mode Reasoning & Effort] Beralih ke: ${effortText}`);
       appendLine("");
     });
   }
@@ -747,6 +764,14 @@ export function initTerminal() {
   if (modelSelect) {
     ['click', 'mousedown', 'mouseup', 'change'].forEach(evt => {
       modelSelect.addEventListener(evt, (e) => {
+        e.stopPropagation();
+      });
+    });
+  }
+
+  if (effortSelect) {
+    ['click', 'mousedown', 'mouseup', 'change'].forEach(evt => {
+      effortSelect.addEventListener(evt, (e) => {
         e.stopPropagation();
       });
     });
