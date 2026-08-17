@@ -447,7 +447,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'trivial_casual',
       effort: 'low', // Fast & concise, strictly saves flagship quota
-      omniCandidates: ['nemotron-laguna', 'Deepseek-V4-Flash-Free'], // High-speed local tier
+      omniCandidates: ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'], // DeepSeek first (high quota) with fast fallback
       openRouterCandidates: ['nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
     };
   }
@@ -460,7 +460,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'high', // Deep, complete code output
-      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['Deepseek-V4-Flash-Free', 'Codex', 'nemotron-laguna', 'Antigravity'],
       openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'cohere/north-mini-code:free']
     };
   }
@@ -472,7 +472,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'deep_reasoning',
       effort: 'thinking', // Deep analytical CoT
-      omniCandidates: ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['Deepseek-V4-Flash-Free', 'Antigravity', 'nemotron-laguna', 'Codex'],
       openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'openai/gpt-oss-20b:free']
     };
   }
@@ -481,7 +481,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   return {
     category: 'standard_balanced',
     effort: 'medium', // Balanced depth
-    omniCandidates: ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex', 'Antigravity'],
+    omniCandidates: ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex', 'Antigravity'],
     openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'openai/gpt-oss-20b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free']
   };
 }
@@ -841,7 +841,9 @@ Langkah yang WAJIB Anda lakukan:
             temperature: tempConfig
           };
 
-          const omniTimeout = (queryIntent.category === 'trivial_casual') ? 6000 : 25000;
+          const omniTimeout = omniModel.toLowerCase().includes('deepseek')
+            ? 4000
+            : ((queryIntent.category === 'trivial_casual') ? 6000 : 25000);
           const response = await fetchWithTimeout(OMNIROUTE_URL, {
             method: 'POST',
             headers: {

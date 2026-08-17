@@ -470,32 +470,34 @@ class TerminalAIEngine {
 
     if (isGreeting) {
       targetEffort = 'LOW';
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
+      omniCandidates = ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'];
     } else if (isHeavyCoding) {
       targetEffort = 'HIGH';
-      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Deepseek-V4-Flash-Free', 'Codex', 'nemotron-laguna', 'Antigravity'];
     } else if (isDeepReasoning) {
       targetEffort = 'THINKING';
-      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Deepseek-V4-Flash-Free', 'Antigravity', 'nemotron-laguna', 'Codex'];
     } else {
       targetEffort = 'MEDIUM';
-      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex', 'Antigravity'];
     }
 
     // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna)
     if (this.currentModel && this.currentModel !== 'auto') {
       const explicit = this.currentModel.toLowerCase();
-      if (explicit.includes('codex') || explicit.includes('terra')) omniCandidates = ['Codex', ...omniCandidates];
+      if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
+      else if (explicit.includes('codex') || explicit.includes('terra')) omniCandidates = ['Codex', ...omniCandidates];
       else if (explicit.includes('antigravity') || explicit.includes('opus')) omniCandidates = ['Antigravity', ...omniCandidates];
       else if (explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
-      else if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
     }
 
     if (OMNI_KEY) {
       for (const omniModel of omniCandidates) {
         try {
           const omniController = new AbortController();
-          const omniTimeout = setTimeout(() => omniController.abort(), 10000);
+          // 4s timeout for DeepSeek so if it is currently down it immediately falls over without stalling
+          const timeoutMs = omniModel.toLowerCase().includes('deepseek') ? 4000 : 12000;
+          const omniTimeout = setTimeout(() => omniController.abort(), timeoutMs);
           const res = await fetch(OMNI_URL, {
             method: 'POST',
             headers: {
