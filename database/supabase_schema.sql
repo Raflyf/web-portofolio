@@ -22,12 +22,15 @@ CREATE INDEX IF NOT EXISTS idx_telemetry_created_at ON public.portfolio_telemetr
 CREATE INDEX IF NOT EXISTS idx_telemetry_event_type ON public.portfolio_telemetry (event_type);
 CREATE INDEX IF NOT EXISTS idx_telemetry_event_target ON public.portfolio_telemetry (event_target);
 CREATE INDEX IF NOT EXISTS idx_telemetry_session_id ON public.portfolio_telemetry (session_id);
+-- Composite indexes for time-series filtering
+CREATE INDEX IF NOT EXISTS idx_telemetry_type_created ON public.portfolio_telemetry (event_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telemetry_target_created ON public.portfolio_telemetry (event_target, created_at DESC);
 
 -- 3. Enable Row Level Security (RLS)
 ALTER TABLE public.portfolio_telemetry ENABLE ROW LEVEL SECURITY;
 
 -- 4. Public Anonymous Role Policies
--- Allow visitors to INSERT telemetry events (Append-only)
+-- Allow visitors to INSERT telemetry events (Append-only with strict column length guards)
 CREATE POLICY "Allow public anonymous insert"
 ON public.portfolio_telemetry
 FOR INSERT
@@ -35,6 +38,10 @@ TO anon
 WITH CHECK (
     char_length(event_type) <= 50 AND
     char_length(event_target) <= 150 AND
+    (event_label IS NULL OR char_length(event_label) <= 255) AND
+    (device_type IS NULL OR char_length(device_type) <= 20) AND
+    (screen_resolution IS NULL OR char_length(screen_resolution) <= 30) AND
+    (referrer IS NULL OR char_length(referrer) <= 255) AND
     char_length(session_id) <= 64
 );
 
@@ -45,7 +52,7 @@ FOR SELECT
 TO anon
 USING (true);
 
--- Prohibit UPDATE and DELETE completely for public client
+-- Prohibit UPDATE and DELETE completely for public client (Immutable Event Log)
 CREATE POLICY "Deny public update"
 ON public.portfolio_telemetry
 FOR UPDATE
@@ -57,3 +64,4 @@ ON public.portfolio_telemetry
 FOR DELETE
 TO anon
 USING (false);
+

@@ -57,13 +57,22 @@ class TelemetryEngine {
   }
 
   async logEvent(eventType, eventTarget, eventLabel = '') {
+    let referrerHost = 'Direct / Bookmark';
+    if (document.referrer) {
+      try {
+        referrerHost = new URL(document.referrer, window.location.origin).hostname || 'Direct / Bookmark';
+      } catch {
+        referrerHost = 'External Domain';
+      }
+    }
+
     const payload = {
       event_type: eventType,
       event_target: eventTarget,
       event_label: eventLabel || eventTarget,
       device_type: this.deviceType,
       screen_resolution: this.screenRes,
-      referrer: document.referrer ? new URL(document.referrer, window.location.origin).hostname : 'Direct / Bookmark',
+      referrer: referrerHost,
       session_id: this.sessionId,
       created_at: new Date().toISOString()
     };
