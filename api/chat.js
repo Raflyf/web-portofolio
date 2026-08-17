@@ -538,10 +538,8 @@ Langkah yang WAJIB Anda lakukan:
       // 1A. OpenRouter Multimodal Vision Cascade
       if (OPENROUTER_KEY) {
         const visionModels = [
-          'google/gemini-2.0-flash-exp:free',
-          'google/gemma-3-27b-it',
-          'google/gemini-2.5-flash',
-          'qwen/qwen-2-vl-72b-instruct'
+          'nvidia/nemotron-nano-12b-v2-vl:free',
+          'google/gemma-3-27b-it'
         ];
 
         for (const vm of visionModels) {
