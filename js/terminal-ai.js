@@ -660,25 +660,25 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     if (hasImages) {
       omniCandidates = ['Vision-model'];
     } else if (targetEffort === 'THINKING' || isDeepReasoning) {
-      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex'];
+      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
     } else if (isProjectExplaining) {
-      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Antigravity', 'Codex'];
     } else if (isHeavyCoding) {
-      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna'];
+      omniCandidates = ['Codex', 'Deepseek-V4-Flash-Free', 'Antigravity', 'nemotron-laguna'];
     } else if (targetEffort === 'LOW' || isGreeting) {
-      omniCandidates = ['nemotron-laguna', 'Codex'];
+      omniCandidates = ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'];
     } else {
-      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Antigravity', 'Codex'];
     }
 
-    // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, Ultra)
+    // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna, DeepSeek, Ultra)
     if (this.currentModel && this.currentModel !== 'auto') {
       const explicit = this.currentModel.toLowerCase();
-      if (explicit.includes('ultra') || explicit.includes('550b')) omniCandidates = ['nemotron-3-ultra-free', ...omniCandidates];
-      else if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
+      if (explicit.includes('deepseek')) omniCandidates = ['Deepseek-V4-Flash-Free', ...omniCandidates];
+      else if (explicit.includes('ultra') || explicit.includes('550b') || explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
       else if (explicit.includes('codex') || explicit.includes('terra')) omniCandidates = ['Codex', ...omniCandidates];
       else if (explicit.includes('antigravity') || explicit.includes('opus')) omniCandidates = ['Antigravity', ...omniCandidates];
-      else if (explicit.includes('laguna') || explicit.includes('nemotron')) omniCandidates = ['nemotron-laguna', ...omniCandidates];
+      else if (explicit.includes('vision') || explicit.includes('minimax') || explicit.includes('mimo')) omniCandidates = ['Vision-model', ...omniCandidates];
     }
 
     const calculatedMaxTokens = targetEffort === 'LOW' ? 1000 : (targetEffort === 'THINKING' ? 6000 : (targetEffort === 'HIGH' ? 5000 : 3500));
