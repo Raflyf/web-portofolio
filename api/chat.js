@@ -199,8 +199,14 @@ function isJunkArticle(title) {
 }
 
 /**
- * Massive Real-Time Multi-Source Web & Encyclopedic Knowledge Engine
- * Aggregates Google News ID/EN, DuckDuckGo Abstract, and Wikipedia ID/EN concurrently.
+ * Massive Real-Time Multi-Source Web & Encyclopedic Knowledge Engine (v9.3.0)
+ * Concurrently crawls:
+ * 1. Google News Global / US (Live 2026 Tech & Model Releases)
+ * 2. Google News Indonesia (National Tech & Release Context)
+ * 3. Hugging Face Global Model Hub & Architecture Registry
+ * 4. Wikipedia English Deep REST Summary API
+ * 5. Indonesian Wikipedia Semantic Search API
+ * 6. English Wikipedia Semantic Search API
  */
 async function searchWebContext(query, history = []) {
   if (!query || typeof query !== 'string' || query.trim().length < 3) {
@@ -219,10 +225,13 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2200);
+    const timeout = setTimeout(() => controller.abort(), 2500);
 
-    // 5-Source Concurrent Multi-Index Search (Targeting latest 1 year / 2026 releases)
-    const [googleNewsEnRes, googleNewsIdRes, ddgRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
+    // Primary Entity Extraction for Encyclopedic REST lookups
+    const primaryEntity = cleanSearchQuery.split(' ')[0] || 'AI';
+
+    // 6-Source Concurrent Multi-Index Search
+    const [googleNewsEnRes, googleNewsIdRes, hfRes, wikiRestRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
       // 1. Google News Global / US RSS (Latest Global Tech & AI Releases)
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery + ' when:1y')}&hl=en-US&gl=US&ceid=US:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
@@ -233,15 +242,20 @@ async function searchWebContext(query, history = []) {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
-      // 3. DuckDuckGo Instant Answer / Abstract
-      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleanSearchQuery)}&format=json&no_html=1&skip_disambig=1`, {
+      // 3. Hugging Face Global Model Hub & Open Architecture Index
+      fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(cleanSearchQuery)}&limit=6`, {
         signal: controller.signal
       }),
-      // 4. Indonesian Wikipedia
+      // 4. Wikipedia English Deep REST Summary API
+      fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(primaryEntity)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+        signal: controller.signal
+      }),
+      // 5. Indonesian Wikipedia Search API
       fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
         signal: controller.signal
       }),
-      // 5. English Wikipedia
+      // 6. English Wikipedia Search API
       fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
         signal: controller.signal
       })
@@ -275,7 +289,6 @@ async function searchWebContext(query, history = []) {
           const title = cleanStr(titleMatch ? titleMatch[1] : '');
           if (title && !isJunkArticle(title)) {
             const dateStr = dateMatch ? dateMatch[1] : '2026';
-            // Prefer 2026 / recent items
             if (dateStr.includes('2026') || !dateStr.includes('2024')) {
               snippets.push(`[Live Global News (${dateStr})]: ${title}`);
               rawSnippets.push(`[Global News]: ${title}`);
@@ -305,40 +318,50 @@ async function searchWebContext(query, history = []) {
       }
     }
 
-    // 3. Process DuckDuckGo Abstract / Instant Answer
-    if (ddgRes.status === 'fulfilled' && ddgRes.value.ok) {
-      const ddgData = await ddgRes.value.json().catch(() => null);
-      if (ddgData && ddgData.AbstractText) {
-        const abstract = cleanStr(ddgData.AbstractText);
-        if (abstract && !isJunkArticle(abstract)) {
-          snippets.push(`[DuckDuckGo Knowledge - ${ddgData.Heading || 'Topic'}]: ${abstract}`);
-          rawSnippets.push(`[DuckDuckGo]: ${abstract}`);
+    // 3. Process Hugging Face Model Hub & Global Architecture Registry
+    if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
+      const hfData = await hfRes.value.json().catch(() => null);
+      if (Array.isArray(hfData) && hfData.length > 0) {
+        const topModels = hfData.slice(0, 4).map(m => `${m.id} (${m.downloads || 0} downloads, ${m.likes || 0} likes)`).join('; ');
+        snippets.push(`[Hugging Face Global Model Registry]: Model aktif terindeks: ${topModels}`);
+        rawSnippets.push(`[Hugging Face Models]: ${topModels}`);
+      }
+    }
+
+    // 4. Process Wikipedia English REST Summary
+    if (wikiRestRes.status === 'fulfilled' && wikiRestRes.value.ok) {
+      const restData = await wikiRestRes.value.json().catch(() => null);
+      if (restData && restData.extract) {
+        const summary = cleanStr(restData.extract);
+        if (summary && !isJunkArticle(summary)) {
+          snippets.push(`[Encyclopedic Knowledge - ${restData.title}]: ${summary}`);
+          rawSnippets.push(`[Encyclopedia]: ${summary}`);
         }
       }
     }
 
-    // 4. Process Indonesian Wikipedia
+    // 5. Process Indonesian Wikipedia Search
     if (wikiIdRes.status === 'fulfilled' && wikiIdRes.value.ok) {
       const wikiData = await wikiIdRes.value.json().catch(() => null);
       const hits = wikiData?.query?.search || [];
       if (hits.length > 0) {
         hits.slice(0, 2).forEach(h => {
           const snippet = cleanStr(h.snippet);
-          if (snippet) {
+          if (snippet && !isJunkArticle(snippet)) {
             snippets.push(`[Wikipedia ID - ${h.title}]: ${snippet}`);
           }
         });
       }
     }
 
-    // 5. Process English Wikipedia
-    if (snippets.length < 5 && wikiEnRes.status === 'fulfilled' && wikiEnRes.value.ok) {
+    // 6. Process English Wikipedia Search
+    if (snippets.length < 6 && wikiEnRes.status === 'fulfilled' && wikiEnRes.value.ok) {
       const wikiData = await wikiEnRes.value.json().catch(() => null);
       const hits = wikiData?.query?.search || [];
       if (hits.length > 0) {
         hits.slice(0, 2).forEach(h => {
           const snippet = cleanStr(h.snippet);
-          if (snippet) {
+          if (snippet && !isJunkArticle(snippet)) {
             snippets.push(`[Wikipedia EN - ${h.title}]: ${snippet}`);
           }
         });
@@ -347,10 +370,10 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (snippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${snippets.join('\n')}\n(PENTING: Gunakan hasil pencarian internet live di atas untuk menjawab secara akurat, faktual, dan mutakhir.)\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${snippets.join('\n')}\n(PENTING: Gunakan hasil pencarian internet live multi-sumber di atas untuk menjawab secara akurat, faktual, dan mutakhir dengan menyertakan detail teknis/benchmark yang relevan.)\n`;
     }
 
-    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 3) };
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 4) };
   } catch (_) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
