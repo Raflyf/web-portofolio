@@ -111,6 +111,7 @@ class TerminalAIEngine {
     this.customKey = localStorage.getItem('ai_custom_key') || null;
     this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
     this.sessionLanguage = sessionStorage.getItem('ai_session_lang') || null;
+    this.reasoningEffort = localStorage.getItem('ai_selected_effort') || 'auto';
     this.conversationHistory = [];
   }
 
@@ -161,6 +162,11 @@ class TerminalAIEngine {
     localStorage.setItem('ai_selected_model', modelId);
   }
 
+  setEffort(effort) {
+    this.reasoningEffort = effort;
+    localStorage.setItem('ai_selected_effort', effort);
+  }
+
   setKey(key, provider = 'openrouter') {
     this.customKey = key.trim();
     this.customProvider = provider.trim().toLowerCase();
@@ -185,8 +191,10 @@ class TerminalAIEngine {
       "[AI ENGINE & PROVIDER POOL STATUS]",
       "----------------------------------------------------------------",
       `Model AI Aktif       : ${this.currentModel}`,
+      `Mode Reasoning/Effort: ${this.reasoningEffort.toUpperCase()}`,
       `Bahasa Sesi Terkunci : ${this.sessionLanguage === 'en' ? 'Bahasa Inggris (English)' : 'Bahasa Indonesia'}`,
       `Batas Output Token   : 8.192 Tokens / Respons (Full-Length & Zero-Truncation)`,
+      `Batas Waktu Eksekusi : 2 Menit (120 Detik)`,
       `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server Gateway'}`,
       `Cloud Multi-AI       : Vercel Serverless Multi-API Gateway (/api/chat)`,
       `Fallback Engine      : In-Browser Semantic Knowledge Engine (Active & Ready)`
@@ -207,7 +215,7 @@ class TerminalAIEngine {
     // 1. Primary: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
+      const timeout = setTimeout(() => controller.abort(), 120000);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -219,6 +227,7 @@ class TerminalAIEngine {
           customProvider: this.customProvider,
           attachments: attachments,
           sessionLanguage: currentLang,
+          reasoningEffort: this.reasoningEffort,
           history: this.conversationHistory.slice(-6)
         }),
         signal: controller.signal
@@ -267,7 +276,7 @@ class TerminalAIEngine {
     } catch (netErr) {
       if (netErr.name === 'AbortError') {
         return [
-          `[TIMEOUT / 60 Detik]: Permintaan ke model AI melebihi batas waktu 60 detik.`,
+          `[TIMEOUT / 2 Menit]: Permintaan ke model AI melebihi batas waktu 2 menit.`,
           `Model sedang memproses komputasi berat. Silakan coba kembali atau pilih model lain.`
         ];
       }

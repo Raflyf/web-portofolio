@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "functions": {
     "api/chat.js": {
-      "maxDuration": 60
+      "maxDuration": 120
     }
   },
   "headers": [
