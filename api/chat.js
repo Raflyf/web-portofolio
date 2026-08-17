@@ -99,6 +99,19 @@ Nol Emoji & Persona Profesional:
 `;
 }
 
+async function fetchWithTimeout(url, options, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return res;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
 /**
  * Real-Time Web & Encyclopedic Knowledge Searcher
  */
@@ -117,7 +130,7 @@ async function searchWebContext(query) {
   try {
     const cleanSearchQuery = query.replace(/[^\w\s]/gi, ' ').trim().slice(0, 80);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
+    const timeout = setTimeout(() => controller.abort(), 1500);
 
     const res = await fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
       signal: controller.signal
@@ -137,14 +150,12 @@ async function searchWebContext(query) {
 }
 
 function pickAutoModel(query, hasImages = false) {
-  // Priority 1: If multimodal images are attached, route to highest-IQ Vision Frontier model
   if (hasImages) {
     return 'google/gemma-3-27b-it';
   }
 
   const q = query.toLowerCase();
   
-  // Priority 2: Code & Programming Specialist Intents
   if (
     q.includes('code') || q.includes('koding') || q.includes('python') || q.includes('javascript') ||
     q.includes('fungsi') || q.includes('function') || q.includes('script') || q.includes('bug') ||
@@ -154,7 +165,6 @@ function pickAutoModel(query, hasImages = false) {
     return 'qwen/qwen-2.5-coder-32b-instruct';
   }
 
-  // Priority 3: Deep Analytical Reasoning, Complex Synthesis, PDF Analysis & General IQ (DeepSeek V3 671B)
   return 'deepseek/deepseek-chat';
 }
 
@@ -229,7 +239,7 @@ export default async function handler(req, res) {
 
     let targetModel = model === 'auto' ? pickAutoModel(query, hasImages) : model;
     if (hasImages && targetModel === 'auto') {
-      targetModel = 'qwen/qwen-2-vl-72b-instruct';
+      targetModel = 'google/gemma-3-27b-it';
     }
 
     const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage)}${webContext}`;
@@ -250,10 +260,10 @@ export default async function handler(req, res) {
         });
       }
 
-      // If user selected Nvidia Vision specifically
-      if (targetModel.includes('nvidia') && NVIDIA_KEY) {
+      // 1A. Nvidia Vision Gateway
+      if (NVIDIA_KEY) {
         try {
-          const nvResp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          const nvResp = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -267,7 +277,7 @@ export default async function handler(req, res) {
               ],
               max_tokens: 8192
             })
-          });
+          }, 12000);
 
           if (nvResp.ok) {
             const nvData = await nvResp.json();
@@ -282,26 +292,24 @@ export default async function handler(req, res) {
             }
           } else {
             const errTxt = await nvResp.text();
-            providerErrors.push(`Nvidia Vision HTTP ${nvResp.status}: ${errTxt.slice(0, 120)}`);
+            providerErrors.push(`Nvidia Vision HTTP ${nvResp.status}: ${errTxt.slice(0, 100)}`);
           }
         } catch (err) {
-          providerErrors.push(`Nvidia Vision Exception: ${err.message}`);
+          providerErrors.push(`Nvidia Vision: ${err.message}`);
         }
       }
 
-      // OpenRouter Multimodal Vision Cascade (Gemma 3, Gemini 2.5 Flash, Qwen 2 VL)
+      // 1B. OpenRouter Multimodal Vision Cascade
       if (OPENROUTER_KEY) {
         const visionModels = [
-          targetModel.includes('vision') || targetModel.includes('vl') || targetModel.includes('gemma') || targetModel.includes('gemini') ? targetModel : 'google/gemma-3-27b-it',
           'google/gemma-3-27b-it',
-          'google/gemma-3-12b-it',
           'google/gemini-2.5-flash',
           'qwen/qwen-2-vl-72b-instruct'
         ];
 
         for (const vm of visionModels) {
           try {
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -318,7 +326,7 @@ export default async function handler(req, res) {
                 max_tokens: 8192,
                 temperature: 0.7
               })
-            });
+            }, 12000);
 
             if (response.ok) {
               const data = await response.json();
@@ -333,71 +341,29 @@ export default async function handler(req, res) {
               }
             } else {
               const errTxt = await response.text();
-              providerErrors.push(`Vision ${vm} HTTP ${response.status}: ${errTxt.slice(0, 120)}`);
+              providerErrors.push(`Vision ${vm} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
             }
           } catch (err) {
-            providerErrors.push(`Vision ${vm} Exception: ${err.message}`);
+            providerErrors.push(`Vision ${vm}: ${err.message}`);
           }
         }
       }
     }
 
     // ========================================================================
-    // 2. OPENCODE GATEWAY
+    // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
-    if (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || targetModel.startsWith('oc/')) {
-      if (OPENCODE_KEY) {
+
+    // 2A. Nvidia NIM Ultra-Fast Gateway (If targeted or Auto fallback)
+    if (NVIDIA_KEY) {
+      const nvCandidateModels = targetModel.startsWith('nvidia/')
+        ? [targetModel.replace('nvidia/', '')]
+        : ['meta/llama-3.3-70b-instruct', 'nvidia/llama-3.1-nemotron-70b-instruct'];
+
+      for (let nvModel of nvCandidateModels) {
+        if (nvModel.includes('nemotron')) nvModel = 'nvidia/llama-3.1-nemotron-70b-instruct';
         try {
-          const response = await fetch('https://api.opencode.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OPENCODE_KEY}`
-            },
-            body: JSON.stringify({
-              model: 'deepseek-v4-flash-free',
-              messages: [
-                { role: 'system', content: systemPromptWithSearch },
-                { role: 'user', content: assembledQuery }
-              ],
-              max_tokens: 8192
-            })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
-              return res.status(200).json({
-                success: true,
-                response: content,
-                model: 'deepseek-v4-flash-free',
-                provider: 'OpenCode Gateway'
-              });
-            }
-          } else {
-            const errTxt = await response.text();
-            providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 120)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`OpenCode Exception: ${err.message}`);
-        }
-      }
-      targetModel = 'deepseek/deepseek-chat';
-    }
-
-    // ========================================================================
-    // 3. NVIDIA NIM GATEWAY
-    // ========================================================================
-    if (targetModel.startsWith('nvidia/')) {
-      if (NVIDIA_KEY) {
-        try {
-          let nvModel = targetModel.replace('nvidia/', '');
-          if (nvModel.includes('nemotron')) {
-            nvModel = 'nvidia/llama-3.1-nemotron-70b-instruct';
-          }
-
-          const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          const response = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -412,7 +378,7 @@ export default async function handler(req, res) {
               max_tokens: 8192,
               temperature: 0.7
             })
-          });
+          }, 10000);
 
           if (response.ok) {
             const data = await response.json();
@@ -427,126 +393,33 @@ export default async function handler(req, res) {
             }
           } else {
             const errTxt = await response.text();
-            providerErrors.push(`Nvidia ${nvModel} HTTP ${response.status}: ${errTxt.slice(0, 120)}`);
+            providerErrors.push(`Nvidia ${nvModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
           }
         } catch (err) {
-          providerErrors.push(`Nvidia Exception: ${err.message}`);
+          providerErrors.push(`Nvidia ${nvModel}: ${err.message}`);
         }
       }
-      targetModel = 'meta-llama/llama-3.3-70b-instruct';
     }
 
-    // ========================================================================
-    // 4. MINIMAX GATEWAY
-    // ========================================================================
-    if (targetModel.startsWith('minimax/')) {
-      if (MINIMAX_KEY) {
-        try {
-          const response = await fetch('https://api.minimax.chat/v1/text/chatcompletion_v2', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${MINIMAX_KEY}`
-            },
-            body: JSON.stringify({
-              model: 'minimax-01',
-              messages: [
-                { sender_type: 'USER', sender_name: 'User', text: `${systemPromptWithSearch}\n\n${assembledQuery}` }
-              ]
-            })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.reply || data?.choices?.[0]?.message?.text;
-            if (content) {
-              return res.status(200).json({
-                success: true,
-                response: content,
-                model: 'minimax-01',
-                provider: 'MiniMax AI'
-              });
-            }
-          } else {
-            const errTxt = await response.text();
-            providerErrors.push(`MiniMax HTTP ${response.status}: ${errTxt.slice(0, 120)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`MiniMax Exception: ${err.message}`);
-        }
-      }
-      targetModel = 'qwen/qwen-2.5-72b-instruct';
-    }
-
-    // ========================================================================
-    // 5. OLLAMA CLOUD GATEWAY
-    // ========================================================================
-    if (targetModel.startsWith('ollamacloud/')) {
-      if (OLLAMA_KEY) {
-        try {
-          let olModel = targetModel.replace('ollamacloud/', '');
-          if (olModel.includes('kimi')) olModel = 'kimi-k2.7-coder';
-          else if (olModel.includes('gemma')) olModel = 'gemma:31b';
-
-          const response = await fetch('https://api.ollama.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OLLAMA_KEY}`
-            },
-            body: JSON.stringify({
-              model: olModel,
-              messages: [
-                { role: 'system', content: systemPromptWithSearch },
-                { role: 'user', content: assembledQuery }
-              ],
-              max_tokens: 8192
-            })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
-              return res.status(200).json({
-                success: true,
-                response: content,
-                model: olModel,
-                provider: 'Ollama Cloud AI'
-              });
-            }
-          } else {
-            const errTxt = await response.text();
-            providerErrors.push(`Ollama Cloud HTTP ${response.status}: ${errTxt.slice(0, 120)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`Ollama Cloud Exception: ${err.message}`);
-        }
-      }
-      targetModel = 'qwen/qwen-2.5-coder-32b-instruct';
-    }
-
-    // ========================================================================
-    // 6. OPENROUTER 24/7 VERIFIED CLOUD POOL
-    // ========================================================================
+    // 2B. OpenRouter Multi-Model Cloud Pool
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
       if (orModel.startsWith('ollamacloud/')) {
         orModel = orModel.includes('code') ? 'qwen/qwen-2.5-coder-32b-instruct' : 'meta-llama/llama-3.3-70b-instruct';
       }
 
-      const candidates = [
+      const orCandidates = [
         orModel,
-        'deepseek/deepseek-chat',
         'meta-llama/llama-3.3-70b-instruct',
-        'mistralai/mistral-large-2407',
+        'qwen/qwen-2.5-72b-instruct',
         'qwen/qwen-2.5-coder-32b-instruct',
-        'qwen/qwen-2.5-72b-instruct'
+        'deepseek/deepseek-chat',
+        'mistralai/mistral-large-2407'
       ];
 
-      for (const m of candidates) {
+      for (const m of orCandidates) {
         try {
-          const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -563,7 +436,7 @@ export default async function handler(req, res) {
               max_tokens: 8192,
               temperature: 0.7
             })
-          });
+          }, 9000);
 
           if (response.ok) {
             const data = await response.json();
@@ -573,23 +446,147 @@ export default async function handler(req, res) {
                 success: true,
                 response: content,
                 model: m,
-                provider: 'Cloud Multi-AI Gateway'
+                provider: 'OpenRouter Multi-AI Gateway'
               });
             }
           } else {
             const errTxt = await response.text();
-            providerErrors.push(`OpenRouter ${m} HTTP ${response.status}: ${errTxt.slice(0, 120)}`);
+            providerErrors.push(`OpenRouter ${m} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
           }
         } catch (err) {
-          providerErrors.push(`OpenRouter ${m} Exception: ${err.message}`);
+          providerErrors.push(`OpenRouter ${m}: ${err.message}`);
         }
       }
     }
 
-    // Dynamic Failure Reporting
+    // 2C. OpenCode Gateway
+    if (OPENCODE_KEY) {
+      try {
+        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENCODE_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-v4-flash-free',
+            messages: [
+              { role: 'system', content: systemPromptWithSearch },
+              { role: 'user', content: assembledQuery }
+            ],
+            max_tokens: 8192
+          })
+        }, 10000);
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data?.choices?.[0]?.message?.content;
+          if (content) {
+            return res.status(200).json({
+              success: true,
+              response: content,
+              model: 'deepseek-v4-flash-free',
+              provider: 'OpenCode Gateway'
+            });
+          }
+        } else {
+          const errTxt = await response.text();
+          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`OpenCode: ${err.message}`);
+      }
+    }
+
+    // 2D. Ollama Cloud Gateway
+    if (OLLAMA_KEY) {
+      try {
+        let olModel = targetModel.startsWith('ollamacloud/') ? targetModel.replace('ollamacloud/', '') : 'kimi-k2.7-coder';
+        if (olModel.includes('kimi')) olModel = 'kimi-k2.7-coder';
+        else if (olModel.includes('gemma')) olModel = 'gemma:31b';
+
+        const response = await fetchWithTimeout('https://api.ollama.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OLLAMA_KEY}`
+          },
+          body: JSON.stringify({
+            model: olModel,
+            messages: [
+              { role: 'system', content: systemPromptWithSearch },
+              { role: 'user', content: assembledQuery }
+            ],
+            max_tokens: 8192
+          })
+        }, 10000);
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data?.choices?.[0]?.message?.content;
+          if (content) {
+            return res.status(200).json({
+              success: true,
+              response: content,
+              model: olModel,
+              provider: 'Ollama Cloud AI'
+            });
+          }
+        } else {
+          const errTxt = await response.text();
+          providerErrors.push(`Ollama Cloud HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`Ollama Cloud: ${err.message}`);
+      }
+    }
+
+    // 2E. MiniMax Gateway
+    if (MINIMAX_KEY) {
+      try {
+        const response = await fetchWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${MINIMAX_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'minimax-01',
+            messages: [
+              { sender_type: 'USER', sender_name: 'User', text: `${systemPromptWithSearch}\n\n${assembledQuery}` }
+            ]
+          })
+        }, 10000);
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data?.reply || data?.choices?.[0]?.message?.text;
+          if (content) {
+            return res.status(200).json({
+              success: true,
+              response: content,
+              model: 'minimax-01',
+              provider: 'MiniMax AI'
+            });
+          }
+        } else {
+          const errTxt = await response.text();
+          providerErrors.push(`MiniMax HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`MiniMax: ${err.message}`);
+      }
+    }
+
+    // If no provider succeeded or keys are missing:
+    const noKeysConfigured = !OPENROUTER_KEY && !NVIDIA_KEY && !OPENCODE_KEY && !MINIMAX_KEY && !OLLAMA_KEY;
+    const errorMsg = noKeysConfigured 
+      ? 'Belum ada API Key aktif yang terpasang di server Vercel atau terminal. Gunakan perintah: setkey <provider> <key>'
+      : 'Semua provider gateway model AI sedang sibuk atau mengalami timeout antrean.';
+
     return res.status(502).json({
       success: false,
-      error: 'Semua provider model cloud mengalami kegagalan respon.',
+      error: errorMsg,
       details: providerErrors,
       model: targetModel
     });
