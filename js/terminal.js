@@ -676,7 +676,6 @@ export function initTerminal() {
     });
   }
 
-  const modelSelect = document.getElementById('terminal-model-select');
   if (modelSelect) {
     ['click', 'mousedown', 'mouseup', 'change'].forEach(evt => {
       modelSelect.addEventListener(evt, (e) => {
