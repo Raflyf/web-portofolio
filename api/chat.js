@@ -220,14 +220,9 @@ function isJunkArticle(title) {
 }
 
 /**
- * Massive Real-Time Multi-Source Web & Encyclopedic Knowledge Engine (v9.3.0)
- * Concurrently crawls:
- * 1. Google News Global / US (Live 2026 Tech & Model Releases)
- * 2. Google News Indonesia (National Tech & Release Context)
- * 3. Hugging Face Global Model Hub & Architecture Registry
- * 4. Wikipedia English Deep REST Summary API
- * 5. Indonesian Wikipedia Semantic Search API
- * 6. English Wikipedia Semantic Search API
+ * Massive Real-Time Multi-Entity Parallel Web Crawler (v9.4.0)
+ * Intelligently decomposes multi-topic queries (e.g. "Claude, GPT, and Gemini") into individual targeted searches
+ * and concurrently extracts data from Google News Global, Google News ID, Wikipedia, and Hugging Face.
  */
 async function searchWebContext(query, history = []) {
   if (!query || typeof query !== 'string' || query.trim().length < 3) {
@@ -246,46 +241,35 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
+    const timeout = setTimeout(() => controller.abort(), 2800);
 
-    // Primary Entity Extraction for Encyclopedic REST lookups
-    const primaryEntity = cleanSearchQuery.split(' ')[0] || 'AI';
+    // 1. Detect sub-entities for multi-topic queries
+    const subQueries = [];
+    const lowerCombined = `${query} ${cleanSearchQuery}`.toLowerCase();
 
-    // 6-Source Concurrent Multi-Index Search
-    const [googleNewsEnRes, googleNewsIdRes, hfRes, wikiRestRes, wikiIdRes, wikiEnRes] = await Promise.allSettled([
-      // 1. Google News Global / US RSS (Latest Global Tech & AI Releases)
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery + ' when:1y')}&hl=en-US&gl=US&ceid=US:en`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // 2. Google News Indonesia RSS
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(cleanSearchQuery + ' when:1y')}&hl=id&gl=ID&ceid=ID:id`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // 3. Hugging Face Global Model Hub & Open Architecture Index
-      fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(cleanSearchQuery)}&limit=6`, {
-        signal: controller.signal
-      }),
-      // 4. Wikipedia English Deep REST Summary API
-      fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(primaryEntity)}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-        signal: controller.signal
-      }),
-      // 5. Indonesian Wikipedia Search API
-      fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
-        signal: controller.signal
-      }),
-      // 6. English Wikipedia Search API
-      fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
-        signal: controller.signal
-      })
-    ]);
+    if (lowerCombined.includes('gpt') || lowerCombined.includes('openai') || lowerCombined.includes('chatgpt')) {
+      subQueries.push('OpenAI GPT release');
+    }
+    if (lowerCombined.includes('claude') || lowerCombined.includes('anthropic')) {
+      subQueries.push('Anthropic Claude release');
+    }
+    if (lowerCombined.includes('gemini') || lowerCombined.includes('google ai')) {
+      subQueries.push('Google Gemini release');
+    }
+    if (lowerCombined.includes('deepseek')) {
+      subQueries.push('DeepSeek AI release');
+    }
+    if (lowerCombined.includes('mistral')) {
+      subQueries.push('Mistral AI release');
+    }
+    if (lowerCombined.includes('llama') || lowerCombined.includes('meta ai')) {
+      subQueries.push('Meta Llama release');
+    }
 
-    clearTimeout(timeout);
-
-    let snippets = [];
-    let rawSnippets = [];
+    // If no specific AI vendor matched, use the cleaned query
+    if (subQueries.length === 0) {
+      subQueries.push(cleanSearchQuery);
+    }
 
     // Helper to sanitize XML / HTML entities
     const cleanStr = (str) => {
@@ -299,102 +283,95 @@ async function searchWebContext(query, history = []) {
         .trim();
     };
 
-    // 1. Process Google News Global / US
-    if (googleNewsEnRes.status === 'fulfilled' && googleNewsEnRes.value.ok) {
-      const xml = await googleNewsEnRes.value.text().catch(() => '');
-      if (xml) {
-        const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-        items.slice(0, 5).forEach((item) => {
-          const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
-          const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
-          const title = cleanStr(titleMatch ? titleMatch[1] : '');
-          if (title && !isJunkArticle(title)) {
-            const dateStr = dateMatch ? dateMatch[1] : '2026';
-            if (dateStr.includes('2026') || !dateStr.includes('2024')) {
+    let snippets = [];
+    let rawSnippets = [];
+
+    // 2. Parallel Search for each Sub-Query on Google News & Wiki
+    const searchPromises = subQueries.map(async (sq) => {
+      try {
+        const [gNewsEn, gNewsId, wikiRes, hfRes] = await Promise.allSettled([
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(sq + ' when:1y')}&hl=en-US&gl=US&ceid=US:en`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          }),
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(sq + ' when:1y')}&hl=id&gl=ID&ceid=ID:id`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          }),
+          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(sq)}&format=json&origin=*`, {
+            signal: controller.signal
+          }),
+          fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(sq.split(' ')[0])}&limit=3`, {
+            signal: controller.signal
+          })
+        ]);
+
+        // Process Global News
+        if (gNewsEn.status === 'fulfilled' && gNewsEn.value.ok) {
+          const xml = await gNewsEn.value.text().catch(() => '');
+          const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
+          items.slice(0, 3).forEach((item) => {
+            const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+            const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+            const title = cleanStr(titleMatch ? titleMatch[1] : '');
+            if (title && !isJunkArticle(title)) {
+              const dateStr = dateMatch ? dateMatch[1] : '2026';
               snippets.push(`[Live Global News (${dateStr})]: ${title}`);
               rawSnippets.push(`[Global News]: ${title}`);
             }
-          }
-        });
-      }
-    }
+          });
+        }
 
-    // 2. Process Google News Indonesia
-    if (googleNewsIdRes.status === 'fulfilled' && googleNewsIdRes.value.ok) {
-      const xml = await googleNewsIdRes.value.text().catch(() => '');
-      if (xml) {
-        const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-        items.slice(0, 4).forEach((item) => {
-          const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
-          const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
-          const title = cleanStr(titleMatch ? titleMatch[1] : '');
-          if (title && !isJunkArticle(title)) {
-            const dateStr = dateMatch ? dateMatch[1] : '2026';
-            if (dateStr.includes('2026') || !dateStr.includes('2024')) {
+        // Process Indonesian News
+        if (gNewsId.status === 'fulfilled' && gNewsId.value.ok) {
+          const xml = await gNewsId.value.text().catch(() => '');
+          const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
+          items.slice(0, 2).forEach((item) => {
+            const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+            const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+            const title = cleanStr(titleMatch ? titleMatch[1] : '');
+            if (title && !isJunkArticle(title)) {
+              const dateStr = dateMatch ? dateMatch[1] : '2026';
               snippets.push(`[Live Berita Indonesia (${dateStr})]: ${title}`);
-              rawSnippets.push(`[Berita ID]: ${title}`);
+            }
+          });
+        }
+
+        // Process Wikipedia
+        if (wikiRes.status === 'fulfilled' && wikiRes.value.ok) {
+          const wikiData = await wikiRes.value.json().catch(() => null);
+          const hits = wikiData?.query?.search || [];
+          if (hits.length > 0) {
+            const h = hits[0];
+            const snippet = cleanStr(h.snippet);
+            if (snippet && !isJunkArticle(snippet)) {
+              snippets.push(`[Wikipedia - ${h.title}]: ${snippet}`);
             }
           }
-        });
-      }
-    }
-
-    // 3. Process Hugging Face Model Hub & Global Architecture Registry
-    if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
-      const hfData = await hfRes.value.json().catch(() => null);
-      if (Array.isArray(hfData) && hfData.length > 0) {
-        const topModels = hfData.slice(0, 4).map(m => `${m.id} (${m.downloads || 0} downloads, ${m.likes || 0} likes)`).join('; ');
-        snippets.push(`[Hugging Face Global Model Registry]: Model aktif terindeks: ${topModels}`);
-        rawSnippets.push(`[Hugging Face Models]: ${topModels}`);
-      }
-    }
-
-    // 4. Process Wikipedia English REST Summary
-    if (wikiRestRes.status === 'fulfilled' && wikiRestRes.value.ok) {
-      const restData = await wikiRestRes.value.json().catch(() => null);
-      if (restData && restData.extract) {
-        const summary = cleanStr(restData.extract);
-        if (summary && !isJunkArticle(summary)) {
-          snippets.push(`[Encyclopedic Knowledge - ${restData.title}]: ${summary}`);
-          rawSnippets.push(`[Encyclopedia]: ${summary}`);
         }
-      }
-    }
 
-    // 5. Process Indonesian Wikipedia Search
-    if (wikiIdRes.status === 'fulfilled' && wikiIdRes.value.ok) {
-      const wikiData = await wikiIdRes.value.json().catch(() => null);
-      const hits = wikiData?.query?.search || [];
-      if (hits.length > 0) {
-        hits.slice(0, 2).forEach(h => {
-          const snippet = cleanStr(h.snippet);
-          if (snippet && !isJunkArticle(snippet)) {
-            snippets.push(`[Wikipedia ID - ${h.title}]: ${snippet}`);
+        // Process Hugging Face
+        if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
+          const hfData = await hfRes.value.json().catch(() => null);
+          if (Array.isArray(hfData) && hfData.length > 0) {
+            const hfNames = hfData.slice(0, 2).map(m => m.id).join(', ');
+            snippets.push(`[Hugging Face Models]: ${hfNames}`);
           }
-        });
-      }
-    }
+        }
+      } catch (_) {}
+    });
 
-    // 6. Process English Wikipedia Search
-    if (snippets.length < 6 && wikiEnRes.status === 'fulfilled' && wikiEnRes.value.ok) {
-      const wikiData = await wikiEnRes.value.json().catch(() => null);
-      const hits = wikiData?.query?.search || [];
-      if (hits.length > 0) {
-        hits.slice(0, 2).forEach(h => {
-          const snippet = cleanStr(h.snippet);
-          if (snippet && !isJunkArticle(snippet)) {
-            snippets.push(`[Wikipedia EN - ${h.title}]: ${snippet}`);
-          }
-        });
-      }
-    }
+    await Promise.all(searchPromises);
+    clearTimeout(timeout);
 
+    // Deduplicate snippets
+    const uniqueSnippets = Array.from(new Set(snippets));
     let formattedPrompt = '';
-    if (snippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${snippets.join('\n')}\n(PENTING: Gunakan hasil pencarian internet live multi-sumber di atas untuk menjawab secara akurat, faktual, dan mutakhir dengan menyertakan detail teknis/benchmark yang relevan.)\n`;
+    if (uniqueSnippets.length > 0) {
+      formattedPrompt = `\n\n[HASIL PENCARIAN INTERNET REAL-TIME & LIVE WEB DATA 2026]:\n${uniqueSnippets.join('\n')}\n(PENTING: Gunakan hasil pencarian internet live di atas untuk menjawab secara akurat, faktual, dan mutakhir.)\n`;
     }
 
-    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 4) };
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 5) };
   } catch (_) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
