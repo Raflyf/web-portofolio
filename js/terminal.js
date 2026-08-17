@@ -446,7 +446,67 @@ export function initTerminal() {
     return escaped;
   }
 
-  function appendLine(text, isPrompt = false, userCmd = '', isThinking = false) {
+  function appendUserBubble(userText, attachments = []) {
+    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-msg chat-msg--user';
+
+    let attachHtml = '';
+    if (attachments.length > 0) {
+      const items = attachments.map(a => `<span class="chat-attach-badge">${a.isImage ? '🖼️' : '📄'} ${a.name}</span>`).join(' ');
+      attachHtml = `<div class="chat-msg__attachments">${items}</div>`;
+    }
+
+    msgEl.innerHTML = `
+      <div class="chat-msg__bubble">
+        <div class="chat-msg__meta">
+          <span class="chat-msg__author">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>You (Pengunjung)</span>
+          </span>
+          <span class="chat-msg__time">${time}</span>
+        </div>
+        <div class="chat-msg__text">${formatMarkdownText(userText || '[Lampiran Dokumen/Gambar]')}</div>
+        ${attachHtml}
+      </div>
+    `;
+
+    terminalBody.appendChild(msgEl);
+    terminalBody.scrollTop = terminalBody.scrollHeight;
+    return msgEl;
+  }
+
+  function createAIBubbleContainer(modelDisplayName = '') {
+    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-msg chat-msg--ai';
+
+    let currentModelName = modelDisplayName;
+    if (!currentModelName && modelSelect) {
+      const optText = modelSelect.options[modelSelect.selectedIndex]?.text || 'Auto Router';
+      currentModelName = optText.split('(')[0].trim();
+    }
+    if (!currentModelName) currentModelName = 'AI Assistant';
+
+    msgEl.innerHTML = `
+      <div class="chat-msg__bubble">
+        <div class="chat-msg__meta">
+          <span class="chat-msg__author chat-msg__author--ai">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
+            <span>${currentModelName}</span>
+          </span>
+          <span class="chat-msg__time">${time}</span>
+        </div>
+        <div class="chat-msg__content"></div>
+      </div>
+    `;
+
+    terminalBody.appendChild(msgEl);
+    terminalBody.scrollTop = terminalBody.scrollHeight;
+    return msgEl.querySelector('.chat-msg__content');
+  }
+
+  function appendLine(text, isPrompt = false, userCmd = '', isThinking = false, targetContainer = null) {
     const lineEl = document.createElement('div');
     lineEl.className = 'terminal-line';
     if (isThinking) lineEl.classList.add('terminal-thinking-line');
@@ -463,29 +523,32 @@ export function initTerminal() {
       lineEl.innerHTML = formatMarkdownText(text);
     }
 
-    terminalBody.appendChild(lineEl);
+    const container = targetContainer || terminalBody;
+    container.appendChild(lineEl);
     terminalBody.scrollTop = terminalBody.scrollHeight;
     return lineEl;
   }
 
   /**
-   * Snappy Token/Word Typewriter Streamer with Markdown Rendering
+   * Snappy Token/Word Typewriter Streamer with Markdown Rendering into Chat Bubble Container
    */
-  async function streamOutputLines(lines) {
-    // Reset code block state before streaming response
+  async function streamOutputLines(lines, targetContainer = null) {
+    const container = targetContainer || terminalBody;
     inCodeBlock = false;
     codeBlockLang = '';
 
     for (let i = 0; i < lines.length; i++) {
       const lineText = lines[i];
       if (!lineText) {
-        appendLine("");
+        const spacer = document.createElement('div');
+        spacer.style.height = '0.35rem';
+        container.appendChild(spacer);
         continue;
       }
 
       const lineEl = document.createElement('div');
       lineEl.className = 'terminal-line';
-      terminalBody.appendChild(lineEl);
+      container.appendChild(lineEl);
 
       const cursorSpan = document.createElement('span');
       cursorSpan.className = 'terminal-stream-cursor';
@@ -500,7 +563,7 @@ export function initTerminal() {
         terminalBody.scrollTop = terminalBody.scrollHeight;
 
         if (token.trim().length > 0) {
-          await new Promise(r => setTimeout(r, 6));
+          await new Promise(r => setTimeout(r, 5));
         }
       }
 
@@ -508,7 +571,7 @@ export function initTerminal() {
       cursorSpan.remove();
       lineEl.innerHTML = formatMarkdownText(lineText);
       terminalBody.scrollTop = terminalBody.scrollHeight;
-      await new Promise(r => setTimeout(r, 10));
+      await new Promise(r => setTimeout(r, 8));
     }
     inCodeBlock = false;
   }
@@ -531,19 +594,13 @@ export function initTerminal() {
       historyIndex = history.length;
     }
 
-    // Display user line in terminal
-    let displayPrompt = trimmed;
-    if (currentAttachments.length > 0) {
-      const attachNames = currentAttachments.map(a => `${a.isImage ? '🖼️' : '📄'} ${a.name}`).join(', ');
-      displayPrompt = trimmed ? `${trimmed} [Lampiran: ${attachNames}]` : `[Menganalisis Lampiran: ${attachNames}]`;
-    }
-
-    const promptLine = appendLine('', true, displayPrompt);
+    // Display user question as a right-aligned highlighted chat bubble (WhatsApp style)
+    const promptBubble = appendUserBubble(trimmed, currentAttachments);
     terminalInput.value = '';
 
-    // Auto-scroll newly asked question to the top of the terminal viewport
-    if (promptLine) {
-      const targetTop = promptLine.offsetTop - terminalBody.offsetTop;
+    // Auto-scroll newly asked question smoothly
+    if (promptBubble) {
+      const targetTop = promptBubble.offsetTop - terminalBody.offsetTop;
       terminalBody.scrollTo({
         top: Math.max(0, targetTop - 8),
         behavior: 'smooth'
@@ -556,12 +613,12 @@ export function initTerminal() {
 
     const cmdLower = trimmed.toLowerCase();
 
-    // Built-in single keyword commands (instant response if no files attached)
+    // Built-in single keyword CLI commands (e.g. skills, projects, clear)
     if (currentAttachments.length === 0 && COMMAND_REGISTRY[cmdLower]) {
       telemetry.logEvent('terminal_cmd', cmdLower, `Perintah Terminal: ${cmdLower}`);
+      const aiContainer = createAIBubbleContainer('System Engine');
       const outputLines = COMMAND_REGISTRY[cmdLower]();
-      outputLines.forEach(line => appendLine(line));
-      appendLine("");
+      outputLines.forEach(line => appendLine(line, false, '', false, aiContainer));
       return;
     }
 
@@ -576,8 +633,8 @@ export function initTerminal() {
       } else {
         output = ["Format: setkey <api-key> atau setkey <provider> <api-key>"];
       }
-      output.forEach(line => appendLine(line));
-      appendLine("");
+      const aiContainer = createAIBubbleContainer('Security Key Manager');
+      output.forEach(line => appendLine(line, false, '', false, aiContainer));
       return;
     }
 
@@ -590,10 +647,11 @@ export function initTerminal() {
     telemetry.logEvent('terminal_ai_query', (trimmed || 'multimodal_file').slice(0, 40), `Query AI: ${trimmed}`);
 
     const thinkingMsg = currentAttachments.length > 0 
-      ? "[Multimodal AI] Membaca dan menganalisis dokumen/gambar terlampir..." 
-      : "[AI Assistant] Menganalisis dan menyusun jawaban mendalam...";
+      ? "Membaca dan menganalisis dokumen/gambar terlampir..." 
+      : "Menganalisis dan menyusun jawaban mendalam...";
 
-    const thinkingLine = appendLine(thinkingMsg, false, '', true);
+    const aiContainer = createAIBubbleContainer();
+    const thinkingLine = appendLine(thinkingMsg, false, '', true, aiContainer);
 
     try {
       const responses = await terminalAI.ask(trimmed, currentAttachments);
@@ -601,12 +659,12 @@ export function initTerminal() {
         thinkingLine.remove();
       }
 
-      await streamOutputLines(responses);
+      await streamOutputLines(responses, aiContainer);
     } catch (err) {
       if (thinkingLine && thinkingLine.parentNode) {
         thinkingLine.remove();
       }
-      appendLine(`[AI Fallback] Terjadi kendala respon. Mengalihkan ke database lokal.`);
+      appendLine(`[AI Fallback] Terjadi kendala respon. Mengalihkan ke database lokal.`, false, '', false, aiContainer);
     } finally {
       isGenerating = false;
       terminalInput.disabled = false;
@@ -616,8 +674,6 @@ export function initTerminal() {
         terminalInput.focus();
       }
     }
-
-    appendLine("");
   }
 
   // Initial welcome message

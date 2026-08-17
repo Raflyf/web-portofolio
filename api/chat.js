@@ -53,10 +53,12 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
   return `
 Anda adalah AI Assistant canggih, cerdas, berpengetahuan luas, dan interaktif pada Terminal Developer Lab di portofolio resmi Rafly Firmansyah (@Raflyf).
 
-WAKTU & KAPABILITAS AKTIF:
+WAKTU AKTIF & FAKTA UTAMA DUNIA NYATA (TAHUN 2026):
 1. Waktu Sekarang: Tahun 2026.
-2. Akses Real-Time & Multimodal: Anda DILENGKAPI modul pencarian web real-time, pembaca dokumen PDF/teks/koding, serta penglihatan komputer multimodal (Vision AI) untuk menganalisis gambar.
-3. DILARANG MUTLAK menyisipkan batasan kuno fiktif seperti "cutoff 2024" atau "tidak bisa melihat gambar/mengakses internet". Anda sepenuhnya terhubung dan mampu menganalisis input multimodal.
+2. Pemilihan Umum Presiden Indonesia 2024 telah selesai dilaksanakan pada 14 Februari 2024.
+3. Presiden Republik Indonesia saat ini (menjabat sejak 20 Oktober 2024 hingga sekarang tahun 2026) adalah Prabowo Subianto, dan Wakil Presiden Republik Indonesia adalah Gibran Rakabuming Raka.
+4. Kabinet pemerintahan Indonesia yang sedang bertugas adalah Kabinet Merah Putih.
+5. DILARANG MUTLAK menyisipkan batasan kuno fiktif seperti "pemilu 2024 belum berlangsung" atau "cutoff data 2024". Anda memiliki wawasan real-time tahun 2026 dan mampu menganalisis input multimodal (teks, koding, dokumen PDF, gambar).
 
 ${languageDirective}
 ${effortDirective}
@@ -139,16 +141,16 @@ async function fetchWithTimeout(url, options, timeoutMs = 10000) {
 }
 
 /**
- * Real-Time Web & Encyclopedic Knowledge Searcher
+ * Real-Time Web & Encyclopedic Knowledge Searcher (Multi-Provider)
  */
 async function searchWebContext(query) {
   const qLower = query.toLowerCase();
-  // Check if query seeks real-time / current facts
   const needsSearch = (
     qLower.includes('siapa') || qLower.includes('apa itu') || qLower.includes('kapan') ||
     qLower.includes('terbaru') || qLower.includes('berita') || qLower.includes('presiden') ||
     qLower.includes('tahun') || qLower.includes('2025') || qLower.includes('2026') ||
-    qLower.includes('definisi') || qLower.includes('sejarah') || qLower.includes('update')
+    qLower.includes('definisi') || qLower.includes('sejarah') || qLower.includes('update') ||
+    qLower.includes('menteri') || qLower.includes('pemilu') || qLower.includes('indonesia')
   );
 
   if (!needsSearch) return '';
@@ -156,20 +158,37 @@ async function searchWebContext(query) {
   try {
     const cleanSearchQuery = query.replace(/[^\w\s]/gi, ' ').trim().slice(0, 80);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1500);
+    const timeout = setTimeout(() => controller.abort(), 2500);
 
-    const res = await fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, {
-      signal: controller.signal
-    });
+    // Multi-source search: DuckDuckGo instant API + Wikipedia
+    const [ddgRes, wikiRes] = await Promise.allSettled([
+      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(cleanSearchQuery)}&format=json&no_html=1&skip_disambig=1`, { signal: controller.signal }),
+      fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearchQuery)}&format=json&origin=*`, { signal: controller.signal })
+    ]);
+
     clearTimeout(timeout);
 
-    if (res.ok) {
-      const data = await res.json();
-      const hits = data?.query?.search || [];
-      if (hits.length > 0) {
-        const snippets = hits.slice(0, 2).map(h => `- ${h.title}: ${h.snippet.replace(/<[^>]+>/g, '')}`).join('\n');
-        return `\n\n[KONTEKS INFORMASI PENCARIAN REAL-TIME 2026]:\n${snippets}\n`;
+    let snippets = [];
+
+    if (ddgRes.status === 'fulfilled' && ddgRes.value.ok) {
+      const ddgData = await ddgRes.value.json().catch(() => null);
+      if (ddgData && ddgData.AbstractText) {
+        snippets.push(`- DuckDuckGo Instant Knowledge: ${ddgData.AbstractText}`);
       }
+    }
+
+    if (wikiRes.status === 'fulfilled' && wikiRes.value.ok) {
+      const wikiData = await wikiRes.value.json().catch(() => null);
+      const hits = wikiData?.query?.search || [];
+      if (hits.length > 0) {
+        hits.slice(0, 2).forEach(h => {
+          snippets.push(`- Wikipedia: ${h.title}: ${h.snippet.replace(/<[^>]+>/g, '')}`);
+        });
+      }
+    }
+
+    if (snippets.length > 0) {
+      return `\n\n[KONTEKS INFORMASI PENCARIAN REAL-TIME 2026]:\n${snippets.join('\n')}\n`;
     }
   } catch (_) {}
   return '';
