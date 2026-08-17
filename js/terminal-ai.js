@@ -108,32 +108,67 @@ const SEMANTIC_PATTERNS = [
 class TerminalAIEngine {
   constructor() {
     this.currentModel = localStorage.getItem('ai_selected_model') || 'auto';
-    this.customKey = localStorage.getItem('ai_custom_key') || '';
+    this.customKey = localStorage.getItem('ai_custom_key') || null;
     this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
+    this.sessionLanguage = sessionStorage.getItem('ai_session_lang') || null;
   }
 
-  setModel(modelName) {
-    const m = modelName.trim();
-    if (!m) return;
-    this.currentModel = m;
-    localStorage.setItem('ai_selected_model', m);
-  }
+  detectOrUpdateLanguage(query) {
+    const q = (query || '').trim().toLowerCase();
+    if (!q) return this.sessionLanguage || 'id';
 
-  setKey(providerOrKey, key) {
-    if (!key) {
-      this.customKey = providerOrKey.trim();
-      this.customProvider = 'openrouter';
-      localStorage.setItem('ai_custom_key', this.customKey);
-      localStorage.setItem('ai_custom_provider', 'openrouter');
-      return ["API Key pribadi Anda berhasil disimpan di peramban lokal (localStorage)."];
+    // 1. Explicit language switch command
+    const explicitEn = /\b(pakai|gunakan|ganti|ubah|bahasa|jawab.*dalam)\s*(bahasa\s*)?(inggris|english)\b/i.test(q) ||
+                       /\b(switch|change|use|answer in|reply in)\s*(to\s*)?(english|en)\b/i.test(q);
+    if (explicitEn) {
+      this.sessionLanguage = 'en';
+      sessionStorage.setItem('ai_session_lang', 'en');
+      return 'en';
     }
 
-    const prov = providerOrKey.toLowerCase().trim();
-    this.customProvider = prov;
+    const explicitId = /\b(pakai|gunakan|ganti|ubah|bahasa|jawab.*dalam)\s*(bahasa\s*)?(indonesia|indo|id)\b/i.test(q) ||
+                       /\b(switch|change|use|answer in|reply in)\s*(to\s*)?(indonesian|bahasa|id)\b/i.test(q);
+    if (explicitId) {
+      this.sessionLanguage = 'id';
+      sessionStorage.setItem('ai_session_lang', 'id');
+      return 'id';
+    }
+
+    // 2. If already locked in this session, keep the locked language
+    if (this.sessionLanguage) {
+      return this.sessionLanguage;
+    }
+
+    // 3. Initial detection on the first conversation turn
+    const idWords = /\b(yang|yg|ini|itu|dan|atau|saya|aku|kamu|anda|bisa|apakah|tolong|bagaimana|gimana|apa|kenapa|mengapa|kapan|dimana|adalah|untuk|pada|di|ke|dari|dengan|kalo|jika|buat|buatkan|coba|tampilkan|jelaskan|skripsi|proyek|sertifikat)\b/i;
+    const enWords = /\b(the|is|are|was|were|and|or|you|your|can|could|how|what|why|when|where|for|with|about|please|explain|show|give|create|build|write|implement|help)\b/i;
+
+    if (idWords.test(q)) {
+      this.sessionLanguage = 'id';
+    } else if (enWords.test(q)) {
+      this.sessionLanguage = 'en';
+    } else {
+      this.sessionLanguage = 'id'; // Default Indonesian
+    }
+
+    sessionStorage.setItem('ai_session_lang', this.sessionLanguage);
+    return this.sessionLanguage;
+  }
+
+  setModel(modelId) {
+    this.currentModel = modelId;
+    localStorage.setItem('ai_selected_model', modelId);
+  }
+
+  setKey(key, provider = 'openrouter') {
     this.customKey = key.trim();
-    localStorage.setItem('ai_custom_provider', prov);
+    this.customProvider = provider.trim().toLowerCase();
     localStorage.setItem('ai_custom_key', this.customKey);
-    return [`API Key untuk provider [${prov}] berhasil disimpan di peramban lokal Anda.`];
+    localStorage.setItem('ai_custom_provider', this.customProvider);
+    return [
+      `[SUKSES] API Key ${this.customProvider.toUpperCase()} disimpan di browser Anda.`,
+      `Semua permintaan AI selanjutnya akan diprioritaskan menggunakan key ini.`
+    ];
   }
 
   clearKey() {
@@ -149,8 +184,9 @@ class TerminalAIEngine {
       "[AI ENGINE & PROVIDER POOL STATUS]",
       "----------------------------------------------------------------",
       `Model AI Aktif       : ${this.currentModel}`,
+      `Bahasa Sesi Terkunci : ${this.sessionLanguage === 'en' ? 'Bahasa Inggris (English)' : 'Bahasa Indonesia'}`,
+      `Batas Output Token   : 8.192 Tokens / Respons (Full-Length & Zero-Truncation)`,
       `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server Gateway'}`,
-      `HF Cloud Gateway     : Aktif (rflyyyf-omniroute-gateway.hf.space)`,
       `Cloud Multi-AI       : Vercel Serverless Multi-API Gateway (/api/chat)`,
       `Fallback Engine      : In-Browser Semantic Knowledge Engine (Active & Ready)`
     ];
@@ -165,13 +201,45 @@ class TerminalAIEngine {
       return ["Silakan masukkan pertanyaan, perintah, atau unggah dokumen/gambar."];
     }
 
-    const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
+    const currentLang = this.detectOrUpdateLanguage(cleanQuery);
 
-    // 1. If NO attachments, try Hugging Face Cloud OmniRoute Gateway first
+    // 1. Primary: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000);
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: cleanQuery,
+          model: this.currentModel,
+          customKey: this.customKey,
+          customProvider: this.customProvider,
+          attachments: attachments,
+          sessionLanguage: currentLang
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.response) {
+          return data.response.split('\n');
+        }
+      }
+    } catch (_) {
+      // Network timeout / offline -> fall back to Hugging Face or local semantic engine
+    }
+
+    // 2. Secondary Fallback: Hugging Face Gradio Cloud Space (if no attachments)
+    const hasAttachments = Array.isArray(attachments) && attachments.length > 0;
     if (!hasAttachments) {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 18000);
+        const timeout = setTimeout(() => controller.abort(), 15000);
 
         const base = 'https://rflyyyf-omniroute-gateway.hf.space';
         const hfPost = await fetch(`${base}/gradio_api/call/chat_fn`, {
@@ -209,36 +277,6 @@ class TerminalAIEngine {
         }
         clearTimeout(timeout);
       } catch (_) {}
-    }
-
-    // 2. Try Vercel Serverless Function /api/chat with full multimodal & document support
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 35000);
-
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: cleanQuery,
-          model: this.currentModel,
-          customKey: this.customKey,
-          customProvider: this.customProvider,
-          attachments: attachments
-        }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeout);
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && data.response) {
-          return data.response.split('\n');
-        }
-      }
-    } catch (_) {
-      // Network timeout / offline -> fall back to local semantic engine
     }
 
     // 3. High-Precision In-Browser Semantic Engine Fallback
