@@ -474,6 +474,14 @@ export default async function handler(req, res) {
       }
     };
 
+    const OMNIROUTE_URL = (customKey && customProvider === 'omniroute') 
+      ? 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions'
+      : (process.env.OMNIROUTE_URL || 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions');
+
+    const OMNIROUTE_KEY = (customKey && customProvider === 'omniroute')
+      ? customKey
+      : (process.env.OMNIROUTE_KEY || decodeKey('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q='));
+
     const OPENROUTER_KEYS = [
       (customKey && (customProvider === 'openrouter' || !customProvider)) ? customKey : null,
       process.env.OPENROUTER_API_KEY,
@@ -597,7 +605,44 @@ Langkah yang WAJIB Anda lakukan:
         });
       }
 
-      // 1A. OpenRouter Multimodal Vision Cascade
+      // 1A. Primary Priority #1: OmniRoute Private Vision Model (Laptop Cloudflare Tunnel)
+      if (OMNIROUTE_KEY && OMNIROUTE_URL) {
+        try {
+          const omniVisionResp = await fetchWithTimeout(OMNIROUTE_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OMNIROUTE_KEY}`,
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'Vision-model',
+              messages: [
+                { role: 'system', content: systemPromptWithSearch },
+                { role: 'user', content: userContent }
+              ],
+              stream: false,
+              max_tokens: Math.max(maxTokensConfig, 1000),
+              temperature: tempConfig
+            })
+          }, 30000);
+
+          if (omniVisionResp.ok) {
+            const data = await omniVisionResp.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content) {
+              return sendSuccess(content, 'Vision-model (MiniMax M3 / OmniRoute)', 'OmniRoute Vision Gateway');
+            }
+          } else {
+            const errTxt = await omniVisionResp.text();
+            providerErrors.push(`OmniRoute Vision HTTP ${omniVisionResp.status}: ${errTxt.slice(0, 100)}`);
+          }
+        } catch (err) {
+          providerErrors.push(`OmniRoute Vision: ${err.message}`);
+        }
+      }
+
+      // 1B. Secondary Failover: OpenRouter Multimodal Vision Cascade
       if (OPENROUTER_KEYS.length > 0) {
         const visionModels = [
           'nvidia/nemotron-nano-12b-v2-vl:free',
@@ -644,7 +689,7 @@ Langkah yang WAJIB Anda lakukan:
         }
       }
 
-      // 1B. Nvidia Vision Gateway
+      // 1C. Nvidia Vision Gateway
       if (NVIDIA_KEY) {
         try {
           const nvResp = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -683,7 +728,61 @@ Langkah yang WAJIB Anda lakukan:
     // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
 
-    // 2A. Primary: OpenRouter SOTA Cloud Pool (Sub-second Latency: Nemotron 120B/550B, Gemma 4, DeepSeek)
+    // 2A. Primary Priority #1: OmniRoute Dedicated Local Server (Cloudflare Quick Tunnel)
+    // Priority order: Codex -> Antigravity -> Deepseek-V4-Flash-Free -> Vision-model
+    if (OMNIROUTE_KEY && OMNIROUTE_URL) {
+      let omniCandidates = [];
+      const mLower = targetModel.toLowerCase();
+      if (mLower.includes('codex') || mLower.includes('gpt-5')) {
+        omniCandidates = ['Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+      } else if (mLower.includes('antigravity') || mLower.includes('claude') || mLower.includes('opus')) {
+        omniCandidates = ['Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
+      } else if (mLower.includes('deepseek') || mLower.includes('ponytail') || mLower.includes('v4')) {
+        omniCandidates = ['Deepseek-V4-Flash-Free', 'Codex', 'Antigravity'];
+      } else if (mLower.includes('vision')) {
+        omniCandidates = ['Vision-model', 'Codex', 'Antigravity'];
+      } else {
+        // Default Auto Priority: Codex -> Antigravity -> Deepseek-V4-Flash-Free -> Vision-model
+        omniCandidates = ['Codex', 'Antigravity', 'Deepseek-V4-Flash-Free', 'Vision-model'];
+      }
+
+      for (const omniModel of omniCandidates) {
+        try {
+          const omniPayload = {
+            model: omniModel,
+            messages: baseTextMessages,
+            stream: false,
+            max_tokens: Math.max(maxTokensConfig, 1000),
+            temperature: tempConfig
+          };
+
+          const response = await fetchWithTimeout(OMNIROUTE_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OMNIROUTE_KEY}`,
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(omniPayload)
+          }, 25000);
+
+          if (response.ok) {
+            const data = await response.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content) {
+              return sendSuccess(content, `${omniModel} (${data.model || 'OmniRoute'})`, 'OmniRoute Dedicated Server');
+            }
+          } else {
+            const errTxt = await response.text();
+            providerErrors.push(`OmniRoute ${omniModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+          }
+        } catch (err) {
+          providerErrors.push(`OmniRoute ${omniModel}: ${err.message}`);
+        }
+      }
+    }
+
+    // 2B. Secondary Failover: OpenRouter SOTA Cloud Pool (Sub-second Latency: Nemotron 120B/550B, Gemma 4, DeepSeek)
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
       if (orModel.startsWith('opencode/')) {
