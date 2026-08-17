@@ -379,8 +379,32 @@ class TerminalAIEngine {
         return semanticMatch;
       }
 
-      // Dynamic Backend Error Display
+      // Dynamic Backend Error Display & Semantic Fallback
       if (data && !data.success) {
+        // 1. First attempt seamless semantic match
+        const semanticMatch = this.checkSemanticMatch(cleanQuery);
+        if (semanticMatch) {
+          return [
+            `[GATEWAY BUSY ➔ LOCAL RESILIENCE FALLBACK]`,
+            ...semanticMatch
+          ];
+        }
+
+        const isRateLimit = Array.isArray(data.details) && data.details.some(d => d.includes('429') || d.includes('Rate limit'));
+        if (isRateLimit) {
+          return [
+            "[KUOTA GATEWAY PENUH / RATE LIMIT]",
+            "----------------------------------------------------------------",
+            "Kuota harian model AI gratis dari provider publik OpenRouter sedang terisi penuh.",
+            "",
+            "Solusi Cepat:",
+            "1. Tunggu beberapa menit lalu coba kembali pertanyaan Anda.",
+            "2. Atau pasang API Key pribadi gratis Anda langsung di terminal:",
+            "   $ setkey openrouter <api-key-anda>",
+            "3. Anda tetap dapat bertanya seputar proyek, riset, skripsi, dan sertifikat Rafly Firmansyah ('projects', 'skills', 'certifs')."
+          ];
+        }
+
         const errorLines = [
           `[ERROR GATEWAY: ${data.error || 'Kegagalan Pemrosesan Model AI'}]`,
           `----------------------------------------------------------------`,
@@ -389,14 +413,12 @@ class TerminalAIEngine {
         ];
 
         if (Array.isArray(data.details) && data.details.length > 0) {
-          errorLines.push(`Rincian Provider Kegagalan:`);
-          data.details.forEach(d => errorLines.push(`  - ${d}`));
-        } else if (data.message) {
-          errorLines.push(`Pesan Sistem : ${data.message}`);
+          errorLines.push(`Rincian Provider:`);
+          data.details.slice(0, 4).forEach(d => errorLines.push(`  - ${d}`));
         }
 
         errorLines.push("");
-        errorLines.push("Anda dapat beralih ke model AI lain pada menu dropdown di atas atau mengulangi perintah.");
+        errorLines.push("Anda dapat mengulangi pertanyaan atau memasukkan API Key pribadi via 'setkey openrouter <key>'.");
         return errorLines;
       }
     } catch (netErr) {
