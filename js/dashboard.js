@@ -623,7 +623,18 @@ class DashboardApp {
     if (!gridEl) return;
 
     const MODELS_CATALOG = [
-      // 0A. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
+      // 0. Pure Intelligent Auto Router (Main Gateway)
+      {
+        id: 'auto-router',
+        name: 'Auto Cloud Gateway',
+        category: 'Router',
+        tag: 'Intelligent SOTA Cascade',
+        icon: '⚡',
+        color: 'var(--accent-cyan)',
+        match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
+      },
+
+      // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
       {
         id: 'omniroute-codex',
         name: 'Codex (GPT-5.6 Terra)',
@@ -662,17 +673,6 @@ class DashboardApp {
         icon: '👁️',
         color: 'oklch(0.75 0.18 280)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('minimax')
-      },
-
-      // 0B. Auto Router
-      {
-        id: 'auto-router',
-        name: 'Auto Cloud Gateway',
-        category: 'Router',
-        tag: 'Intelligent SOTA Cascade',
-        icon: '⚡',
-        color: 'var(--accent-cyan)',
-        match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
       },
 
       // 1. SOTA Flagships & High-Capacity Reasoning
