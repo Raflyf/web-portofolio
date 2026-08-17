@@ -23,6 +23,20 @@ class DashboardApp {
     this.searchTerm = '';
     this.selectedEventType = 'all';
     this.pollInterval = null;
+    this.supabaseConfig = this.getSupabaseConfig();
+  }
+
+  getSupabaseConfig() {
+    const defaultUrl = 'https://rphyzcqwpkxtzllvymss.supabase.co';
+    const defaultKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
+    try {
+      const configRaw = localStorage.getItem(CONFIG_KEY);
+      if (configRaw) {
+        const parsed = JSON.parse(configRaw);
+        if (parsed.url && parsed.anonKey) return parsed;
+      }
+    } catch (_) {}
+    return { url: defaultUrl, anonKey: defaultKey };
   }
 
   async init() {
@@ -527,23 +541,27 @@ class DashboardApp {
       const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
       const maxVal = Math.max(1, ...sorted.map(c => c[1]));
 
-      projectListEl.innerHTML = sorted.map(([name, count]) => {
+      projectListEl.innerHTML = sorted.map(([name, count], idx) => {
         const pct = Math.round((count / maxVal) * 100);
+        const rankNum = String(idx + 1).padStart(2, '0');
         return `
           <div class="ranked-item">
             <div class="ranked-item-header">
-              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(name)}">📁 ${this.sanitize(name)}</span>
+              <div class="ranked-name-wrap">
+                <span class="ranked-num-badge">${rankNum}</span>
+                <span class="ranked-item-name" title="${this.sanitize(name)}">${this.sanitize(name)}</span>
+              </div>
               <span class="ranked-item-count">${count}x</span>
             </div>
             <div class="ranked-progress-bg">
-              <div class="ranked-progress-fill" style="width:${pct}%;background-color:oklch(0.80 0.18 280);"></div>
+              <div class="ranked-progress-fill" style="width:${pct}%;background-color:var(--accent-cyan);"></div>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    // 3. Certificate Views Leaderboard (Consolidated)
+    // 2. Certificate Views Leaderboard (Consolidated)
     const certListEl = document.getElementById('cert-ranked-list');
     if (certListEl) {
       const certCounts = {};
@@ -562,12 +580,16 @@ class DashboardApp {
       const sortedCerts = Object.entries(certCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
       const maxCert = Math.max(1, ...sortedCerts.map(c => c[1]));
 
-      certListEl.innerHTML = sortedCerts.map(([title, count]) => {
+      certListEl.innerHTML = sortedCerts.map(([title, count], idx) => {
         const pct = Math.round((count / maxCert) * 100);
+        const rankNum = String(idx + 1).padStart(2, '0');
         return `
           <div class="ranked-item">
             <div class="ranked-item-header">
-              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(title)}">📜 ${this.sanitize(title)}</span>
+              <div class="ranked-name-wrap">
+                <span class="ranked-num-badge">${rankNum}</span>
+                <span class="ranked-item-name" title="${this.sanitize(title)}">${this.sanitize(title)}</span>
+              </div>
               <span class="ranked-item-count">${count}x</span>
             </div>
             <div class="ranked-progress-bg">
@@ -578,7 +600,7 @@ class DashboardApp {
       }).join('');
     }
 
-    // 4. Traffic Acquisition & Referrer Leaderboard
+    // 3. Traffic Acquisition & Referrer Leaderboard
     const refListEl = document.getElementById('referrer-ranked-list');
     if (refListEl) {
       const refCounts = {};
@@ -597,12 +619,16 @@ class DashboardApp {
       const sortedRefs = Object.entries(refCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
       const maxRef = Math.max(1, ...sortedRefs.map(c => c[1]));
 
-      refListEl.innerHTML = sortedRefs.map(([source, count]) => {
+      refListEl.innerHTML = sortedRefs.map(([source, count], idx) => {
         const pct = Math.round((count / maxRef) * 100);
+        const rankNum = String(idx + 1).padStart(2, '0');
         return `
           <div class="ranked-item">
             <div class="ranked-item-header">
-              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(source)}">🌐 ${this.sanitize(source)}</span>
+              <div class="ranked-name-wrap">
+                <span class="ranked-num-badge">${rankNum}</span>
+                <span class="ranked-item-name" title="${this.sanitize(source)}">${this.sanitize(source)}</span>
+              </div>
               <span class="ranked-item-count">${count}x</span>
             </div>
             <div class="ranked-progress-bg">
@@ -905,7 +931,7 @@ class DashboardApp {
     if (!listEl) return;
 
     try {
-      const config = this.supabaseConfig;
+      const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) {
         listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Supabase tidak terkonfigurasi.</div>`;
         return;
@@ -939,12 +965,12 @@ class DashboardApp {
         });
 
         return `
-          <div class="ranked-item" style="background:var(--bg-base);padding:0.75rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border-card);display:flex;flex-direction:column;gap:0.35rem;">
+          <div class="ranked-item" style="background:var(--bg-primary);padding:0.75rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-card);display:flex;flex-direction:column;gap:0.35rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:var(--text-muted);flex-wrap:wrap;gap:0.5rem;">
-              <span style="color:var(--accent-emerald);font-family:var(--font-mono);font-weight:600;">🧠 Sesi: ${this.sanitize(m.session_id || 'unknown')}</span>
-              <span style="font-family:var(--font-mono);">${dateStr}</span>
+              <span style="color:var(--accent-emerald);font-family:var(--font-mono);font-weight:600;">Sesi: ${this.sanitize(m.session_id || 'unknown')}</span>
+              <span style="font-family:var(--font-mono);color:var(--text-dim);">${dateStr}</span>
             </div>
-            <div style="color:var(--text-heading);font-size:0.85rem;line-height:1.5;">${this.sanitize(m.fact_text)}</div>
+            <div style="color:var(--text-heading);font-size:0.825rem;line-height:1.5;">${this.sanitize(m.fact_text)}</div>
           </div>
         `;
       }).join('');
@@ -968,35 +994,43 @@ class DashboardApp {
 
     if (this.searchTerm) {
       const q = this.searchTerm.toLowerCase();
-      displayList = displayList.filter(e => 
-        (e.event_label && e.event_label.toLowerCase().includes(q)) ||
-        (e.event_target && e.event_target.toLowerCase().includes(q)) ||
-        (e.session_id && e.session_id.toLowerCase().includes(q))
-      );
+      displayList = displayList.filter(e => {
+        const t = (e.event_target || '').toLowerCase();
+        const l = (e.event_label || '').toLowerCase();
+        const tp = (e.event_type || '').toLowerCase();
+        return t.includes(q) || l.includes(q) || tp.includes(q);
+      });
     }
 
-    tbody.innerHTML = '';
-
     if (displayList.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-dim);">Tidak ada rekaman aktivitas yang sesuai filter.</td></tr>`;
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">
+            Tidak ada data aktivitas yang sesuai dengan filter.
+          </td>
+        </tr>
+      `;
       return;
     }
 
-    // Render top 50 recent events
-    displayList.slice(0, 50).forEach(e => {
+    tbody.innerHTML = '';
+    displayList.slice(0, 100).forEach(e => {
       const tr = document.createElement('tr');
-
-      const dateObj = new Date(e.created_at);
-      const timeStr = dateObj.toLocaleDateString('id-ID', {
-        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit'
+      const timeStr = new Date(e.created_at).toLocaleString('id-ID', {
+        day: '2-digit', month: 'short',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
       });
 
+      const typeBadge = `<span class="table-event-tag">${this.sanitize(e.event_type)}</span>`;
+      const targetStr = e.event_target ? `<strong>${this.sanitize(e.event_target)}</strong>` : '-';
+      const labelStr = e.event_label ? `<br><small style="color:var(--text-dim);">${this.sanitize(e.event_label)}</small>` : '';
+
       tr.innerHTML = `
-        <td style="font-family:var(--font-mono);font-size:0.775rem;white-space:nowrap;">${this.sanitize(timeStr)}</td>
-        <td><span class="event-type-badge ${this.sanitize(e.event_type)}">${this.sanitize(e.event_type)}</span></td>
-        <td><strong>${this.sanitize(e.event_label || e.event_target)}</strong></td>
-        <td><span style="text-transform:capitalize;font-size:0.8rem;">${this.sanitize(e.device_type || 'desktop')}</span></td>
-        <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);">${this.sanitize(e.session_id ? e.session_id.substring(0, 12) + '...' : '-')}</td>
+        <td style="font-family:var(--font-mono);font-size:0.75rem;white-space:nowrap;color:var(--text-muted);">${timeStr}</td>
+        <td>${typeBadge}</td>
+        <td>${targetStr}${labelStr}</td>
+        <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">${this.sanitize(e.device_type || 'desktop')}</td>
+        <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);">${this.sanitize(e.session_id ? e.session_id.slice(-8) : '-')}</td>
       `;
 
       tbody.appendChild(tr);
@@ -1173,9 +1207,9 @@ class DashboardApp {
     window.addEventListener('scroll', () => {
       const currentScroll = window.scrollY || window.pageYOffset;
       if (currentScroll > 300) {
-        floatingBtn.classList.add('is-visible');
+        floatingBtn.classList.add('visible');
       } else {
-        floatingBtn.classList.remove('is-visible');
+        floatingBtn.classList.remove('visible');
       }
     }, { passive: true });
   }
@@ -1201,10 +1235,9 @@ class DashboardApp {
         pingBtn.innerHTML = '<span>Mengirim...</span>';
         
         try {
-          const configRaw = localStorage.getItem(CONFIG_KEY);
-          const parsedConfig = configRaw ? JSON.parse(configRaw) : {};
-          const url = parsedConfig.url || 'https://rphyzcqwpkxtzllvymss.supabase.co';
-          const key = parsedConfig.anonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
+          const config = this.getSupabaseConfig();
+          const url = config.url;
+          const key = config.anonKey;
 
           const res = await fetch(`${url}/rest/v1/portfolio_telemetry`, {
             method: 'POST',
@@ -1231,7 +1264,7 @@ class DashboardApp {
             setTimeout(() => {
               this.loadDashboardData();
               pingBtn.disabled = false;
-              pingBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span>Uji Ping</span>';
+              pingBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Uji Ping</span>';
             }, 1000);
           } else {
             throw new Error('Gagal');
@@ -1250,10 +1283,19 @@ class DashboardApp {
     const changePinForm = document.getElementById('changepin-form');
 
     if (changePinBtn && changePinModal) {
-      changePinBtn.addEventListener('click', () => changePinModal.classList.add('is-open'));
+      changePinBtn.addEventListener('click', () => {
+        changePinModal.classList.add('is-open');
+        const pinInput = document.getElementById('new-pin-input');
+        if (pinInput) pinInput.focus();
+      });
     }
     if (changePinClose && changePinModal) {
       changePinClose.addEventListener('click', () => changePinModal.classList.remove('is-open'));
+    }
+    if (changePinModal) {
+      changePinModal.addEventListener('click', (e) => {
+        if (e.target === changePinModal) changePinModal.classList.remove('is-open');
+      });
     }
     if (changePinForm) {
       changePinForm.addEventListener('submit', async (e) => {
@@ -1305,20 +1347,23 @@ class DashboardApp {
 
     if (configBtn && configModal) {
       configBtn.addEventListener('click', () => {
-        const current = localStorage.getItem(CONFIG_KEY);
-        if (current) {
-          try {
-            const parsed = JSON.parse(current);
-            document.getElementById('supabase-url-input').value = parsed.url || '';
-            document.getElementById('supabase-key-input').value = parsed.anonKey || '';
-          } catch (e) {}
-        }
+        const config = this.getSupabaseConfig();
+        const urlInput = document.getElementById('supabase-url-input');
+        const keyInput = document.getElementById('supabase-key-input');
+        if (urlInput) urlInput.value = config.url || '';
+        if (keyInput) keyInput.value = config.anonKey || '';
         configModal.classList.add('is-open');
       });
     }
 
     if (configCloseBtn && configModal) {
       configCloseBtn.addEventListener('click', () => configModal.classList.remove('is-open'));
+    }
+
+    if (configModal) {
+      configModal.addEventListener('click', (e) => {
+        if (e.target === configModal) configModal.classList.remove('is-open');
+      });
     }
 
     if (configForm) {
@@ -1328,6 +1373,7 @@ class DashboardApp {
         const anonKey = document.getElementById('supabase-key-input').value.trim();
 
         localStorage.setItem(CONFIG_KEY, JSON.stringify({ url, anonKey }));
+        this.supabaseConfig = { url, anonKey };
         configModal.classList.remove('is-open');
         this.loadDashboardData();
       });

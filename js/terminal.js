@@ -818,11 +818,11 @@ export function initTerminal() {
           const effortLabel = info.effort ? ` [Effort: ${info.effort.toUpperCase()}]` : '';
 
           if (info.isAuto) {
-            authorEl.textContent = `⚡ Auto Router ➔ ${cleanModel}${effortLabel} (${info.provider})`;
+            authorEl.textContent = `Auto Router ➔ ${cleanModel}${effortLabel} (${info.provider})`;
           } else if (info.isFailover) {
-            authorEl.textContent = `⚡ ${cleanReq} ➔ Fallback: ${cleanModel}${effortLabel}`;
+            authorEl.textContent = `${cleanReq} ➔ Fallback: ${cleanModel}${effortLabel}`;
           } else {
-            authorEl.textContent = `⚡ ${cleanModel}${effortLabel} (${info.provider})`;
+            authorEl.textContent = `${cleanModel}${effortLabel} (${info.provider})`;
           }
         }
       }
