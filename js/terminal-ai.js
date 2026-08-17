@@ -624,8 +624,9 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     ] : cleanQuery;
 
     // Intelligent Intent Detection
-    const isHeavyCoding = !hasImages && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
-    const isDeepReasoning = !hasImages && (/\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200);
+    const isProjectExplaining = !hasImages && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
+    const isHeavyCoding = !hasImages && !isProjectExplaining && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
+    const isDeepReasoning = !hasImages && !isProjectExplaining && (/\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200);
     const isGreeting = !hasImages && len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
 
     // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
@@ -640,13 +641,16 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       omniCandidates = ['Vision-model', 'Codex', 'Antigravity'];
     } else if (isGreeting) {
       targetEffort = 'LOW';
-      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Deepseek-V4-Flash-Free', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
+    } else if (isProjectExplaining) {
+      targetEffort = 'HIGH';
+      omniCandidates = ['nemotron-3-ultra-free', 'nemotron-laguna', 'Codex', 'Antigravity'];
     } else if (isHeavyCoding) {
       targetEffort = 'HIGH';
-      omniCandidates = ['Codex', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Codex', 'Deepseek-V4-Flash-Free', 'nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity'];
     } else if (isDeepReasoning) {
       targetEffort = 'THINKING';
-      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['nemotron-3-ultra-free', 'Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else {
       targetEffort = 'MEDIUM';
       omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
@@ -815,26 +819,37 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     } else if (isGreeting) {
       targetEffort = 'LOW';
       OR_MODELS = [
-        'nvidia/nemotron-3-super-120b-a12b:free',
-        'nvidia/nemotron-3-ultra-550b:free',
         'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'openai/gpt-oss-20b:free'
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
       ];
-    } else if (isHeavyCoding || isDeepReasoning) {
-      targetEffort = isHeavyCoding ? 'HIGH' : 'THINKING';
+    } else if (isProjectExplaining) {
+      targetEffort = 'HIGH';
       OR_MODELS = [
-        'nvidia/nemotron-3-super-120b-a12b:free',
         'nvidia/nemotron-3-ultra-550b:free',
-        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
+      ];
+    } else if (isHeavyCoding) {
+      targetEffort = 'HIGH';
+      OR_MODELS = [
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free',
+        'nvidia/nemotron-3-ultra-550b:free'
+      ];
+    } else if (isDeepReasoning) {
+      targetEffort = 'THINKING';
+      OR_MODELS = [
+        'nvidia/nemotron-3-ultra-550b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free',
         'openai/gpt-oss-20b:free'
       ];
     } else {
       targetEffort = 'MEDIUM';
       OR_MODELS = [
-        'nvidia/nemotron-3-super-120b-a12b:free',
         'nvidia/nemotron-3-ultra-550b:free',
-        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'openai/gpt-oss-20b:free'
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
       ];
     }
 
