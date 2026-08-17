@@ -612,7 +612,9 @@ export function initTerminal() {
       terminalInput.disabled = false;
       if (submitBtn) submitBtn.disabled = false;
       if (attachBtn) attachBtn.disabled = false;
-      terminalInput.focus();
+      if (!isMobileDevice() && terminalInput) {
+        terminalInput.focus();
+      }
     }
 
     appendLine("");
@@ -655,13 +657,19 @@ export function initTerminal() {
     }
   });
 
+  function isMobileDevice() {
+    return window.innerWidth <= 768 || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  }
+
   // Chip shortcut click listeners
   chipButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const cmd = btn.getAttribute('data-cmd');
       if (cmd) {
         executeCommand(cmd);
-        terminalInput.focus();
+        if (!isMobileDevice() && terminalInput) {
+          terminalInput.focus();
+        }
       }
     });
   });
@@ -699,7 +707,12 @@ export function initTerminal() {
     if (terminalPopBtn) terminalPopBtn.style.display = 'none';
 
     setTimeout(() => {
-      if (terminalInput) terminalInput.focus();
+      // On mobile devices, never auto-focus input to avoid triggering the on-screen keyboard
+      if (!isMobileDevice() && terminalInput) {
+        terminalInput.focus();
+      } else if (terminalInput) {
+        terminalInput.blur();
+      }
       if (terminalBody) terminalBody.scrollTop = terminalBody.scrollHeight;
     }, 60);
   }
