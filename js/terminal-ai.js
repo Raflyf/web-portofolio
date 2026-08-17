@@ -10,6 +10,7 @@
  */
 
 import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js';
+import { telemetry } from './telemetry.js';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -160,11 +161,17 @@ class TerminalAIEngine {
   setModel(modelId) {
     this.currentModel = modelId;
     localStorage.setItem('ai_selected_model', modelId);
+    if (telemetry) {
+      telemetry.logEvent('model_select', modelId, `Pilihan Model: ${modelId}`);
+    }
   }
 
   setEffort(effort) {
     this.reasoningEffort = effort;
     localStorage.setItem('ai_selected_effort', effort);
+    if (telemetry) {
+      telemetry.logEvent('model_select', `effort_${effort}`, `Mode Reasoning: ${effort}`);
+    }
   }
 
   setKey(key, provider = 'openrouter') {
@@ -208,6 +215,11 @@ class TerminalAIEngine {
     const cleanQuery = query.trim();
     if (!cleanQuery && (!attachments || attachments.length === 0)) {
       return ["Silakan masukkan pertanyaan, perintah, atau unggah dokumen/gambar."];
+    }
+
+    // Log AI Consultation Telemetry
+    if (telemetry) {
+      telemetry.logEvent('ai_query', this.currentModel || 'auto', cleanQuery.substring(0, 100));
     }
 
     const currentLang = this.detectOrUpdateLanguage(cleanQuery);

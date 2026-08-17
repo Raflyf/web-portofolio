@@ -469,25 +469,13 @@ body {
 }
 
 /* ==========================================================================
-   5. LOWER INTELLIGENCE GRID (3 Columns: Devices + Terminal + Certs)
+   5. LOWER INTELLIGENCE GRID (Flexible Multi-Card Analytics Matrix)
    ========================================================================== */
 .intelligence-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   gap: 1.25rem;
   margin-bottom: 2rem;
-}
-
-@media (max-width: 1100px) {
-  .intelligence-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 700px) {
-  .intelligence-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .intel-card {

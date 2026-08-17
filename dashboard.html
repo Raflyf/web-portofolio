@@ -11,8 +11,8 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/style.css?v=3.8.0">
-  <link rel="stylesheet" href="css/dashboard.css?v=3.8.0">
+  <link rel="stylesheet" href="css/style.css?v=4.0.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=4.0.0">
 
   <!-- Chart.js from Cloudflare CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -203,7 +203,7 @@
       </div>
     </section>
 
-    <!-- Lower Intelligence Grid (3 Columns) -->
+    <!-- Lower Intelligence Grid (5 High-Value Analytical Cards) -->
     <section class="intelligence-grid" aria-label="Matriks Intelijen dan Leaderboard">
       <!-- 1. Platform & Device Ratio Doughnut Chart -->
       <div class="intel-card">
@@ -216,24 +216,46 @@
         </div>
       </div>
 
-      <!-- 2. Top Terminal Commands Leaderboard -->
+      <!-- 2. AI Model & Query Topic Intelligence -->
       <div class="intel-card">
         <div class="chart-title-wrap">
-          <h2 class="chart-title">Perintah Terminal Terpopuler</h2>
-          <span class="chart-subtitle">Eksplorasi perintah CLI yang paling sering dijalankan</span>
+          <h2 class="chart-title">Model AI & Topik Konsultasi</h2>
+          <span class="chart-subtitle">Model AI favorit dan pertanyaan riset yang diajukan</span>
         </div>
-        <div class="ranked-list" id="terminal-ranked-list">
+        <div class="ranked-list" id="ai-ranked-list">
           <!-- Populated by js/dashboard.js -->
         </div>
       </div>
 
-      <!-- 3. Top Certificates Viewed Leaderboard -->
+      <!-- 3. Top Project Exploration Leaderboard -->
+      <div class="intel-card">
+        <div class="chart-title-wrap">
+          <h2 class="chart-title">Repositori Proyek Unggulan</h2>
+          <span class="chart-subtitle">Proyek riset GitHub yang paling banyak dieksplorasi</span>
+        </div>
+        <div class="ranked-list" id="project-ranked-list">
+          <!-- Populated by js/dashboard.js -->
+        </div>
+      </div>
+
+      <!-- 4. Top Certificates Viewed Leaderboard -->
       <div class="intel-card">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Sertifikat Paling Diminati</h2>
           <span class="chart-subtitle">Kredensial dan transkrip yang paling banyak dibuka</span>
         </div>
         <div class="ranked-list" id="cert-ranked-list">
+          <!-- Populated by js/dashboard.js -->
+        </div>
+      </div>
+
+      <!-- 5. Traffic Acquisition & Referrer Leaderboard -->
+      <div class="intel-card">
+        <div class="chart-title-wrap">
+          <h2 class="chart-title">Saluran Trafik & Referrer</h2>
+          <span class="chart-subtitle">Asal rujukan pengunjung (Search, GitHub, WA, Direct)</span>
+        </div>
+        <div class="ranked-list" id="referrer-ranked-list">
           <!-- Populated by js/dashboard.js -->
         </div>
       </div>
@@ -352,6 +374,6 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script type="module" src="js/dashboard.js?v=3.8.0"></script>
+  <script type="module" src="js/dashboard.js?v=4.0.0"></script>
 </body>
 </html>

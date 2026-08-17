@@ -402,6 +402,7 @@ class DashboardApp {
   }
 
   // =========================================================================
+  // =========================================================================
   // 5. INTELLIGENCE LEADERBOARDS (Unified Normalization)
   // =========================================================================
   normalizeCertName(target = '', label = '') {
@@ -419,33 +420,72 @@ class DashboardApp {
     return target || label || 'Sertifikat Kompetensi';
   }
 
+  normalizeAIQuery(target = '', label = '') {
+    const combined = `${target} ${label}`.toLowerCase();
+    if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return 'DeepSeek R1 (Thinking CoT)';
+    if (combined.includes('deepseek-chat') || combined.includes('deepseek-v3') || combined.includes('deepseek')) return 'DeepSeek V3 (671B MoE)';
+    if (combined.includes('qwen') || combined.includes('coder') || combined.includes('koding')) return 'Qwen 2.5 Coder (32B)';
+    if (combined.includes('llama-3.3') || combined.includes('llama 3.3')) return 'Meta Llama 3.3 (70B)';
+    if (combined.includes('nemotron') || combined.includes('nvidia')) return 'Nvidia Nemotron (70B Ultra)';
+    if (combined.includes('gemma') || combined.includes('vision') || combined.includes('gemini')) return 'Google Gemma 3 (27B Vision)';
+    if (combined.includes('minimax')) return 'MiniMax-01 (456B MoE)';
+    if (combined.includes('ollama') || combined.includes('kimi')) return 'Ollama Cloud Kimi K2.7';
+    if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Riset Plagiarism Checker';
+    if (combined.includes('skripsi') || combined.includes('nlp')) return 'Riset NLP & Skripsi S1';
+    if (combined.includes('kontak') || combined.includes('hubungi') || combined.includes('email') || combined.includes('wa')) return 'Pertanyaan Kontak & Karir';
+    if (combined.includes('sertifikat') || combined.includes('bnsp') || combined.includes('mikrotik')) return 'Kredensial Kompetensi';
+    if (combined.includes('help') || combined.includes('skills') || combined.includes('projects') || combined.includes('benchmarks')) return `CLI: $ ${target.toLowerCase()}`;
+    return label ? (label.length > 28 ? label.substring(0, 26) + '...' : label) : (target || 'Konsultasi AI');
+  }
+
+  normalizeProjectName(target = '', label = '') {
+    const combined = `${target} ${label}`.toLowerCase();
+    if (combined.includes('plagiar') || combined.includes('openplagiarism')) return 'OpenPlagiarismChecker (NLP)';
+    if (combined.includes('spam') || combined.includes('email')) return 'Spam-Email-Classifier (ML)';
+    if (combined.includes('laser') || combined.includes('ppt') || combined.includes('pointer')) return 'Laser Pointer PPT (IoT/CV)';
+    if (combined.includes('foto') || combined.includes('blur') || combined.includes('kita')) return 'FotoKitaBlur (MediaPipe)';
+    if (combined.includes('porto') || combined.includes('landing') || combined.includes('web-portofolio')) return 'Web Portofolio (Vanilla Modern)';
+    return target || label || 'Repositori Riset';
+  }
+
+  normalizeReferrer(ref = '') {
+    const r = (ref || '').toLowerCase();
+    if (r.includes('google')) return 'Google Search (Organik)';
+    if (r.includes('github')) return 'GitHub (@Raflyf)';
+    if (r.includes('whatsapp') || r.includes('wa.me')) return 'WhatsApp Web / Mobile';
+    if (r.includes('linkedin')) return 'LinkedIn Professional';
+    if (r.includes('instagram')) return 'Instagram';
+    if (r.includes('localhost') || r.includes('127.0.0.1')) return 'Local Dev Server';
+    if (r.includes('direct') || r.includes('bookmark') || !r) return 'Direct / Bookmark';
+    return ref;
+  }
+
   renderIntelligenceLists() {
-    // 1. Terminal Command Leaderboard
-    const terminalListEl = document.getElementById('terminal-ranked-list');
-    if (terminalListEl) {
-      const cmdCounts = {};
-      this.filteredEvents.filter(e => e.event_type === 'terminal_cmd').forEach(e => {
-        let cmd = (e.event_target || e.event_label || 'help').toLowerCase();
-        cmd = cmd.replace(/^perintah terminal:\s*/i, '').trim();
-        cmdCounts[cmd] = (cmdCounts[cmd] || 0) + 1;
+    // 1. AI Model & Topic Intelligence
+    const aiListEl = document.getElementById('ai-ranked-list');
+    if (aiListEl) {
+      const counts = {};
+      this.filteredEvents.filter(e => e.event_type === 'ai_query' || e.event_type === 'model_select' || e.event_type === 'terminal_cmd').forEach(e => {
+        const unified = this.normalizeAIQuery(e.event_target, e.event_label);
+        counts[unified] = (counts[unified] || 0) + 1;
       });
 
-      if (Object.keys(cmdCounts).length === 0) {
-        cmdCounts['skills'] = 0;
-        cmdCounts['projects'] = 0;
-        cmdCounts['benchmarks'] = 0;
-        cmdCounts['certifs'] = 0;
+      if (Object.keys(counts).length === 0) {
+        counts['DeepSeek V3 (671B MoE)'] = 0;
+        counts['Riset Plagiarism Checker'] = 0;
+        counts['Qwen 2.5 Coder (32B)'] = 0;
+        counts['Meta Llama 3.3 (70B)'] = 0;
       }
 
-      const sortedCmds = Object.entries(cmdCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      const maxCmd = Math.max(1, ...sortedCmds.map(c => c[1]));
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const maxVal = Math.max(1, ...sorted.map(c => c[1]));
 
-      terminalListEl.innerHTML = sortedCmds.map(([cmd, count]) => {
-        const pct = Math.round((count / maxCmd) * 100);
+      aiListEl.innerHTML = sorted.map(([name, count]) => {
+        const pct = Math.round((count / maxVal) * 100);
         return `
           <div class="ranked-item">
             <div class="ranked-item-header">
-              <span class="ranked-item-name"><code>$ ${this.sanitize(cmd)}</code></span>
+              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(name)}">🤖 ${this.sanitize(name)}</span>
               <span class="ranked-item-count">${count}x</span>
             </div>
             <div class="ranked-progress-bg">
@@ -456,7 +496,43 @@ class DashboardApp {
       }).join('');
     }
 
-    // 2. Certificate Views Leaderboard (Consolidated)
+    // 2. Project Exploration Leaderboard
+    const projectListEl = document.getElementById('project-ranked-list');
+    if (projectListEl) {
+      const counts = {};
+      this.filteredEvents.filter(e => e.event_type === 'project_view' || (e.event_type === 'link_click' && e.event_target && !e.event_target.includes('wa'))).forEach(e => {
+        const unified = this.normalizeProjectName(e.event_target, e.event_label);
+        counts[unified] = (counts[unified] || 0) + 1;
+      });
+
+      if (Object.keys(counts).length === 0) {
+        counts['OpenPlagiarismChecker (NLP)'] = 0;
+        counts['Spam-Email-Classifier (ML)'] = 0;
+        counts['Laser Pointer PPT (IoT/CV)'] = 0;
+        counts['FotoKitaBlur (MediaPipe)'] = 0;
+        counts['Web Portofolio (Vanilla Modern)'] = 0;
+      }
+
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const maxVal = Math.max(1, ...sorted.map(c => c[1]));
+
+      projectListEl.innerHTML = sorted.map(([name, count]) => {
+        const pct = Math.round((count / maxVal) * 100);
+        return `
+          <div class="ranked-item">
+            <div class="ranked-item-header">
+              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(name)}">📁 ${this.sanitize(name)}</span>
+              <span class="ranked-item-count">${count}x</span>
+            </div>
+            <div class="ranked-progress-bg">
+              <div class="ranked-progress-fill" style="width:${pct}%;background-color:oklch(0.80 0.18 280);"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 3. Certificate Views Leaderboard (Consolidated)
     const certListEl = document.getElementById('cert-ranked-list');
     if (certListEl) {
       const certCounts = {};
@@ -466,9 +542,10 @@ class DashboardApp {
       });
 
       if (Object.keys(certCounts).length === 0) {
+        certCounts['BNSP: Analis Program'] = 0;
         certCounts['MikroTik MTCNA (Latvia)'] = 0;
         certCounts['Cisco Python PCAP (OpenEDG)'] = 0;
-        certCounts['Seminar Cloud & Blockchain'] = 0;
+        certCounts['Kominfo DEA E-Commerce'] = 0;
       }
 
       const sortedCerts = Object.entries(certCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -479,11 +556,46 @@ class DashboardApp {
         return `
           <div class="ranked-item">
             <div class="ranked-item-header">
-              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(title)}">${this.sanitize(title)}</span>
+              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(title)}">📜 ${this.sanitize(title)}</span>
               <span class="ranked-item-count">${count}x</span>
             </div>
             <div class="ranked-progress-bg">
               <div class="ranked-progress-fill" style="width:${pct}%;background-color:var(--accent-emerald);"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 4. Traffic Acquisition & Referrer Leaderboard
+    const refListEl = document.getElementById('referrer-ranked-list');
+    if (refListEl) {
+      const refCounts = {};
+      this.filteredEvents.forEach(e => {
+        const unified = this.normalizeReferrer(e.referrer);
+        refCounts[unified] = (refCounts[unified] || 0) + 1;
+      });
+
+      if (Object.keys(refCounts).length === 0) {
+        refCounts['Google Search (Organik)'] = 0;
+        refCounts['GitHub (@Raflyf)'] = 0;
+        refCounts['Direct / Bookmark'] = 0;
+        refCounts['WhatsApp Web / Mobile'] = 0;
+      }
+
+      const sortedRefs = Object.entries(refCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const maxRef = Math.max(1, ...sortedRefs.map(c => c[1]));
+
+      refListEl.innerHTML = sortedRefs.map(([source, count]) => {
+        const pct = Math.round((count / maxRef) * 100);
+        return `
+          <div class="ranked-item">
+            <div class="ranked-item-header">
+              <span class="ranked-item-name" style="max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.sanitize(source)}">🌐 ${this.sanitize(source)}</span>
+              <span class="ranked-item-count">${count}x</span>
+            </div>
+            <div class="ranked-progress-bg">
+              <div class="ranked-progress-fill" style="width:${pct}%;background-color:var(--accent-amber);"></div>
             </div>
           </div>
         `;
