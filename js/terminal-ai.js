@@ -206,7 +206,7 @@ class TerminalAIEngine {
     // 1. Primary: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 45000);
+      const timeout = setTimeout(() => controller.abort(), 60000);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -259,7 +259,7 @@ class TerminalAIEngine {
     } catch (netErr) {
       if (netErr.name === 'AbortError') {
         return [
-          `[TIMEOUT / 45 Detik]: Permintaan ke model AI melebihi batas waktu 45 detik.`,
+          `[TIMEOUT / 60 Detik]: Permintaan ke model AI melebihi batas waktu 60 detik.`,
           `Model sedang memproses komputasi berat. Silakan coba kembali atau pilih model lain.`
         ];
       }
