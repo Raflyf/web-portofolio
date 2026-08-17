@@ -123,19 +123,20 @@ export function initTerminal() {
             const loadingTask = window.pdfjsLib.getDocument({ data: arrayBuffer });
             const pdf = await loadingTask.promise;
 
-            for (let i = 1; i <= Math.min(pdf.numPages, 15); i++) {
+            const maxPages = Math.min(pdf.numPages, 100);
+            for (let i = 1; i <= maxPages; i++) {
               const page = await pdf.getPage(i);
               const textContent = await page.getTextContent();
               const pageText = textContent.items.map(item => item.str).join(' ');
               if (pageText.trim()) {
-                extractedText += `--- Halaman ${i} ---\n${pageText}\n\n`;
+                extractedText += `--- Halaman ${i} dari ${pdf.numPages} ---\n${pageText}\n\n`;
               }
             }
           }
 
           if (extractedText.trim().length > 30) {
             attachedFiles.push({
-              name: file.name,
+              name: `${file.name} (${pdf?.numPages || 1} Hal)`,
               type: 'application/pdf',
               size: file.size,
               isImage: false,
@@ -348,6 +349,42 @@ export function initTerminal() {
     }
   };
 
+  /**
+   * Terminal Markdown Parser & Sanitizer
+   * Converts Markdown asterisks, headings, lists, and code blocks into styled terminal elements
+   */
+  function formatMarkdownText(raw) {
+    if (!raw) return '';
+    // Escape HTML first for XSS safety
+    let escaped = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Headings (### Title or ## Title)
+    escaped = escaped.replace(/^###\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.05em;display:block;margin-top:6px;margin-bottom:2px;">$1</strong>');
+    escaped = escaped.replace(/^##\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:700;font-size:1.1em;display:block;margin-top:8px;margin-bottom:2px;">$1</strong>');
+    escaped = escaped.replace(/^#\s+(.*$)/gim, '<strong style="color:var(--accent-emerald);font-weight:800;font-size:1.15em;display:block;margin-top:10px;margin-bottom:3px;">$1</strong>');
+
+    // Bold (**text** or __text__)
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>');
+    escaped = escaped.replace(/__(.*?)__/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>');
+
+    // Italic (*text* or _text_)
+    escaped = escaped.replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>');
+
+    // Inline Code (`code`)
+    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:1px 5px;border-radius:3px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.9em;">$1</code>');
+
+    // List bullets (- item or * item)
+    escaped = escaped.replace(/^[-*]\s+(.*$)/gim, '<span style="color:var(--accent-emerald);margin-right:6px;">&bull;</span>$1');
+
+    // Numbered lists (1. item)
+    escaped = escaped.replace(/^(\d+)\.\s+(.*$)/gim, '<span style="color:var(--accent-emerald);font-weight:700;margin-right:4px;">$1.</span>$2');
+
+    return escaped;
+  }
+
   function appendLine(text, isPrompt = false, userCmd = '', isThinking = false) {
     const lineEl = document.createElement('div');
     lineEl.className = 'terminal-line';
@@ -362,7 +399,7 @@ export function initTerminal() {
       const cmdText = document.createTextNode(' ' + userCmd);
       lineEl.appendChild(cmdText);
     } else {
-      lineEl.textContent = text;
+      lineEl.innerHTML = formatMarkdownText(text);
     }
 
     terminalBody.appendChild(lineEl);
@@ -371,7 +408,7 @@ export function initTerminal() {
   }
 
   /**
-   * Snappy Token/Word Typewriter Streamer
+   * Snappy Token/Word Typewriter Streamer with Markdown Rendering
    */
   async function streamOutputLines(lines) {
     for (let i = 0; i < lines.length; i++) {
@@ -381,7 +418,6 @@ export function initTerminal() {
         continue;
       }
 
-      const tokens = lineText.split(/(\s+)/);
       const lineEl = document.createElement('div');
       lineEl.className = 'terminal-line';
       terminalBody.appendChild(lineEl);
@@ -391,19 +427,23 @@ export function initTerminal() {
       cursorSpan.textContent = '▋';
       lineEl.appendChild(cursorSpan);
 
+      const tokens = lineText.split(/(\s+)/);
+
       for (let j = 0; j < tokens.length; j++) {
         const token = tokens[j];
         cursorSpan.insertAdjacentText('beforebegin', token);
         terminalBody.scrollTop = terminalBody.scrollHeight;
 
         if (token.trim().length > 0) {
-          await new Promise(r => setTimeout(r, 12));
+          await new Promise(r => setTimeout(r, 10));
         }
       }
 
+      // Convert the line to formatted Markdown HTML
       cursorSpan.remove();
+      lineEl.innerHTML = formatMarkdownText(lineText);
       terminalBody.scrollTop = terminalBody.scrollHeight;
-      await new Promise(r => setTimeout(r, 20));
+      await new Promise(r => setTimeout(r, 15));
     }
   }
 
