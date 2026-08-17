@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.21.0';
-import { telemetry } from './telemetry.js?v=10.21.0';
-import { terminalAI } from './terminal-ai.js?v=10.21.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.22.0';
+import { telemetry } from './telemetry.js?v=10.22.0';
+import { terminalAI } from './terminal-ai.js?v=10.22.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -355,6 +355,29 @@ export function initTerminal() {
     whoami: () => [
       "visitor@portfolio-client: guest (read-only privilege level)"
     ],
+    github: () => {
+      if (typeof window !== 'undefined' && window.portfolioAgent) {
+        window.portfolioAgent.openUrl(DEVELOPER_PROFILE.github);
+      }
+      return [
+        "[AKSI WEB]: Membuka profil GitHub resmi Rafly Firmansyah...",
+        `-> Tautan: ${DEVELOPER_PROFILE.github}`
+      ];
+    },
+    theme: () => {
+      if (typeof window !== 'undefined' && window.portfolioAgent) {
+        const res = window.portfolioAgent.toggleTheme();
+        return [res.message || "Tema berhasil diubah."];
+      }
+      return ["Gagal mengubah tema."];
+    },
+    copyemail: () => {
+      if (typeof window !== 'undefined' && window.portfolioAgent) {
+        const res = window.portfolioAgent.copyEmail();
+        return [res.message || "Email berhasil disalin ke clipboard."];
+      }
+      return ["Email: raflyfirmansyah02@gmail.com"];
+    },
     aistatus: () => terminalAI.getStatus(),
     clearkey: () => terminalAI.clearKey(),
     clear: () => {
@@ -365,24 +388,61 @@ export function initTerminal() {
   };
 
   /**
-   * Terminal Markdown Parser & Sanitizer
-   * Converts Markdown asterisks, headings, lists, and code blocks into styled terminal elements
+   * Terminal Markdown Parser & Sanitizer + AI Web Action Dispatcher
+   * Converts Markdown asterisks, headings, lists, tables, code blocks,
+   * and executes [ACTION:TYPE:payload] UI commands directly on the web page.
    */
-  /**
-   * Comprehensive Markdown & Table Engine for Terminal (v9.5.0)
-   * Supports:
-   * - Markdown Tables (<thead>, <tbody>, responsive scroll wrappers)
-   * - Headings (H1, H2, H3, H4)
-   * - Code Blocks with syntax highlight & copy
-   * - Bold, Italic, Inline Code, Links
-   * - Numbered & Bulleted Lists
-   * - Horizontal Rules & Blockquotes
-   */
+  function parseAndExecuteActionTags(rawText) {
+    if (!rawText) return rawText;
+
+    const actionRegex = /\[ACTION:([A-Z_]+)(?::([\s\S]*?))?\]/gi;
+    return rawText.replace(actionRegex, (fullMatch, type, payload) => {
+      const actionType = type.toUpperCase().trim();
+      let parsedPayload = (payload || '').trim();
+
+      if (parsedPayload.includes('&') || parsedPayload.includes('=')) {
+        const obj = {};
+        parsedPayload.split('&').forEach(part => {
+          const [k, ...v] = part.split('=');
+          if (k) obj[decodeURIComponent(k.trim())] = decodeURIComponent(v.join('=').trim());
+        });
+        parsedPayload = obj;
+      }
+
+      if (typeof window !== 'undefined' && window.portfolioAgent) {
+        try {
+          window.portfolioAgent.executeAction(actionType, parsedPayload);
+        } catch (_) {}
+      }
+
+      const labelMap = {
+        OPEN_PROJECT: 'Membuka Detail Proyek',
+        OPEN_CERTIFICATE: 'Membuka Kredensial Sertifikat',
+        FILL_CONTACT: 'Mengisi Form Pesan & Diskusi',
+        NAVIGATE: 'Navigasi Bagian Halaman',
+        OPEN_URL: 'Membuka Tautan Eksternal',
+        OPEN_GITHUB: 'Membuka Repositori GitHub',
+        TOGGLE_THEME: 'Mengganti Tema Tampilan',
+        COPY_EMAIL: 'Menyalin Alamat Email'
+      };
+
+      const label = labelMap[actionType] || `Aksi Web: ${actionType}`;
+      const payloadDesc = typeof parsedPayload === 'object' 
+        ? (parsedPayload.title || parsedPayload.name || parsedPayload.section || 'Terkonfirmasi')
+        : parsedPayload;
+
+      return `\n<div class="chat-action-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>⚡ [Aksi Web Terlaksana]: ${label}${payloadDesc ? ` (${payloadDesc})` : ''}</span></div>\n`;
+    });
+  }
+
   function formatMarkdownFull(text) {
     if (!text) return '';
 
+    // 0. Parse & execute AI Action Directives
+    let content = parseAndExecuteActionTags(text);
+
     // 1. Normalize line endings
-    let content = text.replace(/\r\n/g, '\n');
+    content = content.replace(/\r\n/g, '\n');
 
     // 2. Protect Code blocks
     const codeBlocks = [];
@@ -764,6 +824,42 @@ export function initTerminal() {
       const outputLines = COMMAND_REGISTRY[cmdLower]();
       outputLines.forEach(line => appendLine(line, false, '', false, aiContainer));
       return;
+    }
+
+    // Direct Web Agent Command Triggers
+    if (currentAttachments.length === 0 && window.portfolioAgent) {
+      if (/^(buka\s+github|open\s+github|github\s+rafly|link\s+github)$/i.test(cmdLower)) {
+        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+        window.portfolioAgent.openUrl(DEVELOPER_PROFILE.github);
+        appendLine(`⚡ [Aksi Web Terlaksana]: Membuka profil GitHub resmi Rafly Firmansyah (https://github.com/Raflyf)`, false, '', false, aiContainer);
+        return;
+      }
+      if (/^(ganti\s+tema|ubah\s+tema|toggle\s+theme|mode\s+gelap|mode\s+terang)$/i.test(cmdLower)) {
+        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+        const res = window.portfolioAgent.toggleTheme();
+        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
+        return;
+      }
+      if (/^(salin\s+email|copy\s+email)$/i.test(cmdLower)) {
+        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+        const res = window.portfolioAgent.copyEmail();
+        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
+        return;
+      }
+      const openProjMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:proyek|project|repo)\s+(.+)$/i);
+      if (openProjMatch && openProjMatch[1]) {
+        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+        const res = window.portfolioAgent.openProject(openProjMatch[1]);
+        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
+        return;
+      }
+      const openCertMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:sertifikat|sertif|cert|kredensial)\s+(.+)$/i);
+      if (openCertMatch && openCertMatch[1]) {
+        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+        const res = window.portfolioAgent.openCertificate(openCertMatch[1]);
+        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
+        return;
+      }
     }
 
     // Command: setkey <key> or setkey <provider> <key>
