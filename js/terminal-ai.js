@@ -1,8 +1,8 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - TERMINAL DEVELOPER LAB AI ENGINE (v3.5.0)
+ * RAFLY FIRMANSYAH - TERMINAL DEVELOPER LAB AI ENGINE (v3.7.0)
  * Dual-Engine Architecture:
- * 1. Cloud Serverless Multi-API Gateway (/api/chat) -> OpenRouter, Nvidia NIM, MiniMax, Ollama
+ * 1. Cloud Serverless Multi-API Gateway (/api/chat) -> OpenRouter, Nvidia NIM, MiniMax, Opencode
  * 2. In-Browser Local Semantic Knowledge Engine -> 100% Offline & Infinite Quota
  * Supports: Visitor Custom API Keys & Dynamic Model Selection
  * ============================================================================
@@ -18,8 +18,6 @@ const SEMANTIC_PATTERNS = [
     category: 'profile',
     keywords: ['siapa', 'biodata', 'profil', 'tentang', 'about', 'nama', 'background', 'kuliah', 'kampus', 'ubsi', 'lulusan', 'jurusan', 'mahasiswa'],
     respond: () => [
-      "[PROFIL PENGEMBANG]",
-      "----------------------------------------------------------------",
       `Nama        : ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
       `Pendidikan  : ${DEVELOPER_PROFILE.degree}`,
       `Institusi   : ${DEVELOPER_PROFILE.institution}`,
@@ -34,11 +32,9 @@ const SEMANTIC_PATTERNS = [
     category: 'plagiarism',
     keywords: ['plagiat', 'plagiarism', 'openplagiarism', 'turnitin', 'skripsi', 'n-gram', 'shingling', 'transformer', 'similarity'],
     respond: () => [
-      "[RISET: OPENPLAGIARISMCHECKER]",
-      "----------------------------------------------------------------",
       "OpenPlagiarismChecker adalah mesin pemeriksa kesamaan teks akademik lokal mandiri yang mengutamakan privasi data.",
       "",
-      "Keunggulan Arsitektur:",
+      "Arsitektur:",
       "1. Exact Matching      : 5-Word N-Gram Shingling untuk pencocokan kata persis.",
       "2. Semantic Paraphrase : Multilingual Sentence Transformers untuk deteksi sinonim/parafrasa.",
       "3. Pangkalan Data Luas : Merujuk silang ke 15+ basis data literatur terbuka (GARUDA, Indonesia OneSearch, Neliti, BASE, OpenAlex, Semantic Scholar).",
@@ -52,8 +48,6 @@ const SEMANTIC_PATTERNS = [
     category: 'spam',
     keywords: ['spam', 'email', 'classifier', 'klasifikasi', 'naive bayes', 'xgboost', 'confusion matrix', 'dataset'],
     respond: () => [
-      "[RISET: SPAM-EMAIL CLASSIFIER]",
-      "----------------------------------------------------------------",
       "Aplikasi web riset evaluasi dan klasifikasi email spam berbasis Machine Learning.",
       "",
       "Fitur Utama:",
@@ -70,8 +64,6 @@ const SEMANTIC_PATTERNS = [
     category: 'laser_pointer',
     keywords: ['laser', 'pointer', 'ppt', 'powerpoint', 'presentasi', 'gyroscope', 'remote', 'touchpad', 'nirsentuh'],
     respond: () => [
-      "[PROYEK: LASER_POINTER_PPT]",
-      "----------------------------------------------------------------",
       "Aplikasi pengubah smartphone menjadi laser pointer virtual dan remote touchpad untuk presentasi PowerPoint di laptop.",
       "",
       "Keunggulan:",
@@ -87,8 +79,6 @@ const SEMANTIC_PATTERNS = [
     category: 'fotokita',
     keywords: ['fotokita', 'blur', 'mediapipe', 'gesture', 'gestur', 'kamera', 'privasi', 'opencv', 'v-sign'],
     respond: () => [
-      "[PROYEK: FOTOKITABLUR]",
-      "----------------------------------------------------------------",
       "Sistem deteksi gestur tangan realtime berbasis browser menggunakan MediaPipe Tasks Vision dan OpenCV.",
       "",
       "Fitur:",
@@ -104,12 +94,11 @@ const SEMANTIC_PATTERNS = [
     category: 'certificates',
     keywords: ['sertif', 'sertifikat', 'certificate', 'kredensial', 'bnsp', 'mtcna', 'mikrotik', 'cisco', 'pcap', 'kompetensi', 'lisensi'],
     respond: () => [
-      "[KREDENSIAL & SERTIFIKASI RESMI TERVERIFIKASI (10 SERTIFIKAT)]",
-      "----------------------------------------------------------------",
+      "Rafly Firmansyah memiliki 10 sertifikasi kompetensi autentik:",
+      "",
       "1. BNSP (Badan Nasional Sertifikasi Profesi) & LSP UBSI:",
       "   - Sertifikat Kompetensi Pengembang Perangkat Lunak (Kualifikasi: Analis Program).",
-      "   - No. 62010 2514 0005487 2025 / Reg. TIK.1241.04242 2025.",
-      "   - 10 Unit Kompetensi: Skalabilitas, SQL, Basis Data, Algoritma, Dokumentasi, Debugging, Profiling, Code Review, Testing.",
+      "   - Memvalidasi 10 Unit Kompetensi (Skalabilitas, SQL, Basis Data, Algoritma, Dokumentasi, Debugging, Profiling, Code Review, Testing).",
       "",
       "2. MikroTik (Riga, Latvia):",
       "   - MTCNA: MikroTik Certified Network Associate (ID: 2502NA6383).",
@@ -117,21 +106,14 @@ const SEMANTIC_PATTERNS = [
       "3. Cisco Networking Academy & OpenEDG:",
       "   - PCAP: Programming Essentials in Python.",
       "",
-      "4. Sertifikasi Lainnya:",
-      "   - IT Bootcamp Network Security (FTI UBSI).",
-      "   - Seminar Cloud Computing & Blockchain (FTI UBSI).",
-      "   - Google Profil Bisnis & E-Commerce (Kominfo RI).",
-      "   - Full-Stack Web SiM-K & JavaScript (Harisenin).",
-      "",
-      "Pratinjau berkas PDF autentik dapat dilihat di section 'Kredensial Resmi'."
+      "4. Sertifikasi Lainnya: IT Bootcamp Network Security (FTI UBSI), Cloud Computing (FTI UBSI), Google Profil Bisnis & E-Commerce (Kominfo), Full-Stack Web (Harisenin)."
     ]
   },
   {
     category: 'skills',
     keywords: ['skill', 'keahlian', 'kemampuan', 'stack', 'teknologi', 'bahasa', 'framework', 'python', 'javascript', 'backend', 'frontend'],
     respond: () => [
-      "[PETA KEAHLIAN & TEKNOLOGI]",
-      "----------------------------------------------------------------",
+      "Peta Keahlian & Teknologi:",
       "1. AI & Machine Learning : Python 3, PyTorch, Scikit-Learn, XGBoost, Sentence-Transformers, NLP, N-Gram, Pandas, NumPy.",
       "2. Vision & Realtime     : MediaPipe Tasks Vision, OpenCV, Flask-SocketIO, WebSockets, PyAutoGUI.",
       "3. Jaringan & Keamanan   : MikroTik RouterOS (MTCNA Certified), Routing, Firewall Security, QoS Bandwidth, Tunnels.",
@@ -143,31 +125,11 @@ const SEMANTIC_PATTERNS = [
     category: 'contact',
     keywords: ['kontak', 'hubungi', 'contact', 'email', 'wa', 'whatsapp', 'nomor', 'telepon', 'pesan', 'hire', 'hire me', 'rekrut', 'jasa'],
     respond: () => [
-      "[SALURAN KOMUNIKASI RESMI]",
-      "----------------------------------------------------------------",
       `Nama     : ${DEVELOPER_PROFILE.name}`,
       `WhatsApp : ${DEVELOPER_PROFILE.whatsapp} (${DEVELOPER_PROFILE.whatsappUrl})`,
       `Email    : ${DEVELOPER_PROFILE.email}`,
       `GitHub   : ${DEVELOPER_PROFILE.github}`,
-      `Website  : https://raflyfirmansyah-portofolio.vercel.app/`,
-      "",
-      "Silakan hubungi melalui WhatsApp atau formulir di bagian bawah halaman untuk diskusi kolaborasi."
-    ]
-  },
-  {
-    category: 'greeting',
-    keywords: ['halo', 'hai', 'hello', 'hi', 'pagi', 'siang', 'sore', 'malam', 'assalamualaikum', 'tes', 'ping'],
-    respond: () => [
-      "[SISTEM TERMINAL AKTIF]",
-      "----------------------------------------------------------------",
-      "Halo. Saya adalah asisten AI interaktif untuk portofolio Rafly Firmansyah.",
-      "Anda dapat menanyakan hal apapun (tentang portofolio maupun topik umum pemrograman/teknologi).",
-      "",
-      "Contoh pertanyaan:",
-      "- 'Ceritakan tentang riset OpenPlagiarismChecker'",
-      "- 'Apa saja unit kompetensi sertifikat BNSP Rafly?'",
-      "- 'Bagaimana cara kerja Naive Bayes vs XGBoost di riset Spam-Email?'",
-      "- 'Bagaimana cara menghubungi Rafly via WhatsApp?'"
+      `Website  : https://raflyfirmansyah-portofolio.vercel.app/`
     ]
   }
 ];
@@ -190,32 +152,29 @@ class TerminalAIEngine {
         "----------------------------------------------------------------",
         `Model Aktif Saat Ini : ${this.currentModel}`,
         "",
-        "Pilihan Model Populer:",
+        "Pilihan Model:",
         "  $ model auto       - Otomatis memilih model tercepat & terhandal",
-        "  $ model deepseek   - DeepSeek V3 Chat (Riset & Coding)",
+        "  $ model deepseek   - DeepSeek V3 Chat",
         "  $ model r1         - DeepSeek R1 Reasoning Model",
         "  $ model llama3     - Meta Llama 3.3 70B Instruct",
         "  $ model qwen       - Qwen 2.5 72B Instruct",
         "  $ model nvidia     - Nvidia NIM Engine",
-        "  $ model minimax    - MiniMax abab6.5s Model",
-        "",
-        "Atau ketik model ID lengkap (misal: model mistralai/mistral-large-2407)."
+        "  $ model minimax    - MiniMax abab6.5s Model"
       ];
     }
 
     this.currentModel = m;
     localStorage.setItem('ai_selected_model', m);
-    return [`Model AI berhasil diubah menjadi [${m}]. Query berikutnya akan menggunakan model ini.`];
+    return [`Model AI diubah menjadi [${m}]. Pertanyaan berikutnya akan diproses dengan model ini.`];
   }
 
   setKey(providerOrKey, key) {
     if (!key) {
-      // Single argument: assume API key for default OpenRouter
       this.customKey = providerOrKey.trim();
       this.customProvider = 'openrouter';
       localStorage.setItem('ai_custom_key', this.customKey);
       localStorage.setItem('ai_custom_provider', 'openrouter');
-      return ["API Key kustom Anda berhasil disimpan di peramban lokal (localStorage)."];
+      return ["API Key pribadi Anda berhasil disimpan di peramban lokal (localStorage)."];
     }
 
     const prov = providerOrKey.toLowerCase().trim();
@@ -231,7 +190,7 @@ class TerminalAIEngine {
     this.customProvider = '';
     localStorage.removeItem('ai_custom_key');
     localStorage.removeItem('ai_custom_provider');
-    return ["API Key kustom telah dihapus. Terminal akan kembali menggunakan server backend default."];
+    return ["API Key pribadi dihapus. Kembali menggunakan server gateway default."];
   }
 
   getStatus() {
@@ -239,13 +198,8 @@ class TerminalAIEngine {
       "[AI ENGINE & PROVIDER POOL STATUS]",
       "----------------------------------------------------------------",
       `Model AI Aktif       : ${this.currentModel}`,
-      `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server-Side Env Cascade'}`,
-      `Fallback Engine      : In-Browser Semantic Knowledge Engine (Active & Ready)`,
-      "",
-      "Perintah Konfigurasi:",
-      "  $ model              - Tampilkan daftar model & ubah model aktif",
-      "  $ setkey <key>       - Gunakan API key pribadi Anda di browser ini",
-      "  $ clearkey           - Hapus API key pribadi dari browser"
+      `Custom Key Status    : ${this.customKey ? `Terpasang (${this.customProvider.toUpperCase()})` : 'Default Server-Side Gateway'}`,
+      `Fallback Engine      : In-Browser Semantic Knowledge Engine (Active & Ready)`
     ];
   }
 
@@ -264,10 +218,10 @@ class TerminalAIEngine {
       } catch (_) {}
     }
 
-    // Call Vercel Serverless Function /api/chat
+    // Primary: Call Vercel Serverless Function /api/chat with generous 30s timeout
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 30000);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -286,34 +240,29 @@ class TerminalAIEngine {
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.response) {
-          const providerTag = data.provider ? `[AI AGENT: ${data.provider.toUpperCase()}]` : `[AI AGENT]`;
-          return [
-            providerTag,
-            "----------------------------------------------------------------",
-            ...data.response.split('\n')
-          ];
+          return data.response.split('\n');
         }
       }
     } catch (_) {
-      // Network timeout / offline -> gracefully fall back to in-browser semantic engine
+      // Network timeout / offline -> fall back to local semantic engine
     }
 
-    // High-Precision In-Browser Semantic Engine Fallback
+    // High-Precision In-Browser Semantic Engine Fallback for specific portfolio topics
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
-      return [
-        "[AI ENGINE: LOCAL KNOWLEDGE BASE]",
-        "----------------------------------------------------------------",
-        ...semanticMatch.filter(l => !l.startsWith('[') && !l.startsWith('----'))
-      ];
+      return semanticMatch;
     }
 
-    return this.generateSmartSynthesis(cleanQuery);
+    // Generic friendly response if completely offline or unreachable
+    return [
+      "Maaf, saat ini koneksi ke model AI cloud sedang mengalami kendala jaringan atau antrean tinggi.",
+      "Anda dapat mengulangi pertanyaan Anda kembali, atau menggunakan perintah CLI seperti 'skills', 'projects', 'certifs', 'benchmarks', 'contact'."
+    ];
   }
 
   async tryLocalOllama(query) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1000);
+    const timeout = setTimeout(() => controller.abort(), 2000);
 
     const res = await fetch('http://localhost:11434/v1/chat/completions', {
       method: 'POST',
@@ -331,11 +280,7 @@ class TerminalAIEngine {
       const data = await res.json();
       const content = data?.choices?.[0]?.message?.content;
       if (content) {
-        return [
-          "[AI AGENT: OLLAMA LOCAL]",
-          "----------------------------------------------------------------",
-          ...content.split('\n')
-        ];
+        return content.split('\n');
       }
     }
     return null;
@@ -370,26 +315,6 @@ class TerminalAIEngine {
     }
 
     return null;
-  }
-
-  generateSmartSynthesis(query) {
-    return [
-      "[ASISTEN TERMINAL PORTOFOLIO]",
-      "----------------------------------------------------------------",
-      `Pertanyaan: "${query}"`,
-      "",
-      "Informasi Terkait Portofolio Rafly Firmansyah:",
-      "- Mahasiswa S1 Informatika Universitas Bina Sarana Informatika (UBSI Sukabumi).",
-      "- Pemilik Sertifikasi Kompetensi BNSP Analis Program (10 Unit) & MikroTik MTCNA.",
-      "- Pengembang OpenPlagiarismChecker (Riset NLP) & Spam-Email Detection (ML).",
-      "",
-      "Anda dapat mencoba pertanyaan spesifik seperti:",
-      "1. 'Apa itu OpenPlagiarismChecker?'",
-      "2. 'Sertifikat apa saja yang dimiliki Rafly?'",
-      "3. 'Bagaimana cara kerja Naive Bayes vs XGBoost di riset Spam-Email?'",
-      "4. 'Bagaimana cara menghubungi Rafly via WhatsApp?'",
-      "Atau gunakan perintah CLI standar seperti 'skills', 'projects', 'certifs', 'benchmarks', 'clear'."
-    ];
   }
 }
 
