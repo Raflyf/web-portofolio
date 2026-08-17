@@ -467,10 +467,11 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'trivial_casual',
       effort: 'low',
-      omniCandidates: ['nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free'],
       openRouterCandidates: [
-        'deepseek/deepseek-chat',
-        'qwen/qwen-2.5-coder-32b-instruct'
+        'nvidia/nemotron-3-ultra-550b-a55b',
+        'nvidia/nemotron-3-super-120b-a12b',
+        'meta-llama/llama-3.3-70b-instruct'
       ]
     };
   }
@@ -483,10 +484,11 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'high',
-      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'nemotron-3-ultra-free'],
       openRouterCandidates: [
-        'qwen/qwen-2.5-coder-32b-instruct',
-        'deepseek/deepseek-chat'
+        'nvidia/nemotron-3-ultra-550b-a55b',
+        'nvidia/nemotron-3-super-120b-a12b',
+        'meta-llama/llama-3.3-70b-instruct'
       ]
     };
   }
@@ -497,10 +499,11 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'project_architecture',
       effort: 'high',
-      omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex'],
       openRouterCandidates: [
-        'deepseek/deepseek-chat',
-        'qwen/qwen-2.5-coder-32b-instruct'
+        'nvidia/nemotron-3-ultra-550b-a55b',
+        'nvidia/nemotron-3-super-120b-a12b',
+        'meta-llama/llama-3.3-70b-instruct'
       ]
     };
   }
@@ -512,11 +515,11 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
-      omniCandidates: ['nemotron-3-ultra-free', 'nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
+      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Antigravity', 'Codex'],
       openRouterCandidates: [
-        'deepseek/deepseek-r1',
-        'deepseek/deepseek-chat',
-        'qwen/qwen-2.5-coder-32b-instruct'
+        'nvidia/nemotron-3-ultra-550b-a55b',
+        'nvidia/nemotron-3-super-120b-a12b',
+        'meta-llama/llama-3.3-70b-instruct'
       ]
     };
   }
@@ -525,10 +528,11 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   return {
     category: 'standard_balanced',
     effort: 'medium',
-    omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
+    omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex'],
     openRouterCandidates: [
-      'deepseek/deepseek-chat',
-      'qwen/qwen-2.5-coder-32b-instruct'
+      'nvidia/nemotron-3-ultra-550b-a55b',
+      'nvidia/nemotron-3-super-120b-a12b',
+      'meta-llama/llama-3.3-70b-instruct'
     ]
   };
 }

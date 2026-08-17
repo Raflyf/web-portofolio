@@ -687,26 +687,27 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
 \`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\``;
 
     const effortTokensMap = {
-      'LOW': 2000,
+      'LOW': 2500,
       'MEDIUM': 4500,
-      'HIGH': 6500,
+      'HIGH': 8192,
       'THINKING': 8192
     };
-    const calculatedMaxTokens = effortTokensMap[targetEffort] || 4500;
+    const calculatedMaxTokens = effortTokensMap[targetEffort] || 8192;
 
     // Helper: Safe JSON or SSE stream extractor
     const extractContentFromResponseText = (rawText) => {
       if (!rawText) return '';
-      const trimmedText = rawText.trim();
-      if (trimmedText.startsWith('data:')) {
+      const trimmed = rawText.trim();
+      if (trimmed.includes('data:')) {
         let assembled = '';
-        const lines = trimmedText.split('\n');
+        const lines = trimmed.split('\n');
         for (const line of lines) {
           const l = line.trim();
           if (l.startsWith('data:') && !l.includes('[DONE]')) {
             try {
-              const json = JSON.parse(l.slice(5).trim());
-              const delta = json.choices?.[0]?.delta?.content || json.choices?.[0]?.message?.content || '';
+              const jsonStr = l.replace(/^data:\s*/, '');
+              const json = JSON.parse(jsonStr);
+              const delta = json.choices?.[0]?.delta?.content || json.choices?.[0]?.message?.content || json.choices?.[0]?.text || '';
               assembled += delta;
             } catch (_) {}
           }
@@ -714,8 +715,8 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
         if (assembled.trim().length > 0) return assembled;
       }
       try {
-        const json = JSON.parse(trimmedText);
-        return json.choices?.[0]?.message?.content || json.choices?.[0]?.delta?.content || '';
+        const json = JSON.parse(trimmed);
+        return json.choices?.[0]?.message?.content || json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
       } catch (_) {
         return '';
       }
@@ -757,19 +758,15 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       return finalContent.split('\n');
     };
 
-    // 1. ABSOLUTE PRIORITY #1: Dedicated OmniRoute Gateway Pool (Multi-Model Nemotron & DeepSeek Pipeline)
+    // 1. ABSOLUTE PRIORITY #1: Dedicated OmniRoute Gateway Pool (Nemotron Laguna 3 Ultra Priority)
     const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
     const OMNI_KEY = atob('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
 
     let omniCandidates = [];
     if (this.currentModel && this.currentModel !== 'auto') {
-      omniCandidates = [this.currentModel, 'nemotron-3-ultra-free', 'nemotron-laguna', 'nemotron-super-free', 'Deepseek-V4-Flash-Free'];
-    } else if (isDeepReasoning) {
-      omniCandidates = ['nemotron-3-ultra-free', 'nemotron-super-free', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
-    } else if (isProjectExplaining || isHeavyCoding) {
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'qwen-2.5-coder-free', 'nemotron-3-ultra-free'];
+      omniCandidates = [this.currentModel, 'nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free'];
     } else {
-      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex', 'Antigravity'];
     }
 
     let isTunnelReachable = true;
@@ -821,23 +818,21 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       }
     }
 
-    // 2. Secondary Direct Route: OpenCode Cloud Pool (Nemotron & DeepSeek)
-    const OC_KEYS = [
-      atob('c2stTW01NmMyZFpnZmVYVUxsQjk2c3g0alZOOHltU2djamNrc2lEd3ZrS241QWFNMWRCY2JpR0ZwdVVkWkRoZVZJNQ=='),
-      atob('c2stWVdUc2JDaTBicEJISW9pS2xiQjBnYjRUYnZZMXB5a0k0aEJCQWxFSkROEHE1ODhPT3pSZXB6RFVja29TNWtDSQ==')
-    ];
-    for (const ocKey of OC_KEYS) {
+    // 2. Secondary Direct Route: Nvidia NIM API Direct (Nemotron 3 Ultra 550B & Super 120B)
+    const NVIDIA_DIRECT_KEY = atob('bnZhcGktVTVBNVJZcjJuTDRudVdYUE5HZWZnSHdHbmxoLWFsY1lFenIxeVJxdE43Y3RIMVNiSTFGaUprMno1Z0NPQzE4dA==');
+    const nimCandidateModels = ['nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-super-120b-a12b', 'meta/llama-3.3-70b-instruct'];
+    for (const nimModel of nimCandidateModels) {
       try {
-        const ocController = new AbortController();
-        const ocTimeout = setTimeout(() => ocController.abort(), 15000);
-        const ocRes = await fetch('https://opencode.ai/api/v1/chat/completions', {
+        const nimController = new AbortController();
+        const nimTimeout = setTimeout(() => nimController.abort(), 30000);
+        const nimRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + ocKey
+            'Authorization': 'Bearer ' + NVIDIA_DIRECT_KEY
           },
           body: JSON.stringify({
-            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
+            model: nimModel,
             messages: [
               { role: 'system', content: fullSystemPrompt },
               { role: 'user', content: userMessageContent }
@@ -845,22 +840,22 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
             max_tokens: calculatedMaxTokens,
             temperature: 0.25
           }),
-          signal: ocController.signal
+          signal: nimController.signal
         });
-        clearTimeout(ocTimeout);
+        clearTimeout(nimTimeout);
 
-        if (ocRes.ok) {
-          const rawText = await ocRes.text();
+        if (nimRes.ok) {
+          const rawText = await nimRes.text();
           const content = extractContentFromResponseText(rawText);
           if (content && content.length > 5) {
-            const resLines = dispatchSuccess(content, 'nvidia/nemotron-nano-9b', 'OpenCode Direct Failover');
+            const resLines = dispatchSuccess(content, nimModel, 'Nvidia NIM Direct Gateway');
             if (resLines) return resLines;
           }
         }
       } catch (_) {}
     }
 
-    // 3. Tertiary Direct Route: OpenRouter 3-Key Cloud Pool (DeepSeek V3 671B & Qwen 32B SOTA)
+    // 3. Tertiary Direct Route: OpenRouter 3-Key Cloud Pool (Nemotron 3 Ultra & Super & Llama 3.3 70B)
     const OR_KEYS = [
       atob('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
       atob('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw=='),
@@ -868,18 +863,14 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
     ];
 
     const orModelCandidates = (this.currentModel && this.currentModel !== 'auto')
-      ? [this.currentModel, 'deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-r1', 'meta-llama/llama-3.3-70b-instruct']
-      : (isDeepReasoning 
-          ? ['deepseek/deepseek-r1', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
-          : (isHeavyCoding || isProjectExplaining
-              ? ['qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
-              : ['deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct', 'meta-llama/llama-3.3-70b-instruct']));
+      ? [this.currentModel, 'nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-super-120b-a12b', 'meta-llama/llama-3.3-70b-instruct']
+      : ['nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-super-120b-a12b', 'meta-llama/llama-3.3-70b-instruct'];
 
     for (const orM of orModelCandidates) {
       for (const orKey of OR_KEYS) {
         try {
           const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 18000);
+          const orTimeout = setTimeout(() => orController.abort(), 35000);
           const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
