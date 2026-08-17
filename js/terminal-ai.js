@@ -445,10 +445,16 @@ class TerminalAIEngine {
 
     const cleanOutput = (text) => {
       let cleaned = String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-      const monologueRegex = /^(?:Okay|Alright|Let me|The user is asking|Looking at the live search|First, looking at|Hmm,|Wait, check)[\s\S]*?(?=\n\n(?:[A-Z0-9#\-\*•]|Berikut|Model|Berdasarkan|Untuk|Saat ini|Halo|Hai|Tentu))/i;
-      if (monologueRegex.test(cleaned)) {
-        const after = cleaned.replace(monologueRegex, '').trim();
-        if (after.length > 20) cleaned = after;
+
+      // If text contains English internal reasoning monologue (e.g. from Nemotron/DeepSeek R1)
+      const reasoningKeywords = /^(?:First|Let me|I should|I need to|The user|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Okay|Let's)\b/i;
+      if (reasoningKeywords.test(cleaned)) {
+        // Find the start of the actual Indonesian answer or table or heading
+        const indonesianMarker = /(?:(?:\n|\A)(?:Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|[#|]|\d+\.))/i;
+        const match = cleaned.search(indonesianMarker);
+        if (match !== -1 && match > 0) {
+          cleaned = cleaned.slice(match).trim();
+        }
       }
       return cleaned;
     };
@@ -599,23 +605,23 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     if (isGreeting) {
       targetEffort = 'LOW';
       OR_MODELS = [
-        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
         'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
         'nvidia/nemotron-3-super-120b-a12b:free'
       ];
     } else if (isHeavyCoding || isDeepReasoning) {
       targetEffort = isHeavyCoding ? 'HIGH' : 'THINKING';
       OR_MODELS = [
-        'nvidia/nemotron-3-super-120b-a12b:free',
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'openai/gpt-oss-20b:free'
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
       ];
     } else {
       targetEffort = 'MEDIUM';
       OR_MODELS = [
-        'nvidia/nemotron-3-super-120b-a12b:free',
         'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-ultra-550b-a55b:free'
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
       ];
     }
 

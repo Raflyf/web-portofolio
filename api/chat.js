@@ -461,7 +461,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'heavy_coding',
       effort: 'high', // Deep, complete code output
       omniCandidates: ['Deepseek-V4-Flash-Free', 'Codex', 'nemotron-laguna', 'Antigravity'],
-      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'cohere/north-mini-code:free']
+      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
     };
   }
 
@@ -473,7 +473,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'deep_reasoning',
       effort: 'thinking', // Deep analytical CoT
       omniCandidates: ['Deepseek-V4-Flash-Free', 'Antigravity', 'nemotron-laguna', 'Codex'],
-      openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'openai/gpt-oss-20b:free']
+      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
     };
   }
 
@@ -482,7 +482,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     category: 'standard_balanced',
     effort: 'medium', // Balanced depth
     omniCandidates: ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex', 'Antigravity'],
-    openRouterCandidates: ['nvidia/nemotron-3-super-120b-a12b:free', 'openai/gpt-oss-20b:free', 'nvidia/nemotron-3-ultra-550b-a55b:free']
+    openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
   };
 }
 
@@ -613,12 +613,13 @@ export default async function handler(req, res) {
     const sendSuccess = (content, modelName, providerName) => {
       let cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
-      // Strip leaked English internal monologue / scratchpad
-      const monologueRegex = /^(?:Okay|Alright|Let me|The user is asking|Looking at the live search|First, looking at|Hmm,|Wait, check)[\s\S]*?(?=\n\n(?:[A-Z0-9#\-\*•]|Berikut|Model|Berdasarkan|Untuk|Saat ini|Halo|Hai|Tentu))/i;
-      if (monologueRegex.test(cleaned)) {
-        const after = cleaned.replace(monologueRegex, '').trim();
-        if (after.length > 20) {
-          cleaned = after;
+      // Strip leaked English internal monologue / scratchpad (e.g. from Nemotron / DeepSeek R1)
+      const reasoningKeywords = /^(?:First|Let me|I should|I need to|The user|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Okay|Let's)\b/i;
+      if (reasoningKeywords.test(cleaned)) {
+        const indonesianMarker = /(?:(?:\n|\A)(?:Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|[#|]|\d+\.))/i;
+        const match = cleaned.search(indonesianMarker);
+        if (match !== -1 && match > 0) {
+          cleaned = cleaned.slice(match).trim();
         }
       }
 
