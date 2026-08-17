@@ -653,23 +653,23 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     if (isGreeting) {
       targetEffort = 'LOW';
       OR_MODELS = [
-        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free',
         'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
+        'openai/gpt-oss-20b:free'
       ];
     } else if (isHeavyCoding || isDeepReasoning) {
       targetEffort = isHeavyCoding ? 'HIGH' : 'THINKING';
       OR_MODELS = [
-        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free',
         'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
+        'openai/gpt-oss-20b:free'
       ];
     } else {
       targetEffort = 'MEDIUM';
       OR_MODELS = [
-        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free',
         'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
+        'openai/gpt-oss-20b:free'
       ];
     }
 

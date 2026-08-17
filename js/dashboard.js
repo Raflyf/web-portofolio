@@ -833,58 +833,70 @@ class DashboardApp {
       }
     ];
 
-    const aiEvents = this.filteredEvents.filter(e => 
-      e.event_type === 'ai_query' || 
-      e.event_type === 'ai_query_resolved' || 
-      e.event_type === 'model_select' || 
-      (e.event_type === 'terminal_cmd' && e.event_target && !['skills', 'projects', 'benchmarks', 'certifs', 'clear', 'help'].includes(e.event_target.toLowerCase()))
+    // 1. Isolate verified unique AI consultation executions (deduplicate and filter out UI events)
+    const resolvedEvents = this.filteredEvents.filter(e => e.event_type === 'ai_query_resolved');
+    const resolvedKeys = new Set(resolvedEvents.map(e => `${e.session_id}_${(e.event_label || '').substring(0, 30)}`));
+
+    const legacyEvents = this.filteredEvents.filter(e => 
+      (e.event_type === 'ai_query' || e.event_type === 'terminal_ai_query') &&
+      !resolvedKeys.has(`${e.session_id}_${(e.event_label || '').substring(0, 30)}`)
     );
 
-    // Track Auto Router Resolved Breakdown
+    const actualConsultations = [...resolvedEvents, ...legacyEvents];
+    const totalConsultations = actualConsultations.length;
+
+    // 2. Track Auto Router breakdown & Individual Model Statistics
     const autoResolvedBreakdown = {};
-    aiEvents.forEach(e => {
-      const t = e.event_target || '';
-      const l = e.event_label || '';
-      if (t.startsWith('auto:') || l.includes('[Auto ➔')) {
-        let resolved = t.replace('auto:', '').trim();
-        if (!resolved && l.includes('[Auto ➔')) {
-          resolved = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
+    let autoRouterTotal = 0;
+    let manualRouterTotal = 0;
+
+    const modelStatsMap = {};
+    MODELS_CATALOG.forEach(m => {
+      modelStatsMap[m.id] = { ...m, manualCount: 0, autoCount: 0, total: 0 };
+    });
+
+    actualConsultations.forEach(e => {
+      const t = (e.event_target || '').trim();
+      const l = (e.event_label || '').trim();
+      const isAuto = t.startsWith('auto:') || t === 'auto' || l.includes('[Auto ➔') || l.includes('Auto Router');
+
+      if (isAuto) {
+        autoRouterTotal++;
+        let resolvedStr = t.replace(/^auto:/, '').trim();
+        if ((!resolvedStr || resolvedStr === 'auto') && l.includes('[Auto ➔')) {
+          resolvedStr = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
         }
-        if (resolved) {
-          const matched = MODELS_CATALOG.find(mod => mod.id !== 'auto-router' && mod.match(resolved, l));
-          const name = matched ? matched.name : resolved;
-          autoResolvedBreakdown[name] = (autoResolvedBreakdown[name] || 0) + 1;
+        if (!resolvedStr || resolvedStr === 'auto') resolvedStr = 'Auto Cascade';
+
+        const matchedModel = MODELS_CATALOG.find(m => m.id !== 'auto-router' && m.match(resolvedStr, l));
+        if (matchedModel) {
+          modelStatsMap[matchedModel.id].autoCount++;
+          modelStatsMap[matchedModel.id].total++;
+          autoResolvedBreakdown[matchedModel.name] = (autoResolvedBreakdown[matchedModel.name] || 0) + 1;
+        } else {
+          const cleanName = resolvedStr.split('/').pop().replace(/:free$/i, '');
+          autoResolvedBreakdown[cleanName] = (autoResolvedBreakdown[cleanName] || 0) + 1;
+        }
+      } else {
+        manualRouterTotal++;
+        const matchedModel = MODELS_CATALOG.find(m => m.id !== 'auto-router' && m.match(t, l));
+        if (matchedModel) {
+          modelStatsMap[matchedModel.id].manualCount++;
+          modelStatsMap[matchedModel.id].total++;
         }
       }
     });
 
-    let grandTotalAI = 0;
-    const modelStats = MODELS_CATALOG.map(model => {
-      let manualCount = 0;
-      let autoCount = 0;
-
-      aiEvents.forEach(e => {
-        const t = e.event_target || '';
-        const l = e.event_label || '';
-        if (model.match(t, l)) {
-          const isAutoResolved = t.startsWith('auto:') || l.includes('[Auto ➔') || t === 'auto';
-          if (isAutoResolved) {
-            autoCount++;
-          } else {
-            manualCount++;
-          }
-        }
-      });
-
-      const total = manualCount + autoCount;
-      grandTotalAI += total;
-      return { ...model, manualCount, autoCount, total };
-    });
+    // Populate auto-router card
+    modelStatsMap['auto-router'].autoCount = autoRouterTotal;
+    modelStatsMap['auto-router'].manualCount = manualRouterTotal;
+    modelStatsMap['auto-router'].total = autoRouterTotal;
 
     if (totalCountEl) {
-      totalCountEl.textContent = `${grandTotalAI.toLocaleString('id-ID')}x`;
+      totalCountEl.textContent = `${totalConsultations.toLocaleString('id-ID')}x`;
     }
 
+    const modelStats = MODELS_CATALOG.map(m => modelStatsMap[m.id]);
     const maxModelCount = Math.max(1, ...modelStats.map(m => m.total));
 
     gridEl.innerHTML = modelStats.map(m => {
