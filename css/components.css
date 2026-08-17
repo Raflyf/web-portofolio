@@ -1263,6 +1263,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  overscroll-behavior: contain;
 }
 
 .terminal-thinking-line {
@@ -1786,6 +1787,13 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   background: rgba(16, 185, 129, 0.08);
 }
 
+/* Prevent Background Page Scroll Leakage when Modal is Active */
+html.modal-open,
+body.modal-open {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
 /* Terminal Modal Dialog */
 .terminal-modal-dialog {
   position: fixed;
@@ -1804,6 +1812,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  overscroll-behavior: contain;
 }
 
 .terminal-modal-dialog:not([open]) {
@@ -1844,6 +1853,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   flex-direction: column;
   flex: 1;
   padding: 0;
+  overscroll-behavior: contain;
 }
 
 .terminal-modal-slot .terminal-card {
