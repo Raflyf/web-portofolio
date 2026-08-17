@@ -525,16 +525,16 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
     if (isGreeting) {
       targetEffort = 'LOW';
-      omniCandidates = ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'];
     } else if (isHeavyCoding) {
       targetEffort = 'HIGH';
-      omniCandidates = ['Deepseek-V4-Flash-Free', 'Codex', 'nemotron-laguna', 'Antigravity'];
+      omniCandidates = ['Codex', 'nemotron-laguna', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     } else if (isDeepReasoning) {
       targetEffort = 'THINKING';
-      omniCandidates = ['Deepseek-V4-Flash-Free', 'Antigravity', 'nemotron-laguna', 'Codex'];
+      omniCandidates = ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
     } else {
       targetEffort = 'MEDIUM';
-      omniCandidates = ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex', 'Antigravity'];
+      omniCandidates = ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     }
 
     // If user explicitly selected a model (e.g. Codex, Antigravity, Nemotron Laguna)

@@ -447,8 +447,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'trivial_casual',
       effort: 'low', // Fast & concise, strictly saves flagship quota
-      omniCandidates: ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'], // DeepSeek first (high quota) with fast fallback
-      openRouterCandidates: ['nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'openai/gpt-oss-20b:free']
+      omniCandidates: ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex'],
+      openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free']
     };
   }
 
@@ -460,19 +460,19 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'high', // Deep, complete code output
-      omniCandidates: ['Deepseek-V4-Flash-Free', 'Codex', 'nemotron-laguna', 'Antigravity'],
+      omniCandidates: ['Codex', 'nemotron-laguna', 'Antigravity', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
     };
   }
 
   // 3. Deep Chain-of-Thought / High-IQ Reasoning / Mathematics / In-depth Research Analysis (Thinking CoT & Antigravity)
-  const hasReasoningKeywords = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan mendalam|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi arsitektural|chain of thought|thinking|penalaran)\b/i.test(q);
+  const hasReasoningKeywords = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q);
   
   if (hasReasoningKeywords || len > 250) {
     return {
       category: 'deep_reasoning',
       effort: 'thinking', // Deep analytical CoT
-      omniCandidates: ['Deepseek-V4-Flash-Free', 'Antigravity', 'nemotron-laguna', 'Codex'],
+      omniCandidates: ['nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
     };
   }
@@ -481,7 +481,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   return {
     category: 'standard_balanced',
     effort: 'medium', // Balanced depth
-    omniCandidates: ['Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex', 'Antigravity'],
+    omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
     openRouterCandidates: ['openai/gpt-oss-20b:free', 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', 'nvidia/nemotron-3-super-120b-a12b:free']
   };
 }

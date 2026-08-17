@@ -541,14 +541,13 @@ body {
 .ranked-list {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
 .ranked-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.65rem;
+  flex-direction: column;
+  gap: 0.35rem;
   padding: 0.55rem 0.75rem;
   background-color: var(--bg-primary);
   border: 1px solid var(--border-subtle);
@@ -561,36 +560,61 @@ body {
   border-color: var(--border-highlight);
 }
 
-.ranked-name-box {
+.ranked-item-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
+}
+
+.ranked-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.ranked-rank-badge {
+.ranked-num-badge {
   font-family: var(--font-mono);
+  font-size: 0.65rem;
   font-weight: 700;
-  font-size: 0.7rem;
   color: var(--text-dim);
-  width: 16px;
+  background-color: var(--surface-badge);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+  line-height: 1;
 }
 
-.ranked-title {
+.ranked-item-name {
   color: var(--text-heading);
   font-weight: 600;
+  font-size: 0.8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.ranked-count {
+.ranked-item-count {
   font-family: var(--font-mono);
   font-weight: 700;
   color: var(--accent-emerald);
-  font-size: 0.8rem;
+  font-size: 0.775rem;
+  white-space: nowrap;
+}
+
+.ranked-progress-bg {
+  width: 100%;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ranked-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
 /* ==========================================================================
@@ -1002,6 +1026,10 @@ body {
   justify-content: center;
   z-index: 10000;
   padding: 1.5rem;
+}
+
+.dash-modal.is-open {
+  display: flex !important;
 }
 
 .dash-modal-card {
