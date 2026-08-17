@@ -229,15 +229,19 @@ class TerminalAIEngine {
       const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) return '';
 
-      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=15`;
+      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=10`;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 2000);
       const res = await fetch(endpoint, {
         method: 'GET',
         headers: {
           'apikey': config.anonKey,
           'Authorization': `Bearer ${config.anonKey}`,
           'Content-Type': 'application/json'
-        }
+        },
+        signal: ctrl.signal
       });
+      clearTimeout(timer);
       if (!res.ok) return '';
       const data = await res.json();
       if (!data || data.length === 0) return '';
@@ -245,20 +249,22 @@ class TerminalAIEngine {
       const facts = data.map(d => `- ${d.fact_text}`).join('\n');
       return `\n\n[MEMORI JANGKA PANJANG AI (FAKTA YANG TELAH DIPELAJARI DARI PENGGUNA)]:\n${facts}\n(Gunakan fakta di atas jika relevan dengan pertanyaan saat ini.)`;
     } catch (err) {
-      console.debug('[Memory] Fetch error:', err);
       return '';
     }
   }
 
-  async saveAIMemory(fact) {
+  saveAIMemory(fact) {
     try {
       const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) return;
 
       const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories`;
-      const sessionId = sessionStorage.getItem('portfolio_session_id') || 'unknown';
+      const sessionId = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('portfolio_session_id')) || 'unknown';
       
-      await fetch(endpoint, {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 2000);
+
+      fetch(endpoint, {
         method: 'POST',
         headers: {
           'apikey': config.anonKey,
@@ -269,11 +275,10 @@ class TerminalAIEngine {
         body: JSON.stringify({
           fact_text: fact.substring(0, 1000),
           session_id: sessionId
-        })
-      });
-    } catch (err) {
-      console.debug('[Memory] Save error:', err);
-    }
+        }),
+        signal: ctrl.signal
+      }).catch(() => {});
+    } catch (_) {}
   }
 
   /**
@@ -321,7 +326,7 @@ class TerminalAIEngine {
     try {
       const memoryContext = await this.fetchAIMemories();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
+      const timeout = setTimeout(() => controller.abort(), 120000);
       const apiEndpoint = (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
         ? 'https://raflyfirmansyah-portofolio.vercel.app/api/chat'
         : '/api/chat';
@@ -576,6 +581,21 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 - Jika pengguna melampirkan gambar atau screenshot, analisis dan jelaskan isi gambar secara spesifik dan faktual.
 - DILARANG KERAS mengeluarkan monolog penalaran internal (scratchpad/chain of thought) dalam Bahasa Inggris. LANGSUNG berikan jawaban akhir dalam Bahasa Indonesia yang bersih, to-the-point, dan profesional.`;
 
+    const q = (cleanQuery || '').toLowerCase();
+    const len = q.length;
+
+    // Detect if image attachment exists
+    const hasImages = Array.isArray(attachments) && attachments.some(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50));
+
+    // Construct Multimodal Payload
+    const userMessageContent = hasImages ? [
+      { type: 'text', text: cleanQuery || 'Analisis dan jelaskan isi gambar/dokumen ini secara mendalam.' },
+      ...attachments.filter(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50)).map(img => ({
+        type: 'image_url',
+        image_url: { url: img.base64.startsWith('data:') ? img.base64 : `data:${img.type || 'image/jpeg'};base64,${img.base64}` }
+      }))
+    ] : cleanQuery;
+
     // Intelligent Intent Detection
     const isProjectExplaining = !hasImages && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
     const isHeavyCoding = !hasImages && !isProjectExplaining && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
@@ -691,8 +711,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       for (const omniModel of omniCandidates) {
         try {
           const omniController = new AbortController();
-          const timeoutMs = omniModel.toLowerCase().includes('deepseek') ? 4000 : 20000;
-          const omniTimeout = setTimeout(() => omniController.abort(), timeoutMs);
+          const omniTimeout = setTimeout(() => omniController.abort(), 16000);
           const res = await fetch(OMNI_URL, {
             method: 'POST',
             headers: {
@@ -853,7 +872,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       for (const key of OR_KEYS) {
         try {
           const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 16000);
+          const orTimeout = setTimeout(() => orController.abort(), 8000);
           const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
