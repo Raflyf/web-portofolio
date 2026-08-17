@@ -633,89 +633,7 @@ Langkah yang WAJIB Anda lakukan:
     // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
 
-    // 2A-0. Direct OpenCode Multi-Account Rotation (DeepSeek V4 Flash Free)
-    if (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || (model && model.includes('opencode'))) {
-      for (const ocKey of OPENCODE_KEYS) {
-        try {
-          const ocResp = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ocKey}`
-            },
-            body: JSON.stringify({
-              model: 'deepseek-v4-flash-free',
-              messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig
-            })
-          }, 18000);
-
-          if (ocResp.ok) {
-            const ocData = await ocResp.json();
-            const ocText = ocData?.choices?.[0]?.message?.content;
-            if (ocText) {
-              return sendSuccess(ocText, 'opencode/deepseek-v4-flash-free', 'OpenCode Cloud Multi-Account Pool');
-            }
-          } else {
-            const ocErr = await ocResp.text();
-            providerErrors.push(`OpenCode HTTP ${ocResp.status}: ${ocErr.slice(0, 100)}`);
-          }
-        } catch (ocErr) {
-          providerErrors.push(`OpenCode: ${ocErr.message}`);
-        }
-      }
-    }
-
-    // 2A-1. Hugging Face Dedicated OmniRoute Cloud Space (150+ OpenCode Accounts Pool)
-    try {
-      const hfBase = 'https://rflyyyf-omniroute-gateway.hf.space';
-      const hfController = new AbortController();
-      const hfTimeout = setTimeout(() => hfController.abort(), 20000);
-
-      const hfPost = await fetch(`${hfBase}/gradio_api/call/chat_fn`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [finalUserPrompt, []] }),
-        signal: hfController.signal
-      });
-
-      if (hfPost.ok) {
-        const postData = await hfPost.json();
-        if (postData?.event_id) {
-          const eventRes = await fetch(`${hfBase}/gradio_api/call/chat_fn/${postData.event_id}`, {
-            signal: hfController.signal
-          });
-          clearTimeout(hfTimeout);
-          if (eventRes.ok) {
-            const rawEvent = await eventRes.text();
-            const lines = rawEvent.split('\n');
-            for (const l of lines) {
-              if (l.startsWith('data: ')) {
-                try {
-                  const arr = JSON.parse(l.slice(6));
-                  if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'string') {
-                    const text = arr[0].trim();
-                    if (text && text !== 'Offline' && !text.toLowerCase().startsWith('error:')) {
-                      return sendSuccess(text, 'deepseek-v4-flash-free', 'OmniRoute Dedicated HF Gateway (150 Accounts Pool)');
-                    } else if (text === 'Offline') {
-                      providerErrors.push('OmniRoute HF Space: Status is currently Offline / Sleeping on Hugging Face.');
-                    }
-                  }
-                } catch (_) {}
-              }
-            }
-          }
-        }
-      } else {
-        clearTimeout(hfTimeout);
-        providerErrors.push(`OmniRoute HF Space HTTP ${hfPost.status}`);
-      }
-    } catch (hfErr) {
-      providerErrors.push(`OmniRoute HF Space: ${hfErr.message}`);
-    }
-
-    // 2B. OpenRouter Multi-Model Cloud Pool (Prioritizing SOTA 70B & 671B Flagship Models)
+    // 2A. Primary: OpenRouter SOTA Cloud Pool (Sub-second Latency: Nemotron 120B/550B, Gemma 4, DeepSeek)
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
       if (orModel.startsWith('opencode/')) {
@@ -751,8 +669,7 @@ Langkah yang WAJIB Anda lakukan:
             model: m,
             messages: baseTextMessages,
             max_tokens: maxTokensConfig,
-            temperature: tempConfig,
-            ...(reasoningEffort === 'thinking' || reasoningEffort === 'high' ? { reasoning: { effort: 'high' } } : {})
+            temperature: tempConfig
           };
 
           const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
@@ -764,7 +681,7 @@ Langkah yang WAJIB Anda lakukan:
               'X-Title': 'Rafly Firmansyah AI Portfolio Terminal'
             },
             body: JSON.stringify(openRouterPayload)
-          }, 22000);
+          }, 12000);
 
           if (response.ok) {
             const data = await response.json();
@@ -778,6 +695,40 @@ Langkah yang WAJIB Anda lakukan:
           }
         } catch (err) {
           providerErrors.push(`OpenRouter ${m}: ${err.message}`);
+        }
+      }
+    }
+
+    // 2B. Secondary: Direct OpenCode Multi-Account Rotation (DeepSeek V4 Flash Free)
+    if (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || (model && model.includes('opencode'))) {
+      for (const ocKey of OPENCODE_KEYS) {
+        try {
+          const ocResp = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${ocKey}`
+            },
+            body: JSON.stringify({
+              model: 'deepseek-v4-flash-free',
+              messages: baseTextMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, 12000);
+
+          if (ocResp.ok) {
+            const ocData = await ocResp.json();
+            const ocText = ocData?.choices?.[0]?.message?.content;
+            if (ocText) {
+              return sendSuccess(ocText, 'opencode/deepseek-v4-flash-free', 'OpenCode Cloud Multi-Account Pool');
+            }
+          } else {
+            const ocErr = await ocResp.text();
+            providerErrors.push(`OpenCode HTTP ${ocResp.status}: ${ocErr.slice(0, 100)}`);
+          }
+        } catch (ocErr) {
+          providerErrors.push(`OpenCode: ${ocErr.message}`);
         }
       }
     }
