@@ -623,12 +623,50 @@ class DashboardApp {
     if (!gridEl) return;
 
     const MODELS_CATALOG = [
-      // 0. Pure Intelligent Auto Router
+      // 0A. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
+      {
+        id: 'omniroute-codex',
+        name: 'Codex (GPT-5.6 Terra)',
+        category: 'OmniRoute #1',
+        tag: 'Tier 1 Priority: Heavy Coding',
+        icon: '👑',
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('codex') || `${t} ${l}`.toLowerCase().includes('gpt-5.6') || `${t} ${l}`.toLowerCase().includes('terra')
+      },
+      {
+        id: 'omniroute-antigravity',
+        name: 'Antigravity (Claude Opus 4.6)',
+        category: 'OmniRoute #2',
+        tag: 'Tier 1 Priority: Deep CoT',
+        icon: '🧠',
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus')
+      },
+      {
+        id: 'omniroute-deepseek-v4',
+        name: 'DeepSeek V4 Flash Free',
+        category: 'OmniRoute #3',
+        tag: 'Tier 1 Priority: Fast Logic',
+        icon: '⚡',
+        color: 'var(--accent-amber)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-v4') || `${t} ${l}`.toLowerCase().includes('deepseek') || `${t} ${l}`.toLowerCase().includes('ponytail')
+      },
+      {
+        id: 'omniroute-vision',
+        name: 'Vision-model (MiniMax M3)',
+        category: 'OmniRoute #4',
+        tag: 'Tier 1 Priority: Multimodal Vision',
+        icon: '👁️',
+        color: 'oklch(0.75 0.18 280)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('minimax')
+      },
+
+      // 0B. Auto Router
       {
         id: 'auto-router',
         name: 'Auto Cloud Gateway',
         category: 'Router',
-        tag: 'Intelligent SOTA Auto-Router',
+        tag: 'Intelligent SOTA Cascade',
         icon: '⚡',
         color: 'var(--accent-cyan)',
         match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
