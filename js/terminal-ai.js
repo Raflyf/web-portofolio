@@ -139,33 +139,16 @@ const SEMANTIC_PATTERNS = [
 // ============================================================================
 class TerminalAIEngine {
   constructor() {
-    this.currentModel = localStorage.getItem('ai_selected_model') || 'auto';
+    this.currentModel = localStorage.getItem('ai_selected_model') || 'deepseek/deepseek-chat';
     this.customKey = localStorage.getItem('ai_custom_key') || '';
     this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
   }
 
   setModel(modelName) {
-    const m = modelName.toLowerCase().trim();
-    if (!m) {
-      return [
-        "[MODEL AI SELEKTOR]",
-        "----------------------------------------------------------------",
-        `Model Aktif Saat Ini : ${this.currentModel}`,
-        "",
-        "Pilihan Model:",
-        "  $ model auto       - Otomatis memilih model tercepat & terhandal",
-        "  $ model deepseek   - DeepSeek V3 Chat",
-        "  $ model r1         - DeepSeek R1 Reasoning Model",
-        "  $ model llama3     - Meta Llama 3.3 70B Instruct",
-        "  $ model qwen       - Qwen 2.5 72B Instruct",
-        "  $ model nvidia     - Nvidia NIM Engine",
-        "  $ model minimax    - MiniMax abab6.5s Model"
-      ];
-    }
-
+    const m = modelName.trim();
+    if (!m) return;
     this.currentModel = m;
     localStorage.setItem('ai_selected_model', m);
-    return [`Model AI diubah menjadi [${m}]. Pertanyaan berikutnya akan diproses dengan model ini.`];
   }
 
   setKey(providerOrKey, key) {

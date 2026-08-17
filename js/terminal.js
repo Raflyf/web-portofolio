@@ -1,9 +1,9 @@
 /**
  * ============================================================================
- * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v3.8.0)
+ * INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v3.9.0)
  * CLI Playground & Natural Language AI Assistant for Rafly Firmansyah Portfolio
- * With Multi-API Cascade (OpenRouter/DeepSeek, Nvidia, MiniMax, Ollama)
- * & Snappy Token-by-Token Typewriter Streaming Engine
+ * With Multi-API Cascade (OpenRouter/DeepSeek, Nvidia Nemotron, MiniMax, Opencode)
+ * & Interactive Model Dropdown Picker + Token-by-Token Typewriter Streamer
  * ============================================================================
  */
 
@@ -16,12 +16,27 @@ export function initTerminal() {
   const terminalForm = document.getElementById('terminal-form');
   const terminalInput = document.getElementById('terminal-input');
   const chipButtons = document.querySelectorAll('.terminal-chip');
+  const modelSelect = document.getElementById('terminal-model-select');
 
   if (!terminalBody || !terminalForm || !terminalInput) return;
 
   const history = [];
   let historyIndex = -1;
   let isGenerating = false;
+
+  // Restore saved model dropdown selection
+  if (modelSelect) {
+    const savedModel = localStorage.getItem('ai_selected_model') || 'deepseek/deepseek-chat';
+    modelSelect.value = savedModel;
+
+    modelSelect.addEventListener('change', () => {
+      const chosen = modelSelect.value;
+      const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || chosen;
+      terminalAI.setModel(chosen);
+      appendLine(`[Model AI] Beralih ke: ${modelText}`);
+      appendLine("");
+    });
+  }
 
   const COMMAND_REGISTRY = {
     help: () => [
@@ -31,7 +46,6 @@ export function initTerminal() {
       "  projects     - Daftar proyek GitHub open-source",
       "  certifs      - Daftar sertifikat & kredensial terverifikasi (10 Sertifikat)",
       "  benchmarks   - Metrik pengujian model riset ML/AI",
-      "  model        - Pilih/ganti model AI (DeepSeek, Llama3, Nvidia, MiniMax, dll)",
       "  aistatus     - Status engine AI & provider aktif",
       "  setkey       - Masukkan API key pribadi Anda di browser ini",
       "  clearkey     - Hapus API key pribadi dari browser",
@@ -40,8 +54,8 @@ export function initTerminal() {
       "  whoami       - Status sesi saat ini",
       "  clear        - Membersihkan layar terminal",
       "",
-      "TIPS: Anda juga bisa bertanya bebas dalam bahasa alami tanpa keyword!",
-      "Contoh: 'jelaskan arsitektur OpenPlagiarismChecker' atau 'apa saja unit BNSP?'"
+      "TIPS: Gunakan dropdown 'Model AI' di pojok kanan atas untuk memilih model!",
+      "Atau tanyakan apapun secara mendalam dan bebas dengan bahasa alami."
     ],
     telemetry: () => {
       setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
@@ -113,7 +127,6 @@ export function initTerminal() {
       "visitor@portfolio-client: guest (read-only privilege level)"
     ],
     aistatus: () => terminalAI.getStatus(),
-    model: () => terminalAI.setModel(''),
     clearkey: () => terminalAI.clearKey(),
     clear: () => {
       terminalBody.innerHTML = '';
@@ -144,7 +157,7 @@ export function initTerminal() {
   }
 
   /**
-   * Snappy Token/Word Typewriter Streamer (Like ChatGPT)
+   * Snappy Token/Word Typewriter Streamer (Like ChatGPT/Claude)
    */
   async function streamOutputLines(lines) {
     for (let i = 0; i < lines.length; i++) {
@@ -154,7 +167,6 @@ export function initTerminal() {
         continue;
       }
 
-      // Split into words and punctuation tokens
       const tokens = lineText.split(/(\s+)/);
       const lineEl = document.createElement('div');
       lineEl.className = 'terminal-line';
@@ -170,7 +182,6 @@ export function initTerminal() {
         cursorSpan.insertAdjacentText('beforebegin', token);
         terminalBody.scrollTop = terminalBody.scrollHeight;
 
-        // Snappy cadence: ~12ms per non-empty token
         if (token.trim().length > 0) {
           await new Promise(r => setTimeout(r, 12));
         }
@@ -178,7 +189,7 @@ export function initTerminal() {
 
       cursorSpan.remove();
       terminalBody.scrollTop = terminalBody.scrollHeight;
-      await new Promise(r => setTimeout(r, 25));
+      await new Promise(r => setTimeout(r, 20));
     }
   }
 
@@ -204,15 +215,6 @@ export function initTerminal() {
       return;
     }
 
-    // Command: model <name>
-    if (cmdLower.startsWith('model ')) {
-      const modelName = trimmed.slice(6).trim();
-      const output = terminalAI.setModel(modelName);
-      output.forEach(line => appendLine(line));
-      appendLine("");
-      return;
-    }
-
     // Command: setkey <key> or setkey <provider> <key>
     if (cmdLower.startsWith('setkey ')) {
       const parts = trimmed.split(/\s+/);
@@ -234,7 +236,7 @@ export function initTerminal() {
     terminalInput.disabled = true;
     telemetry.logEvent('terminal_ai_query', trimmed.slice(0, 40), `Pertanyaan AI: ${trimmed}`);
 
-    const thinkingLine = appendLine("[AI Assistant] Menyusun jawaban...", false, '', true);
+    const thinkingLine = appendLine("[AI Assistant] Menganalisis dan menyusun jawaban mendalam...", false, '', true);
 
     try {
       const responses = await terminalAI.ask(trimmed);
@@ -258,8 +260,8 @@ export function initTerminal() {
   }
 
   // Initial welcome message
-  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.8.0 — AI Streaming Engine]");
-  appendLine("Ketik 'help' untuk daftar perintah atau tanyakan apapun dengan bahasa alami.");
+  appendLine("Sistem Terminal Interaktif Portofolio [Versi 3.9.0 — Deep AI Engine]");
+  appendLine("Pilih Model AI pada dropdown di atas atau tanyakan apapun secara mendalam.");
   appendLine("");
 
   // Form submit listener
