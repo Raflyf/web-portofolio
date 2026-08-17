@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.29.0';
-import { telemetry } from './telemetry.js?v=10.29.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.33.0';
+import { telemetry } from './telemetry.js?v=10.33.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -830,53 +830,61 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       } catch (_) {}
     }
 
-    // 3. Tertiary Direct Route: OpenRouter Free Pool (Nemotron & DeepSeek)
+    // 3. Tertiary Direct Route: OpenRouter 3-Key Cloud Pool (DeepSeek V3 671B & Qwen 32B SOTA)
     const OR_KEYS = [
       atob('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
-      atob('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw==')
+      atob('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw=='),
+      atob('c2stb3ItdjEtN2EzYzM5ODZjY2JjMGI2NDEyYjE2Yzc4Yzc2MmNkNzU2OTYwNDc0ODNhMjdiMTg4MTllZmI1OTk0NGY4ZWQ0Mw==')
     ];
-    for (const orKey of OR_KEYS) {
-      try {
-        const orController = new AbortController();
-        const orTimeout = setTimeout(() => orController.abort(), 15000);
-        const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + orKey,
-            'HTTP-Referer': (typeof window !== 'undefined' ? window.location.href : 'https://raflyf.github.io/web-portofolio/'),
-            'X-Title': 'Rafly Portfolio Lab'
-          },
-          body: JSON.stringify({
-            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
-            messages: [
-              { role: 'system', content: fullSystemPrompt },
-              { role: 'user', content: userMessageContent }
-            ],
-            max_tokens: calculatedMaxTokens,
-            temperature: 0.25
-          }),
-          signal: orController.signal
-        });
-        clearTimeout(orTimeout);
 
-        if (orRes.ok) {
-          const rawText = await orRes.text();
-          const content = cleanOutput(extractContentFromResponseText(rawText));
-          if (content && content.length > 5) {
-            this.lastExecutionInfo = {
-              isAuto: !this.currentModel || this.currentModel === 'auto',
-              resolvedModel: 'nvidia/nemotron-nano-9b',
-              requestedModel: this.currentModel,
-              isFailover: true,
-              provider: 'OpenRouter Direct Failover',
-              effort: targetEffort,
-              category: 'general'
-            };
-            return content.split('\n');
+    const orModelCandidates = (this.currentModel && this.currentModel !== 'auto')
+      ? [this.currentModel, 'deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct']
+      : ['deepseek/deepseek-chat', 'qwen/qwen-2.5-coder-32b-instruct'];
+
+    for (const orM of orModelCandidates) {
+      for (const orKey of OR_KEYS) {
+        try {
+          const orController = new AbortController();
+          const orTimeout = setTimeout(() => orController.abort(), 18000);
+          const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + orKey,
+              'HTTP-Referer': (typeof window !== 'undefined' ? window.location.href : 'https://raflyf.github.io/web-portofolio/'),
+              'X-Title': 'Rafly Portfolio Lab'
+            },
+            body: JSON.stringify({
+              model: orM,
+              messages: [
+                { role: 'system', content: fullSystemPrompt },
+                { role: 'user', content: userMessageContent }
+              ],
+              max_tokens: calculatedMaxTokens,
+              temperature: 0.25
+            }),
+            signal: orController.signal
+          });
+          clearTimeout(orTimeout);
+
+          if (orRes.ok) {
+            const rawText = await orRes.text();
+            const content = cleanOutput(extractContentFromResponseText(rawText));
+            if (content && content.length > 5) {
+              this.lastExecutionInfo = {
+                isAuto: !this.currentModel || this.currentModel === 'auto',
+                resolvedModel: orM,
+                requestedModel: this.currentModel,
+                isFailover: true,
+                provider: 'OpenRouter 3-Key Cloud Pool',
+                effort: targetEffort,
+                category: 'general'
+              };
+              return content.split('\n');
+            }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
+      }
     }
 
     // 4. Custom User Key (if provided via `setkey`)

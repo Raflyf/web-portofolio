@@ -450,7 +450,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'vision',
       effort: 'medium',
       omniCandidates: ['Vision-model'],
-      openRouterCandidates: ['nvidia/nemotron-nano-12b-v2-vl:free', 'openai/gpt-oss-20b:free']
+      openRouterCandidates: ['deepseek/deepseek-chat']
     };
   }
 
@@ -469,10 +469,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       effort: 'low',
       omniCandidates: ['nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
-        'poolside/laguna-s-2.1:free',
-        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'openai/gpt-oss-20b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free'
+        'deepseek/deepseek-chat',
+        'qwen/qwen-2.5-coder-32b-instruct'
       ]
     };
   }
@@ -487,10 +485,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       effort: 'high',
       omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free',
-        'cohere/north-mini-code:free',
-        'openai/gpt-oss-20b:free'
+        'qwen/qwen-2.5-coder-32b-instruct',
+        'deepseek/deepseek-chat'
       ]
     };
   }
@@ -503,10 +499,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       effort: 'high',
       omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free',
-        'poolside/laguna-s-2.1:free',
-        'openai/gpt-oss-20b:free'
+        'deepseek/deepseek-chat',
+        'qwen/qwen-2.5-coder-32b-instruct'
       ]
     };
   }
@@ -520,10 +514,9 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       effort: 'thinking',
       omniCandidates: ['nemotron-3-ultra-free', 'nemotron-laguna', 'Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'],
       openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free',
-        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-        'openai/gpt-oss-20b:free'
+        'deepseek/deepseek-r1',
+        'deepseek/deepseek-chat',
+        'qwen/qwen-2.5-coder-32b-instruct'
       ]
     };
   }
@@ -534,10 +527,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     effort: 'medium',
     omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'],
     openRouterCandidates: [
-      'nvidia/nemotron-3-ultra-550b-a55b:free',
-      'nvidia/nemotron-3-super-120b-a12b:free',
-      'poolside/laguna-s-2.1:free',
-      'openai/gpt-oss-20b:free'
+      'deepseek/deepseek-chat',
+      'qwen/qwen-2.5-coder-32b-instruct'
     ]
   };
 }
