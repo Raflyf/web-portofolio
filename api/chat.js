@@ -199,7 +199,7 @@ export default async function handler(req, res) {
                 { role: 'system', content: systemPromptWithSearch },
                 { role: 'user', content: userContent }
               ],
-              max_tokens: 1800
+              max_tokens: 8192
             })
           });
 
@@ -246,7 +246,7 @@ export default async function handler(req, res) {
                   { role: 'system', content: systemPromptWithSearch },
                   { role: 'user', content: userContent }
                 ],
-                max_tokens: 1800,
+                max_tokens: 8192,
                 temperature: 0.7
               })
             });
@@ -288,7 +288,7 @@ export default async function handler(req, res) {
                 { role: 'system', content: systemPromptWithSearch },
                 { role: 'user', content: assembledQuery }
               ],
-              max_tokens: 1800
+              max_tokens: 8192
             })
           });
 
@@ -334,7 +334,7 @@ export default async function handler(req, res) {
                 { role: 'system', content: systemPromptWithSearch },
                 { role: 'user', content: assembledQuery }
               ],
-              max_tokens: 1800,
+              max_tokens: 8192,
               temperature: 0.7
             })
           });
@@ -431,7 +431,7 @@ export default async function handler(req, res) {
                 { role: 'system', content: systemPromptWithSearch },
                 { role: 'user', content: assembledQuery }
               ],
-              max_tokens: 1800,
+              max_tokens: 8192,
               temperature: 0.7
             })
           });
