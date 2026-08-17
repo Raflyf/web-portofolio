@@ -502,14 +502,11 @@ class DashboardApp {
     const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
     const tag = isAuto ? 'Auto: ' : '';
 
-    if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
-    if (combined.includes('deepseek-chat') || combined.includes('deepseek-v3') || combined.includes('deepseek')) return `${tag}DeepSeek V3 (671B MoE)`;
-    if (combined.includes('qwen') || combined.includes('coder') || combined.includes('koding')) return `${tag}Qwen 2.5 Coder (32B)`;
-    if (combined.includes('llama-3.3') || combined.includes('llama 3.3')) return `${tag}Meta Llama 3.3 (70B)`;
-    if (combined.includes('nemotron') || combined.includes('nvidia')) return `${tag}Nvidia Nemotron (70B Ultra)`;
-    if (combined.includes('gemma') || combined.includes('vision') || combined.includes('gemini')) return `${tag}Google Gemma 3 (27B Vision)`;
-    if (combined.includes('minimax')) return `${tag}MiniMax-01 (456B MoE)`;
-    if (combined.includes('ollama') || combined.includes('kimi')) return `${tag}Ollama Cloud Kimi K2.7`;
+    if (combined.includes('codex') || combined.includes('gpt-5')) return `${tag}Codex (GPT-5.6 Terra)`;
+    if (combined.includes('antigravity') || combined.includes('opus')) return `${tag}Antigravity (Claude Opus 4.6)`;
+    if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash (OpenCode Pool)`;
+    if (combined.includes('vision') || combined.includes('minimax') || combined.includes('mimo')) return `${tag}Vision-model (MiniMax M3)`;
+    if (combined.includes('nemotron') || combined.includes('laguna') || combined.includes('ultra-free') || combined.includes('nvidia')) return `${tag}Nemotron Laguna (Nemotron 3 Ultra)`;
     if (combined.includes('local_semantic') || combined.includes('semantic engine')) return 'Auto: Local Semantic Fallback';
 
     if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
@@ -686,142 +683,71 @@ class DashboardApp {
         id: 'auto-router',
         name: 'Auto Cloud Gateway',
         category: 'Router',
-        tag: 'Intelligent SOTA Cascade',
+        tag: 'Intelligent Adaptive SOTA Cascade',
         icon: SVG_ICONS.router,
         color: 'var(--accent-cyan)',
         match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
       },
 
-      // 1. OmniRoute Dedicated Server Combos (Tier #1 Primary Priority)
+      // 1. OmniRoute Combo #1: Codex Architecture
       {
         id: 'omniroute-codex',
-        name: 'Codex (GPT-5.6 Terra)',
-        category: 'OmniRoute #1',
-        tag: 'Tier 1 Priority: Heavy Coding',
+        name: 'Codex (GPT-5.6 Terra / GPT-5.5)',
+        category: 'OmniRoute Combo #1',
+        tag: 'Tier 1: Heavy Coding Round-Robin',
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('codex') || `${t} ${l}`.toLowerCase().includes('gpt-5.6') || `${t} ${l}`.toLowerCase().includes('terra')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('codex') || `${t} ${l}`.toLowerCase().includes('gpt-5.6') || `${t} ${l}`.toLowerCase().includes('terra') || `${t} ${l}`.toLowerCase().includes('gpt-5.5')
       },
+
+      // 2. OmniRoute Combo #2: Antigravity CoT
       {
         id: 'omniroute-antigravity',
         name: 'Antigravity (Claude Opus 4.6)',
-        category: 'OmniRoute #2',
-        tag: 'Tier 1 Priority: Deep CoT',
+        category: 'OmniRoute Combo #2',
+        tag: 'Tier 1: Deep Reasoning CoT Round-Robin',
         icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus') || `${t} ${l}`.toLowerCase().includes('sonnet')
       },
+
+      // 3. OmniRoute Combo #3: DeepSeek V4 Flash
       {
         id: 'omniroute-deepseek-v4',
-        name: 'DeepSeek V4 Flash (OmniRoute)',
-        category: 'OmniRoute Dedicated',
-        tag: 'Tier 1 Priority: Fast Logic',
+        name: 'DeepSeek V4 Flash (OpenCode Pool)',
+        category: 'OmniRoute Combo #3',
+        tag: 'Tier 1: Fast Logic 50+ Accounts',
         icon: SVG_ICONS.fast,
         color: 'var(--accent-amber)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('omniroute') && (s.includes('deepseek') || s.includes('v4-flash') || s.includes('flash-free'));
+          return s.includes('deepseek') || s.includes('v4-flash') || s.includes('flash-free');
         }
       },
-      {
-        id: 'omniroute-nemotron-laguna',
-        name: 'Nemotron Laguna (OmniRoute)',
-        category: 'OmniRoute #4',
-        tag: 'Tier 1 Priority: Nvidia Laguna SOTA',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('laguna') || `${t} ${l}`.toLowerCase().includes('nemotron-laguna')
-      },
+
+      // 4. OmniRoute Combo #4: Vision Model
       {
         id: 'omniroute-vision',
-        name: 'Vision-model (MiniMax M3)',
-        category: 'OmniRoute #5',
-        tag: 'Tier 1 Priority: Multimodal Vision',
+        name: 'Vision-model (MiniMax M3 / Mimo)',
+        category: 'OmniRoute Combo #4',
+        tag: 'Tier 1: Multimodal Vision & OCR',
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('minimax')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('vision-model') || `${t} ${l}`.toLowerCase().includes('minimax-m3') || `${t} ${l}`.toLowerCase().includes('minimax') || `${t} ${l}`.toLowerCase().includes('mimo')
       },
 
-      // 2. SOTA Flagships & High-Capacity Reasoning
+      // 5. OmniRoute Combo #5: Nemotron Laguna
       {
-        id: 'nemotron-3-super-120b',
-        name: 'Nvidia Nemotron 3 Super 120B',
-        category: 'Flagship #1',
-        tag: '#1 SOTA Flagship (264ms)',
+        id: 'omniroute-nemotron-laguna',
+        name: 'Nemotron Laguna (Nemotron 3 Ultra)',
+        category: 'OmniRoute Combo #5',
+        tag: 'Tier 1: SOTA Reasoning 100+ Accounts',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-3-super') || `${t} ${l}`.toLowerCase().includes('120b') || `${t} ${l}`.toLowerCase().includes('nemotron 70b')
-      },
-      {
-        id: 'nemotron-3-ultra-550b',
-        name: 'Nvidia Nemotron 3 Ultra 550B',
-        category: 'Giant MoE',
-        tag: '550B Giant MoE Architecture',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-3-ultra') || `${t} ${l}`.toLowerCase().includes('550b')
-      },
-      {
-        id: 'opencode-deepseek-v4',
-        name: 'DeepSeek V4 Flash (OpenCode Cloud)',
-        category: 'OpenCode Direct',
-        tag: 'Dual-Account Cloud Rotator',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('opencode') || (!s.includes('omniroute') && (s.includes('deepseek-v4') || s.includes('deepseek/')));
-        }
-      },
-      {
-        id: 'nemotron-3-nano-omni-30b',
-        name: 'Nemotron 3 Nano Omni 30B',
-        category: 'Reasoning CoT',
-        tag: 'Chain-of-Thought Reasoning',
-        icon: SVG_ICONS.cot,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nano-omni') || `${t} ${l}`.toLowerCase().includes('reasoning') || `${t} ${l}`.toLowerCase().includes('30b') || `${t} ${l}`.toLowerCase().includes('r1')
-      },
-      {
-        id: 'openai-gpt-oss-20b',
-        name: 'OpenAI GPT-OSS 20B',
-        category: 'Open Weights',
-        tag: 'OpenAI Open-Weights Frontier',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gpt-oss') || `${t} ${l}`.toLowerCase().includes('gpt oss') || `${t} ${l}`.toLowerCase().includes('20b')
-      },
-      {
-        id: 'cohere-north-mini-code',
-        name: 'Cohere North Mini Code',
-        category: 'Code Specialist',
-        tag: 'Specialized Agentic Coding',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('north-mini') || `${t} ${l}`.toLowerCase().includes('cohere')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('laguna') || `${t} ${l}`.toLowerCase().includes('nemotron') || `${t} ${l}`.toLowerCase().includes('ultra-free')
       },
 
-      // 3. Multimodal Vision & Document AI
-      {
-        id: 'nemotron-nano-12b-vl',
-        name: 'Nemotron Nano 12B VL',
-        category: 'Vision Multimodal',
-        tag: 'Vision AI #1 Global SOTA',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('12b-v2-vl') || `${t} ${l}`.toLowerCase().includes('nano-12b-vl') || `${t} ${l}`.toLowerCase().includes('vision')
-      },
-      {
-        id: 'google-gemma-3-27b-vision',
-        name: 'Google Gemma 3 27B Vision',
-        category: 'Vision Multimodal',
-        tag: 'High-Resolution Document & OCR',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-3-27b') || `${t} ${l}`.toLowerCase().includes('gemma 3 27b')
-      },
-
-      // 4. Fallback Local & Offline Semantic Engine
+      // 6. Fallback Local & Offline Semantic Engine
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
