@@ -241,7 +241,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2800);
+    const timeout = setTimeout(() => controller.abort(), 2000);
 
     // 1. Detect sub-entities for multi-topic queries
     const subQueries = [];
