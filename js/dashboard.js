@@ -644,12 +644,15 @@ class DashboardApp {
       },
       {
         id: 'omniroute-deepseek-v4',
-        name: 'DeepSeek V4 Flash Free',
-        category: 'OmniRoute #3',
+        name: 'DeepSeek V4 Flash (OmniRoute)',
+        category: 'OmniRoute Dedicated',
         tag: 'Tier 1 Priority: Fast Logic',
         icon: '⚡',
         color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-v4') || `${t} ${l}`.toLowerCase().includes('deepseek') || `${t} ${l}`.toLowerCase().includes('ponytail')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('omniroute') && (s.includes('deepseek') || s.includes('v4-flash') || s.includes('flash-free'));
+        }
       },
       {
         id: 'omniroute-vision',
@@ -692,13 +695,16 @@ class DashboardApp {
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron-3-ultra') || `${t} ${l}`.toLowerCase().includes('550b')
       },
       {
-        id: 'deepseek-v4-flash',
-        name: 'DeepSeek V4 Flash',
-        category: 'Reasoning',
-        tag: 'OpenCode Dual-Account Rotator',
+        id: 'opencode-deepseek-v4',
+        name: 'DeepSeek V4 Flash (OpenCode Cloud)',
+        category: 'OpenCode Direct',
+        tag: 'Dual-Account Cloud Rotator',
         icon: '⚡',
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-v4') || `${t} ${l}`.toLowerCase().includes('opencode') || `${t} ${l}`.toLowerCase().includes('deepseek')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('opencode') || (!s.includes('omniroute') && (s.includes('deepseek-v4') || s.includes('deepseek/')));
+        }
       },
       {
         id: 'nemotron-3-nano-omni-30b',
