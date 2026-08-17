@@ -90,6 +90,84 @@ const SEMANTIC_PATTERNS = [
     ]
   },
   {
+    keywords: ['presiden', 'wapres', 'wakil presiden', 'prabowo', 'gibran', 'kabinet merah putih', 'indonesia 2026', 'pemilu 2024'],
+    respond: () => [
+      "[INFORMASI RESMI PEMERINTAHAN INDONESIA 2024 - 2026]",
+      "----------------------------------------------------------------",
+      "• Presiden RI ke-8       : Jenderal TNI (Purn.) Prabowo Subianto (2024 - 2029)",
+      "• Wakil Presiden RI ke-14 : Gibran Rakabuming Raka (2024 - 2029)",
+      "• Nama Kabinet           : Kabinet Merah Putih",
+      "• Pelantikan Resmi       : 20 Oktober 2024 di Gedung MPR/DPR RI Jakarta",
+      "• Pemilu Presiden        : Telah selesai pada 14 Februari 2024 (Menang satu putaran ~58,59%)",
+      "• Status 2026            : Menjalankan program strategis hilirisasi, IKN, dan kemandirian digital."
+    ]
+  },
+  {
+    keywords: ['ikn', 'nusantara', 'ibu kota nusantara', 'istana garuda'],
+    respond: () => [
+      "[PROYEK STRATEGIS NASIONAL: Ibu Kota Nusantara (IKN)]",
+      "----------------------------------------------------------------",
+      "• Lokasi         : Penajam Paser Utara & Kutai Kartanegara, Kalimantan Timur",
+      "• Milestone      : Upacara HUT RI ke-79 perdana diselenggarakan 17 Agustus 2024 di IKN",
+      "• Ikon Bangunan  : Istana Garuda & Istana Negara karya I Nyoman Nuarta",
+      "• Konsep         : Smart Forest City ramah lingkungan & energi terbarukan."
+    ]
+  },
+  {
+    keywords: ['whoosh', 'kereta cepat', 'kcic', 'kcjb'],
+    respond: () => [
+      "[TRANSPORTASI MODERN: Kereta Cepat Jakarta-Bandung (Whoosh)]",
+      "----------------------------------------------------------------",
+      "• Rute Operasi   : Stasiun Halim (Jakarta) ➔ Stasiun Tegalluar Summarecon (Bandung)",
+      "• Kecepatan Max  : 350 km/jam (Waktu tempuh ~30-45 menit)",
+      "• Status 2026    : Operasional komersial penuh dan kajian rute lanjutan Surabaya."
+    ]
+  },
+  {
+    keywords: ['trump', 'donald trump', 'presiden as', 'pemilu as', 'amerika serikat'],
+    respond: () => [
+      "[GEOPOLITIK GLOBAL: Pemilihan Presiden Amerika Serikat 2024 - 2026]",
+      "----------------------------------------------------------------",
+      "• Presiden AS ke-47 : Donald Trump (Partai Republik)",
+      "• Wakil Presiden AS : JD Vance",
+      "• Hasil Pemilu      : Menang pada 5 November 2024 mengalahkan Kamala Harris (Demokrat)",
+      "• Pelantikan Resmi  : 20 Januari 2025 di Washington D.C."
+    ]
+  },
+  {
+    keywords: ['olimpiade paris', 'veddriq', 'rizki juniansyah', 'emas olimpiade'],
+    respond: () => [
+      "[PRESTASI OLAHRAGA DUNIA: Olimpiade Paris 2024]",
+      "----------------------------------------------------------------",
+      "Indonesia mengukir sejarah dengan membawa pulang 2 Medali Emas:",
+      "  1. Veddriq Leonardo  : Medali Emas Panjat Tebing Speed Putra (Catatan waktu 4.75 detik)",
+      "  2. Rizki Juniansyah   : Medali Emas Angkat Besi Kelas 73 kg (Rekor Clean & Jerk 199 kg)",
+      "  3. Gregoria Mariska T : Medali Perunggu Bulu Tangkis Tunggal Putri",
+      "Klasemen Akhir       : Peringkat 39 Dunia."
+    ]
+  },
+  {
+    keywords: ['deepseek', 'deepseek v3', 'deepseek r1', 'reasoning', 'moe 671b'],
+    respond: () => [
+      "[FRONTIER AI REVOLUTION: DeepSeek V3 & DeepSeek R1]",
+      "----------------------------------------------------------------",
+      "• DeepSeek V3 : Model MoE 671B (37B active) dengan Multi-Head Latent Attention (MLA)",
+      "• DeepSeek R1 : Model Reasoning Chain-of-Thought berskala besar via Reinforcement Learning",
+      "• Keunggulan  : Efisiensi pelatihan ekstrem FP8 dan performa setara model tertutup teratas",
+      "• Integrasi   : Tersedia di terminal lab portofolio ini."
+    ]
+  },
+  {
+    keywords: ['timnas', 'shin tae yong', 'kualifikasi piala dunia', 'timnas indonesia'],
+    respond: () => [
+      "[SEPAK BOLA NASIONAL: Timnas Indonesia 2024 - 2026]",
+      "----------------------------------------------------------------",
+      "• Milestone      : Menembus Putaran ke-3 Kualifikasi Piala Dunia 2026 Zona Asia (Grup C)",
+      "• Prestasi Asia  : Lolos ke Babak 16 Besar Piala Asia AFC 2023 (digelar awal 2024)",
+      "• Pelatih Utama  : Shin Tae-yong (Korsel) dengan perpanjangan kontrak resmi."
+    ]
+  },
+  {
     keywords: ['kontak', 'contact', 'email', 'whatsapp', 'wa', 'hubungi', 'hire', 'rekrut'],
     respond: () => [
       "[INFORMASI KONTAK RESMI]",
