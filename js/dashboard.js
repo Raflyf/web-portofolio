@@ -618,82 +618,233 @@ class DashboardApp {
     if (!gridEl) return;
 
     const MODELS_CATALOG = [
+      // 0. Auto Router
       {
-        id: 'deepseek-v3',
-        name: 'DeepSeek V3',
-        tag: '671B MoE General',
+        id: 'auto-router',
+        name: 'Auto Cloud Cascades',
+        category: 'Router',
+        tag: 'Multi-Gateway Benchmark Cascades',
         icon: '⚡',
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-chat') || `${t} ${l}`.toLowerCase().includes('deepseek-v3') || (`${t} ${l}`.toLowerCase().includes('deepseek') && !`${t} ${l}`.toLowerCase().includes('r1'))
+        match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router')
+      },
+
+      // 1. Frontier Reasoning (DeepSeek & OpenCode)
+      {
+        id: 'deepseek-v3',
+        name: 'DeepSeek V3 Chat',
+        category: 'Reasoning',
+        tag: 'MoE 671B — #1 Benchmark',
+        icon: '⚡',
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-chat') || `${t} ${l}`.toLowerCase().includes('deepseek v3') || `${t} ${l}`.toLowerCase().includes('deepseek/deepseek-chat')
+      },
+      {
+        id: 'deepseek-v4',
+        name: 'DeepSeek V4 Flash',
+        category: 'Reasoning',
+        tag: 'OpenCode Cloud Frontier',
+        icon: '⚡',
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-v4') || `${t} ${l}`.toLowerCase().includes('opencode')
       },
       {
         id: 'deepseek-r1',
         name: 'DeepSeek R1',
-        tag: 'Thinking CoT 671B',
+        category: 'Reasoning',
+        tag: 'Thinking CoT 671B Reasoning',
         icon: '🧬',
         color: 'oklch(0.80 0.18 280)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek-r1') || `${t} ${l}`.toLowerCase().includes('thinking') || `${t} ${l}`.toLowerCase().includes('reasoning')
       },
+
+      // 2. Nvidia NIM Frontier AI
       {
-        id: 'qwen-coder',
-        name: 'Qwen 2.5 Coder',
-        tag: '32B Code Specialist',
-        icon: '💻',
-        color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen') || `${t} ${l}`.toLowerCase().includes('coder')
-      },
-      {
-        id: 'llama-3.3',
-        name: 'Meta Llama 3.3',
-        tag: '70B Instruct',
-        icon: '🦙',
-        color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.3') || `${t} ${l}`.toLowerCase().includes('llama 3.3')
-      },
-      {
-        id: 'nemotron',
-        name: 'Nvidia Nemotron',
-        tag: '70B Ultra Reasoning',
+        id: 'nvidia-nemotron-70b',
+        name: 'Nvidia Nemotron 70B Ultra',
+        category: 'Nvidia NIM',
+        tag: 'Arena Top 70B Ultra',
         icon: '🟢',
         color: 'oklch(0.75 0.18 145)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron') || `${t} ${l}`.toLowerCase().includes('nvidia')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nemotron') || `${t} ${l}`.toLowerCase().includes('llama-3.1-nemotron')
       },
       {
-        id: 'gemma-3',
-        name: 'Google Gemma 3',
-        tag: '27B Vision Multimodal',
-        icon: '👁️',
-        color: 'oklch(0.75 0.18 220)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma') || `${t} ${l}`.toLowerCase().includes('vision')
+        id: 'nvidia-llama-3.3-70b',
+        name: 'Nvidia Llama 3.3 70B',
+        category: 'Nvidia NIM',
+        tag: 'High Precision NIM',
+        icon: '🟢',
+        color: 'oklch(0.75 0.18 145)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('nvidia/meta/llama-3.3') || `${t} ${l}`.toLowerCase().includes('nvidia llama 3.3')
       },
+
+      // 3. MiniMax AI
       {
-        id: 'minimax',
-        name: 'MiniMax-01',
-        tag: '456B MoE Long-Context',
+        id: 'minimax-01',
+        name: 'MiniMax-01 / M3',
+        category: 'MiniMax',
+        tag: 'MoE 456B — 4M Context',
         icon: '🌟',
         color: 'var(--accent-rose)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('minimax')
       },
+
+      // 4. Global Frontier Flagship (Meta, Mistral, Qwen, Nous)
       {
-        id: 'ollama-kimi',
-        name: 'Ollama Cloud Kimi',
-        tag: 'K2.7 Reasoning',
+        id: 'hermes-3-405b',
+        name: 'Hermes 3 Llama 405B',
+        category: 'Flagship',
+        tag: 'Model Open Terbesar Dunia',
+        icon: '👑',
+        color: 'var(--accent-amber)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('hermes-3') || `${t} ${l}`.toLowerCase().includes('405b')
+      },
+      {
+        id: 'meta-llama-3.3-70b',
+        name: 'Meta Llama 3.3 70B',
+        category: 'Flagship',
+        tag: 'Meta Open Flagship',
+        icon: '🦙',
+        color: 'var(--accent-amber)',
+        match: (t, l) => (`${t} ${l}`.toLowerCase().includes('meta-llama/llama-3.3') || `${t} ${l}`.toLowerCase().includes('meta llama 3.3')) && !`${t} ${l}`.toLowerCase().includes('nvidia')
+      },
+      {
+        id: 'mistral-large-2',
+        name: 'Mistral Large 2',
+        category: 'Flagship',
+        tag: '123B Flagship MoE',
+        icon: '🌪️',
+        color: 'oklch(0.78 0.16 55)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('mistral-large') || `${t} ${l}`.toLowerCase().includes('mistral large')
+      },
+      {
+        id: 'qwen-2.5-72b',
+        name: 'Qwen 2.5 72B',
+        category: 'Flagship',
+        tag: 'Multilingual SOTA',
+        icon: '🌐',
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen-2.5-72b') || `${t} ${l}`.toLowerCase().includes('qwen 2.5 72b')
+      },
+      {
+        id: 'qwen-2.5-coder-32b',
+        name: 'Qwen 2.5 Coder 32B',
+        category: 'Flagship',
+        tag: '#1 Coding Benchmark',
+        icon: '💻',
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen-2.5-coder') || `${t} ${l}`.toLowerCase().includes('qwen coder') || `${t} ${l}`.toLowerCase().includes('coder 32b')
+      },
+      {
+        id: 'google-gemma-2-27b',
+        name: 'Google Gemma 2 27B',
+        category: 'Flagship',
+        tag: 'Google Open Weights',
+        icon: '💎',
+        color: 'oklch(0.75 0.18 220)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-2-27b') || `${t} ${l}`.toLowerCase().includes('gemma 2 27b')
+      },
+      {
+        id: 'mistral-small-24b',
+        name: 'Mistral Small 24B',
+        category: 'Flagship',
+        tag: 'Ultra Fast (~330ms)',
+        icon: '⚡',
+        color: 'oklch(0.78 0.16 55)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('mistral-small') || `${t} ${l}`.toLowerCase().includes('mistral small')
+      },
+      {
+        id: 'mistral-nemo-12b',
+        name: 'Mistral NeMo 12B',
+        category: 'Flagship',
+        tag: 'Nvidia x Mistral (~340ms)',
+        icon: '⚡',
+        color: 'oklch(0.78 0.16 55)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('mistral-nemo') || `${t} ${l}`.toLowerCase().includes('mistral nemo')
+      },
+      {
+        id: 'meta-llama-3.1-8b',
+        name: 'Meta Llama 3.1 8B',
+        category: 'Flagship',
+        tag: 'Ultra Cepat (~590ms)',
+        icon: '🦙',
+        color: 'var(--accent-amber)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.1-8b') || `${t} ${l}`.toLowerCase().includes('llama 3.1 8b')
+      },
+
+      // 5. Ollama Cloud AI
+      {
+        id: 'ollama-kimi-k2.7',
+        name: 'Kimi K2.7 Code',
+        category: 'Ollama Cloud',
+        tag: 'Spesialis Koding Ollama',
         icon: '☁️',
         color: 'oklch(0.78 0.15 70)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('ollama') || `${t} ${l}`.toLowerCase().includes('kimi')
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('kimi') || `${t} ${l}`.toLowerCase().includes('kimi-k2.7')
       },
       {
-        id: 'auto-router',
-        name: 'Auto Cloud Router',
-        tag: 'Multi-Gateway Cascades',
-        icon: '🔀',
-        color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('auto') || t === 'auto'
+        id: 'ollama-gemma-31b',
+        name: 'Gemma 31B',
+        category: 'Ollama Cloud',
+        tag: 'Ollama Cloud Frontier',
+        icon: '☁️',
+        color: 'oklch(0.78 0.15 70)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma4:31b') || `${t} ${l}`.toLowerCase().includes('gemma 31b')
       },
+
+      // 6. Multimodal Vision & Dokumen
+      {
+        id: 'qwen-2-vl-72b',
+        name: 'Qwen 2 VL 72B',
+        category: 'Vision Multimodal',
+        tag: 'Vision #1 Global Benchmark',
+        icon: '👁️',
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen-2-vl') || `${t} ${l}`.toLowerCase().includes('qwen 2 vl')
+      },
+      {
+        id: 'google-gemini-2.5-flash',
+        name: 'Google Gemini 2.5 Flash',
+        category: 'Vision Multimodal',
+        tag: 'Flash Multimodal Vision',
+        icon: '👁️',
+        color: 'oklch(0.75 0.18 220)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemini-2.5-flash') || `${t} ${l}`.toLowerCase().includes('gemini 2.5')
+      },
+      {
+        id: 'google-gemma-3-27b',
+        name: 'Google Gemma 3 27B Vision',
+        category: 'Vision Multimodal',
+        tag: 'Vision Multimodal (~520ms)',
+        icon: '👁️',
+        color: 'oklch(0.75 0.18 220)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-3-27b') || `${t} ${l}`.toLowerCase().includes('gemma 3 27b')
+      },
+      {
+        id: 'google-gemma-3-12b',
+        name: 'Google Gemma 3 12B Vision',
+        category: 'Vision Multimodal',
+        tag: 'Vision Multimodal (~330ms)',
+        icon: '👁️',
+        color: 'oklch(0.75 0.18 220)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma-3-12b') || `${t} ${l}`.toLowerCase().includes('gemma 3 12b')
+      },
+      {
+        id: 'nvidia-llama-3.2-11b-vision',
+        name: 'Nvidia Llama 3.2 11B Vision',
+        category: 'Vision Multimodal',
+        tag: 'NIM Vision Reasoning',
+        icon: '👁️',
+        color: 'oklch(0.75 0.18 145)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.2-11b-vision') || `${t} ${l}`.toLowerCase().includes('llama 3.2 11b vision')
+      },
+
+      // 7. Fallback Local Engine
       {
         id: 'local-semantic',
-        name: 'Local Semantic',
-        tag: 'In-Browser Offline Pattern',
+        name: 'Local Semantic Engine',
+        category: 'Offline Fallback',
+        tag: 'In-Browser Sub-15ms Pattern Matcher',
         icon: '💾',
         color: 'var(--text-muted)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('local_semantic') || `${t} ${l}`.toLowerCase().includes('semantic pattern')
