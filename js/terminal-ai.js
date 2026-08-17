@@ -418,8 +418,6 @@ class TerminalAIEngine {
       ];
     }
 
-    }
-
     // 2. High-Precision In-Browser Semantic Engine Fallback
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
