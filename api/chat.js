@@ -153,19 +153,23 @@ export default async function handler(req, res) {
 
     const OPENROUTER_KEY = customKey && (customProvider === 'openrouter' || !customProvider) 
       ? customKey 
-      : (process.env.OPENROUTER_API_KEY || Buffer.from('c2stb3ItdjEtN2EzYzM5ODZjY2JjMGI2NDEyYjE2Yzc4Yzc2MmNkNzU2OTYwNDc0ODNhMjdiMTg4MTllZmI1OTk0NGY4ZWQ0Mw==', 'base64').toString());
+      : process.env.OPENROUTER_API_KEY;
 
     const NVIDIA_KEY = customKey && customProvider === 'nvidia' 
       ? customKey 
-      : (process.env.NVIDIA_API_KEY || Buffer.from('bnZhcGktVTVBNVJZcjJuTDRudVdYUE5HZWZnSHdHbmxoLWFsY1lFenIxeVJxZE43Y3RIMVNiSTFGaUprMnozZ0NPQzE4dA==', 'base64').toString());
+      : process.env.NVIDIA_API_KEY;
 
     const OPENCODE_KEY = customKey && customProvider === 'opencode' 
       ? customKey 
-      : (process.env.OPENCODE_API_KEY || Buffer.from('c2stWVdUc2JDaTBicEJISW9pS2xiQjBnYjRUYnpZMXB5a0k0aEJCYWxFSjROeXE1ODhQT3pSZXB6RFVja29TNWtDSQ==', 'base64').toString());
+      : process.env.OPENCODE_API_KEY;
 
     const MINIMAX_KEY = customKey && customProvider === 'minimax' 
       ? customKey 
-      : (process.env.MINIMAX_API_KEY || Buffer.from('c2stY3AtLTh4dVpsdWhIRldWSFdVVjMwU255THBfaVFkUTU1blhUOW5nTzlTT1M5T1RfN2JxY2E3R2pHZjRLcVg0VUZEUG9KRGNnSmRsd0xyZXp6T1ZYVEtpbXZKS2ZwZnJBTFFqVWd5eUZsc3hNbkFVZkkwNmY0MEYzX2M=', 'base64').toString());
+      : process.env.MINIMAX_API_KEY;
+
+    const OLLAMA_KEY = customKey && (customProvider === 'ollamacloud' || customProvider === 'ollama') 
+      ? customKey 
+      : (process.env.OLLAMA_CLOUD_API_KEY || process.env.OLLAMA_API_KEY);
 
     const providerErrors = [];
 
@@ -436,7 +440,55 @@ export default async function handler(req, res) {
     }
 
     // ========================================================================
-    // 5. OPENROUTER 24/7 VERIFIED CLOUD POOL
+    // 5. OLLAMA CLOUD GATEWAY
+    // ========================================================================
+    if (targetModel.startsWith('ollamacloud/')) {
+      if (OLLAMA_KEY) {
+        try {
+          let olModel = targetModel.replace('ollamacloud/', '');
+          if (olModel.includes('kimi')) olModel = 'kimi-k2.7-coder';
+          else if (olModel.includes('gemma')) olModel = 'gemma:31b';
+
+          const response = await fetch('https://api.ollama.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OLLAMA_KEY}`
+            },
+            body: JSON.stringify({
+              model: olModel,
+              messages: [
+                { role: 'system', content: systemPromptWithSearch },
+                { role: 'user', content: assembledQuery }
+              ],
+              max_tokens: 8192
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content) {
+              return res.status(200).json({
+                success: true,
+                response: content,
+                model: olModel,
+                provider: 'Ollama Cloud AI'
+              });
+            }
+          } else {
+            const errTxt = await response.text();
+            providerErrors.push(`Ollama Cloud HTTP ${response.status}: ${errTxt.slice(0, 120)}`);
+          }
+        } catch (err) {
+          providerErrors.push(`Ollama Cloud Exception: ${err.message}`);
+        }
+      }
+      targetModel = 'qwen/qwen-2.5-coder-32b-instruct';
+    }
+
+    // ========================================================================
+    // 6. OPENROUTER 24/7 VERIFIED CLOUD POOL
     // ========================================================================
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
