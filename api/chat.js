@@ -377,27 +377,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Query prompt or file attachment is required' });
     }
 
-    const _b64 = (s) => Buffer.from(s, 'base64').toString('utf-8');
-
     const OPENROUTER_KEY = (customKey && (customProvider === 'openrouter' || !customProvider)) 
       ? customKey 
-      : (process.env.OPENROUTER_API_KEY || _b64('c2stb3ItdjEtN2EzYzM5ODZjY2JjMGI2NDEyYjE2Yzc4Yzc2MmNkNzU2OTYwNDc0ODNhMjdiMTg4MTllZmI1OTk0NGY4ZWQ0Mw=='));
+      : process.env.OPENROUTER_API_KEY;
 
     const NVIDIA_KEY = (customKey && customProvider === 'nvidia') 
       ? customKey 
-      : (process.env.NVIDIA_API_KEY || _b64('bnZhcGktVTVBNVJ5cjJuTDRudVdYUE5HZWZnSHdHbmxoLWFsY1lFenIxeVJxZE43Y3RIMVNiSTFGaUprMnozZ0NPQzE4dA=='));
+      : process.env.NVIDIA_API_KEY;
 
     const OPENCODE_KEY = (customKey && customProvider === 'opencode') 
       ? customKey 
-      : (process.env.OPENCODE_API_KEY || _b64('c2stWVdUc2JDaTBOcEJIUmlLbGJCMGdiNFRielkxcHlrSTRoQkJhbEVKNE55cTU4OFBPelJlcHpEVWNrb1M1a0NJ'));
+      : process.env.OPENCODE_API_KEY;
 
     const MINIMAX_KEY = (customKey && customProvider === 'minimax') 
       ? customKey 
-      : (process.env.MINIMAX_API_KEY || _b64('c2stY3AtLTh4dVpsdWhIRldWSFdVd3MwbnlMcF9pUWRRNTVuWFQ5bmdPOVNPUzlPVF83YnFjYTdHamdmNEtxWDRVRkRQb0pEY2dKZGx3THJlenpPVlhUS2ltdkpLZnBmckFMUWpVZ3l5RmxzeE1uQVVmSTA2ZjQwRjNfYw=='));
+      : process.env.MINIMAX_API_KEY;
 
     const OLLAMA_KEY = (customKey && (customProvider === 'ollamacloud' || customProvider === 'ollama')) 
       ? customKey 
-      : (process.env.OLLAMA_CLOUD_API_KEY || process.env.OLLAMA_API_KEY || _b64('ZDNjZjRlOGVhYWRmNDU1OGI0MTFiYzJmY2QxZTU1NzYuSkJ0NDl3Wkh6OXFkY0c5V2llT2szUzJR'));
+      : (process.env.OLLAMA_CLOUD_API_KEY || process.env.OLLAMA_API_KEY);
 
     const providerErrors = [];
 
