@@ -30,11 +30,11 @@
   <meta name="twitter:image" content="https://raflyfirmansyah-portofolio.vercel.app/assets/og-cover.jpg">
 
   <!-- Security: Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://formsubmit.co https://*.supabase.co; frame-src 'self' data: blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://formsubmit.co https://*.supabase.co https://openrouter.ai https://api.groq.com https://generativelanguage.googleapis.com http://localhost:11434; frame-src 'self' data: blob:;">
 
   <!-- Stylesheets (Cache-Busting for Instant CDN Refresh) -->
-  <link rel="stylesheet" href="css/style.css?v=2.6.0">
-  <link rel="stylesheet" href="css/components.css?v=2.6.0">
+  <link rel="stylesheet" href="css/style.css?v=3.4.0">
+  <link rel="stylesheet" href="css/components.css?v=3.4.0">
 
   <!-- JSON-LD Structured Data Schema -->
   <script type="application/ld+json">
@@ -567,22 +567,22 @@
     </section>
 
     <!-- =======================================================================
-         7. INTERACTIVE DEVELOPER LAB / TERMINAL
+         7. INTERACTIVE DEVELOPER LAB / TERMINAL & AI ASSISTANT
          ======================================================================= -->
     <section class="section" id="lab" aria-labelledby="lab-title">
       <div class="container">
         <div class="section-header section-header--center">
-          <span class="section-tag">CLI Console</span>
-          <h2 id="lab-title" class="section-title">Terminal Developer Lab</h2>
-          <p class="section-desc">Eksplorasi profil, keahlian, dan metrik riset melalui konsol interaktif berbasis baris perintah.</p>
+          <span class="section-tag">CLI & AI Assistant</span>
+          <h2 id="lab-title" class="section-title">Terminal Developer Lab & AI</h2>
+          <p class="section-desc">Eksplorasi profil, riset AI/ML, dan kompetensi melalui konsol perintah atau tanyakan langsung dengan bahasa alami bebas.</p>
         </div>
 
-        <div class="terminal-card" role="region" aria-label="Terminal Interaktif Pengembang">
+        <div class="terminal-card" role="region" aria-label="Terminal Interaktif Pengembang dan AI Assistant">
           <div class="terminal-header">
             <div class="telemetry-dots" aria-hidden="true">
               <span></span><span></span><span></span>
             </div>
-            <div class="terminal-title">rafly@portfolio-lab:~ (bash)</div>
+            <div class="terminal-title">rafly@portfolio-lab:~ (bash / AI Engine)</div>
             <div></div>
           </div>
 
@@ -592,6 +592,7 @@
             <button type="button" class="terminal-chip" data-cmd="projects">projects</button>
             <button type="button" class="terminal-chip" data-cmd="certifs">certifs</button>
             <button type="button" class="terminal-chip" data-cmd="benchmarks">benchmarks</button>
+            <button type="button" class="terminal-chip" data-cmd="aistatus">ai-status</button>
             <button type="button" class="terminal-chip" data-cmd="about">about</button>
             <button type="button" class="terminal-chip" data-cmd="contact">contact</button>
             <button type="button" class="terminal-chip" data-cmd="clear">clear</button>
@@ -603,7 +604,7 @@
 
           <form id="terminal-form" class="terminal-input-row">
             <span class="terminal-prompt" aria-hidden="true">rafly@lab:~$</span>
-            <input type="text" id="terminal-input" class="terminal-input" placeholder="ketik perintah (misal: 'help', 'skills', 'benchmarks')..." autocomplete="off" spellcheck="false" aria-label="Input perintah terminal">
+            <input type="text" id="terminal-input" class="terminal-input" placeholder="Ketik perintah (misal: 'skills') atau tanyakan apapun (misal: 'ceritakan riset plagiarisme')..." autocomplete="off" spellcheck="false" aria-label="Input perintah terminal dan asisten AI">
           </form>
         </div>
       </div>
@@ -751,6 +752,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busted for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=2.6.0"></script>
+  <script type="module" src="js/main.js?v=3.4.0"></script>
 </body>
 </html>

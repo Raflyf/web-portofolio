@@ -1179,6 +1179,17 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   gap: var(--space-sm);
 }
 
+.terminal-thinking-line {
+  color: oklch(0.75 0.15 220);
+  font-style: italic;
+  animation: pulseThinking 1.4s infinite ease-in-out;
+}
+
+@keyframes pulseThinking {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 .terminal-input-row {
   display: flex;
   align-items: center;
