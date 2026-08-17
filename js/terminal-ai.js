@@ -443,15 +443,33 @@ class TerminalAIEngine {
       }
     };
 
-    // 1. Direct OmniRoute (for Heavy Coding queries)
+    const cleanOutput = (text) => {
+      let cleaned = String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      const monologueRegex = /^(?:Okay|Alright|Let me|The user is asking|Looking at the live search|First, looking at|Hmm,|Wait, check)[\s\S]*?(?=\n\n(?:[A-Z0-9#\-\*•]|Berikut|Model|Berdasarkan|Untuk|Saat ini|Halo|Hai|Tentu))/i;
+      if (monologueRegex.test(cleaned)) {
+        const after = cleaned.replace(monologueRegex, '').trim();
+        if (after.length > 20) cleaned = after;
+      }
+      return cleaned;
+    };
+
+    const q = cleanQuery.toLowerCase();
+    const len = q.length;
+
+    // Intelligent Intent Detection
+    const isHeavyCoding = /\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q);
+    const isDeepReasoning = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|evaluasi kritis|trade-offs|tradeoff|skripsi|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200;
+    const isGreeting = len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
+
+    // 1. OmniRoute Direct Attempt (for coding & deep reasoning)
     const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
     const OMNI_KEY = decodeKey('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
 
-    const isHeavyCoding = /\b(kode|script|koding|coding|function|class|def |sql|react|python|javascript|debug|error|refactor)\b/i.test(cleanQuery);
-    if (isHeavyCoding && OMNI_KEY) {
+    if (OMNI_KEY && (isHeavyCoding || isDeepReasoning)) {
+      const preferredOmniModel = isHeavyCoding ? 'Codex' : 'Antigravity';
       try {
         const omniController = new AbortController();
-        const omniTimeout = setTimeout(() => omniController.abort(), 15000);
+        const omniTimeout = setTimeout(() => omniController.abort(), 12000);
         const res = await fetch(OMNI_URL, {
           method: 'POST',
           headers: {
@@ -459,29 +477,29 @@ class TerminalAIEngine {
             'Authorization': 'Bearer ' + OMNI_KEY
           },
           body: JSON.stringify({
-            model: 'Codex',
+            model: preferredOmniModel,
             messages: [
-              { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant di Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf).' },
+              { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant di Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf). Jawab pertanyaan secara profesional dan terstruktur dalam Bahasa Indonesia.' },
               { role: 'user', content: cleanQuery }
             ],
             stream: false,
-            max_tokens: 2000
+            max_tokens: 2500
           }),
           signal: omniController.signal
         });
         clearTimeout(omniTimeout);
         if (res.ok) {
           const data = await res.json();
-          const content = data?.choices?.[0]?.message?.content;
+          const content = cleanOutput(data?.choices?.[0]?.message?.content);
           if (content) {
             this.lastExecutionInfo = {
               isAuto: true,
-              resolvedModel: 'Codex (GPT-5.6 Terra)',
+              resolvedModel: preferredOmniModel,
               requestedModel: this.currentModel,
               isFailover: false,
-              provider: 'OmniRoute Direct Client',
-              effort: 'HIGH',
-              category: 'heavy_coding'
+              provider: 'OmniRoute Dedicated Server',
+              effort: isHeavyCoding ? 'HIGH' : 'THINKING',
+              category: isHeavyCoding ? 'heavy_coding' : 'deep_reasoning'
             };
             return content.split('\n');
           }
@@ -489,24 +507,43 @@ class TerminalAIEngine {
       } catch (_) {}
     }
 
-    // 2. Direct OpenRouter SOTA Free Pool
+    // 2. OpenRouter Direct SOTA Pool (Nemotron 3 Super 120B / Ultra 550B / Nano 30B / GPT-OSS 20B)
     const OR_KEYS = [
       decodeKey('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
       decodeKey('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw==')
     ].filter(Boolean);
 
-    const OR_MODELS = [
-      'google/gemma-4-26b-a4b-it:free',
-      'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-      'openai/gpt-oss-20b:free',
-      'nvidia/nemotron-3-super-120b-a12b:free'
-    ];
+    let OR_MODELS = [];
+    let targetEffort = 'MEDIUM';
+
+    if (isGreeting) {
+      targetEffort = 'LOW';
+      OR_MODELS = [
+        'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free'
+      ];
+    } else if (isHeavyCoding || isDeepReasoning) {
+      targetEffort = isHeavyCoding ? 'HIGH' : 'THINKING';
+      OR_MODELS = [
+        'nvidia/nemotron-3-super-120b-a12b:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free',
+        'openai/gpt-oss-20b:free'
+      ];
+    } else {
+      targetEffort = 'MEDIUM';
+      OR_MODELS = [
+        'nvidia/nemotron-3-super-120b-a12b:free',
+        'openai/gpt-oss-20b:free',
+        'nvidia/nemotron-3-ultra-550b-a55b:free'
+      ];
+    }
 
     for (const model of OR_MODELS) {
       for (const key of OR_KEYS) {
         try {
           const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 12000);
+          const orTimeout = setTimeout(() => orController.abort(), 14000);
           const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -518,10 +555,11 @@ class TerminalAIEngine {
             body: JSON.stringify({
               model: model,
               messages: [
-                { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf). Jawab pertanyaan pengguna secara akurat, terstruktur, dan profesional dalam Bahasa Indonesia.' },
+                { role: 'system', content: 'Status Bahasa: BAHASA INDONESIA. Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio Rafly Firmansyah (@Raflyf). Jawab pertanyaan pengguna secara akurat, terstruktur rapi dengan tabel atau poin-poin dalam Bahasa Indonesia. Jangan gunakan monolog proses berpikir bahasa Inggris.' },
                 { role: 'user', content: cleanQuery }
               ],
-              max_tokens: 1200
+              max_tokens: targetEffort === 'LOW' ? 500 : (targetEffort === 'HIGH' ? 2500 : 1600),
+              temperature: 0.25
             }),
             signal: orController.signal
           });
@@ -529,16 +567,17 @@ class TerminalAIEngine {
 
           if (res.ok) {
             const data = await res.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
+            const rawContent = data?.choices?.[0]?.message?.content;
+            const content = cleanOutput(rawContent);
+            if (content && content.length > 5) {
               this.lastExecutionInfo = {
                 isAuto: true,
                 resolvedModel: model,
                 requestedModel: this.currentModel,
                 isFailover: true,
-                provider: 'OpenRouter Direct Gateway',
-                effort: 'LOW',
-                category: 'client_fallback'
+                provider: 'OpenRouter SOTA Pool',
+                effort: targetEffort,
+                category: isHeavyCoding ? 'heavy_coding' : (isDeepReasoning ? 'deep_reasoning' : 'standard')
               };
               return content.split('\n');
             }
