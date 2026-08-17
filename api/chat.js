@@ -475,7 +475,45 @@ export default async function handler(req, res) {
     // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
     // ========================================================================
 
-    // 2A. OpenRouter Multi-Model Cloud Pool (Prioritizing SOTA 70B & 671B Flagship Models)
+    // 2A. OpenCode Gateway (If explicitly targeted)
+    const isTargetingOpenCode = targetModel.startsWith('opencode/') || targetModel.includes('deepseek-v4');
+    if (OPENCODE_KEY && isTargetingOpenCode) {
+      try {
+        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENCODE_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-v4-flash-free',
+            messages: baseTextMessages,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
+          })
+        }, 20000);
+
+        if (response.ok) {
+          const data = await response.json();
+          const content = data?.choices?.[0]?.message?.content;
+          if (content) {
+            return res.status(200).json({
+              success: true,
+              response: content,
+              model: 'deepseek-v4-flash-free',
+              provider: 'OpenCode DeepSeek V4 Flash'
+            });
+          }
+        } else {
+          const errTxt = await response.text();
+          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`OpenCode: ${err.message}`);
+      }
+    }
+
+    // 2B. OpenRouter Multi-Model Cloud Pool (Prioritizing SOTA 70B & 671B Flagship Models)
     if (OPENROUTER_KEY) {
       let orModel = targetModel;
       if (orModel.startsWith('opencode/')) {
@@ -485,12 +523,12 @@ export default async function handler(req, res) {
       }
 
       const orCandidates = [
-        'deepseek/deepseek-chat:free',
         'deepseek/deepseek-r1:free',
-        'deepseek/deepseek-chat',
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'qwen/qwen-2.5-coder-32b-instruct:free',
         'google/gemini-2.0-flash-exp:free',
+        'deepseek/deepseek-chat:free',
+        'qwen/qwen-2.5-coder-32b-instruct:free',
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'deepseek/deepseek-chat',
         orModel,
         `${orModel}:free`,
         'meta-llama/llama-3.3-70b-instruct'
@@ -535,44 +573,6 @@ export default async function handler(req, res) {
         } catch (err) {
           providerErrors.push(`OpenRouter ${m}: ${err.message}`);
         }
-      }
-    }
-
-    // 2B. OpenCode Gateway (If explicitly targeted)
-    const isTargetingOpenCode = targetModel.startsWith('opencode/') || targetModel.includes('deepseek-v4');
-    if (OPENCODE_KEY && isTargetingOpenCode) {
-      try {
-        const response = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENCODE_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'deepseek-v4-flash-free',
-            messages: baseTextMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig
-          })
-        }, 20000);
-
-        if (response.ok) {
-          const data = await response.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content) {
-            return res.status(200).json({
-              success: true,
-              response: content,
-              model: 'deepseek-v4-flash-free',
-              provider: 'OpenCode DeepSeek V4 Flash'
-            });
-          }
-        } else {
-          const errTxt = await response.text();
-          providerErrors.push(`OpenCode HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-        }
-      } catch (err) {
-        providerErrors.push(`OpenCode: ${err.message}`);
       }
     }
 
