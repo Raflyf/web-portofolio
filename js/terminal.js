@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.33.0';
-import { telemetry } from './telemetry.js?v=10.33.0';
-import { terminalAI } from './terminal-ai.js?v=10.33.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.72.0';
+import { telemetry } from './telemetry.js?v=10.72.0';
+import { terminalAI } from './terminal-ai.js?v=10.72.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -399,6 +399,32 @@ export function initTerminal() {
     }
   }
 
+  // Legacy single-session migration to multi-session convos
+  try {
+    const legacyRaw = localStorage.getItem(`terminal_chat_bubbles_${visitorSessionId}`);
+    if (legacyRaw) {
+      const legacyBubbles = JSON.parse(legacyRaw);
+      if (Array.isArray(legacyBubbles) && legacyBubbles.length > 0) {
+        let convos = getAllConvos();
+        if (convos.length === 0) {
+          const firstUserMsg = legacyBubbles.find(b => b.type === 'user');
+          const title = firstUserMsg ? (firstUserMsg.text.substring(0, 50).trim() || 'Sesi Percakapan Awal') : 'Sesi Percakapan Awal';
+          convos.push({
+            id: 'convo_legacy_' + Date.now(),
+            title: title,
+            preview: (legacyBubbles[legacyBubbles.length - 1]?.text || '').substring(0, 80),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            bubbles: legacyBubbles,
+            history: []
+          });
+          saveAllConvos(convos);
+        }
+        localStorage.removeItem(`terminal_chat_bubbles_${visitorSessionId}`);
+      }
+    }
+  } catch (_) {}
+
   function renderWelcomeMessage() {
     const existing = document.getElementById('terminal-welcome-banner');
     if (existing) existing.remove();
@@ -411,6 +437,50 @@ export function initTerminal() {
       <div class="terminal-line" style="margin-bottom:8px;">Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!</div>
     `;
     terminalBody.appendChild(welcomeBox);
+
+    // If there are saved conversations, show interactive session management prompt
+    const convos = getAllConvos();
+    if (convos.length > 0) {
+      const existingBanner = document.getElementById('terminal-session-banner');
+      if (existingBanner) existingBanner.remove();
+
+      const banner = document.createElement('div');
+      banner.id = 'terminal-session-banner';
+      banner.className = 'terminal-session-banner';
+      banner.style.cssText = 'margin: 0.55rem 0 0.85rem 0; padding: 0.55rem 0.85rem; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; font-size: 0.775rem; font-family: var(--font-mono);';
+      banner.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-body);">
+          <span style="color: var(--accent-cyan); font-size: 0.95rem;">📁</span>
+          <span>Tersimpan <strong>${convos.length} sesi percakapan</strong> di peramban ini</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button type="button" id="btn-open-convo-history" style="background: var(--accent-cyan); color: #020617; border: none; border-radius: 4px; padding: 0.28rem 0.75rem; font-weight: 700; font-size: 0.725rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: opacity 0.2s;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Buka Riwayat (Pilih Sesi)</span>
+          </button>
+          <button type="button" id="btn-start-fresh-convo" style="background: transparent; color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 0.28rem 0.65rem; font-size: 0.725rem; cursor: pointer;">
+            <span>+ Sesi Baru</span>
+          </button>
+        </div>
+      `;
+      terminalBody.appendChild(banner);
+
+      const openHistoryBtn = banner.querySelector('#btn-open-convo-history');
+      const startFreshBtn = banner.querySelector('#btn-start-fresh-convo');
+
+      if (openHistoryBtn) {
+        openHistoryBtn.addEventListener('click', () => {
+          openConvoHistoryModal();
+        });
+      }
+
+      if (startFreshBtn) {
+        startFreshBtn.addEventListener('click', () => {
+          banner.remove();
+          createNewConvo();
+        });
+      }
+    }
   }
 
   // Conversation history modal listeners
@@ -901,6 +971,12 @@ export function initTerminal() {
 
         // Render interactive click-to-download button (NO forced auto-download popup)
         return `\n<div style="margin:8px 0;"><button type="button" class="terminal-download-card" onclick="window.__downloadTerminalFile('${filename}', \`${fileContent.replace(/[`\\]/g, '\\$&')}\`)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> <span>📥 Unduh Berkas Markdown: ${filename}</span></button></div>\n`;
+      }
+
+      // Filter out pseudo/fictional action tags emitted by AI models
+      const validActions = ['OPEN_PROJECT', 'OPEN_CERTIFICATE', 'FILL_CONTACT', 'NAVIGATE', 'OPEN_URL', 'OPEN_GITHUB', 'TOGGLE_THEME', 'COPY_EMAIL'];
+      if (!validActions.includes(actionType)) {
+        return '';
       }
 
       if (parsedPayload.includes('&') || parsedPayload.includes('=')) {
