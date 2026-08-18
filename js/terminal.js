@@ -1018,19 +1018,33 @@ export function initTerminal() {
       return;
     }
 
-    // Command: model <name> or /model <name>
-    if (cmdLower.startsWith('model ') || cmdLower.startsWith('/model ')) {
-      const parts = trimmed.split(/\s+/);
-      const chosen = parts.slice(1).join(' ').trim();
-      if (!chosen || chosen.toLowerCase() === 'list') {
-        const aiContainer = createAIBubbleContainer('AI Models Registry');
-        COMMAND_REGISTRY.models().forEach(line => appendLine(line, false, '', false, aiContainer));
-        return;
+    // Command: model <name> or /model <name> (Strict CLI command parsing)
+    if (cmdLower === 'model' || cmdLower.startsWith('/model ') || cmdLower.startsWith('model ')) {
+      const isNaturalQuestion = /\b(apa|ini|kamu|yang|gimana|kenapa|mengapa|bagaimana|dipakai|aktif|saat ini|terpasang|\?)\b/i.test(cmdLower);
+      if (!isNaturalQuestion) {
+        const parts = trimmed.split(/\s+/);
+        const chosen = parts.slice(1).join(' ').trim();
+        if (!chosen || chosen.toLowerCase() === 'list') {
+          const aiContainer = createAIBubbleContainer('AI Models Registry');
+          COMMAND_REGISTRY.models().forEach(line => appendLine(line, false, '', false, aiContainer));
+          return;
+        }
+
+        const validKeywords = [
+          'auto', 'codex', 'antigravity', 'deepseek', 'deepseek-v4', 'v4', 'flash',
+          'nemotron', 'nemotron-ultra', 'ultra', 'nemotron-super', 'super', 'laguna',
+          'llama', 'llama-3.3', 'qwen', 'qwen-coder', 'gemma', 'minimax', 'm3', 'vision',
+          'nvidia', 'opencode', 'openrouter', 'omniroute', 'ollama'
+        ];
+        
+        const isKnownModel = validKeywords.some(k => chosen.toLowerCase() === k || chosen.toLowerCase().startsWith(k)) || chosen.includes('/');
+        if (isKnownModel) {
+          terminalAI.setModel(chosen);
+          const aiContainer = createAIBubbleContainer('AI Router');
+          appendLine(`[AI Model Manager] Model aktif berhasil diubah ke: ${chosen}`, false, '', false, aiContainer);
+          return;
+        }
       }
-      terminalAI.setModel(chosen);
-      const aiContainer = createAIBubbleContainer('AI Router');
-      appendLine(`[AI Model Manager] Model aktif berhasil diubah ke: ${chosen}`, false, '', false, aiContainer);
-      return;
     }
 
     // Command: setkey <key> or setkey <provider> <key>
