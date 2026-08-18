@@ -686,6 +686,12 @@ class DashboardApp {
       offline: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`
     };
 
+    const isNIM = (s) => /\b(nim|integrate\.api\.nvidia\.com)\b/i.test(s) || (/\bnvidia\b/i.test(s) && !/\b(openrouter|ollama|opencode|omniroute)\b/i.test(s));
+    const isOpenCode = (s) => /\b(opencode|api\.opencode\.ai)\b/i.test(s);
+    const isOllama = (s) => /\b(ollama|ollama\.com)\b/i.test(s);
+    const isOmniRoute = (s) => /\b(omniroute|trycloudflare)\b/i.test(s);
+    const isOpenRouter = (s) => /\b(openrouter|open-router)\b/i.test(s) || (!isNIM(s) && !isOpenCode(s) && !isOllama(s) && !isOmniRoute(s) && !/\b(minimax|local_semantic)\b/i.test(s));
+
     const MODELS_CATALOG = [
       // 0. Auto Gateway Router Overview
       {
@@ -707,10 +713,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isNim = s.includes('nim') || s.includes('nvidia nim');
-          const isUltra = s.includes('ultra') || s.includes('550b') || (s.includes('nemotron') && !s.includes('super') && !s.includes('laguna'));
-          return isNim && isUltra;
+          const s = `${t} ${l}`;
+          return isNIM(s) && /\b(ultra|550b)\b/i.test(s);
         }
       },
       {
@@ -721,10 +725,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isNim = s.includes('nim') || s.includes('nvidia nim');
-          const isSuper = s.includes('super') || s.includes('120b');
-          return isNim && isSuper;
+          const s = `${t} ${l}`;
+          return isNIM(s) && /\b(super|120b)\b/i.test(s);
         }
       },
       {
@@ -735,10 +737,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isNim = s.includes('nim') || s.includes('nvidia nim');
-          const isLlama = s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3') || (s.includes('llama') && !s.includes('8b'));
-          return isNim && isLlama;
+          const s = `${t} ${l}`;
+          return isNIM(s) && /\b(llama|70b)\b/i.test(s);
         }
       },
 
@@ -751,9 +751,8 @@ class DashboardApp {
         icon: SVG_ICONS.fast,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
-          return isOpenCode && (s.includes('deepseek') || s.includes('v4-flash') || s.includes('v4'));
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(deepseek|v4)\b/i.test(s);
         }
       },
       {
@@ -764,9 +763,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
-          return isOpenCode && (s.includes('ultra') || s.includes('550b') || s.includes('nemotron'));
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(ultra|550b|nemotron)\b/i.test(s);
         }
       },
       {
@@ -777,9 +775,8 @@ class DashboardApp {
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
-          return isOpenCode && s.includes('qwen');
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(qwen|coder)\b/i.test(s);
         }
       },
       {
@@ -790,9 +787,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
-          return isOpenCode && (s.includes('llama-3.3') || s.includes('70b') || s.includes('llama'));
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(llama|70b)\b/i.test(s);
         }
       },
 
@@ -805,10 +801,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute') && !s.includes('opencode'));
-          const isUltra = s.includes('ultra') || s.includes('550b') || (s.includes('nemotron') && !s.includes('super') && !s.includes('laguna'));
-          return isOpenRouter && isUltra;
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(ultra|550b)\b/i.test(s);
         }
       },
       {
@@ -819,10 +813,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute') && !s.includes('opencode'));
-          const isSuper = s.includes('super') || s.includes('120b');
-          return isOpenRouter && isSuper;
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(super|120b)\b/i.test(s);
         }
       },
       {
@@ -833,10 +825,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute') && !s.includes('opencode'));
-          const isLlama = s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3') || (s.includes('llama') && !s.includes('8b'));
-          return isOpenRouter && isLlama;
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(llama|70b)\b/i.test(s);
         }
       },
       {
@@ -847,8 +837,8 @@ class DashboardApp {
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('qwen') && (s.includes('openrouter') || !s.includes('opencode'));
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(qwen|coder)\b/i.test(s);
         }
       },
       {
@@ -858,7 +848,10 @@ class DashboardApp {
         tag: 'google/gemma-3-27b-it',
         icon: SVG_ICONS.fast,
         color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma')
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return (isOpenRouter(s) || s.includes('gemma')) && /\b(gemma)\b/i.test(s);
+        }
       },
       {
         id: 'deepseek-chat-openrouter',
@@ -868,8 +861,8 @@ class DashboardApp {
         icon: SVG_ICONS.fast,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return (s.includes('openrouter') || !s.includes('opencode') && !s.includes('omniroute')) && (s.includes('deepseek-chat') || (s.includes('deepseek') && !s.includes('v4') && !s.includes('flash')));
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(deepseek|deepseek-chat)\b/i.test(s) && !/\bv4\b/i.test(s);
         }
       },
 
@@ -882,8 +875,8 @@ class DashboardApp {
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('codex') || s.includes('gpt-5.6') || s.includes('terra');
+          const s = `${t} ${l}`;
+          return /\b(codex|gpt-5\.6|terra)\b/i.test(s);
         }
       },
       {
@@ -894,8 +887,8 @@ class DashboardApp {
         icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('antigravity') || s.includes('claude-opus') || s.includes('opus');
+          const s = `${t} ${l}`;
+          return /\b(antigravity|claude-opus|opus)\b/i.test(s);
         }
       },
       {
@@ -906,8 +899,8 @@ class DashboardApp {
         icon: SVG_ICONS.fast,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('omniroute') && (s.includes('deepseek') || s.includes('v4-flash') || s.includes('v4'));
+          const s = `${t} ${l}`;
+          return isOmniRoute(s) && /\b(deepseek|v4)\b/i.test(s);
         }
       },
       {
@@ -918,8 +911,8 @@ class DashboardApp {
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('omniroute') && (s.includes('vision-model') || s.includes('vision'));
+          const s = `${t} ${l}`;
+          return isOmniRoute(s) && /\b(vision-model|vision)\b/i.test(s);
         }
       },
       {
@@ -930,8 +923,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('omniroute') && (s.includes('laguna') || s.includes('ultra-free') || s.includes('super-free'));
+          const s = `${t} ${l}`;
+          return isOmniRoute(s) && /\b(laguna|ultra-free|super-free|nemotron-laguna)\b/i.test(s);
         }
       },
 
@@ -944,8 +937,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('ollama') && (s.includes('ultra') || s.includes('550b') || (s.includes('nemotron') && !s.includes('super')));
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(ultra|550b)\b/i.test(s);
         }
       },
       {
@@ -956,8 +949,8 @@ class DashboardApp {
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('ollama') && (s.includes('super') || s.includes('120b'));
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(super|120b)\b/i.test(s);
         }
       },
       {
@@ -968,8 +961,8 @@ class DashboardApp {
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('ollama') && (s.includes('minimax') || s.includes('m3') || s.includes('mimo'));
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(minimax|m3|mimo)\b/i.test(s);
         }
       },
 
@@ -982,8 +975,8 @@ class DashboardApp {
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return (s.includes('minimax') || s.includes('mimo')) && !s.includes('ollama') && !s.includes('omniroute');
+          const s = `${t} ${l}`;
+          return !isOllama(s) && !isOmniRoute(s) && /\b(minimax|mimo|api\.minimax\.io)\b/i.test(s);
         }
       },
 
@@ -996,8 +989,8 @@ class DashboardApp {
         icon: SVG_ICONS.offline,
         color: 'var(--text-muted)',
         match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('local_semantic') || s.includes('semantic pattern') || s.includes('local semantic');
+          const s = `${t} ${l}`;
+          return /\b(local_semantic|semantic pattern|local semantic)\b/i.test(s);
         }
       }
     ];
