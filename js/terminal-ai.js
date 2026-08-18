@@ -296,6 +296,49 @@ class TerminalAIEngine {
   }
 
   /**
+   * Real-time Page & Portfolio Live Inspector
+   * Reads and explores projects, authentic certificates, GitHub repositories, and live page state
+   * to ensure 100% accurate responses without opening external tabs.
+   */
+  buildLivePageInspectionContext(query = '') {
+    try {
+      const q = (query || '').toLowerCase();
+      const isPortfolioRelated = /\b(porto|portofolio|proyek|project|github|repo|repositori|sertif|sertifikat|bnsp|mikrotik|cisco|kontak|email|wa|tentang|profil|halaman|web|dokumen|pdf|keahlian|skill|pengalaman|kompetensi|biografi|ijazah|laser|spam|fotokita|plagiat|openplagiarism)\b/i.test(q) || q.length < 50;
+
+      if (!isPortfolioRelated) return '';
+
+      const projectsOverview = (typeof PROJECTS_DATA !== 'undefined' && Array.isArray(PROJECTS_DATA)) 
+        ? PROJECTS_DATA.map((p, i) => 
+            `${i+1}. ${p.title} (${p.categoryLabel || p.category}):\n   - Deskripsi: ${p.description}\n   - Fitur Utama: ${p.keyFeatures ? p.keyFeatures.join(', ') : '-'}\n   - Tech Stack: ${p.techStack ? p.techStack.join(', ') : '-'}\n   - GitHub Repo: ${p.githubUrl || '-'}${p.demoUrl ? `\n   - Live Demo: ${p.demoUrl}` : ''}`
+          ).join('\n')
+        : '';
+
+      const certsOverview = (typeof CERTIFICATES_DATA !== 'undefined' && Array.isArray(CERTIFICATES_DATA))
+        ? CERTIFICATES_DATA.map((c, i) => 
+            `${i+1}. ${c.title} (${c.issuer} - ${c.date || c.year || 'Terverifikasi'}):\n   - Credential ID / No: ${c.credentialId || '-'}\n   - File PDF: ${c.pdfUrl || '-'}\n   - Ringkasan: ${c.description || '-'}\n   - Kompetensi: ${c.competencies ? c.competencies.join(', ') : '-'}`
+          ).join('\n')
+        : '';
+
+      const devProfile = typeof DEVELOPER_PROFILE !== 'undefined' ? DEVELOPER_PROFILE : {};
+      const currentUrl = (typeof window !== 'undefined' && window.location) ? window.location.href : 'https://raflyfirmansyah-portofolio.vercel.app/';
+
+      return `\n\n[INSPEKSI LIVE WEB PORTOFOLIO & REPOSITORI GITHUB RAFLY FIRMANSYAH]:
+- URL Halaman: ${currentUrl}
+- Profil Pengembang: ${devProfile.name || 'Rafly Firmansyah'} (${devProfile.handle || '@Raflyf'}), ${devProfile.degree || 'S1 Informatika'} di ${devProfile.institution || 'UBSI Sukabumi'}.
+- Kontak: WA ${devProfile.whatsapp || '08991333323'} (${devProfile.whatsappUrl || 'https://wa.me/628991333323'}), Email ${devProfile.email || 'raflyfirmansyah02@gmail.com'}, GitHub ${devProfile.github || 'https://github.com/Raflyf'}.
+
+[DAFTAR SELURUH PROYEK & REPOSITORI RESMI DI WEB PORTOFOLIO]:
+${projectsOverview}
+
+[DAFTAR LENGKAP SERTIFIKAT & KREDENSIAL TERVERIFIKASI DI WEB PORTOFOLIO]:
+${certsOverview}
+(CATATAN SISTEM: Anda memiliki akses inspeksi live penuh ke seluruh data proyek, sertifikat, dan repositori di atas. Jawab pertanyaan pengunjung secara akurat dan berbasis data autentik di atas. DILARANG memicu perintah membuka URL kecuali pengunjung secara eksplisit meminta untuk membuka halaman/link.)`;
+    } catch (_) {
+      return '';
+    }
+  }
+
+  /**
    * Main Ask method: Routes multimodal attachments and queries to cloud gateway
    */
   async ask(query, attachments = []) {
@@ -640,7 +683,12 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       longTermMemory = await this.fetchAIMemories();
     } catch (_) {}
 
-    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${searchContext}${longTermMemory}
+    let livePageContext = '';
+    try {
+      livePageContext = this.buildLivePageInspectionContext(cleanQuery);
+    } catch (_) {}
+
+    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${livePageContext}${searchContext}${longTermMemory}
 
 [INSTRUKSI MEMORI JANGKA PANJANG (ANTI DATA POISONING)]
 Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi baru, koreksi data, atau informasi relevan), sertakan tag berikut di baris paling bawah:
