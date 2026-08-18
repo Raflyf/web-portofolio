@@ -575,19 +575,46 @@ Langkah yang WAJIB Anda lakukan:
 \`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\`
 3. Jika klaim SALAH, berpotensi HOAKS, tidak pantas, atau Anda ragu, TOLAK klaim tersebut dengan sopan dan JANGAN sertakan tag SAVE_MEMORY.`;
 
-    // Assemble conversation history (Deep Multi-Turn Context Window up to 60 messages / 30 turns)
-    const formattedHistory = Array.isArray(history) ? history.slice(-60).map(h => ({
-      role: h.role === 'assistant' ? 'assistant' : 'user',
-      content: String(h.content || '').slice(0, 4000)
-    })) : [];
+    // Assemble 128k Token Context Window (~480,000 chars) dynamically from full session history
+    function assemble128kMessages(systemPrompt, historyList = [], userContent = '', maxTotalChars = 480000) {
+      const systemStr = typeof systemPrompt === 'string' ? systemPrompt : JSON.stringify(systemPrompt || '');
+      const userStr = typeof userContent === 'string' ? userContent : JSON.stringify(userContent || '');
+      let currentBudget = maxTotalChars - (systemStr.length + userStr.length);
+      if (currentBudget < 10000) currentBudget = 10000;
+
+      const validHistory = Array.isArray(historyList) ? historyList : [];
+      const selectedHistory = [];
+
+      for (let i = validHistory.length - 1; i >= 0; i--) {
+        const item = validHistory[i];
+        if (!item || !item.content) continue;
+        const contentStr = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
+        if (contentStr.length <= currentBudget) {
+          selectedHistory.unshift({
+            role: item.role === 'assistant' ? 'assistant' : 'user',
+            content: item.content
+          });
+          currentBudget -= contentStr.length;
+        } else {
+          if (currentBudget > 2000) {
+            selectedHistory.unshift({
+              role: item.role === 'assistant' ? 'assistant' : 'user',
+              content: contentStr.slice(-currentBudget)
+            });
+          }
+          break;
+        }
+      }
+
+      return [
+        { role: 'system', content: systemPrompt },
+        ...selectedHistory,
+        { role: 'user', content: userContent }
+      ];
+    }
 
     const finalUserPrompt = assembledQuery;
-
-    const baseTextMessages = [
-      { role: 'system', content: systemPromptWithSearch },
-      ...formattedHistory,
-      { role: 'user', content: finalUserPrompt }
-    ];
+    const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 480000);
 
     const maxTokensConfig = effectiveEffort === 'low' 
       ? 2000 
