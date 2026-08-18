@@ -358,11 +358,11 @@ ${certsOverview}
         if (this.isAborted) return { isAborted: true };
 
         if (directRes && directRes.length > 0) {
-          // Record conversation turn for dynamic multi-turn context (Deep Memory up to 100 messages)
+          // Record conversation turn for dynamic 128k context memory
           this.conversationHistory.push({ role: 'user', content: cleanQuery });
           this.conversationHistory.push({ role: 'assistant', content: directRes.join('\n') });
-          if (this.conversationHistory.length > 100) {
-            this.conversationHistory = this.conversationHistory.slice(-100);
+          if (this.conversationHistory.length > 500) {
+            this.conversationHistory = this.conversationHistory.slice(-500);
           }
           return directRes;
         }
@@ -393,7 +393,7 @@ ${certsOverview}
           attachments: attachments,
           sessionLanguage: currentLang,
           reasoningEffort: this.reasoningEffort,
-          history: this.conversationHistory.slice(-60),
+          history: this.conversationHistory,
           longTermMemory: memoryContext
         }),
         signal: controller.signal
@@ -433,8 +433,8 @@ ${certsOverview}
         // Record conversation turn for dynamic context
         this.conversationHistory.push({ role: 'user', content: cleanQuery });
         this.conversationHistory.push({ role: 'assistant', content: finalResponse });
-        if (this.conversationHistory.length > 100) {
-          this.conversationHistory = this.conversationHistory.slice(-100);
+        if (this.conversationHistory.length > 500) {
+          this.conversationHistory = this.conversationHistory.slice(-500);
         }
 
         const isAuto = !this.currentModel || this.currentModel === 'auto';
@@ -789,17 +789,39 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex', 'Antigravity', 'Vision-model'];
     }
 
-    // Format multi-turn conversation history for deep context window (up to 60 messages / 30 turns)
-    const formattedHistory = Array.isArray(this.conversationHistory)
-      ? this.conversationHistory.slice(-60).map(h => ({
-          role: h.role === 'assistant' ? 'assistant' : 'user',
-          content: typeof h.content === 'string' ? h.content.slice(0, 4000) : h.content
-        }))
-      : [];
+    // Assemble 128k Token Context Window (~480,000 chars) dynamically from full session history
+    const systemStr = typeof fullSystemPrompt === 'string' ? fullSystemPrompt : JSON.stringify(fullSystemPrompt || '');
+    const userStr = typeof userMessageContent === 'string' ? userMessageContent : JSON.stringify(userMessageContent || '');
+    let currentBudget = 480000 - (systemStr.length + userStr.length);
+    if (currentBudget < 10000) currentBudget = 10000;
+
+    const validHistory = Array.isArray(this.conversationHistory) ? this.conversationHistory : [];
+    const selectedHistory = [];
+
+    for (let i = validHistory.length - 1; i >= 0; i--) {
+      const item = validHistory[i];
+      if (!item || !item.content) continue;
+      const contentStr = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
+      if (contentStr.length <= currentBudget) {
+        selectedHistory.unshift({
+          role: item.role === 'assistant' ? 'assistant' : 'user',
+          content: item.content
+        });
+        currentBudget -= contentStr.length;
+      } else {
+        if (currentBudget > 2000) {
+          selectedHistory.unshift({
+            role: item.role === 'assistant' ? 'assistant' : 'user',
+            content: contentStr.slice(-currentBudget)
+          });
+        }
+        break;
+      }
+    }
 
     const fullMessagesPayload = [
       { role: 'system', content: fullSystemPrompt },
-      ...formattedHistory,
+      ...selectedHistory,
       { role: 'user', content: userMessageContent }
     ];
 
