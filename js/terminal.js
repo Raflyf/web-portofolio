@@ -463,6 +463,9 @@ export function initTerminal() {
     clearkey: () => terminalAI.clearKey(),
     clear: () => {
       terminalBody.innerHTML = '';
+      if (terminalAI && typeof terminalAI.clearHistory === 'function') {
+        terminalAI.clearHistory();
+      }
       renderWelcomeMessage();
       return [];
     }
