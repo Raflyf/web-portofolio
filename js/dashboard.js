@@ -861,7 +861,7 @@ class DashboardApp {
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma')
       },
 
-      // 3. OmniRoute Dedicated Server Provider (Combos)
+      // 4. OmniRoute Dedicated Server Provider (Combos)
       {
         id: 'omniroute-codex',
         name: 'Codex',
@@ -895,7 +895,7 @@ class DashboardApp {
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('deepseek') || s.includes('v4-flash') || s.includes('v4');
+          return s.includes('omniroute') && (s.includes('deepseek') || s.includes('v4-flash') || s.includes('v4'));
         }
       },
       {
@@ -907,7 +907,7 @@ class DashboardApp {
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('vision-model') || s.includes('vision') || s.includes('minimax') || s.includes('mimo');
+          return s.includes('omniroute') && (s.includes('vision-model') || s.includes('vision'));
         }
       },
       {
@@ -923,7 +923,59 @@ class DashboardApp {
         }
       },
 
-      // 4. In-Browser / Local Offline Fallback
+      // 5. Ollama Cloud SOTA Engine Provider (ollama.com)
+      {
+        id: 'nemotron-ultra-ollama',
+        name: 'Nvidia Nemotron 3 Ultra (550B)',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3-ultra',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('ollama') && (s.includes('ultra') || s.includes('550b') || (s.includes('nemotron') && !s.includes('super')));
+        }
+      },
+      {
+        id: 'nemotron-super-ollama',
+        name: 'Nvidia Nemotron 3 Super (120B)',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3-super',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('ollama') && (s.includes('super') || s.includes('120b'));
+        }
+      },
+      {
+        id: 'minimax-m3-ollama',
+        name: 'MiniMax-M3 Vision Multimodal',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · minimax-m3',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('ollama') && (s.includes('minimax') || s.includes('m3') || s.includes('mimo'));
+        }
+      },
+
+      // 6. MiniMax Frontier API Provider (api.minimax.io)
+      {
+        id: 'minimax-m3-direct',
+        name: 'MiniMax-M3 Vision Multimodal',
+        category: 'MiniMax Frontier API',
+        tag: 'api.minimax.io · MiniMax-M3',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return (s.includes('minimax') || s.includes('mimo')) && !s.includes('ollama') && !s.includes('omniroute');
+        }
+      },
+
+      // 7. In-Browser / Local Offline Fallback
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
