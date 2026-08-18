@@ -427,6 +427,26 @@ export function initTerminal() {
    * Converts Markdown asterisks, headings, lists, tables, code blocks,
    * and executes [ACTION:TYPE:payload] UI commands directly on the web page.
    */
+  function triggerFileDownload(filename, content) {
+    const cleanFilename = (filename || 'dokumen_portofolio.md').replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+    const blob = new Blob([content || ''], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = cleanFilename.endsWith('.md') ? cleanFilename : `${cleanFilename}.md`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1500);
+  }
+
+  // Global helper for inline download cards
+  window.__downloadTerminalFile = (filename, content) => {
+    triggerFileDownload(filename, content || '');
+  };
+
   function parseAndExecuteActionTags(rawText) {
     if (!rawText) return rawText;
 
@@ -434,6 +454,19 @@ export function initTerminal() {
     return rawText.replace(actionRegex, (fullMatch, type, payload) => {
       const actionType = type.toUpperCase().trim();
       let parsedPayload = (payload || '').trim();
+
+      if (actionType === 'DOWNLOAD_FILE' || actionType === 'DOWNLOAD') {
+        const parts = parsedPayload.split(':');
+        const filename = parts[0]?.trim() || 'dokumen_rencana.md';
+        const fileContent = parts.slice(1).join(':').trim() || rawText.replace(actionRegex, '').trim();
+
+        // Trigger automatic browser download immediately
+        setTimeout(() => {
+          triggerFileDownload(filename, fileContent);
+        }, 300);
+
+        return `\n<div style="margin:8px 0;"><button type="button" class="terminal-download-card" onclick="window.__downloadTerminalFile('${filename}', \`${fileContent.replace(/[`\\]/g, '\\$&')}\`)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> <span>📥 Unduh Berkas: ${filename} (Klik untuk unduh ulang)</span></button></div>\n`;
+      }
 
       if (parsedPayload.includes('&') || parsedPayload.includes('=')) {
         const obj = {};
@@ -664,14 +697,53 @@ export function initTerminal() {
             <span>${currentModelName}</span>
           </span>
           <span class="chat-msg__time">${time}</span>
+          <div class="chat-msg__actions">
+            <button type="button" class="chat-action-btn chat-action-btn--copy" title="Salin teks respon ini">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              <span>Salin</span>
+            </button>
+            <button type="button" class="chat-action-btn chat-action-btn--download" title="Unduh respon ini sebagai berkas Markdown (.md)">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Unduh .md</span>
+            </button>
+          </div>
         </div>
         <div class="chat-msg__content"></div>
       </div>
     `;
 
+    // Attach Copy and Download handlers
+    const copyBtn = msgEl.querySelector('.chat-action-btn--copy');
+    const downloadBtn = msgEl.querySelector('.chat-action-btn--download');
+    const contentEl = msgEl.querySelector('.chat-msg__content');
+
+    if (copyBtn && contentEl) {
+      copyBtn.addEventListener('click', async () => {
+        const text = contentEl.innerText || contentEl.textContent || '';
+        try {
+          await navigator.clipboard.writeText(text);
+          const origHtml = copyBtn.innerHTML;
+          copyBtn.innerHTML = `<span>✓ Tersalin!</span>`;
+          setTimeout(() => { copyBtn.innerHTML = origHtml; }, 2000);
+        } catch (_) {}
+      });
+    }
+
+    if (downloadBtn && contentEl) {
+      downloadBtn.addEventListener('click', () => {
+        const text = contentEl.innerText || contentEl.textContent || '';
+        const firstHeading = text.split('\n').find(l => l.trim().startsWith('#'))?.replace(/^[#\s]+/, '').trim();
+        const filename = (firstHeading ? firstHeading.substring(0, 35) : `dokumen_${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '_') + '.md';
+        triggerFileDownload(filename, text);
+        const origHtml = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = `<span>✓ Terunduh!</span>`;
+        setTimeout(() => { downloadBtn.innerHTML = origHtml; }, 2000);
+      });
+    }
+
     terminalBody.appendChild(msgEl);
     terminalBody.scrollTop = terminalBody.scrollHeight;
-    return msgEl.querySelector('.chat-msg__content');
+    return contentEl;
   }
 
   function appendLine(text, isPrompt = false, userCmd = '', isThinking = false, targetContainer = null) {
