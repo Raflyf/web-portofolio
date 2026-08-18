@@ -365,14 +365,15 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 1. Casual / Greetings / Trivial / Light Factoid / Portfolio identity questions (Fast & Low Effort)
+  // 1. Casual / Greetings / Trivial / Closings / Light Factoid (Fast & Low Effort)
   const isGreetingOrTrivial = (
-    len < 60 && (
+    (len < 50 && /^(cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|good|nice|paham|mengerti)\b/i.test(q)) ||
+    (len < 60 && (
       /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q) ||
       /^(siapa rafly|siapa pembuatmu|kontak|portfolio|portofolio|hubungi|email rafly|wa rafly)\b/i.test(q) ||
       /^(help|bantuan|info)\b/i.test(q)
-    )
-  ) || (len < 30 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|bikin|buatkan|debug|error|fungsi)\b/i.test(q));
+    )) || (len <= 30 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|bikin|buatkan|debug|error|fungsi|analisis|mengapa|kenapa|bagaimana|plan|prd|proyek)\b/i.test(q))
+  );
 
   if (isGreetingOrTrivial && docAttachments.length === 0) {
     return {
