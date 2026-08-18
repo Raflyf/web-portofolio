@@ -860,6 +860,18 @@ class DashboardApp {
         color: 'var(--accent-amber)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma')
       },
+      {
+        id: 'deepseek-chat-openrouter',
+        name: 'DeepSeek Chat (OpenRouter)',
+        category: 'OpenRouter Cloud Pool',
+        tag: 'deepseek/deepseek-chat',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return (s.includes('openrouter') || !s.includes('opencode') && !s.includes('omniroute')) && (s.includes('deepseek-chat') || (s.includes('deepseek') && !s.includes('v4') && !s.includes('flash')));
+        }
+      },
 
       // 4. OmniRoute Dedicated Server Provider (Combos)
       {
