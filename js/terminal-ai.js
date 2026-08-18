@@ -112,9 +112,21 @@ class TerminalAIEngine {
     this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
     this.sessionLanguage = sessionStorage.getItem('ai_session_lang') || null;
     this.reasoningEffort = localStorage.getItem('ai_selected_effort') || 'auto';
-    this.conversationHistory = [];
+    try {
+      const stored = sessionStorage.getItem('ai_session_history');
+      this.conversationHistory = stored ? JSON.parse(stored) : [];
+      if (!Array.isArray(this.conversationHistory)) this.conversationHistory = [];
+    } catch (_) {
+      this.conversationHistory = [];
+    }
     this.currentAbortController = null;
     this.isAborted = false;
+  }
+
+  saveHistoryToSession() {
+    try {
+      sessionStorage.setItem('ai_session_history', JSON.stringify(this.conversationHistory.slice(-500)));
+    } catch (_) {}
   }
 
   abort() {
@@ -335,6 +347,9 @@ ${certsOverview}
 
   clearHistory() {
     this.conversationHistory = [];
+    try {
+      sessionStorage.removeItem('ai_session_history');
+    } catch (_) {}
   }
 
   /**
@@ -364,6 +379,7 @@ ${certsOverview}
           if (this.conversationHistory.length > 500) {
             this.conversationHistory = this.conversationHistory.slice(-500);
           }
+          this.saveHistoryToSession();
           return directRes;
         }
       } catch (_) {
@@ -436,6 +452,7 @@ ${certsOverview}
         if (this.conversationHistory.length > 500) {
           this.conversationHistory = this.conversationHistory.slice(-500);
         }
+        this.saveHistoryToSession();
 
         const isAuto = !this.currentModel || this.currentModel === 'auto';
         const resolvedModel = data.model || 'deepseek/deepseek-chat';
@@ -576,7 +593,10 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 2. KAPABILITAS AKSES INTERNET & REAL-TIME 2026:
    - Anda terintegrasi secara aktif dengan modul Live Web Search RAG 2026 (Wikipedia, Global & Local News, Hugging Face) dan Waktu Sistem Real-Time 2026.
    - DILARANG KERAS mengaku tidak punya akses internet atau tidak dapat mengecek informasi terkini. Jika pengguna bertanya tentang info terbaru atau kemampuan akses internet, jawab dengan jelas bahwa Anda memiliki modul pencarian web real-time yang siap digunakan untuk mencari data mutakhir.
-3. NOL EMOJI & TUNTAS:
+3. KONTINUITAS SESI & MULTI-MODEL HANDOVER:
+   - Seluruh riwayat percakapan sesi aktif disertakan secara lengkap (128k context window).
+   - Sekalipun pengguna berganti model AI di tengah sesi (misal dari Nemotron ke Codex atau Antigravity), Anda sebagai model yang saat ini aktif WAJIB memahami 100% seluruh percakapan sebelumnya dan melanjutkan pembahasan, riset, atau kode secara mulus tanpa mengulang dari nol.
+4. NOL EMOJI & TUNTAS:
    - Dilarang keras menyisipkan emoji dalam bentuk apa pun.
    - Pastikan jawaban selesai tuntas dan tidak terpotong.
 
