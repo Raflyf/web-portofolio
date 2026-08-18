@@ -150,9 +150,15 @@ class TelemetryEngine {
     if (this.initialized) return;
     this.initialized = true;
 
-    // 1. Track Page View
-    const pagePath = window.location.pathname || '/';
-    this.logEvent('page_view', pagePath, `Kunjungan Halaman: ${document.title}`);
+    // 1. Track Page View with human-readable target name
+    const rawPath = window.location.pathname || '/';
+    let pageTarget = 'Halaman Utama (Landing Page)';
+    if (rawPath.includes('dashboard')) {
+      pageTarget = 'Admin Dashboard & Telemetri';
+    } else if (rawPath.includes('preview')) {
+      pageTarget = 'Pratinjau Kredensial (Preview)';
+    }
+    this.logEvent('page_view', pageTarget, `Kunjungan Halaman: ${document.title || 'Portofolio'}`);
 
     // 2. Track Clicks on All Interactive Elements
     document.addEventListener('click', (e) => {
