@@ -939,36 +939,42 @@ Langkah yang WAJIB Anda lakukan:
       }
     }
 
-    // 2B. Secondary: Direct OpenCode Multi-Account Rotation (DeepSeek V4 Flash Free)
-    if (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || (model && model.includes('opencode'))) {
-      for (const ocKey of OPENCODE_KEYS) {
-        try {
-          const ocResp = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ocKey}`
-            },
-            body: JSON.stringify({
-              model: 'deepseek-v4-flash-free',
-              messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig
-            })
-          }, 12000);
+    // 2B. Secondary: Direct OpenCode Multi-Account Rotation (DeepSeek V4 Flash, Nemotron Ultra, Qwen Coder, Llama 3.3)
+    if (OPENCODE_KEY && (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || (model && model.includes('opencode')) || !isExplicitModel)) {
+      const ocCandidates = isExplicitModel
+        ? [targetModel.replace(/^opencode\//, '')]
+        : ['deepseek-v4-flash-free', 'nemotron-3-ultra-free', 'qwen-2.5-coder-32b-free', 'llama-3.3-70b-free'];
 
-          if (ocResp.ok) {
-            const ocData = await ocResp.json();
-            const ocText = ocData?.choices?.[0]?.message?.content;
-            if (ocText) {
-              return sendSuccess(ocText, 'opencode/deepseek-v4-flash-free', 'OpenCode Cloud Multi-Account Pool');
+      for (const ocKey of OPENCODE_KEYS) {
+        for (const ocModel of ocCandidates) {
+          try {
+            const ocResp = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${ocKey}`
+              },
+              body: JSON.stringify({
+                model: ocModel,
+                messages: baseTextMessages,
+                max_tokens: maxTokensConfig,
+                temperature: tempConfig
+              })
+            }, 12000);
+
+            if (ocResp.ok) {
+              const ocData = await ocResp.json();
+              const ocText = ocData?.choices?.[0]?.message?.content;
+              if (ocText && ocText.trim().length > 0) {
+                return sendSuccess(ocText.trim(), `opencode/${ocModel}`, 'OpenCode Cloud Multi-Account Pool');
+              }
+            } else {
+              const ocErr = await ocResp.text();
+              providerErrors.push(`OpenCode (${ocModel}) HTTP ${ocResp.status}: ${ocErr.slice(0, 100)}`);
             }
-          } else {
-            const ocErr = await ocResp.text();
-            providerErrors.push(`OpenCode HTTP ${ocResp.status}: ${ocErr.slice(0, 100)}`);
+          } catch (ocErr) {
+            providerErrors.push(`OpenCode (${ocModel}): ${ocErr.message}`);
           }
-        } catch (ocErr) {
-          providerErrors.push(`OpenCode: ${ocErr.message}`);
         }
       }
     }

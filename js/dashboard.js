@@ -742,7 +742,61 @@ class DashboardApp {
         }
       },
 
-      // 2. OpenRouter 3-Key Cloud Pool Provider
+      // 2. OpenCode Cloud Multi-Account Provider
+      {
+        id: 'deepseek-v4-opencode',
+        name: 'Deepseek-V4-Flash-Free',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/deepseek-v4-flash-free',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
+          return isOpenCode && (s.includes('deepseek') || s.includes('v4-flash') || s.includes('v4'));
+        }
+      },
+      {
+        id: 'nemotron-ultra-opencode',
+        name: 'Nvidia Nemotron 3 Ultra (550B)',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/nemotron-3-ultra-free',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
+          return isOpenCode && (s.includes('ultra') || s.includes('550b') || s.includes('nemotron'));
+        }
+      },
+      {
+        id: 'qwen-coder-opencode',
+        name: 'Qwen 2.5 Coder (32B)',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/qwen-2.5-coder-32b-free',
+        icon: SVG_ICONS.code,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
+          return isOpenCode && s.includes('qwen');
+        }
+      },
+      {
+        id: 'llama-3.3-opencode',
+        name: 'Llama 3.3 70B Instruct',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/llama-3.3-70b-free',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          const isOpenCode = s.includes('opencode') && !s.includes('openrouter');
+          return isOpenCode && (s.includes('llama-3.3') || s.includes('70b') || s.includes('llama'));
+        }
+      },
+
+      // 3. OpenRouter 3-Key Cloud Pool Provider
       {
         id: 'nemotron-3-ultra-openrouter',
         name: 'Nvidia Nemotron 3 Ultra (550B)',
@@ -752,7 +806,7 @@ class DashboardApp {
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute'));
+          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute') && !s.includes('opencode'));
           const isUltra = s.includes('ultra') || s.includes('550b') || (s.includes('nemotron') && !s.includes('super') && !s.includes('laguna'));
           return isOpenRouter && isUltra;
         }
@@ -766,7 +820,7 @@ class DashboardApp {
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute'));
+          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute') && !s.includes('opencode'));
           const isSuper = s.includes('super') || s.includes('120b');
           return isOpenRouter && isSuper;
         }
@@ -780,7 +834,7 @@ class DashboardApp {
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute'));
+          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute') && !s.includes('opencode'));
           const isLlama = s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3') || (s.includes('llama') && !s.includes('8b'));
           return isOpenRouter && isLlama;
         }
@@ -788,11 +842,14 @@ class DashboardApp {
       {
         id: 'qwen-coder-openrouter',
         name: 'Qwen 2.5 Coder (32B)',
-        category: 'OpenRouter / OpenCode',
-        tag: 'qwen-2.5-coder-32b-instruct',
+        category: 'OpenRouter Cloud Pool',
+        tag: 'qwen/qwen-2.5-coder-32b-instruct',
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('qwen') && (s.includes('openrouter') || !s.includes('opencode'));
+        }
       },
       {
         id: 'google-gemma-3-openrouter',
