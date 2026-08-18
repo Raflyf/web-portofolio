@@ -687,7 +687,7 @@ class DashboardApp {
     };
 
     const MODELS_CATALOG = [
-      // 0. Pure Intelligent Auto Router (Main Gateway)
+      // 0. Auto Gateway Router Overview
       {
         id: 'auto-router',
         name: 'Auto Cloud Gateway',
@@ -695,7 +695,7 @@ class DashboardApp {
         tag: 'Intelligent Adaptive SOTA Cascade',
         icon: SVG_ICONS.router,
         color: 'var(--accent-cyan)',
-        match: (t, l) => t === 'auto' || l.includes('auto') || `${t} ${l}`.toLowerCase().includes('auto (router') || `${t} ${l}`.toLowerCase().includes('auto router')
+        isRouterCard: true
       },
 
       // 1. Nvidia NIM & Nemotron Family
@@ -730,7 +730,28 @@ class DashboardApp {
         tag: '70B SOTA General Intelligence',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('llama-3.3') || `${t} ${l}`.toLowerCase().includes('70b')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3');
+        }
+      },
+      {
+        id: 'deepseek-moe',
+        name: 'DeepSeek V4 / V3 / R1 (MoE)',
+        category: 'DeepSeek SOTA',
+        tag: '671B MoE & Reasoning Engine',
+        icon: SVG_ICONS.cot,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek')
+      },
+      {
+        id: 'qwen-coder',
+        name: 'Qwen 2.5 Coder (32B)',
+        category: 'Code Specialist',
+        tag: 'Specialized Script & Logic Engine',
+        icon: SVG_ICONS.code,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen')
       },
 
       // 2. OpenAI & Anthropic Dedicated (OmniRoute)
@@ -741,7 +762,10 @@ class DashboardApp {
         tag: 'Tier 1: Heavy Coding & Architecture',
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('codex') || `${t} ${l}`.toLowerCase().includes('gpt-5.6') || `${t} ${l}`.toLowerCase().includes('terra') || `${t} ${l}`.toLowerCase().includes('gpt-5.5')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('codex') || s.includes('gpt-5.6') || s.includes('terra') || s.includes('gpt-5.5') || s.includes('openai');
+        }
       },
       {
         id: 'omniroute-antigravity',
@@ -750,7 +774,10 @@ class DashboardApp {
         tag: 'Tier 1: Deep CoT Multi-Step',
         icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('antigravity') || `${t} ${l}`.toLowerCase().includes('claude-opus-4-6') || `${t} ${l}`.toLowerCase().includes('opus') || `${t} ${l}`.toLowerCase().includes('sonnet')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('antigravity') || s.includes('claude-opus-4-6') || s.includes('opus') || s.includes('sonnet') || s.includes('anthropic');
+        }
       },
 
       // 3. Multimodal & Vision Specialists
@@ -775,26 +802,50 @@ class DashboardApp {
         tag: 'In-Browser Sub-15ms Pattern Matcher',
         icon: SVG_ICONS.offline,
         color: 'var(--text-muted)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('local_semantic') || `${t} ${l}`.toLowerCase().includes('semantic pattern')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('local_semantic') || s.includes('semantic pattern') || s.includes('local semantic');
+        }
       }
     ];
 
-    // 1. Isolate verified unique AI consultation executions (deduplicate and filter out UI events)
+    // 1. Isolate verified unique AI consultation executions (deduplicate and filter out UI/noise events)
+    const actualConsultations = [];
+    const seenQueries = new Set();
+
+    // Priority 1: Resolved events (ai_query_resolved)
     const resolvedEvents = this.filteredEvents.filter(e => e.event_type === 'ai_query_resolved');
-    const resolvedKeys = new Set(resolvedEvents.map(e => `${e.session_id}_${(e.event_label || '').substring(0, 30)}`));
+    resolvedEvents.forEach(e => {
+      const ts = new Date(e.created_at || 0).getTime();
+      const bucket = Math.floor(ts / 3000);
+      const sid = (e.session_id || 'sess').substring(0, 30);
+      const sig = `${sid}__${bucket}`;
+      if (!seenQueries.has(sig)) {
+        seenQueries.add(sig);
+        actualConsultations.push(e);
+      }
+    });
 
-    const legacyEvents = this.filteredEvents.filter(e => 
-      (e.event_type === 'ai_query' || e.event_type === 'terminal_ai_query') &&
-      !resolvedKeys.has(`${e.session_id}_${(e.event_label || '').substring(0, 30)}`)
-    );
+    // Priority 2: Standalone legacy ai_query events without resolved event in same window
+    this.filteredEvents.forEach(e => {
+      if (e.event_type === 'ai_query' || e.event_type === 'terminal_ai_query') {
+        const ts = new Date(e.created_at || 0).getTime();
+        const bucket = Math.floor(ts / 3000);
+        const sid = (e.session_id || 'sess').substring(0, 30);
+        const sig = `${sid}__${bucket}`;
+        if (!seenQueries.has(sig)) {
+          seenQueries.add(sig);
+          actualConsultations.push(e);
+        }
+      }
+    });
 
-    const actualConsultations = [...resolvedEvents, ...legacyEvents];
     const totalConsultations = actualConsultations.length;
 
     // 2. Track Auto Router breakdown & Individual Model Statistics
     const autoResolvedBreakdown = {};
-    let autoRouterTotal = 0;
-    let manualRouterTotal = 0;
+    let totalAutoInferences = 0;
+    let totalManualInferences = 0;
 
     const modelStatsMap = {};
     MODELS_CATALOG.forEach(m => {
@@ -804,28 +855,28 @@ class DashboardApp {
     actualConsultations.forEach(e => {
       const t = (e.event_target || '').trim();
       const l = (e.event_label || '').trim();
-      const isAuto = t.startsWith('auto:') || t === 'auto' || l.includes('[Auto ➔') || l.includes('Auto Router');
+      const isAuto = t.startsWith('auto:') || t === 'auto' || l.includes('[Auto ➔') || l.includes('Auto Router') || (!t.includes(':') && t === 'auto');
+
+      // Match against model catalog
+      const matchedModel = MODELS_CATALOG.find(m => !m.isRouterCard && m.match && m.match(t, l));
 
       if (isAuto) {
-        autoRouterTotal++;
-        let resolvedStr = t.replace(/^auto:/, '').trim();
-        if ((!resolvedStr || resolvedStr === 'auto') && l.includes('[Auto ➔')) {
-          resolvedStr = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
-        }
-        if (!resolvedStr || resolvedStr === 'auto') resolvedStr = 'Auto Cascade';
-
-        const matchedModel = MODELS_CATALOG.find(m => m.id !== 'auto-router' && m.match(resolvedStr, l));
+        totalAutoInferences++;
         if (matchedModel) {
           modelStatsMap[matchedModel.id].autoCount++;
           modelStatsMap[matchedModel.id].total++;
           autoResolvedBreakdown[matchedModel.name] = (autoResolvedBreakdown[matchedModel.name] || 0) + 1;
         } else {
-          const cleanName = resolvedStr.split('/').pop().replace(/:free$/i, '');
-          autoResolvedBreakdown[cleanName] = (autoResolvedBreakdown[cleanName] || 0) + 1;
+          // Resolve fallback model name cleanly
+          let fallbackName = t.replace(/^auto:/, '').trim();
+          if ((!fallbackName || fallbackName === 'auto') && l.includes('[Auto ➔')) {
+            fallbackName = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
+          }
+          if (!fallbackName || fallbackName === 'auto') fallbackName = 'Nvidia Nemotron 3 Ultra (550B)';
+          autoResolvedBreakdown[fallbackName] = (autoResolvedBreakdown[fallbackName] || 0) + 1;
         }
       } else {
-        manualRouterTotal++;
-        const matchedModel = MODELS_CATALOG.find(m => m.id !== 'auto-router' && m.match(t, l));
+        totalManualInferences++;
         if (matchedModel) {
           modelStatsMap[matchedModel.id].manualCount++;
           modelStatsMap[matchedModel.id].total++;
@@ -833,10 +884,10 @@ class DashboardApp {
       }
     });
 
-    // Populate auto-router card
-    modelStatsMap['auto-router'].autoCount = autoRouterTotal;
-    modelStatsMap['auto-router'].manualCount = manualRouterTotal;
-    modelStatsMap['auto-router'].total = autoRouterTotal;
+    // Populate auto-router overview card
+    modelStatsMap['auto-router'].autoCount = totalAutoInferences;
+    modelStatsMap['auto-router'].manualCount = totalManualInferences;
+    modelStatsMap['auto-router'].total = totalAutoInferences;
 
     if (totalCountEl) {
       totalCountEl.textContent = `${totalConsultations.toLocaleString('id-ID')}x`;
@@ -849,8 +900,8 @@ class DashboardApp {
       const pct = Math.round((m.total / maxModelCount) * 100);
 
       let autoBreakdownHtml = '';
-      if (m.id === 'auto-router') {
-        const entries = Object.entries(autoResolvedBreakdown);
+      if (m.isRouterCard) {
+        const entries = Object.entries(autoResolvedBreakdown).sort((a, b) => b[1] - a[1]);
         if (entries.length > 0) {
           const listHtml = entries.map(([modelName, count]) => `
             <div class="ai-model-auto-item" style="display:flex;justify-content:space-between;padding:0.2rem 0;font-size:0.75rem;font-family:var(--font-mono);border-bottom:1px dashed var(--border-subtle);">
@@ -862,7 +913,7 @@ class DashboardApp {
           autoBreakdownHtml = `
             <div class="ai-model-auto-breakdown" style="margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid var(--border-subtle);">
               <div style="font-size:0.7rem;font-weight:700;color:var(--text-dim);margin-bottom:0.25rem;text-transform:uppercase;">
-                Model Terpilih Saat Mode Auto:
+                Model Terpilih Saat Mode Auto (${totalAutoInferences}x):
               </div>
               <div class="ai-model-auto-list">
                 ${listHtml}
