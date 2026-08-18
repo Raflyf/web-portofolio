@@ -307,6 +307,7 @@ export function initTerminal() {
       "  skills       - Matriks keterampilan teknis",
       "  projects     - Daftar proyek GitHub open-source",
       "  certifs      - Daftar sertifikat & kredensial terverifikasi (10 Sertifikat)",
+      "  models       - Daftar lengkap provider & model AI aktif",
       "  benchmarks   - Metrik pengujian model riset ML/AI",
       "  aistatus     - Status engine AI & provider aktif",
       "  setkey       - Masukkan API key pribadi Anda di browser ini",
@@ -316,10 +317,55 @@ export function initTerminal() {
       "  whoami       - Status sesi saat ini",
       "  clear        - Membersihkan riwayat layar terminal",
       "",
-      "FITUR BARU v5.2:",
+      "PINTASAN MODEL AI:",
+      "  - Ketik 'models' untuk melihat semua model dari 7 provider aktif.",
+      "  - Ketik 'model <nama>' (misal: model codex / model auto) untuk berganti model.",
+      "",
+      "FITUR MULTIMODAL v5.2:",
       "  - Lampirkan Gambar / Dokumen / PDF dengan tombol klip [📎] di samping kolom input!",
       "  - Pencarian Web Real-Time 2026 otomatis untuk pertanyaan informasi terkini.",
       "  - Tanyakan apapun secara bebas & mendalam dengan bahasa alami."
+    ],
+    models: () => [
+      "[KATALOG 7 PROVIDER & MODEL AI AKTIF]",
+      "----------------------------------------------------------------",
+      "1. NVIDIA NIM Direct API (integrate.api.nvidia.com):",
+      "   - nvidia/nemotron-3-ultra-550b-a55b (550B MoE SOTA Flagship)",
+      "   - nvidia/nemotron-3-super-120b-a12b (120B High-Speed Enterprise)",
+      "   - meta/llama-3.3-70b-instruct (70B SOTA General Intelligence)",
+      "",
+      "2. OpenCode Cloud Multi-Account Pool (api.opencode.ai):",
+      "   - opencode/deepseek-v4-flash-free (DeepSeek V4 Flash Free)",
+      "   - opencode/nemotron-3-ultra-free (Nemotron 3 Ultra 550B Free)",
+      "   - opencode/qwen-2.5-coder-32b-free (Qwen 2.5 Coder 32B Free)",
+      "   - opencode/llama-3.3-70b-free (Meta Llama 3.3 70B Free)",
+      "",
+      "3. OpenRouter 3-Key Cloud Pool (openrouter.ai):",
+      "   - nvidia/nemotron-3-ultra-550b-a55b",
+      "   - nvidia/nemotron-3-super-120b-a12b",
+      "   - meta-llama/llama-3.3-70b-instruct",
+      "   - qwen/qwen-2.5-coder-32b-instruct",
+      "   - google/gemma-3-27b-it",
+      "",
+      "4. OmniRoute Dedicated Local Server (Cloudflare Quick Tunnel):",
+      "   - Codex (Heavy Coding & Architecture)",
+      "   - Antigravity (Deep CoT Multi-Step Synthesis)",
+      "   - Deepseek-V4-Flash-Free (Ultra Fast Inference)",
+      "   - Vision-model (Image Vision & PDF OCR)",
+      "   - nemotron-laguna / ultra (Nemotron Laguna 550B)",
+      "",
+      "5. Ollama Cloud SOTA Engine (ollama.com):",
+      "   - nemotron-3-ultra (550B MoE)",
+      "   - nemotron-3-super (120B Compute)",
+      "   - minimax-m3 (Multimodal OCR)",
+      "",
+      "6. MiniMax Frontier API (api.minimax.io):",
+      "   - MiniMax-M3 (High-Precision Multimodal Vision)",
+      "",
+      "7. In-Browser Local Engine (Zero-Latency Offline):",
+      "   - Local Semantic Engine (Sub-15ms Exact & Semantic Matcher)",
+      "",
+      "Perintah Penggantian: Ketik 'model <nama>' (contoh: model codex / model auto)."
     ],
     telemetry: () => {
       setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
@@ -963,6 +1009,28 @@ export function initTerminal() {
         appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
         return;
       }
+    }
+
+    // Command: models
+    if (cmdLower === 'models') {
+      const aiContainer = createAIBubbleContainer('AI Models Registry');
+      COMMAND_REGISTRY.models().forEach(line => appendLine(line, false, '', false, aiContainer));
+      return;
+    }
+
+    // Command: model <name> or /model <name>
+    if (cmdLower.startsWith('model ') || cmdLower.startsWith('/model ')) {
+      const parts = trimmed.split(/\s+/);
+      const chosen = parts.slice(1).join(' ').trim();
+      if (!chosen || chosen.toLowerCase() === 'list') {
+        const aiContainer = createAIBubbleContainer('AI Models Registry');
+        COMMAND_REGISTRY.models().forEach(line => appendLine(line, false, '', false, aiContainer));
+        return;
+      }
+      terminalAI.setModel(chosen);
+      const aiContainer = createAIBubbleContainer('AI Router');
+      appendLine(`[AI Model Manager] Model aktif berhasil diubah ke: ${chosen}`, false, '', false, aiContainer);
+      return;
     }
 
     // Command: setkey <key> or setkey <provider> <key>
