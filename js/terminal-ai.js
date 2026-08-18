@@ -596,6 +596,11 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 3. MENJAWAB SESUAI CAKUPAN PERTANYAAN (UMUM VS SPESIFIK):
    - Pertanyaan UMUM (contoh: PRD portofolio profesional, dashboard monitoring pengunjung): Berikan panduan dan rencana UMUM yang terstruktur dan aplikatif untuk proyek apa pun.
    - Pertanyaan SPESIFIK tentang Rafly Firmansyah / proyek resmi di web ini: Jawab berdasarkan data autentik portofolio secara presisi.
+4. PENANGANAN PERMINTAAN FILE (DOWNLOAD / FORMAT .MD / .TXT / .PDF):
+   - Jika pengguna meminta "berikan dalam bentuk file .md", "buatkan file .md", "unduh file", atau "kirim file":
+     1. Jelaskan secara jujur dan lugas bahwa sebagai AI di terminal browser, sistem tidak memiliki akses langsung untuk membuat/menulis berkas ke harddisk pengguna secara otomatis.
+     2. DILARANG KERAS mengulang atau menyalin kembali seluruh teks panjang dokumen yang sudah dibahas sebelumnya (hemat token).
+     3. Berikan panduan ringkas 3 langkah bagaimana pengguna dapat menyimpannya secara manual (Copy teks sebelumnya -> Buka VS Code/Notepad -> Simpan sebagai file .md).
 
 [DATA REPOSITORI RESMI RAFLY FIRMANSYAH (DIGUNAKAN JIKA DITANYA SPESIFIK)]:
 - Repositori:
@@ -624,15 +629,16 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     ] : cleanQuery;
 
     // Intelligent Intent Detection & Automatic Effort Resolution
-    const isPlanningOrSystemDesign = !hasImages && /\b(plan|prd|product requirement|rancang|buatkan sistem|buatkan web|arsitektur sistem|halaman admin|monitoring|dashboard|telemetri|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|langkah-langkah|alur kerja|workflow|blueprint)\b/i.test(q);
-    const isProjectExplaining = !hasImages && !isPlanningOrSystemDesign && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
-    const isHeavyCoding = !hasImages && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
-    const isDeepReasoning = !hasImages && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana cara|jelaskan detail|jelaskan komprehensif)\b/i.test(q) || len > 70);
+    const isFileExportQuery = !hasImages && /\b(dalam file|bentuk \.md|bentuk file|jadikan file|download file|unduh file|kirim file|simpan file|save file|bikin file|buat file|jadikan \.md|jadikan \.txt|jadikan \.pdf|format \.md|format file|file \.md)\b/i.test(q);
+    const isPlanningOrSystemDesign = !hasImages && !isFileExportQuery && /\b(plan|prd|product requirement|rancang|buatkan sistem|buatkan web|arsitektur sistem|halaman admin|monitoring|dashboard|telemetri|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|langkah-langkah|alur kerja|workflow|blueprint)\b/i.test(q);
+    const isProjectExplaining = !hasImages && !isFileExportQuery && !isPlanningOrSystemDesign && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
+    const isHeavyCoding = !hasImages && !isFileExportQuery && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
+    const isDeepReasoning = !hasImages && !isFileExportQuery && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana cara|jelaskan detail|jelaskan komprehensif)\b/i.test(q) || len > 70);
     const isGreeting = !hasImages && len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
 
     // Resolve Effort: Priority to UI Dropdown Selection if not 'auto'
     const explicitEffort = (this.reasoningEffort && this.reasoningEffort !== 'auto') ? this.reasoningEffort.toUpperCase() : null;
-    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isGreeting ? 'LOW' : (isPlanningOrSystemDesign || isDeepReasoning ? 'THINKING' : (isProjectExplaining || isHeavyCoding ? 'HIGH' : 'MEDIUM'))));
+    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isFileExportQuery || isGreeting ? 'LOW' : (isPlanningOrSystemDesign || isDeepReasoning ? 'THINKING' : (isProjectExplaining || isHeavyCoding ? 'HIGH' : 'MEDIUM'))));
 
     // Real-Time Client-Side Web Search Crawler (Filtered)
     let searchContext = '';
