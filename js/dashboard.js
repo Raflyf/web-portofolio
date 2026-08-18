@@ -723,6 +723,8 @@ class DashboardApp {
           return s.includes('super') || s.includes('120b');
         }
       },
+
+      // 2. Meta Llama SOTA
       {
         id: 'llama-3.3-70b',
         name: 'Llama 3.3 70B Instruct',
@@ -732,81 +734,89 @@ class DashboardApp {
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3');
+          return s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3') || (s.includes('llama') && !s.includes('8b'));
         }
       },
+
+      // 3. OmniRoute Combo: Codex
       {
-        id: 'deepseek-moe',
-        name: 'DeepSeek V4 / V3 / R1 (MoE)',
-        category: 'DeepSeek SOTA',
-        tag: '671B MoE & Reasoning Engine',
+        id: 'omniroute-codex',
+        name: 'Codex',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: Codex (Heavy Coding & Architecture)',
+        icon: SVG_ICONS.code,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('codex') || s.includes('gpt-5.6') || s.includes('terra');
+        }
+      },
+
+      // 4. OmniRoute Combo: Antigravity
+      {
+        id: 'omniroute-antigravity',
+        name: 'Antigravity',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: Antigravity (Deep CoT Multi-Step)',
         icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('deepseek')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('antigravity') || s.includes('claude-opus') || s.includes('opus');
+        }
       },
+
+      // 5. OmniRoute Combo: Deepseek-V4-Flash-Free
+      {
+        id: 'deepseek-v4-flash',
+        name: 'Deepseek-V4-Flash-Free',
+        category: 'OmniRoute / OpenRouter',
+        tag: 'Model ID: Deepseek-V4-Flash-Free',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('deepseek') || s.includes('v4-flash') || s.includes('v4');
+        }
+      },
+
+      // 6. OmniRoute Combo: Vision-model
+      {
+        id: 'vision-model',
+        name: 'Vision-model',
+        category: 'OmniRoute & Multimodal',
+        tag: 'Model ID: Vision-model (Image & PDF OCR)',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('vision-model') || s.includes('vision') || s.includes('minimax') || s.includes('mimo');
+        }
+      },
+
+      // 7. Qwen 2.5 Coder (32B)
       {
         id: 'qwen-coder',
         name: 'Qwen 2.5 Coder (32B)',
-        category: 'Code Specialist',
-        tag: 'Specialized Script & Logic Engine',
+        category: 'OpenRouter & OpenCode',
+        tag: 'qwen-2.5-coder-32b-instruct',
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen')
       },
 
-      // 2. OpenAI & Anthropic Dedicated (OmniRoute)
+      // 8. Google Gemma 3 (27B)
       {
-        id: 'omniroute-codex',
-        name: 'Codex (GPT-5.6 Terra)',
-        category: 'OmniRoute Dedicated',
-        tag: 'Tier 1: Heavy Coding & Architecture',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('codex') || s.includes('gpt-5.6') || s.includes('terra') || s.includes('gpt-5.5') || s.includes('openai');
-        }
-      },
-      {
-        id: 'omniroute-antigravity',
-        name: 'Antigravity (Claude Opus 4.6)',
-        category: 'OmniRoute Dedicated',
-        tag: 'Tier 1: Deep CoT Multi-Step',
-        icon: SVG_ICONS.cot,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('antigravity') || s.includes('claude-opus-4-6') || s.includes('opus') || s.includes('sonnet') || s.includes('anthropic');
-        }
-      },
-
-      // 3. Multimodal & Vision Specialists
-      {
-        id: 'google-gemma',
-        name: 'Google Gemini 3.7 / Gemma 3',
-        category: 'Google Cloud Gateway',
-        tag: 'Multimodal Flash & Reasoning Engine',
+        id: 'google-gemma-3',
+        name: 'Google Gemma 3 (27B)',
+        category: 'OpenRouter Cloud',
+        tag: 'google/gemma-3-27b-it',
         icon: SVG_ICONS.fast,
         color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('gemma') || s.includes('gemini');
-        }
-      },
-      {
-        id: 'minimax-m3',
-        name: 'MiniMax-M3 Vision Multimodal',
-        category: 'Multimodal',
-        tag: 'Ollama Cloud & MiniMax OCR',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`.toLowerCase();
-          return s.includes('minimax-m3') || s.includes('vision-model') || s.includes('minimax') || s.includes('mimo') || s.includes('vision');
-        }
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma')
       },
 
-      // 4. Local & Offline Fallback
+      // 9. Local & Offline Fallback
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
