@@ -575,8 +575,8 @@ Langkah yang WAJIB Anda lakukan:
 \`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\`
 3. Jika klaim SALAH, berpotensi HOAKS, tidak pantas, atau Anda ragu, TOLAK klaim tersebut dengan sopan dan JANGAN sertakan tag SAVE_MEMORY.`;
 
-    // Assemble conversation history
-    const formattedHistory = Array.isArray(history) ? history.map(h => ({
+    // Assemble conversation history (Deep Multi-Turn Context Window up to 60 messages / 30 turns)
+    const formattedHistory = Array.isArray(history) ? history.slice(-60).map(h => ({
       role: h.role === 'assistant' ? 'assistant' : 'user',
       content: String(h.content || '').slice(0, 4000)
     })) : [];
