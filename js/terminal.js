@@ -128,21 +128,79 @@ export function initTerminal() {
       <div class="terminal-line" style="margin-bottom:8px;">Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!</div>
     `;
     terminalBody.appendChild(welcomeBox);
+
+    // On-Demand Session History Banner (User chooses whether to open or ignore)
+    try {
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      const bubbles = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(bubbles) && bubbles.length > 0) {
+        const existingBanner = document.getElementById('terminal-session-banner');
+        if (existingBanner) existingBanner.remove();
+
+        const banner = document.createElement('div');
+        banner.id = 'terminal-session-banner';
+        banner.className = 'terminal-session-banner';
+        banner.style.cssText = 'margin: 0.55rem 0 0.85rem 0; padding: 0.55rem 0.85rem; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; font-size: 0.775rem; font-family: var(--font-mono);';
+        banner.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-body);">
+            <span style="color: var(--accent-cyan); font-size: 0.95rem;">📁</span>
+            <span>Tersedia riwayat sesi sebelumnya (<strong>${bubbles.length} pesan</strong> • ID: <code>${visitorSessionId.substring(0, 12)}...</code>)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button type="button" id="btn-restore-session" style="background: var(--accent-cyan); color: #020617; border: none; border-radius: 4px; padding: 0.28rem 0.75rem; font-weight: 700; font-size: 0.725rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: opacity 0.2s;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path></svg>
+              <span>Buka Riwayat</span>
+            </button>
+            <button type="button" id="btn-discard-session" style="background: transparent; color: var(--text-dim); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 0.28rem 0.65rem; font-size: 0.725rem; cursor: pointer;">
+              <span>Abaikan / Hapus</span>
+            </button>
+          </div>
+        `;
+        terminalBody.appendChild(banner);
+
+        const restoreBtn = banner.querySelector('#btn-restore-session');
+        const discardBtn = banner.querySelector('#btn-discard-session');
+
+        if (restoreBtn) {
+          restoreBtn.addEventListener('click', () => {
+            banner.remove();
+            restorePreviousChatSession();
+          });
+        }
+
+        if (discardBtn) {
+          discardBtn.addEventListener('click', () => {
+            banner.remove();
+            localStorage.removeItem(CHAT_STORAGE_KEY);
+            if (terminalAI && typeof terminalAI.clearHistory === 'function') {
+              terminalAI.clearHistory();
+            }
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   function restorePreviousChatSession() {
     try {
+      const banner = document.getElementById('terminal-session-banner');
+      if (banner) banner.remove();
+
+      const existingNotice = document.getElementById('terminal-restore-notice');
+      if (existingNotice) existingNotice.remove();
+
       const raw = localStorage.getItem(CHAT_STORAGE_KEY);
       if (!raw) return;
       const bubbles = JSON.parse(raw);
       if (!Array.isArray(bubbles) || bubbles.length === 0) return;
 
       const restoreNotice = document.createElement('div');
+      restoreNotice.id = 'terminal-restore-notice';
       restoreNotice.className = 'terminal-restore-notice';
       restoreNotice.style.cssText = 'padding: 0.45rem 0.8rem; margin: 0.6rem 0; font-size: 0.725rem; font-family: var(--font-mono); color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); border-left: 3px solid var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;';
       restoreNotice.innerHTML = `
-        <span>Riwayat sesi percakapan Anda telah dipulihkan secara privat (Session ID: <code>${visitorSessionId.substring(0, 16)}...</code>)</span>
-        <button type="button" class="terminal-clear-history-btn" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:0.7rem;text-decoration:underline;white-space:nowrap;" title="Bersihkan riwayat percakapan sesi ini">Hapus Riwayat</button>
+        <span>✓ Riwayat percakapan sesi Anda telah dipulihkan (${bubbles.length} pesan • Session ID: <code>${visitorSessionId.substring(0, 14)}...</code>)</span>
+        <button type="button" class="terminal-clear-history-btn" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:0.7rem;text-decoration:underline;white-space:nowrap;" title="Bersihkan riwayat percakapan sesi ini">Tutup & Bersihkan</button>
       `;
       terminalBody.appendChild(restoreNotice);
 
@@ -527,6 +585,46 @@ export function initTerminal() {
     },
     aistatus: () => terminalAI.getStatus(),
     clearkey: () => terminalAI.clearKey(),
+    history: (args = []) => {
+      const sub = (args[0] || '').toLowerCase();
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      const bubbles = raw ? JSON.parse(raw) : [];
+
+      if (sub === 'clear' || sub === 'hapus') {
+        localStorage.removeItem(CHAT_STORAGE_KEY);
+        if (terminalAI && typeof terminalAI.clearHistory === 'function') {
+          terminalAI.clearHistory();
+        }
+        const banner = document.getElementById('terminal-session-banner');
+        if (banner) banner.remove();
+        return ["[SUKSES] Seluruh riwayat percakapan sesi lokal telah dihapus permanen."];
+      }
+
+      if (sub === 'open' || sub === 'buka' || sub === 'restore') {
+        if (!bubbles || bubbles.length === 0) {
+          return ["[INFO] Tidak ada riwayat percakapan sesi tersimpan."];
+        }
+        restorePreviousChatSession();
+        return [];
+      }
+
+      return [
+        `[PENGELOLA RIWAYAT SESI - SESSION ID: ${visitorSessionId.substring(0, 16)}...]`,
+        `Jumlah Pesan Tersimpan: ${bubbles.length} pesan`,
+        `Perintah:`,
+        `  -> 'history open' atau 'restore' : Buka & pulihkan riwayat ke terminal`,
+        `  -> 'history clear'              : Hapus riwayat sesi dari memori lokal`
+      ];
+    },
+    restore: () => {
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      const bubbles = raw ? JSON.parse(raw) : [];
+      if (!bubbles || bubbles.length === 0) {
+        return ["[INFO] Tidak ada riwayat percakapan sesi tersimpan."];
+      }
+      restorePreviousChatSession();
+      return [];
+    },
     clear: () => {
       terminalBody.innerHTML = '';
       if (terminalAI && typeof terminalAI.clearHistory === 'function') {
@@ -1240,9 +1338,8 @@ export function initTerminal() {
     }
   }
 
-  // Initial welcome message & private session restoration
+  // Initial clean welcome message (with on-demand session banner if previous chat exists)
   renderWelcomeMessage();
-  restorePreviousChatSession();
 
   // Form submit listener
   terminalForm.addEventListener('submit', (e) => {
