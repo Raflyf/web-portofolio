@@ -889,10 +889,9 @@ Langkah yang WAJIB Anda lakukan:
           { provider: 'omniroute', model: 'Codex' },
           // 2. Multi-Step Architecture Review: Antigravity (OmniRoute)
           { provider: 'omniroute', model: 'Antigravity' },
-          // 3. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute, OpenCode, OpenRouter)
+          // 3. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute & OpenCode)
           { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
           { provider: 'opencode', model: 'deepseek-v4-flash-free' },
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           // 4. 550B MoE Flagship: Nemotron Ultra
           { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
@@ -910,7 +909,8 @@ Langkah yang WAJIB Anda lakukan:
           // 7. Qwen 2.5 Coder 32B (Disimpan di tier bawah)
           { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
           { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-          // 8. Sisa
+          // 8. OpenRouter DeepSeek Chat (Tier Bawah) & Gemma
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
         ];
       }
@@ -919,10 +919,9 @@ Langkah yang WAJIB Anda lakukan:
         return [
           // 1. LMSYS #1 Chatbot Arena / Claude Opus 4.6 Thinking: Antigravity
           { provider: 'omniroute', model: 'Antigravity' },
-          // 2. Juara All-Round SOTA: DeepSeek V4 Flash Free
+          // 2. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute & OpenCode)
           { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
           { provider: 'opencode', model: 'deepseek-v4-flash-free' },
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           // 3. 550B MoE Flagship Research: Nemotron Ultra
           { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
@@ -942,7 +941,8 @@ Langkah yang WAJIB Anda lakukan:
           // 7. Qwen 2.5 Coder 32B (Disimpan di tier bawah)
           { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
           { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-          // 8. Sisa
+          // 8. OpenRouter DeepSeek Chat (Tier Bawah) & Gemma
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
         ];
       }
@@ -963,10 +963,9 @@ Langkah yang WAJIB Anda lakukan:
         // 3. Nemotron Laguna (OmniRoute)
         { provider: 'omniroute', model: 'nemotron-laguna' },
 
-        // 4. DeepSeek V4 Flash Free (Semua Provider)
+        // 4. DeepSeek V4 Flash Free (OmniRoute & OpenCode)
         { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
         { provider: 'opencode', model: 'deepseek-v4-flash-free' },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
 
         // 5. Codex (OmniRoute)
         { provider: 'omniroute', model: 'Codex' },
@@ -981,12 +980,13 @@ Langkah yang WAJIB Anda lakukan:
         { provider: 'ollama', model: 'minimax-m3' },
         { provider: 'minimax', model: 'MiniMax-M3' },
 
-        // 9. Sisa Provider & Model
+        // 9. Sisa Provider & Model (Tier Bawah)
         { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
         { provider: 'opencode', model: 'llama-3.3-70b-free' },
         { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
         { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
         { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
         { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
       ];
     }
