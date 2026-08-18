@@ -1228,6 +1228,288 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   box-shadow: 0 0 8px var(--accent-emerald-glow);
 }
 
+/* Terminal Header Buttons */
+.terminal-header-btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  background-color: var(--badge-bg);
+  color: var(--text-heading);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--duration-micro) var(--ease-out);
+}
+
+.terminal-header-btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  background-color: rgba(6, 182, 212, 0.08);
+}
+
+.terminal-header-btn--primary {
+  color: var(--accent-emerald);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.terminal-header-btn--primary:hover {
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+/* IDE-Style Multi-Session Conversation History Modal */
+.convo-history-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 48px;
+  animation: convoFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes convoFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.convo-history-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.convo-history-panel {
+  position: relative;
+  width: 92%;
+  max-width: 580px;
+  background: rgba(15, 23, 42, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 20px rgba(6, 182, 212, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 2;
+}
+
+.convo-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.convo-search-icon {
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.convo-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-heading);
+}
+
+.convo-search-input::placeholder {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.convo-esc-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.convo-list-container {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.convo-group-label {
+  padding: 8px 14px 3px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.convo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.12s ease-out;
+  gap: 12px;
+}
+
+.convo-item:hover,
+.convo-item--selected {
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: var(--accent-cyan);
+}
+
+.convo-item--active {
+  background: rgba(6, 182, 212, 0.06);
+  border-left-color: var(--accent-emerald);
+}
+
+.convo-item-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.convo-item-title {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.convo-item--active .convo-item-title {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.convo-item-preview {
+  font-size: 0.725rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.convo-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.convo-item-time {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.convo-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: all 0.15s ease;
+}
+
+.convo-item:hover .convo-delete-btn,
+.convo-delete-btn:focus {
+  opacity: 1;
+}
+
+.convo-delete-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.convo-footer {
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.725rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+.convo-footer-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.convo-footer-hint kbd {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+}
+
+.convo-new-btn {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 0.725rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.convo-new-btn:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--accent-emerald);
+}
+
+.convo-empty-state {
+  padding: 24px 14px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
 /* Terminal Advanced Markdown Typography & Tables */
 .terminal-table-wrapper {
   overflow-x: auto;

@@ -88,6 +88,33 @@ export function initTerminal() {
     });
   }
 
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function formatRelativeTime(timestamp) {
+    if (!timestamp) return 'Just now';
+    const diffMs = Date.now() - timestamp;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    const diffWk = Math.floor(diffDay / 7);
+
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin} min ago`;
+    if (diffHour < 24) return `${diffHour} hr${diffHour > 1 ? 's' : ''} ago`;
+    if (diffDay === 1) return 'Yesterday';
+    if (diffDay < 7) return `${diffDay} days ago`;
+    if (diffWk < 4) return `${diffWk} wk${diffWk > 1 ? 's' : ''} ago`;
+    return new Date(timestamp).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  }
+
   function getVisitorSessionId() {
     let vid = '';
     try {
@@ -103,17 +130,273 @@ export function initTerminal() {
   }
 
   const visitorSessionId = getVisitorSessionId();
-  const CHAT_STORAGE_KEY = `terminal_chat_bubbles_${visitorSessionId}`;
+  const CONVOS_STORAGE_KEY = `terminal_all_convos_${visitorSessionId}`;
+  const ACTIVE_CONVO_KEY = `terminal_active_convo_id_${visitorSessionId}`;
 
-  function saveChatBubbleToStorage(bubbleData) {
+  const convoModal = document.getElementById('convo-history-modal');
+  const convoBackdrop = document.getElementById('convo-history-backdrop');
+  const convoSearchInput = document.getElementById('convo-search-input');
+  const convoNewBtn = document.getElementById('convo-new-btn');
+  const terminalHistoryBtn = document.getElementById('terminal-history-btn');
+  const terminalNewChatBtn = document.getElementById('terminal-new-chat-btn');
+
+  function getAllConvos() {
     try {
-      const existing = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
-      existing.push(bubbleData);
-      if (existing.length > 200) {
-        existing.splice(0, existing.length - 200);
-      }
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(existing));
+      const raw = localStorage.getItem(CONVOS_STORAGE_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveAllConvos(convos) {
+    try {
+      localStorage.setItem(CONVOS_STORAGE_KEY, JSON.stringify(convos.slice(0, 50)));
     } catch (_) {}
+  }
+
+  function getActiveConvoId() {
+    return localStorage.getItem(ACTIVE_CONVO_KEY) || null;
+  }
+
+  function setActiveConvoId(id) {
+    if (id) {
+      localStorage.setItem(ACTIVE_CONVO_KEY, id);
+    } else {
+      localStorage.removeItem(ACTIVE_CONVO_KEY);
+    }
+  }
+
+  function createNewConvo() {
+    const newId = 'convo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    const newConvo = {
+      id: newId,
+      title: 'Sesi Percakapan Baru',
+      preview: '',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      bubbles: [],
+      history: []
+    };
+    const convos = getAllConvos();
+    convos.unshift(newConvo);
+    saveAllConvos(convos);
+    setActiveConvoId(newId);
+
+    if (terminalAI && typeof terminalAI.clearHistory === 'function') {
+      terminalAI.clearHistory();
+    }
+    terminalBody.innerHTML = '';
+    renderWelcomeMessage();
+    appendLine(`⚡ [Sesi Percakapan Baru Dimulai]: Silakan ajukan pertanyaan atau instruksi Anda.`, false, '', false);
+    return newConvo;
+  }
+
+  function switchConvo(convoId) {
+    const convos = getAllConvos();
+    const target = convos.find(c => c.id === convoId);
+    if (!target) return false;
+
+    setActiveConvoId(target.id);
+    terminalBody.innerHTML = '';
+
+    // Load AI history for 128k context
+    if (terminalAI) {
+      terminalAI.conversationHistory = Array.isArray(target.history) ? target.history : [];
+      terminalAI.saveHistoryToSession();
+    }
+
+    // Render restore notice
+    const restoreNotice = document.createElement('div');
+    restoreNotice.className = 'terminal-restore-notice';
+    restoreNotice.style.cssText = 'padding: 0.45rem 0.8rem; margin: 0.6rem 0; font-size: 0.725rem; font-family: var(--font-mono); color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); border-left: 3px solid var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;';
+    restoreNotice.innerHTML = `
+      <span>✓ Membuka Sesi: <strong>${escapeHtml(target.title)}</strong> (${target.bubbles ? target.bubbles.length : 0} pesan)</span>
+      <button type="button" class="terminal-close-convo-btn" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:0.7rem;text-decoration:underline;white-space:nowrap;">Mulai Sesi Baru (+)</button>
+    `;
+    terminalBody.appendChild(restoreNotice);
+
+    const newBtn = restoreNotice.querySelector('.terminal-close-convo-btn');
+    if (newBtn) {
+      newBtn.addEventListener('click', () => {
+        createNewConvo();
+      });
+    }
+
+    // Render bubbles
+    if (Array.isArray(target.bubbles)) {
+      target.bubbles.forEach(b => {
+        if (b.type === 'user') {
+          appendUserBubble(b.text, b.attachments || [], b.time, false);
+        } else if (b.type === 'ai') {
+          const container = createAIBubbleContainer(b.author || 'AI Assistant', b.time);
+          container.innerHTML = formatMarkdownFull(b.text || '');
+        }
+      });
+    }
+
+    terminalBody.scrollTop = terminalBody.scrollHeight;
+    closeConvoHistoryModal();
+    return true;
+  }
+
+  function deleteConvo(convoId) {
+    let convos = getAllConvos();
+    convos = convos.filter(c => c.id !== convoId);
+    saveAllConvos(convos);
+
+    if (getActiveConvoId() === convoId) {
+      if (convos.length > 0) {
+        switchConvo(convos[0].id);
+      } else {
+        createNewConvo();
+      }
+    }
+    renderConvoList(convoSearchInput ? convoSearchInput.value : '');
+  }
+
+  function appendBubbleToActiveConvo(bubbleData, isAITurn = false) {
+    let activeId = getActiveConvoId();
+    let convos = getAllConvos();
+    let convo = convos.find(c => c.id === activeId);
+
+    if (!convo) {
+      activeId = 'convo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      convo = {
+        id: activeId,
+        title: bubbleData.type === 'user' ? (bubbleData.text.substring(0, 50).replace(/[#*`_]/g, '').trim() || 'Percakapan AI') : 'Percakapan AI',
+        preview: bubbleData.text.substring(0, 80).replace(/[#*`_]/g, '').trim(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        bubbles: [],
+        history: []
+      };
+      convos.unshift(convo);
+      setActiveConvoId(activeId);
+    } else {
+      if ((convo.title === 'Sesi Percakapan Baru' || !convo.title) && bubbleData.type === 'user' && bubbleData.text) {
+        convo.title = bubbleData.text.substring(0, 55).replace(/[#*`_]/g, '').trim() || 'Percakapan AI';
+      }
+      convo.preview = bubbleData.text.substring(0, 85).replace(/[#*`_]/g, '').trim();
+      convo.updatedAt = Date.now();
+    }
+
+    if (!Array.isArray(convo.bubbles)) convo.bubbles = [];
+    convo.bubbles.push(bubbleData);
+    if (convo.bubbles.length > 200) {
+      convo.bubbles = convo.bubbles.slice(-200);
+    }
+
+    if (terminalAI && Array.isArray(terminalAI.conversationHistory)) {
+      convo.history = terminalAI.conversationHistory.slice(-100);
+    }
+
+    convos = [convo, ...convos.filter(c => c.id !== activeId)];
+    saveAllConvos(convos);
+  }
+
+  function renderConvoList(filterQuery = '') {
+    const listContainer = document.getElementById('convo-list-container');
+    if (!listContainer) return;
+
+    const convos = getAllConvos();
+    const activeId = getActiveConvoId();
+    const query = filterQuery.trim().toLowerCase();
+
+    const filtered = query
+      ? convos.filter(c => (c.title && c.title.toLowerCase().includes(query)) || (c.preview && c.preview.toLowerCase().includes(query)))
+      : convos;
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = query
+        ? `<div class="convo-empty-state">Tidak ada percakapan yang cocok dengan "${escapeHtml(query)}"</div>`
+        : `<div class="convo-empty-state">Belum ada riwayat percakapan yang tersimpan.<br><span style="font-size:0.75rem;opacity:0.7;display:block;margin-top:4px;">Mulai tanyakan apapun di terminal untuk membuat sesi baru!</span></div>`;
+      return;
+    }
+
+    let html = '';
+    const currentConvo = filtered.find(c => c.id === activeId);
+    const recentConvos = filtered.filter(c => c.id !== activeId);
+
+    if (currentConvo && !query) {
+      html += `<div class="convo-group-label">Current</div>`;
+      html += `
+        <div class="convo-item convo-item--active" data-id="${currentConvo.id}" tabindex="0">
+          <div class="convo-item-left">
+            <div class="convo-item-title">${escapeHtml(currentConvo.title)}</div>
+            <div class="convo-item-preview">${escapeHtml(currentConvo.preview || 'Sesi aktif saat ini')}</div>
+          </div>
+          <div class="convo-item-right">
+            <span class="convo-item-time">${formatRelativeTime(currentConvo.updatedAt)}</span>
+            <button type="button" class="convo-delete-btn" data-id="${currentConvo.id}" title="Hapus sesi ini" aria-label="Hapus sesi">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    if (recentConvos.length > 0) {
+      if (!query) {
+        html += `<div class="convo-group-label">Recent</div>`;
+      }
+      recentConvos.forEach(c => {
+        html += `
+          <div class="convo-item" data-id="${c.id}" tabindex="0">
+            <div class="convo-item-left">
+              <div class="convo-item-title">${escapeHtml(c.title)}</div>
+              <div class="convo-item-preview">${escapeHtml(c.preview || `${c.bubbles ? c.bubbles.length : 0} pesan`)}</div>
+            </div>
+            <div class="convo-item-right">
+              <span class="convo-item-time">${formatRelativeTime(c.updatedAt)}</span>
+              <button type="button" class="convo-delete-btn" data-id="${c.id}" title="Hapus sesi ini" aria-label="Hapus sesi">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    listContainer.innerHTML = html;
+
+    // Attach click and delete listeners
+    listContainer.querySelectorAll('.convo-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.convo-delete-btn')) return;
+        const id = item.getAttribute('data-id');
+        if (id) switchConvo(id);
+      });
+    });
+
+    listContainer.querySelectorAll('.convo-delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        if (id) deleteConvo(id);
+      });
+    });
+  }
+
+  function openConvoHistoryModal() {
+    if (!convoModal) return;
+    convoModal.style.display = 'flex';
+    convoModal.setAttribute('aria-hidden', 'false');
+    renderConvoList();
+    if (convoSearchInput) {
+      convoSearchInput.value = '';
+      setTimeout(() => convoSearchInput.focus(), 50);
+    }
+  }
+
+  function closeConvoHistoryModal() {
+    if (!convoModal) return;
+    convoModal.style.display = 'none';
+    convoModal.setAttribute('aria-hidden', 'true');
+    if (!isMobileDevice() && terminalInput) {
+      terminalInput.focus();
+    }
   }
 
   function renderWelcomeMessage() {
@@ -128,101 +411,68 @@ export function initTerminal() {
       <div class="terminal-line" style="margin-bottom:8px;">Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!</div>
     `;
     terminalBody.appendChild(welcomeBox);
-
-    // On-Demand Session History Banner (User chooses whether to open or ignore)
-    try {
-      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-      const bubbles = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(bubbles) && bubbles.length > 0) {
-        const existingBanner = document.getElementById('terminal-session-banner');
-        if (existingBanner) existingBanner.remove();
-
-        const banner = document.createElement('div');
-        banner.id = 'terminal-session-banner';
-        banner.className = 'terminal-session-banner';
-        banner.style.cssText = 'margin: 0.55rem 0 0.85rem 0; padding: 0.55rem 0.85rem; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; font-size: 0.775rem; font-family: var(--font-mono);';
-        banner.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-body);">
-            <span style="color: var(--accent-cyan); font-size: 0.95rem;">📁</span>
-            <span>Tersedia riwayat sesi sebelumnya (<strong>${bubbles.length} pesan</strong> • ID: <code>${visitorSessionId.substring(0, 12)}...</code>)</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button type="button" id="btn-restore-session" style="background: var(--accent-cyan); color: #020617; border: none; border-radius: 4px; padding: 0.28rem 0.75rem; font-weight: 700; font-size: 0.725rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: opacity 0.2s;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path></svg>
-              <span>Buka Riwayat</span>
-            </button>
-            <button type="button" id="btn-discard-session" style="background: transparent; color: var(--text-dim); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 0.28rem 0.65rem; font-size: 0.725rem; cursor: pointer;">
-              <span>Abaikan / Hapus</span>
-            </button>
-          </div>
-        `;
-        terminalBody.appendChild(banner);
-
-        const restoreBtn = banner.querySelector('#btn-restore-session');
-        const discardBtn = banner.querySelector('#btn-discard-session');
-
-        if (restoreBtn) {
-          restoreBtn.addEventListener('click', () => {
-            banner.remove();
-            restorePreviousChatSession();
-          });
-        }
-
-        if (discardBtn) {
-          discardBtn.addEventListener('click', () => {
-            banner.remove();
-            localStorage.removeItem(CHAT_STORAGE_KEY);
-            if (terminalAI && typeof terminalAI.clearHistory === 'function') {
-              terminalAI.clearHistory();
-            }
-          });
-        }
-      }
-    } catch (_) {}
   }
 
-  function restorePreviousChatSession() {
-    try {
-      const banner = document.getElementById('terminal-session-banner');
-      if (banner) banner.remove();
-
-      const existingNotice = document.getElementById('terminal-restore-notice');
-      if (existingNotice) existingNotice.remove();
-
-      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-      if (!raw) return;
-      const bubbles = JSON.parse(raw);
-      if (!Array.isArray(bubbles) || bubbles.length === 0) return;
-
-      const restoreNotice = document.createElement('div');
-      restoreNotice.id = 'terminal-restore-notice';
-      restoreNotice.className = 'terminal-restore-notice';
-      restoreNotice.style.cssText = 'padding: 0.45rem 0.8rem; margin: 0.6rem 0; font-size: 0.725rem; font-family: var(--font-mono); color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); border-left: 3px solid var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;';
-      restoreNotice.innerHTML = `
-        <span>✓ Riwayat percakapan sesi Anda telah dipulihkan (${bubbles.length} pesan • Session ID: <code>${visitorSessionId.substring(0, 14)}...</code>)</span>
-        <button type="button" class="terminal-clear-history-btn" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:0.7rem;text-decoration:underline;white-space:nowrap;" title="Bersihkan riwayat percakapan sesi ini">Tutup & Bersihkan</button>
-      `;
-      terminalBody.appendChild(restoreNotice);
-
-      const clearBtn = restoreNotice.querySelector('.terminal-clear-history-btn');
-      if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-          COMMAND_REGISTRY.clear();
-        });
-      }
-
-      bubbles.forEach(b => {
-        if (b.type === 'user') {
-          appendUserBubble(b.text, b.attachments || [], b.time, false);
-        } else if (b.type === 'ai') {
-          const container = createAIBubbleContainer(b.author || 'AI Assistant', b.time);
-          container.innerHTML = formatMarkdownFull(b.text || '');
-        }
-      });
-
-      terminalBody.scrollTop = terminalBody.scrollHeight;
-    } catch (_) {}
+  // Conversation history modal listeners
+  if (terminalHistoryBtn) {
+    terminalHistoryBtn.addEventListener('click', () => {
+      openConvoHistoryModal();
+    });
   }
+
+  if (terminalNewChatBtn) {
+    terminalNewChatBtn.addEventListener('click', () => {
+      createNewConvo();
+    });
+  }
+
+  if (convoNewBtn) {
+    convoNewBtn.addEventListener('click', () => {
+      createNewConvo();
+      closeConvoHistoryModal();
+    });
+  }
+
+  if (convoBackdrop) {
+    convoBackdrop.addEventListener('click', () => {
+      closeConvoHistoryModal();
+    });
+  }
+
+  if (convoSearchInput) {
+    convoSearchInput.addEventListener('input', () => {
+      renderConvoList(convoSearchInput.value);
+    });
+
+    convoSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeConvoHistoryModal();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstItem = document.querySelector('#convo-list-container .convo-item');
+        if (firstItem) {
+          const id = firstItem.getAttribute('data-id');
+          if (id) switchConvo(id);
+        }
+      }
+    });
+  }
+
+  // Global shortcut Ctrl+H to open conversation history modal
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'h') {
+      const activeEl = document.activeElement;
+      if (activeEl === terminalInput || activeEl === convoSearchInput || (convoModal && convoModal.style.display === 'flex')) {
+        e.preventDefault();
+        if (convoModal && convoModal.style.display === 'flex') {
+          closeConvoHistoryModal();
+        } else {
+          openConvoHistoryModal();
+        }
+      }
+    }
+  });
 
   function renderFileTray() {
     if (!fileTray) return;
@@ -585,44 +835,20 @@ export function initTerminal() {
     },
     aistatus: () => terminalAI.getStatus(),
     clearkey: () => terminalAI.clearKey(),
-    history: (args = []) => {
-      const sub = (args[0] || '').toLowerCase();
-      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-      const bubbles = raw ? JSON.parse(raw) : [];
-
-      if (sub === 'clear' || sub === 'hapus') {
-        localStorage.removeItem(CHAT_STORAGE_KEY);
-        if (terminalAI && typeof terminalAI.clearHistory === 'function') {
-          terminalAI.clearHistory();
-        }
-        const banner = document.getElementById('terminal-session-banner');
-        if (banner) banner.remove();
-        return ["[SUKSES] Seluruh riwayat percakapan sesi lokal telah dihapus permanen."];
-      }
-
-      if (sub === 'open' || sub === 'buka' || sub === 'restore') {
-        if (!bubbles || bubbles.length === 0) {
-          return ["[INFO] Tidak ada riwayat percakapan sesi tersimpan."];
-        }
-        restorePreviousChatSession();
-        return [];
-      }
-
-      return [
-        `[PENGELOLA RIWAYAT SESI - SESSION ID: ${visitorSessionId.substring(0, 16)}...]`,
-        `Jumlah Pesan Tersimpan: ${bubbles.length} pesan`,
-        `Perintah:`,
-        `  -> 'history open' atau 'restore' : Buka & pulihkan riwayat ke terminal`,
-        `  -> 'history clear'              : Hapus riwayat sesi dari memori lokal`
-      ];
+    history: () => {
+      openConvoHistoryModal();
+      return [];
     },
-    restore: () => {
-      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-      const bubbles = raw ? JSON.parse(raw) : [];
-      if (!bubbles || bubbles.length === 0) {
-        return ["[INFO] Tidak ada riwayat percakapan sesi tersimpan."];
-      }
-      restorePreviousChatSession();
+    sessions: () => {
+      openConvoHistoryModal();
+      return [];
+    },
+    new: () => {
+      createNewConvo();
+      return [];
+    },
+    newchat: () => {
+      createNewConvo();
       return [];
     },
     clear: () => {
@@ -630,9 +856,6 @@ export function initTerminal() {
       if (terminalAI && typeof terminalAI.clearHistory === 'function') {
         terminalAI.clearHistory();
       }
-      try {
-        localStorage.removeItem(CHAT_STORAGE_KEY);
-      } catch (_) {}
       renderWelcomeMessage();
       return [];
     }
@@ -885,7 +1108,7 @@ export function initTerminal() {
     `;
 
     if (shouldSave) {
-      saveChatBubbleToStorage({
+      appendBubbleToActiveConvo({
         type: 'user',
         text: userText,
         attachments: attachments.map(a => ({ name: a.name, isImage: !!a.isImage })),
@@ -1305,14 +1528,12 @@ export function initTerminal() {
         const authorEl = bubbleEl ? bubbleEl.querySelector('.chat-msg__author--ai span') : null;
         const authorText = authorEl ? authorEl.textContent : 'AI Assistant';
         const timeEl = bubbleEl ? bubbleEl.querySelector('.chat-msg__time') : null;
-        const timeText = timeEl ? timeEl.textContent : '';
-
-        saveChatBubbleToStorage({
+        appendBubbleToActiveConvo({
           type: 'ai',
           text: responses.join('\n'),
           author: authorText,
           time: timeText
-        });
+        }, true);
       }
     } catch (err) {
       if (activeThinkingLine && activeThinkingLine.parentNode) {
