@@ -763,9 +763,9 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
     if (this.currentModel && this.currentModel !== 'auto') {
       omniCandidates = [this.currentModel, 'nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
     } else if (isHeavyCoding) {
-      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Codex', 'Antigravity', 'Deepseek-V4-Flash-Free', 'nemotron-laguna'];
     } else if (isDeepReasoning) {
-      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
+      omniCandidates = ['Antigravity', 'Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'];
     } else if (hasImages) {
       omniCandidates = ['Vision-model', 'Antigravity', 'Codex'];
     } else {
