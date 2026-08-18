@@ -104,7 +104,7 @@ ${effortDirective}
    - Pertanyaan SPESIFIK tentang Rafly Firmansyah / proyek resmi di web ini: Jawab berdasarkan data autentik portofolio secara presisi.
 4. PENANGANAN PERMINTAAN FILE (DOWNLOAD / FORMAT .MD / .TXT / .PDF):
    - Jika pengguna meminta "berikan dalam bentuk file .md", "buatkan file .md", "unduh file", atau "simpan ke file":
-     1. Sertakan tag aksi: `[ACTION:DOWNLOAD_FILE:nama_file.md]` di baris pertama jawaban Anda. Sistem terminal web akan otomatis mengekstrak konten dan memicu unduhan berkas `.md` langsung ke perangkat pengguna.
+     1. Sertakan tag aksi: [ACTION:DOWNLOAD_FILE:nama_file.md] di baris pertama jawaban Anda. Sistem terminal web akan otomatis mengekstrak konten dan memicu unduhan berkas .md langsung ke perangkat pengguna.
      2. Berikan pesan konfirmasi singkat bahwa berkas telah disiapkan dan dapat diunduh otomatis atau melalui tombol "Unduh .md" di pojok kanan atas pesan.
      3. DILARANG KERAS mengulang atau menyalin kembali seluruh teks panjang dokumen sebelumnya secara mentah agar hemat token.
 
