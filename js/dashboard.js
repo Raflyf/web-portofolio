@@ -1086,28 +1086,65 @@ class DashboardApp {
     gridEl.innerHTML = modelStats.map(m => {
       const pct = Math.round((m.total / maxModelCount) * 100);
 
-      let autoBreakdownHtml = '';
       if (m.isRouterCard) {
         const entries = Object.entries(autoResolvedBreakdown).sort((a, b) => b[1] - a[1]);
-        if (entries.length > 0) {
-          const listHtml = entries.map(([modelName, count]) => `
-            <div class="ai-model-auto-item" style="display:flex;justify-content:space-between;padding:0.2rem 0;font-size:0.75rem;font-family:var(--font-mono);border-bottom:1px dashed var(--border-subtle);">
-              <span style="color:var(--text-muted);">${this.sanitize(modelName)}</span>
-              <strong style="color:var(--accent-emerald);">${count}x</strong>
+        const listHtml = entries.length > 0
+          ? entries.map(([modelName, count]) => `
+            <div class="ai-model-auto-item" style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.5rem;font-size:0.75rem;font-family:var(--font-mono);border-bottom:1px dashed var(--border-subtle);background:rgba(255,255,255,0.015);border-radius:4px;margin-bottom:0.25rem;">
+              <span style="color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:0.5rem;">${this.sanitize(modelName)}</span>
+              <strong style="color:var(--accent-emerald);background:rgba(16,185,129,0.1);padding:0.1rem 0.45rem;border-radius:3px;font-size:0.75rem;white-space:nowrap;">${count}x</strong>
             </div>
-          `).join('');
+          `).join('')
+          : `<div style="color:var(--text-dim);font-size:0.75rem;padding:0.5rem 0;">Belum ada resolusi mode auto.</div>`;
 
-          autoBreakdownHtml = `
-            <div class="ai-model-auto-breakdown" style="margin-top:0.5rem;padding-top:0.4rem;border-top:1px solid var(--border-subtle);">
-              <div style="font-size:0.7rem;font-weight:700;color:var(--text-dim);margin-bottom:0.25rem;text-transform:uppercase;">
-                Model Terpilih Saat Mode Auto (${totalAutoInferences}x):
+        return `
+          <div class="ai-model-card ai-model-card-auto-full">
+            <div class="ai-auto-card-grid">
+              
+              <!-- Sisi Kiri: Ringkasan Auto Router & Stats -->
+              <div class="ai-auto-overview-panel" style="display:flex;flex-direction:column;gap:0.6rem;">
+                <div class="ai-model-card-header" style="display:flex;align-items:center;justify-content:space-between;">
+                  <span class="ai-model-category-tag" style="background:rgba(6,182,212,0.12);border-color:rgba(6,182,212,0.3);color:var(--accent-cyan);font-weight:800;letter-spacing:0.04em;">${this.sanitize(m.category)}</span>
+                  <span class="ai-model-count" style="color:${m.color};font-size:1.6rem;font-weight:900;">${m.total}x</span>
+                </div>
+
+                <div class="ai-model-name-wrap">
+                  <div style="display:flex;align-items:center;gap:0.5rem;color:${m.color};font-size:1.05rem;">
+                    ${m.icon}
+                    <span class="ai-model-name" style="font-size:1.05rem;font-weight:800;">${this.sanitize(m.name)}</span>
+                  </div>
+                  <span class="ai-model-tag" style="font-size:0.75rem;color:var(--text-dim);margin-top:0.2rem;display:block;">${this.sanitize(m.tag)}</span>
+                </div>
+
+                <div class="ai-model-bar-wrap" style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;">
+                  <div class="ai-model-bar-fill" style="width:${pct}%;background:linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald));border-radius:3px;"></div>
+                </div>
+
+                <div class="ai-model-breakdown" style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-dim);font-family:var(--font-mono);background:rgba(0,0,0,0.25);padding:0.45rem 0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);margin-top:0.2rem;">
+                  <span>Manual: <strong style="color:var(--text-body);">${m.manualCount}x</strong></span>
+                  <span>Auto: <strong style="color:var(--accent-cyan);">${m.autoCount}x</strong></span>
+                </div>
               </div>
-              <div class="ai-model-auto-list">
-                ${listHtml}
+
+              <!-- Sisi Kanan: Daftar Model Terpilih (Scrollable > 5 Items) -->
+              <div class="ai-auto-breakdown-panel" style="display:flex;flex-direction:column;gap:0.35rem;border-left:1px solid var(--border-subtle);padding-left:1.5rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                  <span style="font-size:0.725rem;font-weight:800;color:var(--text-heading);text-transform:uppercase;letter-spacing:0.04em;font-family:var(--font-mono);">
+                    Model Terpilih Saat Mode Auto:
+                  </span>
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--accent-cyan);font-family:var(--font-mono);">
+                    ${totalAutoInferences}x Total
+                  </span>
+                </div>
+
+                <div class="ai-model-auto-list">
+                  ${listHtml}
+                </div>
               </div>
+
             </div>
-          `;
-        }
+          </div>
+        `;
       }
 
       return `
@@ -1133,8 +1170,6 @@ class DashboardApp {
             <span>Manual: <strong style="color:var(--text-body);">${m.manualCount}x</strong></span>
             <span>Auto: <strong style="color:var(--accent-cyan);">${m.autoCount}x</strong></span>
           </div>
-
-          ${autoBreakdownHtml}
         </div>
       `;
     }).join('');
