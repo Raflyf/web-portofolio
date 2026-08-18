@@ -360,107 +360,41 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'vision',
       effort: 'medium',
-      omniCandidates: ['Vision-model'],
-      openRouterCandidates: ['deepseek/deepseek-chat']
+      label: 'Vision & Multimodal Perception'
     };
   }
 
-  // 1. Casual / Greetings / Trivial / Closings / Light Factoid (Fast & Low Effort)
-  const isGreetingOrTrivial = (
-    (len < 50 && /^(cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|good|nice|paham|mengerti)\b/i.test(q)) ||
-    (len < 60 && (
-      /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q) ||
-      /^(siapa rafly|siapa pembuatmu|kontak|portfolio|portofolio|hubungi|email rafly|wa rafly)\b/i.test(q) ||
-      /^(help|bantuan|info)\b/i.test(q)
-    )) || (len <= 30 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|bikin|buatkan|debug|error|fungsi|analisis|mengapa|kenapa|bagaimana|plan|prd|proyek)\b/i.test(q))
-  );
-
-  if (isGreetingOrTrivial && docAttachments.length === 0) {
-    return {
-      category: 'trivial_casual',
-      effort: 'low',
-      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free'],
-      openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b',
-        'nvidia/nemotron-3-super-120b-a12b',
-        'meta-llama/llama-3.3-70b-instruct'
-      ]
-    };
-  }
-
-  // 2. System Planning / PRD / Web Portfolio Blueprint / Architecture Strategy (Thinking Effort & Nemotron Flagship)
-  const hasPlanningKeywords = /\b(plan|prd|product requirement|rancang|buatkan sistem|buatkan web|arsitektur sistem|halaman admin|monitoring|dashboard|telemetri|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|langkah-langkah|alur kerja|workflow|blueprint)\b/i.test(q);
-  if (hasPlanningKeywords) {
-    return {
-      category: 'system_planning',
-      effort: 'thinking',
-      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex', 'Antigravity'],
-      openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b',
-        'nvidia/nemotron-3-super-120b-a12b',
-        'meta-llama/llama-3.3-70b-instruct'
-      ]
-    };
-  }
-
-  // 3. Heavy Coding / Architecture / Bug Fix / Script Synthesis (High Effort & Codex Flagship)
-  const hasCodeKeywords = /\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask|fastapi|express|django)\b/i.test(q);
+  // 1. Heavy Coding / Scripting / Bug Fixing / Refactoring / Code Architecture
+  const hasCodeKeywords = /\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug|error|syntax)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask|fastapi|express|django)\b/i.test(q);
   const hasCodeBlocks = /```|[{};]\s*[\r\n]|\.py|\.js|\.ts|\.php|\.cpp|\.go/.test(q) || docAttachments.length > 0;
   
   if (hasCodeKeywords || hasCodeBlocks) {
     return {
       category: 'heavy_coding',
       effort: 'high',
-      omniCandidates: ['nemotron-laguna', 'Codex', 'Antigravity', 'nemotron-3-ultra-free'],
-      openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b',
-        'nvidia/nemotron-3-super-120b-a12b',
-        'meta-llama/llama-3.3-70b-instruct'
-      ]
+      label: 'Heavy Coding & Algorithm Synthesis (Benchmark SOTA: Codex & Qwen Coder)'
     };
   }
 
-  // 4. Project Explanations / Portfolio Architecture / Research Review (Nemotron 3 Ultra Flagship)
-  const hasProjectKeywords = /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
-  if (hasProjectKeywords) {
-    return {
-      category: 'project_architecture',
-      effort: 'high',
-      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex'],
-      openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b',
-        'nvidia/nemotron-3-super-120b-a12b',
-        'meta-llama/llama-3.3-70b-instruct'
-      ]
-    };
-  }
-
-  // 5. Deep Chain-of-Thought / High-IQ Reasoning / Mathematics / In-depth Research Analysis (Thinking CoT & Antigravity)
-  const hasReasoningKeywords = /\b(analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana cara|jelaskan detail|jelaskan komprehensif)\b/i.test(q);
+  // 2. Deep Reasoning / Brainstorming / Analisis Mendalam / CoT / Riset / PRD / Filosofis / Metodologi
+  const hasReasoningKeywords = /\b(brainstorming|brain storming|analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana|cara kerja|jelaskan detail|jelaskan komprehensif|prd|product requirement|rancang|buatkan sistem|arsitektur|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|alur kerja|workflow|blueprint|skripsi|deep learning|machine learning|neural network|transformer)\b/i.test(q);
   
-  if (hasReasoningKeywords || len > 70) {
+  // Trivial/casual check to prevent casual questions like "kenapa gini doang" from forcing thinking mode
+  const isCasualOrClosing = /^(cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|paham|mengerti|kenapa gini doang|gitu doang)\b/i.test(q) || (len < 20 && !hasCodeKeywords);
+
+  if (hasReasoningKeywords && !isCasualOrClosing) {
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
-      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Antigravity', 'Codex'],
-      openRouterCandidates: [
-        'nvidia/nemotron-3-ultra-550b-a55b',
-        'nvidia/nemotron-3-super-120b-a12b',
-        'meta-llama/llama-3.3-70b-instruct'
-      ]
+      label: 'Deep Reasoning & Brainstorming (Benchmark SOTA: Antigravity & Nemotron Ultra 550B)'
     };
   }
 
-  // 6. Standard Explanatory / Tech concepts / News search / Comparisons (Medium Effort)
+  // 3. Basic / Casual / Standard Q&A (User Specified Default Priority Hierarchy)
   return {
-    category: 'standard_balanced',
-    effort: 'medium',
-    omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex'],
-    openRouterCandidates: [
-      'nvidia/nemotron-3-ultra-550b-a55b',
-      'nvidia/nemotron-3-super-120b-a12b',
-      'meta-llama/llama-3.3-70b-instruct'
-    ]
+    category: 'basic_standard',
+    effort: 'low',
+    label: 'Basic / Standard Q&A (User Priority Hierarchy: Nemotron Ultra -> Super -> Laguna -> DeepSeek V4 -> Codex -> Antigravity -> Vision -> MiniMax)'
   };
 }
 
@@ -651,415 +585,210 @@ Langkah yang WAJIB Anda lakukan:
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
-    // 1. MULTIMODAL VISION ROUTE (If images are attached)
+    // PROVIDER CALLER WRAPPERS
     // ========================================================================
-    if (hasImages) {
-      const userContent = [
-        { type: 'text', text: finalUserPrompt || 'Deskripsikan dan analisis gambar ini secara komprehensif dan mendalam.' }
-      ];
+    let isOmniOffline = false;
 
-      for (const img of imageAttachments) {
-        const imgUrl = img.data.startsWith('data:') ? img.data : `data:${img.type || 'image/jpeg'};base64,${img.data}`;
-        userContent.push({
-          type: 'image_url',
-          image_url: { url: imgUrl }
-        });
-      }
-
-      // 1A. Primary Priority #1: OmniRoute Private Vision Model (Laptop Cloudflare Tunnel)
-      if (OMNIROUTE_KEY && OMNIROUTE_URL) {
-        try {
-          const omniVisionResp = await fetchWithTimeout(OMNIROUTE_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OMNIROUTE_KEY}`,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              model: 'Vision-model',
-              messages: [
-                { role: 'system', content: systemPromptWithSearch },
-                { role: 'user', content: userContent }
-              ],
-              stream: false,
-              max_tokens: Math.max(maxTokensConfig, 1000),
-              temperature: tempConfig
-            })
-          }, 30000);
-
-          if (omniVisionResp.ok) {
-            const data = await omniVisionResp.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
-              return sendSuccess(content, 'Vision-model (MiniMax M3 / OmniRoute)', 'OmniRoute Vision Gateway');
-            }
-          } else {
-            const errTxt = await omniVisionResp.text();
-            providerErrors.push(`OmniRoute Vision HTTP ${omniVisionResp.status}: ${errTxt.slice(0, 100)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`OmniRoute Vision: ${err.message}`);
-        }
-      }
-
-      // 1B. Secondary Failover: OpenRouter Multimodal Vision Cascade
-      if (OPENROUTER_KEYS.length > 0) {
-        const visionModels = [
-          'nvidia/nemotron-nano-12b-v2-vl:free'
-        ];
-
-        for (const vm of visionModels) {
-          for (const orKey of OPENROUTER_KEYS) {
-            try {
-              const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${orKey}`,
-                  'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
-                  'X-Title': 'Rafly Firmansyah AI Vision Lab'
-                },
-                body: JSON.stringify({
-                  model: vm,
-                  messages: [
-                    { role: 'system', content: systemPromptWithSearch },
-                    { role: 'user', content: userContent }
-                  ],
-                  max_tokens: maxTokensConfig,
-                  temperature: tempConfig
-                })
-              }, 22000);
-
-              if (response.ok) {
-                const data = await response.json();
-                const content = data?.choices?.[0]?.message?.content;
-                if (content) {
-                  return sendSuccess(content, vm, 'OpenRouter Vision');
-                }
-              } else {
-                const errTxt = await response.text();
-                providerErrors.push(`OpenRouter Vision ${vm} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-                if (response.status === 429) continue;
-              }
-            } catch (err) {
-              providerErrors.push(`OpenRouter Vision ${vm}: ${err.message}`);
-            }
-          }
-        }
-      }
-
-      // 1C. Nvidia Vision Gateway
-      if (NVIDIA_KEY) {
-        try {
-          const nvResp = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${NVIDIA_KEY}`
-            },
-            body: JSON.stringify({
-              model: 'nvidia/nemotron-nano-12b-v2-vl',
-              messages: [
-                { role: 'system', content: systemPromptWithSearch },
-                { role: 'user', content: userContent }
-              ],
-              max_tokens: maxTokensConfig
-            })
-          }, 20000);
-
-          if (nvResp.ok) {
-            const nvData = await nvResp.json();
-            const nvText = nvData?.choices?.[0]?.message?.content;
-            if (nvText) {
-              return sendSuccess(nvText, 'nvidia/nemotron-nano-12b-v2-vl', 'Nvidia NIM Vision');
-            }
-          } else {
-            const errTxt = await nvResp.text();
-            providerErrors.push(`Nvidia Vision HTTP ${nvResp.status}: ${errTxt.slice(0, 100)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`Nvidia Vision: ${err.message}`);
-        }
-      }
-    }
-
-    // ========================================================================
-    // 2. TEXT & REASONING MULTILATERAL GATEWAY POOL
-    // ========================================================================
-
-    // 2A. Primary Priority #1: OmniRoute Dedicated Local Server (Cloudflare Quick Tunnel)
-    // Dynamically routes based on cognitive weight (Trivial ➔ Deepseek V4 / Heavy Code ➔ Codex / Deep Reasoning ➔ Antigravity)
-    if (OMNIROUTE_KEY && OMNIROUTE_URL) {
-      let omniCandidates = [];
-      const isExplicitModel = (model && model !== 'auto');
-
-      if (isExplicitModel) {
-        const mLower = targetModel.toLowerCase();
-        if (mLower.includes('codex') || mLower.includes('gpt-5')) {
-          omniCandidates = ['Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
-        } else if (mLower.includes('antigravity') || mLower.includes('claude') || mLower.includes('opus')) {
-          omniCandidates = ['Antigravity', 'Codex', 'Deepseek-V4-Flash-Free'];
-        } else if (mLower.includes('deepseek') || mLower.includes('ponytail') || mLower.includes('v4')) {
-          omniCandidates = ['Deepseek-V4-Flash-Free', 'Codex', 'Antigravity'];
-        } else if (mLower.includes('vision')) {
-          omniCandidates = ['Vision-model', 'Codex', 'Antigravity'];
-        } else {
-          omniCandidates = [targetModel, 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
-        }
-      } else {
-        // Pure Dynamic Auto Routing based on query intent & cognitive load
-        omniCandidates = queryIntent.omniCandidates;
-      }
-
-      for (const omniModel of omniCandidates) {
-        try {
-          const omniPayload = {
-            model: omniModel,
-            messages: baseTextMessages,
-            stream: false,
-            max_tokens: Math.max(maxTokensConfig, 1000),
-            temperature: tempConfig
-          };
-
-          const omniTimeout = omniModel.toLowerCase().includes('deepseek')
-            ? 4000
-            : ((queryIntent.category === 'trivial_casual') ? 6000 : 25000);
-          const response = await fetchWithTimeout(OMNIROUTE_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OMNIROUTE_KEY}`,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(omniPayload)
-          }, omniTimeout);
-
-          if (response.ok) {
-            const rawText = await response.text();
-            let content = '';
-            let resolvedName = omniModel;
-            try {
-              const data = JSON.parse(rawText);
-              content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.delta?.content || '';
-              if (data.model) resolvedName = `${omniModel} (${data.model})`;
-            } catch (_) {
-              // SSE stream parsing
-              const lines = rawText.split('\n');
-              for (const line of lines) {
-                const trimmed = line.trim();
-                if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
-                  try {
-                    const chunk = JSON.parse(trimmed.slice(6));
-                    content += chunk?.choices?.[0]?.delta?.content || chunk?.choices?.[0]?.message?.content || '';
-                  } catch (_) {}
-                }
-              }
-            }
-            if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), resolvedName, 'OmniRoute Dedicated Server');
-            }
-          } else {
-            const errTxt = await response.text();
-            providerErrors.push(`OmniRoute ${omniModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-            if ([502, 503, 521, 522, 524, 530].includes(response.status)) {
-              // Laptop OmniRoute server is offline -> instantly cascade to cloud backups
-              break;
-            }
-          }
-        } catch (err) {
-          providerErrors.push(`OmniRoute ${omniModel}: ${err.message}`);
-          // Network or tunnel unreachable -> instantly cascade to cloud backups
-          break;
-        }
-      }
-    }
-
-    // 2B. Secondary Failover: OpenRouter SOTA Cloud Pool (Sub-second Latency: Nemotron 120B/550B, Gemma 4, DeepSeek)
-    if (OPENROUTER_KEY) {
-      let orModel = targetModel;
-      if (orModel.startsWith('opencode/')) {
-        orModel = 'deepseek/deepseek-chat';
-      } else if (orModel.startsWith('ollamacloud/')) {
-        orModel = orModel.includes('code') ? 'qwen/qwen-2.5-coder-32b-instruct' : 'nvidia/nemotron-3-super-120b-a12b:free';
-      }
-
-      const isExplicitModel = (model && model !== 'auto');
-      const orCandidates = isExplicitModel
-        ? [
-            orModel,
-            `${orModel}:free`,
-            'nvidia/nemotron-3-super-120b-a12b:free',
-            'nvidia/nemotron-3-ultra-550b-a55b:free',
-            'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-            'openai/gpt-oss-20b:free',
-            'cohere/north-mini-code:free'
-          ].filter((v, i, a) => v && a.indexOf(v) === i && !v.startsWith('opencode/') && v !== 'openrouter/free' && !v.includes('safety'))
-        : queryIntent.openRouterCandidates;
-
-      for (const m of orCandidates) {
-        for (const orKey of OPENROUTER_KEYS) {
-          try {
-            const openRouterPayload = {
-              model: m,
-              messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig
-            };
-
-            const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${orKey}`,
-                'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
-                'X-Title': 'Rafly Firmansyah AI Portfolio Terminal'
-              },
-              body: JSON.stringify(openRouterPayload)
-            }, 12000);
-
-            if (response.ok) {
-              const data = await response.json();
-              const content = data?.choices?.[0]?.message?.content;
-              if (content) {
-                return sendSuccess(content, m, 'OpenRouter Multi-AI Gateway');
-              }
-            } else {
-              const errTxt = await response.text();
-              providerErrors.push(`OpenRouter ${m} (Key ${orKey.slice(0, 14)}...) HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-              if (response.status === 429) {
-                // Instantly try next key in the pool
-                continue;
-              }
-            }
-          } catch (err) {
-            providerErrors.push(`OpenRouter ${m}: ${err.message}`);
-          }
-        }
-      }
-    }
-
-    // 2B. Secondary: Direct OpenCode Multi-Account Rotation (DeepSeek V4 Flash, Nemotron Ultra, Qwen Coder, Llama 3.3)
-    if (OPENCODE_KEY && (targetModel.includes('opencode') || targetModel.includes('deepseek-v4') || (model && model.includes('opencode')) || !isExplicitModel)) {
-      const ocCandidates = isExplicitModel
-        ? [targetModel.replace(/^opencode\//, '')]
-        : ['deepseek-v4-flash-free', 'nemotron-3-ultra-free', 'qwen-2.5-coder-32b-free', 'llama-3.3-70b-free'];
-
-      for (const ocKey of OPENCODE_KEYS) {
-        for (const ocModel of ocCandidates) {
-          try {
-            const ocResp = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${ocKey}`
-              },
-              body: JSON.stringify({
-                model: ocModel,
-                messages: baseTextMessages,
-                max_tokens: maxTokensConfig,
-                temperature: tempConfig
-              })
-            }, 12000);
-
-            if (ocResp.ok) {
-              const ocData = await ocResp.json();
-              const ocText = ocData?.choices?.[0]?.message?.content;
-              if (ocText && ocText.trim().length > 0) {
-                return sendSuccess(ocText.trim(), `opencode/${ocModel}`, 'OpenCode Cloud Multi-Account Pool');
-              }
-            } else {
-              const ocErr = await ocResp.text();
-              providerErrors.push(`OpenCode (${ocModel}) HTTP ${ocResp.status}: ${ocErr.slice(0, 100)}`);
-            }
-          } catch (ocErr) {
-            providerErrors.push(`OpenCode (${ocModel}): ${ocErr.message}`);
-          }
-        }
-      }
-    }
-
-    // 2C. Nvidia NIM Gateway (Nemotron 3 Ultra, Super, & Llama 3.3 70B)
-    if (NVIDIA_KEY) {
-      const nvCandidateModels = targetModel.startsWith('nvidia/')
-        ? [targetModel, targetModel.replace('nvidia/', '')]
-        : [
-            'nvidia/nemotron-3-ultra-550b-a55b',
-            'nvidia/nemotron-3-super-120b-a12b',
-            'nvidia/llama-3.3-nemotron-super-49b-v1',
-            'meta/llama-3.3-70b-instruct'
-          ];
-
-      for (let nvModel of nvCandidateModels) {
-        try {
-          const response = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${NVIDIA_KEY}`
-            },
-            body: JSON.stringify({
-              model: nvModel,
-              messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig
-            })
-          }, 25000);
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.choices?.[0]?.message?.content;
-            if (content) {
-              return sendSuccess(content, nvModel, 'Nvidia NIM Engine');
-            }
-          } else {
-            const errTxt = await response.text();
-            providerErrors.push(`Nvidia ${nvModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`Nvidia ${nvModel}: ${err.message}`);
-        }
-      }
-    }
-
-    // 2D. Ollama Cloud Gateway (Verified Nemotron 3 Ultra, Super & MiniMax-M3)
-    if (OLLAMA_KEY) {
-      const olCandidateModels = ['nemotron-3-ultra', 'nemotron-3-super', 'minimax-m3'];
-      for (const olModel of olCandidateModels) {
-        try {
-          const response = await fetchWithTimeout('https://ollama.com/api/chat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OLLAMA_KEY}`
-            },
-            body: JSON.stringify({
-              model: olModel,
-              messages: baseTextMessages,
-              stream: false
-            })
-          }, 25000);
-
-          if (response.ok) {
-            const data = await response.json();
-            const content = data?.message?.content;
-            if (content) {
-              return sendSuccess(content, olModel, 'Ollama Cloud SOTA Engine');
-            }
-          } else {
-            const errTxt = await response.text();
-            providerErrors.push(`Ollama Cloud ${olModel} HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
-          }
-        } catch (err) {
-          providerErrors.push(`Ollama Cloud ${olModel}: ${err.message}`);
-        }
-      }
-    }
-
-    // 2E. MiniMax Gateway (api.minimax.io)
-    if (MINIMAX_KEY) {
+    async function callOmniRoute(mName, tOut = 25000) {
+      if (!OMNIROUTE_KEY || !OMNIROUTE_URL || isOmniOffline) return null;
       try {
-        const response = await fetchWithTimeout('https://api.minimax.io/v1/text/chatcompletion_v2', {
+        const payload = {
+          model: mName,
+          messages: baseTextMessages,
+          stream: false,
+          max_tokens: Math.max(maxTokensConfig, 1000),
+          temperature: tempConfig
+        };
+        const res = await fetchWithTimeout(OMNIROUTE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OMNIROUTE_KEY}`,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        }, tOut);
+
+        if (res.ok) {
+          const rawText = await res.text();
+          let content = '';
+          let resolvedName = mName;
+          try {
+            const data = JSON.parse(rawText);
+            content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.delta?.content || '';
+            if (data.model) resolvedName = `${mName} (${data.model})`;
+          } catch (_) {
+            const lines = rawText.split('\n');
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
+                try {
+                  const chunk = JSON.parse(trimmed.slice(6));
+                  content += chunk?.choices?.[0]?.delta?.content || chunk?.choices?.[0]?.message?.content || '';
+                } catch (_) {}
+              }
+            }
+          }
+          if (content && content.trim().length > 0) {
+            return sendSuccess(content.trim(), resolvedName, 'OmniRoute Dedicated Server');
+          }
+        } else {
+          const errTxt = await res.text();
+          providerErrors.push(`OmniRoute ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+          if ([502, 503, 521, 522, 524, 530].includes(res.status)) {
+            isOmniOffline = true;
+          }
+        }
+      } catch (err) {
+        providerErrors.push(`OmniRoute ${mName}: ${err.message}`);
+        isOmniOffline = true;
+      }
+      return null;
+    }
+
+    async function callNvidiaNim(mName, tOut = 25000) {
+      if (!NVIDIA_KEY) return null;
+      try {
+        const res = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${NVIDIA_KEY}`
+          },
+          body: JSON.stringify({
+            model: mName,
+            messages: baseTextMessages,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
+          })
+        }, tOut);
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = data?.choices?.[0]?.message?.content;
+          if (content && content.trim().length > 0) {
+            return sendSuccess(content.trim(), mName, 'NVIDIA NIM Direct API');
+          }
+        } else {
+          const errTxt = await res.text();
+          providerErrors.push(`Nvidia NIM ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`Nvidia NIM ${mName}: ${err.message}`);
+      }
+      return null;
+    }
+
+    async function callOpenCode(mName, tOut = 15000) {
+      if (OPENCODE_KEYS.length === 0) return null;
+      const cleanM = mName.replace(/^opencode\//, '');
+      for (const ocKey of OPENCODE_KEYS) {
+        try {
+          const res = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${ocKey}`
+            },
+            body: JSON.stringify({
+              model: cleanM,
+              messages: baseTextMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, tOut);
+
+          if (res.ok) {
+            const data = await res.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content && content.trim().length > 0) {
+              return sendSuccess(content.trim(), `opencode/${cleanM}`, 'OpenCode Cloud Multi-Account Pool');
+            }
+          } else {
+            const errTxt = await res.text();
+            providerErrors.push(`OpenCode ${cleanM} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+          }
+        } catch (err) {
+          providerErrors.push(`OpenCode ${cleanM}: ${err.message}`);
+        }
+      }
+      return null;
+    }
+
+    async function callOpenRouter(mName, tOut = 15000) {
+      if (OPENROUTER_KEYS.length === 0) return null;
+      for (const orKey of OPENROUTER_KEYS) {
+        try {
+          const res = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${orKey}`,
+              'HTTP-Referer': 'https://raflyfirmansyah-portofolio.vercel.app/',
+              'X-Title': 'Rafly Firmansyah AI Portfolio Terminal'
+            },
+            body: JSON.stringify({
+              model: mName,
+              messages: baseTextMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, tOut);
+
+          if (res.ok) {
+            const data = await res.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content && content.trim().length > 0) {
+              return sendSuccess(content.trim(), mName, 'OpenRouter 3-Key Cloud Pool');
+            }
+          } else {
+            const errTxt = await res.text();
+            providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+            if (res.status === 429) continue;
+          }
+        } catch (err) {
+          providerErrors.push(`OpenRouter ${mName}: ${err.message}`);
+        }
+      }
+      return null;
+    }
+
+    async function callOllama(mName, tOut = 25000) {
+      if (!OLLAMA_KEY) return null;
+      try {
+        const res = await fetchWithTimeout('https://ollama.com/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OLLAMA_KEY}`
+          },
+          body: JSON.stringify({
+            model: mName,
+            messages: baseTextMessages,
+            stream: false
+          })
+        }, tOut);
+
+        if (res.ok) {
+          const data = await res.json();
+          const content = data?.message?.content;
+          if (content && content.trim().length > 0) {
+            return sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
+          }
+        } else {
+          const errTxt = await res.text();
+          providerErrors.push(`Ollama Cloud ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+        }
+      } catch (err) {
+        providerErrors.push(`Ollama Cloud ${mName}: ${err.message}`);
+      }
+      return null;
+    }
+
+    async function callMiniMax(tOut = 20000) {
+      if (!MINIMAX_KEY) return null;
+      try {
+        const res = await fetchWithTimeout('https://api.minimax.io/v1/text/chatcompletion_v2', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1071,25 +800,214 @@ Langkah yang WAJIB Anda lakukan:
               { role: 'user', content: `${systemPromptWithSearch}\n\n${assembledQuery}` }
             ]
           })
-        }, 20000);
+        }, tOut);
 
-        if (response.ok) {
-          const data = await response.json();
+        if (res.ok) {
+          const data = await res.json();
           const content = data?.choices?.[0]?.message?.content || data?.reply;
-          if (content) {
-            return sendSuccess(content, 'MiniMax-M3', 'MiniMax Frontier Engine');
+          if (content && content.trim().length > 0) {
+            return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Frontier Engine');
           }
         } else {
-          const errTxt = await response.text();
-          providerErrors.push(`MiniMax HTTP ${response.status}: ${errTxt.slice(0, 100)}`);
+          const errTxt = await res.text();
+          providerErrors.push(`MiniMax HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
         }
       } catch (err) {
         providerErrors.push(`MiniMax: ${err.message}`);
       }
+      return null;
     }
 
-    // If no provider succeeded or keys are missing:
-    const noKeysConfigured = !OPENROUTER_KEY && !NVIDIA_KEY && !OPENCODE_KEY && !MINIMAX_KEY && !OLLAMA_KEY;
+    // ========================================================================
+    // BUILD MULTI-TIER EXECUTION PIPELINE
+    // ========================================================================
+    function buildExecutionPipeline() {
+      const isExplicit = (model && model !== 'auto');
+      if (isExplicit) {
+        const t = targetModel.toLowerCase();
+        if (t.includes('codex') || t.includes('gpt-5')) {
+          return [
+            { provider: 'omniroute', model: 'Codex' },
+            { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
+            { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
+            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' }
+          ];
+        }
+        if (t.includes('antigravity') || t.includes('opus')) {
+          return [
+            { provider: 'omniroute', model: 'Antigravity' },
+            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+            { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
+          ];
+        }
+        if (t.includes('opencode')) {
+          const ocM = targetModel.replace(/^opencode\//, '');
+          return [
+            { provider: 'opencode', model: ocM },
+            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' }
+          ];
+        }
+        if (t.includes('nemotron-3-ultra') || (t.includes('ultra') && t.includes('nemotron'))) {
+          return [
+            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free' },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+            { provider: 'ollama', model: 'nemotron-3-ultra' }
+          ];
+        }
+        if (t.includes('nemotron-3-super') || (t.includes('super') && t.includes('nemotron'))) {
+          return [
+            { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
+            { provider: 'ollama', model: 'nemotron-3-super' }
+          ];
+        }
+        if (t.includes('vision') || t.includes('minimax')) {
+          return [
+            { provider: 'omniroute', model: 'Vision-model' },
+            { provider: 'minimax', model: 'MiniMax-M3' },
+            { provider: 'ollama', model: 'minimax-m3' }
+          ];
+        }
+      }
+
+      // Auto Mode: Dynamic Category-Based Ranking
+      if (queryIntent.category === 'vision') {
+        return [
+          { provider: 'omniroute', model: 'Vision-model' },
+          { provider: 'minimax', model: 'MiniMax-M3' },
+          { provider: 'ollama', model: 'minimax-m3' },
+          { provider: 'omniroute', model: 'Antigravity' },
+          { provider: 'omniroute', model: 'Codex' }
+        ];
+      }
+
+      if (queryIntent.category === 'heavy_coding') {
+        return [
+          // 1. HumanEval & SWE-Bench #1 SOTA: Codex (OmniRoute)
+          { provider: 'omniroute', model: 'Codex' },
+          // 2. Specialized 32B Code MoE: Qwen Coder
+          { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
+          { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
+          // 3. Multi-Step Architecture Review: Antigravity
+          { provider: 'omniroute', model: 'Antigravity' },
+          // 4. 550B MoE Flagship: Nemotron Ultra
+          { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free' },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'ollama', model: 'nemotron-3-ultra' },
+          { provider: 'omniroute', model: 'nemotron-laguna' },
+          // 5. 120B SOTA
+          { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
+          { provider: 'ollama', model: 'nemotron-3-super' },
+          // 6. Llama 3.3 70B
+          { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
+          { provider: 'opencode', model: 'llama-3.3-70b-free' },
+          { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
+          // 7. Fast MoE
+          { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
+          { provider: 'opencode', model: 'deepseek-v4-flash-free' }
+        ];
+      }
+
+      if (queryIntent.category === 'deep_reasoning') {
+        return [
+          // 1. LMSYS #1 Chatbot Arena / Claude Opus 4.6 Thinking: Antigravity
+          { provider: 'omniroute', model: 'Antigravity' },
+          // 2. 550B MoE Flagship Research: Nemotron Ultra
+          { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free' },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'ollama', model: 'nemotron-3-ultra' },
+          { provider: 'omniroute', model: 'nemotron-laguna' },
+          // 3. Deep Analytical Logic: Codex
+          { provider: 'omniroute', model: 'Codex' },
+          // 4. Llama 3.3 70B SOTA General
+          { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
+          { provider: 'opencode', model: 'llama-3.3-70b-free' },
+          { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
+          // 5. 120B Super
+          { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
+          { provider: 'ollama', model: 'nemotron-3-super' },
+          // 6. Fast MoE
+          { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
+          { provider: 'opencode', model: 'deepseek-v4-flash-free' }
+        ];
+      }
+
+      // Default: Basic / Casual / Standard Q&A (User Specified Exact Hierarchy)
+      return [
+        // 1. Nemotron Ultra (Semua Provider)
+        { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free' },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+        { provider: 'ollama', model: 'nemotron-3-ultra' },
+
+        // 2. Nemotron Super (Semua Provider)
+        { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
+        { provider: 'ollama', model: 'nemotron-3-super' },
+
+        // 3. Nemotron Laguna (OmniRoute)
+        { provider: 'omniroute', model: 'nemotron-laguna' },
+
+        // 4. DeepSeek V4 Flash Free (Semua Provider)
+        { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
+        { provider: 'opencode', model: 'deepseek-v4-flash-free' },
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
+
+        // 5. Codex (OmniRoute)
+        { provider: 'omniroute', model: 'Codex' },
+
+        // 6. Antigravity (OmniRoute)
+        { provider: 'omniroute', model: 'Antigravity' },
+
+        // 7. Vision-model (OmniRoute)
+        { provider: 'omniroute', model: 'Vision-model' },
+
+        // 8. MiniMax M3 (Semua Provider)
+        { provider: 'ollama', model: 'minimax-m3' },
+        { provider: 'minimax', model: 'MiniMax-M3' },
+
+        // 9. Sisa Provider & Model
+        { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
+        { provider: 'opencode', model: 'llama-3.3-70b-free' },
+        { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
+        { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
+        { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
+        { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
+      ];
+    }
+
+    // ========================================================================
+    // EXECUTE PIPELINE
+    // ========================================================================
+    const executionPipeline = buildExecutionPipeline();
+
+    for (const step of executionPipeline) {
+      let result = null;
+      if (step.provider === 'omniroute') {
+        result = await callOmniRoute(step.model, step.timeout || 25000);
+      } else if (step.provider === 'nim') {
+        result = await callNvidiaNim(step.model, step.timeout || 25000);
+      } else if (step.provider === 'opencode') {
+        result = await callOpenCode(step.model, step.timeout || 15000);
+      } else if (step.provider === 'openrouter') {
+        result = await callOpenRouter(step.model, step.timeout || 15000);
+      } else if (step.provider === 'ollama') {
+        result = await callOllama(step.model, step.timeout || 25000);
+      } else if (step.provider === 'minimax') {
+        result = await callMiniMax(step.timeout || 20000);
+      }
+
+      if (result) return result;
+    }
+
+    // If all providers in the pipeline failed or timed out:
+    const noKeysConfigured = !OPENROUTER_KEY && !NVIDIA_KEY && !OPENCODE_KEY && !MINIMAX_KEY && !OLLAMA_KEY && !OMNIROUTE_KEY;
     const errorMsg = noKeysConfigured 
       ? 'Belum ada API Key aktif yang terpasang di server Vercel atau terminal. Gunakan perintah: setkey <provider> <key>'
       : 'Semua provider gateway model AI sedang sibuk atau mengalami timeout antrean.';
@@ -1098,7 +1016,8 @@ Langkah yang WAJIB Anda lakukan:
       success: false,
       error: errorMsg,
       details: providerErrors,
-      model: targetModel
+      requestedModel: model,
+      triedProviders: executionPipeline.map(s => `${s.provider}:${s.model}`)
     });
 
   } catch (globalErr) {

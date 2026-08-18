@@ -761,9 +761,16 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
 
     let omniCandidates = [];
     if (this.currentModel && this.currentModel !== 'auto') {
-      omniCandidates = [this.currentModel, 'nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free'];
+      omniCandidates = [this.currentModel, 'nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
+    } else if (isHeavyCoding) {
+      omniCandidates = ['Codex', 'Antigravity', 'nemotron-laguna', 'Deepseek-V4-Flash-Free'];
+    } else if (isDeepReasoning) {
+      omniCandidates = ['Antigravity', 'nemotron-laguna', 'Codex', 'Deepseek-V4-Flash-Free'];
+    } else if (hasImages) {
+      omniCandidates = ['Vision-model', 'Antigravity', 'Codex'];
     } else {
-      omniCandidates = ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex', 'Antigravity'];
+      // Basic / Standard Hierarchy: Nemotron -> DeepSeek V4 -> Codex -> Antigravity -> Vision
+      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex', 'Antigravity', 'Vision-model'];
     }
 
     let isTunnelReachable = true;
