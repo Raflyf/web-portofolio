@@ -88,6 +88,34 @@ export function initTerminal() {
     });
   }
 
+  function getVisitorSessionId() {
+    let vid = '';
+    try {
+      vid = localStorage.getItem('terminal_visitor_id');
+      if (!vid) {
+        vid = 'vst_' + Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b => b.toString(16).padStart(2, '0')).join('');
+        localStorage.setItem('terminal_visitor_id', vid);
+      }
+    } catch (_) {
+      vid = 'vst_default_session';
+    }
+    return vid;
+  }
+
+  const visitorSessionId = getVisitorSessionId();
+  const CHAT_STORAGE_KEY = `terminal_chat_bubbles_${visitorSessionId}`;
+
+  function saveChatBubbleToStorage(bubbleData) {
+    try {
+      const existing = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
+      existing.push(bubbleData);
+      if (existing.length > 200) {
+        existing.splice(0, existing.length - 200);
+      }
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(existing));
+    } catch (_) {}
+  }
+
   function renderWelcomeMessage() {
     const existing = document.getElementById('terminal-welcome-banner');
     if (existing) existing.remove();
@@ -100,6 +128,42 @@ export function initTerminal() {
       <div class="terminal-line" style="margin-bottom:8px;">Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!</div>
     `;
     terminalBody.appendChild(welcomeBox);
+  }
+
+  function restorePreviousChatSession() {
+    try {
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (!raw) return;
+      const bubbles = JSON.parse(raw);
+      if (!Array.isArray(bubbles) || bubbles.length === 0) return;
+
+      const restoreNotice = document.createElement('div');
+      restoreNotice.className = 'terminal-restore-notice';
+      restoreNotice.style.cssText = 'padding: 0.45rem 0.8rem; margin: 0.6rem 0; font-size: 0.725rem; font-family: var(--font-mono); color: var(--accent-cyan); background: rgba(6, 182, 212, 0.08); border-left: 3px solid var(--accent-cyan); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;';
+      restoreNotice.innerHTML = `
+        <span>Riwayat sesi percakapan Anda telah dipulihkan secara privat (Session ID: <code>${visitorSessionId.substring(0, 16)}...</code>)</span>
+        <button type="button" class="terminal-clear-history-btn" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:0.7rem;text-decoration:underline;white-space:nowrap;" title="Bersihkan riwayat percakapan sesi ini">Hapus Riwayat</button>
+      `;
+      terminalBody.appendChild(restoreNotice);
+
+      const clearBtn = restoreNotice.querySelector('.terminal-clear-history-btn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          COMMAND_REGISTRY.clear();
+        });
+      }
+
+      bubbles.forEach(b => {
+        if (b.type === 'user') {
+          appendUserBubble(b.text, b.attachments || [], b.time, false);
+        } else if (b.type === 'ai') {
+          const container = createAIBubbleContainer(b.author || 'AI Assistant', b.time);
+          container.innerHTML = formatMarkdownFull(b.text || '');
+        }
+      });
+
+      terminalBody.scrollTop = terminalBody.scrollHeight;
+    } catch (_) {}
   }
 
   function renderFileTray() {
@@ -434,7 +498,9 @@ export function initTerminal() {
       `Kampus   : ${DEVELOPER_PROFILE.institution}`
     ],
     whoami: () => [
-      "visitor@portfolio-client: guest (read-only privilege level)"
+      "visitor@portfolio-client: guest (read-only privilege level)",
+      `Session ID : ${visitorSessionId} (Private Local Storage Encapsulation)`,
+      "Status     : Sesi lokal aktif. Riwayat obrolan dienkapsulasi khusus untuk perangkat browser ini."
     ],
     github: () => {
       if (typeof window !== 'undefined' && window.portfolioAgent) {
@@ -466,6 +532,9 @@ export function initTerminal() {
       if (terminalAI && typeof terminalAI.clearHistory === 'function') {
         terminalAI.clearHistory();
       }
+      try {
+        localStorage.removeItem(CHAT_STORAGE_KEY);
+      } catch (_) {}
       renderWelcomeMessage();
       return [];
     }
@@ -692,8 +761,8 @@ export function initTerminal() {
     return formatMarkdownFull(raw);
   }
 
-  function appendUserBubble(userText, attachments = []) {
-    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  function appendUserBubble(userText, attachments = [], customTime = null, shouldSave = true) {
+    const time = customTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const msgEl = document.createElement('div');
     msgEl.className = 'chat-msg chat-msg--user';
 
@@ -717,13 +786,22 @@ export function initTerminal() {
       </div>
     `;
 
+    if (shouldSave) {
+      saveChatBubbleToStorage({
+        type: 'user',
+        text: userText,
+        attachments: attachments.map(a => ({ name: a.name, isImage: !!a.isImage })),
+        time: time
+      });
+    }
+
     terminalBody.appendChild(msgEl);
     terminalBody.scrollTop = terminalBody.scrollHeight;
     return msgEl;
   }
 
-  function createAIBubbleContainer(modelDisplayName = '') {
-    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  function createAIBubbleContainer(modelDisplayName = '', customTime = null) {
+    const time = customTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const msgEl = document.createElement('div');
     msgEl.className = 'chat-msg chat-msg--ai';
 
@@ -1123,6 +1201,20 @@ export function initTerminal() {
 
       if (Array.isArray(responses)) {
         await streamOutputLines(responses, aiContainer);
+
+        // Save AI response bubble to private visitor storage
+        const bubbleEl = aiContainer.closest('.chat-msg__bubble');
+        const authorEl = bubbleEl ? bubbleEl.querySelector('.chat-msg__author--ai span') : null;
+        const authorText = authorEl ? authorEl.textContent : 'AI Assistant';
+        const timeEl = bubbleEl ? bubbleEl.querySelector('.chat-msg__time') : null;
+        const timeText = timeEl ? timeEl.textContent : '';
+
+        saveChatBubbleToStorage({
+          type: 'ai',
+          text: responses.join('\n'),
+          author: authorText,
+          time: timeText
+        });
       }
     } catch (err) {
       if (activeThinkingLine && activeThinkingLine.parentNode) {
@@ -1148,8 +1240,9 @@ export function initTerminal() {
     }
   }
 
-  // Initial welcome message
+  // Initial welcome message & private session restoration
   renderWelcomeMessage();
+  restorePreviousChatSession();
 
   // Form submit listener
   terminalForm.addEventListener('submit', (e) => {

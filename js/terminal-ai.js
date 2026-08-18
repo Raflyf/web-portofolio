@@ -112,8 +112,9 @@ class TerminalAIEngine {
     this.customProvider = localStorage.getItem('ai_custom_provider') || 'openrouter';
     this.sessionLanguage = sessionStorage.getItem('ai_session_lang') || null;
     this.reasoningEffort = localStorage.getItem('ai_selected_effort') || 'auto';
+    this.visitorId = this.getOrCreateVisitorId();
     try {
-      const stored = sessionStorage.getItem('ai_session_history');
+      const stored = localStorage.getItem(`terminal_ai_history_${this.visitorId}`) || sessionStorage.getItem('ai_session_history');
       this.conversationHistory = stored ? JSON.parse(stored) : [];
       if (!Array.isArray(this.conversationHistory)) this.conversationHistory = [];
     } catch (_) {
@@ -123,9 +124,32 @@ class TerminalAIEngine {
     this.isAborted = false;
   }
 
+  getOrCreateVisitorId() {
+    try {
+      let vid = localStorage.getItem('terminal_visitor_id');
+      if (!vid) {
+        vid = 'vst_' + Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b => b.toString(16).padStart(2, '0')).join('');
+        localStorage.setItem('terminal_visitor_id', vid);
+      }
+      return vid;
+    } catch (_) {
+      return 'vst_default_client';
+    }
+  }
+
   saveHistoryToSession() {
     try {
-      sessionStorage.setItem('ai_session_history', JSON.stringify(this.conversationHistory.slice(-500)));
+      const payload = JSON.stringify(this.conversationHistory.slice(-500));
+      localStorage.setItem(`terminal_ai_history_${this.visitorId}`, payload);
+      sessionStorage.setItem('ai_session_history', payload);
+    } catch (_) {}
+  }
+
+  clearHistory() {
+    this.conversationHistory = [];
+    try {
+      localStorage.removeItem(`terminal_ai_history_${this.visitorId}`);
+      sessionStorage.removeItem('ai_session_history');
     } catch (_) {}
   }
 
