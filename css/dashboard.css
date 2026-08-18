@@ -905,6 +905,62 @@ body {
 }
 
 /* ==========================================================================
+   6B. AUTO ROUTER HORIZONTAL CARD & SCROLLABLE BREAKDOWN
+   ========================================================================== */
+.ai-model-card-auto-full {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.06) 0%, rgba(16, 185, 129, 0.04) 100%), var(--bg-primary);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.ai-auto-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .ai-auto-card-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .ai-auto-breakdown-panel {
+    border-left: none !important;
+    border-top: 1px solid var(--border-subtle);
+    padding-left: 0 !important;
+    padding-top: 1rem;
+  }
+}
+
+.ai-model-auto-list {
+  max-height: 168px;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+
+.ai-model-auto-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ai-model-auto-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.ai-model-auto-list::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.5);
+  border-radius: 4px;
+}
+
+.ai-model-auto-list::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+}
+
+/* ==========================================================================
    7. ACTIVITY TABLE
    ========================================================================== */
 .table-card {
