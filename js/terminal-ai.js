@@ -333,6 +333,10 @@ ${certsOverview}
     }
   }
 
+  clearHistory() {
+    this.conversationHistory = [];
+  }
+
   /**
    * Main Ask method: Routes multimodal attachments and queries to cloud gateway
    */
@@ -354,11 +358,11 @@ ${certsOverview}
         if (this.isAborted) return { isAborted: true };
 
         if (directRes && directRes.length > 0) {
-          // Record conversation turn for dynamic context
+          // Record conversation turn for dynamic multi-turn context
           this.conversationHistory.push({ role: 'user', content: cleanQuery });
           this.conversationHistory.push({ role: 'assistant', content: directRes.join('\n') });
-          if (this.conversationHistory.length > 10) {
-            this.conversationHistory = this.conversationHistory.slice(-10);
+          if (this.conversationHistory.length > 24) {
+            this.conversationHistory = this.conversationHistory.slice(-24);
           }
           return directRes;
         }
@@ -389,7 +393,7 @@ ${certsOverview}
           attachments: attachments,
           sessionLanguage: currentLang,
           reasoningEffort: this.reasoningEffort,
-          history: this.conversationHistory.slice(-6),
+          history: this.conversationHistory.slice(-20),
           longTermMemory: memoryContext
         }),
         signal: controller.signal
@@ -429,8 +433,8 @@ ${certsOverview}
         // Record conversation turn for dynamic context
         this.conversationHistory.push({ role: 'user', content: cleanQuery });
         this.conversationHistory.push({ role: 'assistant', content: finalResponse });
-        if (this.conversationHistory.length > 10) {
-          this.conversationHistory = this.conversationHistory.slice(-10);
+        if (this.conversationHistory.length > 24) {
+          this.conversationHistory = this.conversationHistory.slice(-24);
         }
 
         const isAuto = !this.currentModel || this.currentModel === 'auto';
@@ -785,6 +789,20 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex', 'Antigravity', 'Vision-model'];
     }
 
+    // Format multi-turn conversation history for sliding context window
+    const formattedHistory = Array.isArray(this.conversationHistory)
+      ? this.conversationHistory.slice(-20).map(h => ({
+          role: h.role === 'assistant' ? 'assistant' : 'user',
+          content: typeof h.content === 'string' ? h.content.slice(0, 4000) : h.content
+        }))
+      : [];
+
+    const fullMessagesPayload = [
+      { role: 'system', content: fullSystemPrompt },
+      ...formattedHistory,
+      { role: 'user', content: userMessageContent }
+    ];
+
     let isTunnelReachable = true;
     for (const omniModel of omniCandidates) {
       if (!isTunnelReachable) break;
@@ -800,10 +818,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
           },
           body: JSON.stringify({
             model: omniModel,
-            messages: [
-              { role: 'system', content: fullSystemPrompt },
-              { role: 'user', content: userMessageContent }
-            ],
+            messages: fullMessagesPayload,
             max_tokens: calculatedMaxTokens,
             temperature: 0.25,
             stream: false
@@ -849,10 +864,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
           },
           body: JSON.stringify({
             model: nimModel,
-            messages: [
-              { role: 'system', content: fullSystemPrompt },
-              { role: 'user', content: userMessageContent }
-            ],
+            messages: fullMessagesPayload,
             max_tokens: calculatedMaxTokens,
             temperature: 0.25
           }),
@@ -897,10 +909,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
             },
             body: JSON.stringify({
               model: orM,
-              messages: [
-                { role: 'system', content: fullSystemPrompt },
-                { role: 'user', content: userMessageContent }
-              ],
+              messages: fullMessagesPayload,
               max_tokens: calculatedMaxTokens,
               temperature: 0.25
             }),
@@ -939,10 +948,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
             },
             body: JSON.stringify({
               model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
-              messages: [
-                { role: 'system', content: fullSystemPrompt },
-                { role: 'user', content: userMessageContent }
-              ],
+              messages: fullMessagesPayload,
               max_tokens: calculatedMaxTokens,
               temperature: 0.25
             }),
