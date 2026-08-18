@@ -782,6 +782,18 @@ class DashboardApp {
 
       // 3. Multimodal & Vision Specialists
       {
+        id: 'google-gemma',
+        name: 'Google Gemini 3.7 / Gemma 3',
+        category: 'Google Cloud Gateway',
+        tag: 'Multimodal Flash & Reasoning Engine',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-amber)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('gemma') || s.includes('gemini');
+        }
+      },
+      {
         id: 'minimax-m3',
         name: 'MiniMax-M3 Vision Multimodal',
         category: 'Multimodal',
