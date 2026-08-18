@@ -887,18 +887,19 @@ Langkah yang WAJIB Anda lakukan:
         return [
           // 1. HumanEval & SWE-Bench #1 SOTA: Codex (OmniRoute)
           { provider: 'omniroute', model: 'Codex' },
-          // 2. Specialized 32B Code MoE: Qwen Coder
-          { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
-          { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-          // 3. Multi-Step Architecture Review: Antigravity
+          // 2. Multi-Step Architecture Review: Antigravity (OmniRoute)
           { provider: 'omniroute', model: 'Antigravity' },
+          // 3. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute, OpenCode, OpenRouter)
+          { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
+          { provider: 'opencode', model: 'deepseek-v4-flash-free' },
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           // 4. 550B MoE Flagship: Nemotron Ultra
           { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'ollama', model: 'nemotron-3-ultra' },
           { provider: 'omniroute', model: 'nemotron-laguna' },
-          // 5. 120B SOTA
+          // 5. 120B SOTA Super
           { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
           { provider: 'ollama', model: 'nemotron-3-super' },
@@ -906,9 +907,11 @@ Langkah yang WAJIB Anda lakukan:
           { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
           { provider: 'opencode', model: 'llama-3.3-70b-free' },
           { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
-          // 7. Fast MoE
-          { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
-          { provider: 'opencode', model: 'deepseek-v4-flash-free' }
+          // 7. Qwen 2.5 Coder 32B (Disimpan di tier bawah)
+          { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
+          { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
+          // 8. Sisa
+          { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
         ];
       }
 
@@ -916,25 +919,31 @@ Langkah yang WAJIB Anda lakukan:
         return [
           // 1. LMSYS #1 Chatbot Arena / Claude Opus 4.6 Thinking: Antigravity
           { provider: 'omniroute', model: 'Antigravity' },
-          // 2. 550B MoE Flagship Research: Nemotron Ultra
+          // 2. Juara All-Round SOTA: DeepSeek V4 Flash Free
+          { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
+          { provider: 'opencode', model: 'deepseek-v4-flash-free' },
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
+          // 3. 550B MoE Flagship Research: Nemotron Ultra
           { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'ollama', model: 'nemotron-3-ultra' },
           { provider: 'omniroute', model: 'nemotron-laguna' },
-          // 3. Deep Analytical Logic: Codex
+          // 4. Deep Analytical Logic: Codex
           { provider: 'omniroute', model: 'Codex' },
-          // 4. Llama 3.3 70B SOTA General
+          // 5. Llama 3.3 70B SOTA General
           { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
           { provider: 'opencode', model: 'llama-3.3-70b-free' },
           { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
-          // 5. 120B Super
+          // 6. 120B Super
           { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
           { provider: 'ollama', model: 'nemotron-3-super' },
-          // 6. Fast MoE
-          { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
-          { provider: 'opencode', model: 'deepseek-v4-flash-free' }
+          // 7. Qwen 2.5 Coder 32B (Disimpan di tier bawah)
+          { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
+          { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
+          // 8. Sisa
+          { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
         ];
       }
 
