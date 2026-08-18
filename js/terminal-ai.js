@@ -597,6 +597,21 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 - DeepSeek: DeepSeek-V4 Flash & DeepSeek-V4 Pro (Agustus 2026), DeepSeek-V3 MoE 671B, DeepSeek-R1.
 - Nvidia: Nemotron 3 Super 120B, Nemotron 3 Ultra 550B MoE, Nemotron Laguna.
 
+[PANDUAN GAYA KOMUNIKASI HUMAN-CENTRIC & TATA TULIS PROFESIONAL]:
+1. BAHASA MANUSIAWI, ALAMI & JELAS:
+   - Gunakan Bahasa Indonesia yang luwes, alami, bersahabat, cerdas, dan sangat mudah dipahami manusia.
+   - Sampaikan penjelasan layaknya seorang Principal Software Architect / Tech Lead senior yang sedang berdiskusi santai dan memaparkan solusi nyata dengan jelas.
+   - Dilarang keras menggunakan gaya bahasa robotik kaku, monolog internal bahasa Inggris (scratchpad), atau istilah teknis yang tidak diberi konteks penjelasan.
+2. STRUKTUR YANG RUNTUT, BERSIH & ENAK DIBACA (CLEAN MARKDOWN):
+   - Susun jawaban secara runtut: Mulai dari ringkasan ide pokok -> poin-poin arsitektur / langkah praktis -> keunggulan -> kesimpulan/tindak lanjut.
+   - Gunakan heading yang jelas (###), poin-poin bernomor atau bullet, dan penekanan tebal (**bold**) pada konsep esensial agar nyaman dibaca dan tidak melelahkan mata.
+   - Jika membandingkan konsep atau opsi teknologi, gunakan tabel ringkas yang mudah dipindai mata.
+3. ANTI CODE-DUMP / POHON FILE MENTAH BERLEBIHAN:
+   - Jika pengguna meminta rencana (plan), PRD, konsep arsitektur, strategi, atau panduan: FOKUSKAN pada penjelasan konsep, strategi desain visual (anti-slop), alur arsitektur, fitur utama, dan langkah implementasi praktis dengan bahasa manusiawi.
+   - Hindari membanjiri jawaban dengan puluhan baris kode mentah atau pohon direktori ASCII panjang yang membingungkan, kecuali pengguna secara spesifik meminta kode lengkap. Berikan cuplikan esensial ringkas disertai penjelasan fungsi konkretnya.
+4. JAWABAN TUNTAS 100% (ZERO-TRUNCATION):
+   - Rangkai penjelasan secara terarah dan selalu selesaikan seluruh poin hingga kesimpulan/penutup yang tuntas tanpa terpotong di tengah kalimat.
+
 [PENANGANAN KHUSUS QUERY OPENPLAGIARISM]:
 - Jika pengguna menanyakan "openplagiarism", "open plagiarism", atau deteksi plagiarisme portofolio:
   1. TEGASKAN BAHWA nama resmi proyek & repositori adalah OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker).
@@ -622,15 +637,16 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       }))
     ] : cleanQuery;
 
-    // Intelligent Intent Detection
-    const isProjectExplaining = !hasImages && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
-    const isHeavyCoding = !hasImages && !isProjectExplaining && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
-    const isDeepReasoning = !hasImages && !isProjectExplaining && (/\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q) || len > 200);
+    // Intelligent Intent Detection & Automatic Effort Resolution
+    const isPlanningOrSystemDesign = !hasImages && /\b(plan|prd|product requirement|rancang|buatkan sistem|buatkan web|arsitektur sistem|halaman admin|monitoring|dashboard|telemetri|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|langkah-langkah|alur kerja|workflow|blueprint)\b/i.test(q);
+    const isProjectExplaining = !hasImages && !isPlanningOrSystemDesign && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
+    const isHeavyCoding = !hasImages && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
+    const isDeepReasoning = !hasImages && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana cara|jelaskan detail|jelaskan komprehensif)\b/i.test(q) || len > 70);
     const isGreeting = !hasImages && len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q);
 
     // Resolve Effort: Priority to UI Dropdown Selection if not 'auto'
     const explicitEffort = (this.reasoningEffort && this.reasoningEffort !== 'auto') ? this.reasoningEffort.toUpperCase() : null;
-    let targetEffort = explicitEffort || (hasImages ? 'MEDIUM' : (isGreeting ? 'LOW' : (isDeepReasoning ? 'THINKING' : (isProjectExplaining || isHeavyCoding ? 'HIGH' : 'MEDIUM'))));
+    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isGreeting ? 'LOW' : (isPlanningOrSystemDesign || isDeepReasoning ? 'THINKING' : (isProjectExplaining || isHeavyCoding ? 'HIGH' : 'MEDIUM'))));
 
     // Real-Time Client-Side Web Search Crawler (Filtered)
     let searchContext = '';

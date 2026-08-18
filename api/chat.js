@@ -216,6 +216,21 @@ Jika pengguna menanyakan proyek, riset, skripsi, atau repositori Rafly Firmansya
 - Anda memiliki kemampuan multimodal penuh untuk memproses teks, kode, analisis dokumen PDF multi-halaman via PDF.js, dan pemindaian gambar Vision AI.
 - Jika pengguna menanyakan apakah Anda bisa mengakses internet, browsing, atau mencari data real-time, tegaskan dengan jelas bahwa sistem Anda DILENGKAPI fitur live web search dan continuous learning RAG, kemudian siap membantu mencari atau memverifikasi informasi terbaru.
 
+[PANDUAN GAYA KOMUNIKASI HUMAN-CENTRIC & TATA TULIS PROFESIONAL]:
+1. BAHASA MANUSIAWI, ALAMI & JELAS:
+   - Gunakan Bahasa Indonesia yang luwes, alami, bersahabat, cerdas, dan sangat mudah dipahami manusia.
+   - Sampaikan penjelasan layaknya seorang Principal Software Architect / Tech Lead senior yang sedang berdiskusi santai dan memaparkan solusi nyata dengan jelas.
+   - Dilarang keras menggunakan gaya bahasa robotik kaku, monolog internal bahasa Inggris (scratchpad), atau istilah teknis yang tidak diberi konteks penjelasan.
+2. STRUKTUR YANG RUNTUT, BERSIH & ENAK DIBACA (CLEAN MARKDOWN):
+   - Susun jawaban secara runtut: Mulai dari ringkasan ide pokok -> poin-poin arsitektur / langkah praktis -> keunggulan -> kesimpulan/tindak lanjut.
+   - Gunakan heading yang jelas (###), poin-poin bernomor atau bullet, dan penekanan tebal (**bold**) pada konsep esensial agar nyaman dibaca dan tidak melelahkan mata.
+   - Jika membandingkan konsep atau opsi teknologi, gunakan tabel ringkas yang mudah dipindai mata.
+3. ANTI CODE-DUMP / POHON FILE MENTAH BERLEBIHAN:
+   - Jika pengguna meminta rencana (plan), PRD, konsep arsitektur, strategi, atau panduan: FOKUSKAN pada penjelasan konsep, strategi desain visual (anti-slop), alur arsitektur, fitur utama, dan langkah implementasi praktis dengan bahasa manusiawi.
+   - Hindari membanjiri jawaban dengan puluhan baris kode mentah atau pohon direktori ASCII panjang yang membingungkan, kecuali pengguna secara spesifik meminta kode lengkap. Berikan cuplikan esensial ringkas disertai penjelasan fungsi konkretnya.
+4. JAWABAN TUNTAS 100% (ZERO-TRUNCATION):
+   - Rangkai penjelasan secara terarah dan selalu selesaikan seluruh poin hingga kesimpulan/penutup yang tuntas tanpa terpotong di tengah kalimat.
+
 Nol Emoji & Persona Profesional:
 - Dilarang menyisipkan emoji sama sekali. Pertahankan gaya komunikasi cerdas, analitis, dan objektif.
 `;
@@ -476,7 +491,22 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 2. Heavy Coding / Architecture / Bug Fix / Script Synthesis (High Effort & Codex Flagship)
+  // 2. System Planning / PRD / Web Portfolio Blueprint / Architecture Strategy (Thinking Effort & Nemotron Flagship)
+  const hasPlanningKeywords = /\b(plan|prd|product requirement|rancang|buatkan sistem|buatkan web|arsitektur sistem|halaman admin|monitoring|dashboard|telemetri|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|langkah-langkah|alur kerja|workflow|blueprint)\b/i.test(q);
+  if (hasPlanningKeywords) {
+    return {
+      category: 'system_planning',
+      effort: 'thinking',
+      omniCandidates: ['nemotron-laguna', 'nemotron-3-ultra-free', 'nemotron-super-free', 'Codex', 'Antigravity'],
+      openRouterCandidates: [
+        'nvidia/nemotron-3-ultra-550b-a55b',
+        'nvidia/nemotron-3-super-120b-a12b',
+        'meta-llama/llama-3.3-70b-instruct'
+      ]
+    };
+  }
+
+  // 3. Heavy Coding / Architecture / Bug Fix / Script Synthesis (High Effort & Codex Flagship)
   const hasCodeKeywords = /\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask|fastapi|express|django)\b/i.test(q);
   const hasCodeBlocks = /```|[{};]\s*[\r\n]|\.py|\.js|\.ts|\.php|\.cpp|\.go/.test(q) || docAttachments.length > 0;
   
@@ -493,7 +523,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 3. Project Explanations / Portfolio Architecture / Research Review (Nemotron 3 Ultra Flagship)
+  // 4. Project Explanations / Portfolio Architecture / Research Review (Nemotron 3 Ultra Flagship)
   const hasProjectKeywords = /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
   if (hasProjectKeywords) {
     return {
@@ -508,10 +538,10 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 4. Deep Chain-of-Thought / High-IQ Reasoning / Mathematics / In-depth Research Analysis (Thinking CoT & Antigravity)
-  const hasReasoningKeywords = /\b(analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran)\b/i.test(q);
+  // 5. Deep Chain-of-Thought / High-IQ Reasoning / Mathematics / In-depth Research Analysis (Thinking CoT & Antigravity)
+  const hasReasoningKeywords = /\b(analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana cara|jelaskan detail|jelaskan komprehensif)\b/i.test(q);
   
-  if (hasReasoningKeywords || len > 250) {
+  if (hasReasoningKeywords || len > 70) {
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
@@ -524,7 +554,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 5. Standard Explanatory / Tech concepts / News search / Comparisons (Medium Effort)
+  // 6. Standard Explanatory / Tech concepts / News search / Comparisons (Medium Effort)
   return {
     category: 'standard_balanced',
     effort: 'medium',
