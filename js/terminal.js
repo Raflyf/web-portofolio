@@ -994,8 +994,6 @@ export function initTerminal() {
     }
     if (attachBtn) attachBtn.disabled = true;
 
-    telemetry.logEvent('terminal_ai_query', (trimmed || 'multimodal_file').slice(0, 40), `Query AI: ${trimmed}`);
-
     // Dynamic Thinking Message based on effort mode, attachments, and query intent
     const thinkingMsg = getDynamicThinkingMessage(
       terminalAI.reasoningEffort,

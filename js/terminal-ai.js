@@ -174,17 +174,11 @@ class TerminalAIEngine {
   setModel(modelId) {
     this.currentModel = modelId;
     localStorage.setItem('ai_selected_model', modelId);
-    if (telemetry) {
-      telemetry.logEvent('model_select', modelId, `Pilihan Model: ${modelId}`);
-    }
   }
 
   setEffort(effort) {
     this.reasoningEffort = effort;
     localStorage.setItem('ai_selected_effort', effort);
-    if (telemetry) {
-      telemetry.logEvent('model_select', `effort_${effort}`, `Mode Reasoning: ${effort}`);
-    }
   }
 
   setKey(key, provider = 'openrouter') {
@@ -351,11 +345,6 @@ ${certsOverview}
     this.isAborted = false;
     this.currentAbortController = new AbortController();
 
-    // Log AI Consultation Telemetry
-    if (telemetry) {
-      telemetry.logEvent('ai_query', this.currentModel || 'auto', cleanQuery.substring(0, 100));
-    }
-
     const currentLang = this.detectOrUpdateLanguage(cleanQuery);
 
     // 0. Primary Direct Route on Client (OmniRoute / OpenCode / Nvidia / OpenRouter)
@@ -370,15 +359,6 @@ ${certsOverview}
           this.conversationHistory.push({ role: 'assistant', content: directRes.join('\n') });
           if (this.conversationHistory.length > 10) {
             this.conversationHistory = this.conversationHistory.slice(-10);
-          }
-
-          if (telemetry && this.lastExecutionInfo) {
-            const isAuto = this.lastExecutionInfo.isAuto;
-            const resolvedModel = this.lastExecutionInfo.resolvedModel;
-            const provider = this.lastExecutionInfo.provider;
-            const target = isAuto ? `auto:${resolvedModel}` : (this.currentModel || resolvedModel);
-            const label = isAuto ? `[Auto ➔ ${resolvedModel} via ${provider}] ${cleanQuery.substring(0, 60)}` : `[${this.currentModel} via ${provider}] ${cleanQuery.substring(0, 60)}`;
-            telemetry.logEvent('ai_query_resolved', target, label);
           }
           return directRes;
         }

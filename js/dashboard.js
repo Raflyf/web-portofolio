@@ -221,31 +221,35 @@ class DashboardApp {
       }
     }
 
-    // 3. Deduplicating Hybrid Merge (Combines both sources seamlessly)
-    const eventMap = new Map();
+    // 3. Intelligent Dual-Source Deduplication & Noise Filter (Collapses identical duplicates)
+    const allRawEvents = [...remoteEvents, ...localEvents];
 
-    // Ingest remote events
-    remoteEvents.forEach(e => {
-      if (!e) return;
-      const key = e.id || `${e.session_id}_${e.created_at}_${e.event_type}_${e.event_target}`;
-      eventMap.set(key, e);
-    });
-
-    // Ingest local events
-    localEvents.forEach(e => {
-      if (!e) return;
-      const key = e.id || `${e.session_id}_${e.created_at}_${e.event_type}_${e.event_target}`;
-      if (!eventMap.has(key)) {
-        eventMap.set(key, e);
-      }
-    });
-
-    // Sort chronologically descending (newest first)
-    const merged = Array.from(eventMap.values()).sort((a, b) => {
+    // Sort chronologically descending first
+    allRawEvents.sort((a, b) => {
       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
     });
 
-    this.events = merged;
+    const deduplicated = [];
+    const seenSignatures = new Set();
+
+    for (const e of allRawEvents) {
+      if (!e) continue;
+      
+      // Compute 3-second time bucket to merge duplicate transmissions / remote vs local identical logs
+      const ts = new Date(e.created_at || 0).getTime();
+      const timeBucket = Math.floor(ts / 3000);
+      const sid = (e.session_id || 'sess').substring(0, 30);
+      const type = (e.event_type || 'unknown').toLowerCase();
+      const target = (e.event_target || '').toLowerCase().trim().substring(0, 50);
+
+      const signature = `${sid}__${type}__${target}__${timeBucket}`;
+      if (!seenSignatures.has(signature)) {
+        seenSignatures.add(signature);
+        deduplicated.push(e);
+      }
+    }
+
+    this.events = deduplicated;
     this.filterAndRender();
   }
 
@@ -1094,13 +1098,34 @@ class DashboardApp {
       });
 
       const typeBadge = `<span class="table-event-tag">${this.sanitize(e.event_type)}</span>`;
-      const targetStr = e.event_target ? `<strong>${this.sanitize(e.event_target)}</strong>` : '-';
-      const labelStr = e.event_label ? `<br><small style="color:var(--text-dim);">${this.sanitize(e.event_label)}</small>` : '';
+      
+      let targetDisplay = e.event_target ? this.sanitize(e.event_target) : '-';
+      let labelDisplay = e.event_label ? this.sanitize(e.event_label) : '';
+
+      // Format page_view with human-readable page name
+      if (e.event_type === 'page_view') {
+        const raw = (e.event_target || '/').toLowerCase();
+        let pageTitle = 'Halaman Utama (Landing Page)';
+        if (raw.includes('dashboard')) pageTitle = 'Admin Dashboard & Telemetri';
+        else if (raw.includes('preview')) pageTitle = 'Pratinjau Kredensial (Preview)';
+        else if (raw !== '/' && raw !== '/index.html' && !raw.includes('halaman utama')) pageTitle = `Halaman: ${this.sanitize(e.event_target)}`;
+        
+        targetDisplay = `<strong style="color:var(--accent-cyan);">${pageTitle}</strong> <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">(${this.sanitize(e.event_target || '/')})</span>`;
+      } else if (e.event_type === 'model_select') {
+        targetDisplay = `<strong style="color:var(--accent-emerald);">${labelDisplay || targetDisplay}</strong>`;
+        labelDisplay = `Konfigurasi Model/Effort: ${this.sanitize(e.event_target)}`;
+      } else if (e.event_type === 'ai_query_resolved' || e.event_type === 'ai_query') {
+        targetDisplay = `<strong style="color:var(--accent-emerald);">${targetDisplay}</strong>`;
+      } else {
+        targetDisplay = `<strong>${targetDisplay}</strong>`;
+      }
+
+      const labelHtml = labelDisplay ? `<br><small style="color:var(--text-dim);">${labelDisplay}</small>` : '';
 
       tr.innerHTML = `
         <td style="font-family:var(--font-mono);font-size:0.75rem;white-space:nowrap;color:var(--text-muted);">${timeStr}</td>
         <td>${typeBadge}</td>
-        <td>${targetStr}${labelStr}</td>
+        <td>${targetDisplay}${labelHtml}</td>
         <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">${this.sanitize(e.device_type || 'desktop')}</td>
         <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);">${this.sanitize(e.session_id ? e.session_id.slice(-8) : '-')}</td>
       `;
