@@ -691,54 +691,120 @@ class DashboardApp {
       {
         id: 'auto-router',
         name: 'Auto Cloud Gateway',
-        category: 'Router',
+        category: 'Router Gateway',
         tag: 'Intelligent Adaptive SOTA Cascade',
         icon: SVG_ICONS.router,
         color: 'var(--accent-cyan)',
         isRouterCard: true
       },
 
-      // 1. Nvidia NIM & Nemotron Family
+      // 1. NVIDIA NIM Direct API Provider
       {
-        id: 'nemotron-3-ultra',
+        id: 'nemotron-3-ultra-nim',
         name: 'Nvidia Nemotron 3 Ultra (550B)',
-        category: 'Nvidia SOTA Flagship',
-        tag: '550B MoE Architecture & Research',
+        category: 'NVIDIA NIM Direct API',
+        tag: '550B MoE · Endpoint: api.nvidia.com',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('ultra') || s.includes('550b') || s.includes('laguna') || (s.includes('nemotron') && !s.includes('super'));
+          const isNim = s.includes('nim') || s.includes('nvidia nim');
+          const isUltra = s.includes('ultra') || s.includes('550b') || (s.includes('nemotron') && !s.includes('super') && !s.includes('laguna'));
+          return isNim && isUltra;
         }
       },
       {
-        id: 'nemotron-3-super',
+        id: 'nemotron-3-super-nim',
         name: 'Nvidia Nemotron 3 Super (120B)',
-        category: 'Nvidia NIM & OpenRouter',
-        tag: '120B Enterprise Compute Engine',
+        category: 'NVIDIA NIM Direct API',
+        tag: '120B SOTA · Endpoint: api.nvidia.com',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('super') || s.includes('120b');
+          const isNim = s.includes('nim') || s.includes('nvidia nim');
+          const isSuper = s.includes('super') || s.includes('120b');
+          return isNim && isSuper;
         }
       },
-
-      // 2. Meta Llama SOTA
       {
-        id: 'llama-3.3-70b',
+        id: 'llama-3.3-70b-nim',
         name: 'Llama 3.3 70B Instruct',
-        category: 'Nvidia / OpenRouter',
-        tag: '70B SOTA General Intelligence',
+        category: 'NVIDIA NIM Direct API',
+        tag: '70B SOTA · Endpoint: api.nvidia.com',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`.toLowerCase();
-          return s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3') || (s.includes('llama') && !s.includes('8b'));
+          const isNim = s.includes('nim') || s.includes('nvidia nim');
+          const isLlama = s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3') || (s.includes('llama') && !s.includes('8b'));
+          return isNim && isLlama;
         }
       },
 
-      // 3. OmniRoute Combo: Codex
+      // 2. OpenRouter 3-Key Cloud Pool Provider
+      {
+        id: 'nemotron-3-ultra-openrouter',
+        name: 'Nvidia Nemotron 3 Ultra (550B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '550B MoE · 3-Key Multi-Account Pool',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute'));
+          const isUltra = s.includes('ultra') || s.includes('550b') || (s.includes('nemotron') && !s.includes('super') && !s.includes('laguna'));
+          return isOpenRouter && isUltra;
+        }
+      },
+      {
+        id: 'nemotron-3-super-openrouter',
+        name: 'Nvidia Nemotron 3 Super (120B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '120B SOTA · 3-Key Multi-Account Pool',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute'));
+          const isSuper = s.includes('super') || s.includes('120b');
+          return isOpenRouter && isSuper;
+        }
+      },
+      {
+        id: 'llama-3.3-70b-openrouter',
+        name: 'Llama 3.3 70B Instruct',
+        category: 'OpenRouter Cloud Pool',
+        tag: '70B SOTA · 3-Key Multi-Account Pool',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          const isOpenRouter = s.includes('openrouter') || (!s.includes('nim') && !s.includes('omniroute'));
+          const isLlama = s.includes('llama-3.3') || s.includes('70b') || s.includes('llama 3.3') || (s.includes('llama') && !s.includes('8b'));
+          return isOpenRouter && isLlama;
+        }
+      },
+      {
+        id: 'qwen-coder-openrouter',
+        name: 'Qwen 2.5 Coder (32B)',
+        category: 'OpenRouter / OpenCode',
+        tag: 'qwen-2.5-coder-32b-instruct',
+        icon: SVG_ICONS.code,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen')
+      },
+      {
+        id: 'google-gemma-3-openrouter',
+        name: 'Google Gemma 3 (27B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: 'google/gemma-3-27b-it',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-amber)',
+        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma')
+      },
+
+      // 3. OmniRoute Dedicated Server Provider (Combos)
       {
         id: 'omniroute-codex',
         name: 'Codex',
@@ -751,8 +817,6 @@ class DashboardApp {
           return s.includes('codex') || s.includes('gpt-5.6') || s.includes('terra');
         }
       },
-
-      // 4. OmniRoute Combo: Antigravity
       {
         id: 'omniroute-antigravity',
         name: 'Antigravity',
@@ -765,12 +829,10 @@ class DashboardApp {
           return s.includes('antigravity') || s.includes('claude-opus') || s.includes('opus');
         }
       },
-
-      // 5. OmniRoute Combo: Deepseek-V4-Flash-Free
       {
-        id: 'deepseek-v4-flash',
+        id: 'omniroute-deepseek-v4',
         name: 'Deepseek-V4-Flash-Free',
-        category: 'OmniRoute / OpenRouter',
+        category: 'OmniRoute Dedicated',
         tag: 'Model ID: Deepseek-V4-Flash-Free',
         icon: SVG_ICONS.fast,
         color: 'var(--accent-cyan)',
@@ -779,12 +841,10 @@ class DashboardApp {
           return s.includes('deepseek') || s.includes('v4-flash') || s.includes('v4');
         }
       },
-
-      // 6. OmniRoute Combo: Vision-model
       {
-        id: 'vision-model',
+        id: 'omniroute-vision',
         name: 'Vision-model',
-        category: 'OmniRoute & Multimodal',
+        category: 'OmniRoute Dedicated',
         tag: 'Model ID: Vision-model (Image & PDF OCR)',
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
@@ -793,34 +853,24 @@ class DashboardApp {
           return s.includes('vision-model') || s.includes('vision') || s.includes('minimax') || s.includes('mimo');
         }
       },
-
-      // 7. Qwen 2.5 Coder (32B)
       {
-        id: 'qwen-coder',
-        name: 'Qwen 2.5 Coder (32B)',
-        category: 'OpenRouter & OpenCode',
-        tag: 'qwen-2.5-coder-32b-instruct',
-        icon: SVG_ICONS.code,
+        id: 'omniroute-nemotron',
+        name: 'nemotron-laguna / ultra',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: nemotron-laguna (OmniRoute)',
+        icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('qwen')
+        match: (t, l) => {
+          const s = `${t} ${l}`.toLowerCase();
+          return s.includes('omniroute') && (s.includes('laguna') || s.includes('ultra-free') || s.includes('super-free'));
+        }
       },
 
-      // 8. Google Gemma 3 (27B)
-      {
-        id: 'google-gemma-3',
-        name: 'Google Gemma 3 (27B)',
-        category: 'OpenRouter Cloud',
-        tag: 'google/gemma-3-27b-it',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-amber)',
-        match: (t, l) => `${t} ${l}`.toLowerCase().includes('gemma')
-      },
-
-      // 9. Local & Offline Fallback
+      // 4. In-Browser / Local Offline Fallback
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
-        category: 'Offline Fallback',
+        category: 'In-Browser Engine',
         tag: 'In-Browser Sub-15ms Pattern Matcher',
         icon: SVG_ICONS.offline,
         color: 'var(--text-muted)',
@@ -887,14 +937,15 @@ class DashboardApp {
         if (matchedModel) {
           modelStatsMap[matchedModel.id].autoCount++;
           modelStatsMap[matchedModel.id].total++;
-          autoResolvedBreakdown[matchedModel.name] = (autoResolvedBreakdown[matchedModel.name] || 0) + 1;
+          const breakdownLabel = `${matchedModel.name} · ${matchedModel.category}`;
+          autoResolvedBreakdown[breakdownLabel] = (autoResolvedBreakdown[breakdownLabel] || 0) + 1;
         } else {
           // Resolve fallback model name cleanly
           let fallbackName = t.replace(/^auto:/, '').trim();
           if ((!fallbackName || fallbackName === 'auto') && l.includes('[Auto ➔')) {
             fallbackName = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
           }
-          if (!fallbackName || fallbackName === 'auto') fallbackName = 'Nvidia Nemotron 3 Ultra (550B)';
+          if (!fallbackName || fallbackName === 'auto') fallbackName = 'Nvidia Nemotron 3 Ultra (550B) · OpenRouter';
           autoResolvedBreakdown[fallbackName] = (autoResolvedBreakdown[fallbackName] || 0) + 1;
         }
       } else {
