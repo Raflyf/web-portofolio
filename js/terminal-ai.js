@@ -800,31 +800,63 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
     const explicitEffort = (this.reasoningEffort && this.reasoningEffort !== 'auto') ? this.reasoningEffort.toUpperCase() : null;
     let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isCasualOrShort || isFileExportQuery ? 'LOW' : (isPlanningOrSystemDesign || isDeepReasoning ? 'THINKING' : (isHeavyCoding ? 'HIGH' : 'MEDIUM'))));
 
-    // Real-Time Client-Side Web Search Crawler (Filtered)
+    // Real-Time Client-Side Universal Web Search Crawler
     let searchContext = '';
     try {
+      const snippets = [];
+
+      // 1. Direct Web Page Scraper for any URL in the query
+      const urlMatches = cleanQuery.match(/https?:\/\/[^\s"'<>]+/gi) || [];
+      if (urlMatches.length > 0) {
+        const urlPromises = urlMatches.slice(0, 2).map(async (u) => {
+          try {
+            const ctrl = new AbortController();
+            const tm = setTimeout(() => ctrl.abort(), 3000);
+            const res = await fetch(u, { signal: ctrl.signal });
+            clearTimeout(tm);
+            if (res.ok) {
+              const text = await res.text();
+              const clean = text
+                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+                .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+              if (clean.length > 50) {
+                snippets.push(`[Live Webpage Content (${u})]: ${clean.slice(0, 3000)}`);
+              }
+            }
+          } catch (_) {}
+        });
+        await Promise.allSettled(urlPromises);
+      }
+
+      // 2. Open Search across Wikipedia (EN/ID) and Hugging Face
       const stopWords = /^(saya|aku|kamu|anda|ingin|tolong|coba|bisa|minta|mohon|mau|apakah|apa|kenapa|mengapa|bagaimana|gimana|kapan|dimana|adalah|untuk|pada|di|ke|dari|dengan|kalo|jika|buat|buatkan|tampilkan|jelaskan|uraikan|proyek|project|tentang|soal|yg|yang|ada|ini|itu|dan|atau|web|porto|portofolio|github|nya)\b/gi;
       const searchKeywords = cleanQuery.replace(stopWords, '').replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
       
-      if (searchKeywords.length >= 3 && !isProjectExplaining) {
+      if (searchKeywords.length >= 2) {
         const searchCtrl = new AbortController();
         const searchTimer = setTimeout(() => searchCtrl.abort(), 2500);
         const firstTerm = searchKeywords.split(' ')[0];
-        const [wikiRes, hfRes] = await Promise.allSettled([
+        const [wikiRes, wikiIdRes, hfRes] = await Promise.allSettled([
           fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchKeywords.slice(0, 40))}&format=json&origin=*`, { signal: searchCtrl.signal }),
+          fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchKeywords.slice(0, 40))}&format=json&origin=*`, { signal: searchCtrl.signal }),
           fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(firstTerm)}&limit=3`, { signal: searchCtrl.signal })
         ]);
         clearTimeout(searchTimer);
 
-        const snippets = [];
-        if (wikiRes.status === 'fulfilled' && wikiRes.value.ok) {
-          const wikiData = await wikiRes.value.json().catch(() => null);
-          const hits = wikiData?.query?.search || [];
-          if (hits.length > 0) {
-            const s = hits[0].snippet.replace(/<[^>]+>/g, '').trim();
-            if (s.length > 10) snippets.push(`[Wikipedia]: ${s}`);
+        for (const wRes of [wikiRes, wikiIdRes]) {
+          if (wRes.status === 'fulfilled' && wRes.value.ok) {
+            const wikiData = await wRes.value.json().catch(() => null);
+            const hits = wikiData?.query?.search || [];
+            if (hits.length > 0) {
+              const s = hits[0].snippet.replace(/<[^>]+>/g, '').trim();
+              if (s.length > 10) snippets.push(`[Wikipedia (${hits[0].title})]: ${s}`);
+            }
           }
         }
+
         if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
           const hfData = await hfRes.value.json().catch(() => null);
           if (Array.isArray(hfData) && hfData.length > 0) {
@@ -832,14 +864,15 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
             snippets.push(`[Hugging Face Models]: ${names}`);
           }
         }
-        if (snippets.length > 0) {
-          searchContext = `\n\n[HASIL PENCARIAN REAL-TIME 2026]:\n${snippets.join('\n')}`;
-          snippets.forEach(s => {
-            if (s && s.length > 15) {
-              this.saveAIMemory(s);
-            }
-          });
-        }
+      }
+
+      if (snippets.length > 0) {
+        searchContext = `\n\n[HASIL PENCARIAN & JELAJAH WEB REAL-TIME 2026 (OPEN INTERNET)]:\n${snippets.join('\n')}`;
+        snippets.forEach(s => {
+          if (s && s.length > 15) {
+            this.saveAIMemory(s);
+          }
+        });
       }
     } catch (_) {}
 
