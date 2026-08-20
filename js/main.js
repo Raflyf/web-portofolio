@@ -11,9 +11,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.93.0';
-import { initTerminal } from './terminal.js?v=10.93.0';
-import { telemetry } from './telemetry.js?v=10.93.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.94.0';
+import { initTerminal } from './terminal.js?v=10.94.0';
+import { telemetry } from './telemetry.js?v=10.94.0';
 
 document.addEventListener('DOMContentLoaded', () => {
   telemetry.init();
