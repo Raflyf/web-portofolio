@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.96.0';
-import { telemetry } from './telemetry.js?v=10.96.0';
-import { terminalAI } from './terminal-ai.js?v=10.96.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.97.0';
+import { telemetry } from './telemetry.js?v=10.97.0';
+import { terminalAI } from './terminal-ai.js?v=10.97.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -250,23 +250,25 @@ export function initTerminal() {
   function appendBubbleToActiveConvo(bubbleData, isAITurn = false) {
     let activeId = getActiveConvoId();
     let convos = getAllConvos();
-    let convo = convos.find(c => c.id === activeId);
+    let convo = activeId ? convos.find(c => c.id === activeId) : null;
 
     if (!convo) {
-      activeId = 'convo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+      if (!activeId) {
+        activeId = 'convo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        setActiveConvoId(activeId);
+      }
       convo = {
         id: activeId,
-        title: bubbleData.type === 'user' ? (bubbleData.text.substring(0, 50).replace(/[#*`_]/g, '').trim() || 'Percakapan AI') : 'Percakapan AI',
-        preview: bubbleData.text.substring(0, 80).replace(/[#*`_]/g, '').trim(),
+        title: bubbleData.type === 'user' ? (bubbleData.text.substring(0, 55).replace(/[#*`_]/g, '').trim() || 'Percakapan AI') : 'Percakapan AI',
+        preview: bubbleData.text.substring(0, 85).replace(/[#*`_]/g, '').trim(),
         createdAt: Date.now(),
         updatedAt: Date.now(),
         bubbles: [],
         history: []
       };
       convos.unshift(convo);
-      setActiveConvoId(activeId);
     } else {
-      if ((convo.title === 'Sesi Percakapan Baru' || !convo.title) && bubbleData.type === 'user' && bubbleData.text) {
+      if ((convo.title === 'Sesi Percakapan Baru' || !convo.title || convo.title === 'Percakapan AI') && bubbleData.type === 'user' && bubbleData.text) {
         convo.title = bubbleData.text.substring(0, 55).replace(/[#*`_]/g, '').trim() || 'Percakapan AI';
       }
       convo.preview = bubbleData.text.substring(0, 85).replace(/[#*`_]/g, '').trim();
@@ -1644,8 +1646,16 @@ export function initTerminal() {
     }
   }
 
-  // Initial clean welcome message (with on-demand session banner if previous chat exists)
-  renderWelcomeMessage();
+  // Initial startup: restore existing active conversation or prepare clean new conversation
+  const initialActiveId = getActiveConvoId();
+  const allExistingConvos = getAllConvos();
+  if (initialActiveId && allExistingConvos.some(c => c.id === initialActiveId)) {
+    switchConvo(initialActiveId);
+  } else if (allExistingConvos.length > 0) {
+    switchConvo(allExistingConvos[0].id);
+  } else {
+    createNewConvo();
+  }
 
   // Form submit listener
   terminalForm.addEventListener('submit', (e) => {
