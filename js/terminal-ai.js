@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.95.0';
-import { telemetry } from './telemetry.js?v=10.95.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.96.0';
+import { telemetry } from './telemetry.js?v=10.96.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -882,19 +882,16 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 
     // Intelligent Intent Detection & Automatic Effort Resolution
     const isCasualOrShort = !hasImages && (
-      (len < 50 && /^(cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|good|nice|paham|mengerti)\b/i.test(q)) ||
-      (len < 60 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu)\b/i.test(q)) ||
-      (len <= 30 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|bikin|buatkan|debug|error|fungsi|analisis|mengapa|kenapa|bagaimana|plan|prd|proyek)\b/i.test(q))
+      (len < 50 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|good|nice|paham|mengerti)\b/i.test(q)) ||
+      (len <= 25 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|bikin|buatkan|debug|error)\b/i.test(q))
     );
     const isFileExportQuery = !hasImages && /\b(dalam file|bentuk \.md|bentuk file|jadikan file|download file|unduh file|kirim file|simpan file|save file|bikin file|buat file|jadikan \.md|jadikan \.txt|jadikan \.pdf|format \.md|format file|file \.md)\b/i.test(q);
-    const isPlanningOrSystemDesign = !hasImages && !isFileExportQuery && !isCasualOrShort && /\b(plan|prd|product requirement|rancang|buatkan sistem|buatkan web|arsitektur sistem|halaman admin|monitoring|dashboard|telemetri|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|langkah-langkah|alur kerja|workflow|blueprint)\b/i.test(q);
-    const isProjectExplaining = !hasImages && !isFileExportQuery && !isCasualOrShort && !isPlanningOrSystemDesign && /\b(proyek|project|openplagiarism|plagiarism|checker|fotokita|laser_pointer|laser|spam|skripsi|arsitektur|cara kerja|jelaskan proyek|uraikan proyek|jelaskan repo|uraikan repo|github)\b/i.test(q);
-    const isHeavyCoding = !hasImages && !isFileExportQuery && !isCasualOrShort && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q));
-    const isDeepReasoning = !hasImages && !isFileExportQuery && !isCasualOrShort && !isPlanningOrSystemDesign && !isProjectExplaining && (/\b(analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana cara|jelaskan detail|jelaskan komprehensif)\b/i.test(q) || len > 70);
+    const isRigorousMathThinking = !hasImages && /\b(turunkan rumus|matematis|bukti matematis|pembuktian matematis|formula matematis|chain of thought|step by step reasoning|penalaran mendalam|bedah logika mendalam|analisis statistik mendalam|evaluasi empiris skripsi|perhitungan matriks|probabilitas bayesian)\b/i.test(q);
+    const isHeavyCodingFull = !hasImages && (/\b(buatkan full script|buatkan full kode|arsitektur microservice|implementasikan sistem|buatkan backend lengkap|full stack implementasi|buatkan boilerplate|sistem auth lengkap|pipeline dataform|dbt pipeline|docker compose full|kubernetes manifest)\b/i.test(q) || (attachments.length > 0 && len > 150));
 
     // Resolve Effort: Priority to UI Dropdown Selection if not 'auto'
     const explicitEffort = (this.reasoningEffort && this.reasoningEffort !== 'auto') ? this.reasoningEffort.toUpperCase() : null;
-    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isCasualOrShort || isFileExportQuery ? 'LOW' : 'MEDIUM'));
+    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isCasualOrShort || isFileExportQuery ? 'LOW' : (isRigorousMathThinking ? 'THINKING' : (isHeavyCodingFull ? 'HIGH' : 'MEDIUM'))));
 
     // Real-Time Client-Side Universal Web Search Crawler
     let searchContext = '';

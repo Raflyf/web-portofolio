@@ -674,37 +674,52 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 1. Heavy Coding / Scripting / Bug Fixing / Refactoring / Code Architecture
-  const hasCodeKeywords = /\b(buatkan script|buat script|tulis script|bikin script|buatkan kode|buat kode|tulis kode|bikin kode|script|koding|coding|function|def |class |async |await |import |export |const |let |var |console\.|print\(|return |public |private |struct |interface |lambda |sql|select .* from|create table|dockerfile|kubernetes|yaml|json|regex|refactor|debug|fix bug|error|syntax)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask|fastapi|express|django)\b/i.test(q);
-  const hasCodeBlocks = /```|[{};]\s*[\r\n]|\.py|\.js|\.ts|\.php|\.cpp|\.go/.test(q) || docAttachments.length > 0;
+  // 0. Casual greetings, short conversational messages, acknowledgments
+  const isCasualOrClosing = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|paham|mengerti)\b/i.test(q) || (len <= 25 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|buatkan|bikin|debug|error)\b/i.test(q));
   
-  if (hasCodeKeywords || hasCodeBlocks) {
+  if (isCasualOrClosing) {
+    return {
+      category: 'trivial_casual',
+      effort: 'low',
+      label: 'Casual Greeting & Quick Interaction (Instant Response)'
+    };
+  }
+
+  // 1. Rigorous Multi-Step Mathematical Proof, Chain of Thought, Formal Thesis Derivations
+  const hasRigorousThinkingKeywords = /\b(turunkan rumus|matematis|bukti matematis|pembuktian matematis|formula matematis|chain of thought|step by step reasoning|penalaran mendalam|bedah logika mendalam|analisis statistik mendalam|evaluasi empiris skripsi|perhitungan matriks|probabilitas bayesian)\b/i.test(q);
+  if (hasRigorousThinkingKeywords) {
+    return {
+      category: 'deep_reasoning',
+      effort: 'thinking',
+      label: 'Deep Reasoning & Mathematical Derivations (Antigravity & Nemotron 550B)'
+    };
+  }
+
+  // 2. Heavy Coding, Multi-File Full System Implementations, Large Script Synthesis
+  const hasHeavyCodeKeywords = /\b(buatkan full script|buatkan full kode|arsitektur microservice|implementasikan sistem|buatkan backend lengkap|full stack implementasi|buatkan boilerplate|sistem auth lengkap|pipeline dataform|dbt pipeline|docker compose full|kubernetes manifest)\b/i.test(q) || (docAttachments.length > 0 && len > 150);
+  if (hasHeavyCodeKeywords) {
+    return {
+      category: 'heavy_coding',
+      effort: 'high',
+      label: 'Heavy Coding & System Architecture (Codex & Qwen Coder)'
+    };
+  }
+
+  // 3. Standard Coding & Snippets
+  const hasCodeKeywords = /\b(script|koding|coding|function|def |class |async |await |import |export |const |let |var |sql|select .* from|regex|refactor|debug|fix bug|error|syntax)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q);
+  if (hasCodeKeywords) {
     return {
       category: 'heavy_coding',
       effort: 'medium',
-      label: 'Coding & Algorithm Synthesis (Benchmark SOTA: Codex & Qwen Coder)'
+      label: 'Coding & Algorithm Synthesis (Codex & Qwen Coder)'
     };
   }
 
-  // 2. Deep Reasoning / Brainstorming / Analisis Mendalam / CoT / Riset / PRD / Filosofis / Metodologi
-  const hasReasoningKeywords = /\b(brainstorming|brain storming|analisis|analisis mendalam|analisis komprehensif|bedah logika|turunkan rumus|matematis|algoritma|perbandingan|benchmark|arena|evaluasi kritis|trade-offs|tradeoff|metodologi|komparasi|chain of thought|thinking|penalaran|kenapa|mengapa|bagaimana|cara kerja|jelaskan detail|jelaskan komprehensif|prd|product requirement|rancang|buatkan sistem|arsitektur|roadmap|strategi|panduan lengkap|desain sistem|spesifikasi|alur kerja|workflow|blueprint|skripsi|deep learning|machine learning|neural network|transformer)\b/i.test(q);
-  
-  // Trivial/casual check to prevent casual questions like "kenapa gini doang" from forcing thinking mode
-  const isCasualOrClosing = /^(cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|paham|mengerti|kenapa gini doang|gitu doang)\b/i.test(q) || (len < 20 && !hasCodeKeywords);
-
-  if (hasReasoningKeywords && !isCasualOrClosing) {
-    return {
-      category: 'deep_reasoning',
-      effort: 'medium',
-      label: 'Deep Reasoning & Brainstorming (Benchmark SOTA: Antigravity & Nemotron Ultra 550B)'
-    };
-  }
-
-  // 3. Basic / Casual / Standard Q&A (User Specified Default Priority Hierarchy)
+  // 4. Standard Informative, Conceptual, Feature Comparisons, Q&A (e.g. React 19, Web API, RAG, Best Practices)
   return {
     category: 'basic_standard',
     effort: 'medium',
-    label: 'Basic / Standard Q&A (User Priority Hierarchy: Nemotron Ultra -> Super -> Laguna -> DeepSeek V4 -> Codex -> Antigravity -> Vision -> MiniMax)'
+    label: 'Standard Q&A & Technical Synthesis (Fast Balanced Model Pool)'
   };
 }
 
