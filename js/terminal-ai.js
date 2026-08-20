@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.90.0';
-import { telemetry } from './telemetry.js?v=10.90.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.92.0';
+import { telemetry } from './telemetry.js?v=10.92.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -274,7 +274,7 @@ class TerminalAIEngine {
       const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) return '';
 
-      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=10`;
+      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=15`;
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 2000);
       const res = await fetch(endpoint, {
@@ -291,8 +291,15 @@ class TerminalAIEngine {
       const data = await res.json();
       if (!data || data.length === 0) return '';
       
-      const facts = data.map(d => `- ${d.fact_text}`).join('\n');
-      return `\n\n[MEMORI JANGKA PANJANG AI (FAKTA YANG TELAH DIPELAJARI DARI PENGGUNA)]:\n${facts}\n(Gunakan fakta di atas jika relevan dengan pertanyaan saat ini.)`;
+      const facts = data
+        .map(d => (d.fact_text || '').trim())
+        .filter(t => t.length > 5 && !t.startsWith('[Q&A Context]') && !t.includes(' ➔ '))
+        .slice(0, 8)
+        .map(t => `- ${t}`)
+        .join('\n');
+
+      if (!facts) return '';
+      return `\n\n[MEMORI JANGKA PANJANG AI (FAKTA YANG TELAH DIPELAJARI DARI PENGGUNA)]:\n${facts}\n(Gunakan fakta di atas sebagai wawasan tambahan jika relevan dengan pertanyaan saat ini.)`;
     } catch (err) {
       return '';
     }
@@ -627,11 +634,6 @@ ${certsOverview}
           const newFact = memoryMatch[1].trim();
           this.saveAIMemory(newFact);
           finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
-        } else if (cleanQuery.length > 5 && finalResponse.length > 25 && !/^(halo|hai|tes|ping)\b/i.test(cleanQuery)) {
-          const topic = cleanQuery.substring(0, 70);
-          const firstLine = finalResponse.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalResponse.substring(0, 120);
-          const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
-          this.saveAIMemory(cleanFact);
         }
 
         // Automatically accumulate verified live web knowledge into long-term memory
@@ -799,6 +801,13 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 4. NOL EMOJI & TUNTAS:
    - Dilarang keras menyisipkan emoji dalam bentuk apa pun.
    - Pastikan jawaban selesai tuntas dan tidak terpotong.
+5. ATURAN MUTLAK KEMANDIRIAN JAWABAN & LARANGAN MENOLAK/MERUJUK KE ATAS:
+   - Anda WAJIB SELALU MENJAWAB SELURUH PERTANYAAN PENGGUNA SECARA LENGKAP, MANDIRI, BERSTRUKTUR DETAIL, DAN DARI AWAL.
+   - DILARANG KERAS menolak menjawab, memotong jawaban, atau mengeluarkan kalimat pengelakan seperti:
+     * "Barusan saya jawab pertanyaan itu sama persis di atas..."
+     * "Seperti yang sudah saya jelaskan sebelumnya..."
+     * "Sudah saya sebutkan di atas..."
+   - Sekalipun pertanyaan pengguna mirip atau sama persis dengan pertanyaan sebelumnya atau terdapat dalam catatan memori, Anda TETAP WAJIB MENYAJIKAN JAWABAN UTUH DAN KOMPREHENSIF SECARA SEGAR (FRESH & COMPREHENSIVE).
 
 [PANDUAN GAYA KOMUNIKASI & PERSONA PERCAKAPAN ALAMI (HELPFUL & CONVERSATIONAL)]:
 1. BAHASA PERCAKAPAN NATURAL, RAMAH & MENGALIR:
@@ -1038,11 +1047,6 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
         const newFact = memoryMatch[1].trim();
         this.saveAIMemory(newFact);
         finalContent = finalContent.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
-      } else if (cleanQuery.length > 5 && finalContent.length > 25 && !/^(halo|hai|tes|ping)\b/i.test(cleanQuery)) {
-        const topic = cleanQuery.substring(0, 70);
-        const firstLine = finalContent.split('\n').find(l => l.trim().length > 15 && !l.startsWith('#')) || finalContent.substring(0, 120);
-        const cleanFact = `[Q&A Context]: ${topic} ➔ ${firstLine.replace(/[#*`_]/g, '').trim().substring(0, 180)}`;
-        this.saveAIMemory(cleanFact);
       }
 
       this.lastExecutionInfo = {
