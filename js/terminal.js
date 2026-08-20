@@ -1604,6 +1604,7 @@ export function initTerminal() {
         const authorEl = bubbleEl ? bubbleEl.querySelector('.chat-msg__author--ai span') : null;
         const authorText = authorEl ? authorEl.textContent : 'AI Assistant';
         const timeEl = bubbleEl ? bubbleEl.querySelector('.chat-msg__time') : null;
+        const timeText = timeEl ? timeEl.textContent : new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
         appendBubbleToActiveConvo({
           type: 'ai',
           text: responses.join('\n'),
@@ -1612,6 +1613,7 @@ export function initTerminal() {
         }, true);
       }
     } catch (err) {
+      console.error('[Terminal AI Execution Error]:', err);
       if (activeThinkingLine && activeThinkingLine.parentNode) {
         activeThinkingLine.remove();
         activeThinkingLine = null;
