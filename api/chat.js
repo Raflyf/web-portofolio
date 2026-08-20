@@ -833,11 +833,7 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 480000);
 
-    const maxTokensConfig = effectiveEffort === 'low' 
-      ? 2000 
-      : (effectiveEffort === 'medium'
-          ? 4500 
-          : (effectiveEffort === 'high' ? 6500 : 8192));
+    const maxTokensConfig = effectiveEffort === 'low' ? 4096 : 8192;
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================

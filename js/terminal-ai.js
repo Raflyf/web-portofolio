@@ -911,8 +911,8 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
 \`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\``;
 
     const effortTokensMap = {
-      'LOW': 2500,
-      'MEDIUM': 4500,
+      'LOW': 4096,
+      'MEDIUM': 8192,
       'HIGH': 8192,
       'THINKING': 8192
     };
@@ -1088,7 +1088,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
     for (const nimModel of nimCandidateModels) {
       try {
         const nimController = new AbortController();
-        const nimTimeout = setTimeout(() => nimController.abort(), 30000);
+        const nimTimeout = setTimeout(() => nimController.abort(), 45000);
         const nimRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -1131,7 +1131,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       for (const orKey of OR_KEYS) {
         try {
           const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 35000);
+          const orTimeout = setTimeout(() => orController.abort(), 50000);
           const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
