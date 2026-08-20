@@ -1200,12 +1200,14 @@ Langkah yang WAJIB Anda lakukan:
 
       // Default: Basic / Casual / Standard Q&A (User Specified Exact Hierarchy)
       return [
-        // 1. Nemotron Flagship (Semua Provider)
+        // 1. Nemotron Flagship (Semua Provider & Semua Varian)
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
         { provider: 'opencode', model: 'nemotron-3-ultra-free' },
         { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
         { provider: 'ollama', model: 'nemotron-3-ultra' },
+        { provider: 'ollama', model: 'nemotron-3-super' },
         { provider: 'omniroute', model: 'nemotron-laguna' },
 
         // 2. DeepSeek V4 Flash Free (OmniRoute & OpenCode)
