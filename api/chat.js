@@ -238,6 +238,91 @@ function isJunkArticle(title) {
 }
 
 /**
+ * Real-Time GitHub Live Repository Document Fetcher
+ * Automatically fetches the authentic README.md / documentation from GitHub raw endpoints
+ * whenever the user mentions or asks about Rafly's repositories or portfolio projects.
+ */
+async function fetchLiveRepoContext(query = '') {
+  if (!query || typeof query !== 'string') return '';
+  const q = query.toLowerCase();
+
+  const repoTargets = [];
+  if (/\b(spam|email|klasifikasi email|cnb|complement|xgboost|concept drift|domain adaptation|skripsi|akurasi|confusion matrix)\b/i.test(q)) {
+    repoTargets.push({
+      name: 'Spam-Email-Classifier',
+      urls: [
+        'https://raw.githubusercontent.com/Raflyf/Spam-Email/main/docs/DOKUMENTASI_MODEL.md',
+        'https://raw.githubusercontent.com/Raflyf/Spam-Email/main/README.md'
+      ]
+    });
+  }
+  if (/\b(openplagiarism|plagiarism|plagiat|sbert|n-gram|cektesis|shingling)\b/i.test(q)) {
+    repoTargets.push({
+      name: 'OpenPlagiarismChecker',
+      urls: [
+        'https://raw.githubusercontent.com/Raflyf/OpenPlagiarismChecker/main/README.md'
+      ]
+    });
+  }
+  if (/\b(laser|pointer|ppt|powerpoint|gyroscope|remotepresenter)\b/i.test(q)) {
+    repoTargets.push({
+      name: 'laser_pointer_PPT',
+      urls: [
+        'https://raw.githubusercontent.com/Raflyf/laser_pointer_PPT/main/README.md'
+      ]
+    });
+  }
+  if (/\b(fotokita|fotokitablur|blur|face|v-sign|peace sign|privasi wajah)\b/i.test(q)) {
+    repoTargets.push({
+      name: 'FotoKitaBlur',
+      urls: [
+        'https://raw.githubusercontent.com/Raflyf/FotoKitaBlur/main/README.md'
+      ]
+    });
+  }
+  if (/\b(web-portofolio|porto|website ini|web ini|terminal)\b/i.test(q)) {
+    repoTargets.push({
+      name: 'web-portofolio',
+      urls: [
+        'https://raw.githubusercontent.com/Raflyf/web-portofolio/main/README.md'
+      ]
+    });
+  }
+
+  if (repoTargets.length === 0) return '';
+
+  try {
+    const fetchPromises = repoTargets.flatMap(target => 
+      target.urls.map(async (url) => {
+        try {
+          const res = await fetchWithTimeout(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PortofolioAIBot/2026' }
+          }, 3000);
+          if (res.ok) {
+            const text = await res.text();
+            if (text && text.length > 50) {
+              return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 4000)}`;
+            }
+          }
+        } catch (_) {}
+        return null;
+      })
+    );
+
+    const results = await Promise.allSettled(fetchPromises);
+    const validDocs = results
+      .filter(r => r.status === 'fulfilled' && Boolean(r.value))
+      .map(r => r.value);
+
+    if (validDocs.length > 0) {
+      return `\n\n[DOKUMENTASI REPOSITORI GITHUB LIVE (GROUND TRUTH TERVERIFIKASI)]:\n${validDocs.join('\n\n')}\n(PENTING: Seluruh informasi, arsitektur, dan angka metrik di atas diambil langsung secara live dari repositori GitHub resmi Rafly Firmansyah. Gunakan data autentik di atas sebagai sumber kebenaran tertinggi dan DILARANG KERAS berasumsi/berhalusinasi.)\n`;
+    }
+  } catch (_) {}
+
+  return '';
+}
+
+/**
  * Massive Real-Time Multi-Entity Parallel Web Crawler (v9.4.0)
  * Intelligently decomposes multi-topic queries (e.g. "Claude, GPT, and Gemini") into individual targeted searches
  * and concurrently extracts data from Google News Global, Google News ID, Wikipedia, and Hugging Face.
@@ -552,8 +637,13 @@ export default async function handler(req, res) {
       targetModel = 'Vision-model';
     }
 
-    const searchResult = await searchWebContext(query, history);
-    const webContext = (queryIntent.category === 'trivial_casual') ? '' : searchResult.formattedPrompt;
+    const [searchResult, liveRepoContext] = await Promise.all([
+      searchWebContext(query, history),
+      fetchLiveRepoContext(query)
+    ]);
+    const webContext = (queryIntent.category === 'trivial_casual') 
+      ? '' 
+      : `${liveRepoContext}${searchResult.formattedPrompt}`;
     const webMemories = searchResult.rawSnippets || [];
 
     const sendSuccess = (content, modelName, providerName) => {
