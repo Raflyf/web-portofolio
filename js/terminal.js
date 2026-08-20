@@ -833,7 +833,8 @@ export function initTerminal() {
       "   - Indexed Academic Corp : 15+ Repositories (GARUDA, IOS, BASE)",
       "",
       "2. Spam-Email Classifier:",
-      "   - Naive Bayes vs XGBoost Real-time Comparison",
+      "   - Complement Naive Bayes (CNB) vs XGBoost Real-time Comparison",
+      "   - Domain Adaptation untuk mitigasi fenomena Concept Drift",
       "   - Dynamic Class Balancing Support (10:90 to 90:10 Ratio Tuning)",
       "   - Confusion Matrix & F1-Score Instant Evaluation"
     ],

@@ -50,13 +50,14 @@ export const PROJECTS_DATA = [
     category: "ai-ml",
     categoryLabel: "Machine Learning",
     badge: "Skripsi / ML Research",
-    description: "Aplikasi web evaluasi dan klasifikasi email spam berbasis Machine Learning. Membandingkan performa Naive Bayes vs XGBoost dengan tuning proporsi kelas dataset fleksibel dan visualisasi Confusion Matrix.",
-    longDescription: "Aplikasi web penelitian untuk mengklasifikasikan email spam vs ham yang dibangun dengan Flask dan antarmuka web modern. Mendukung pengujian real-time teks langsung, evaluasi batch dataset massal melalui file .csv, serta visualisasi perbandingan akurasi, F1-score, dan Confusion Matrix interaktif.",
+    description: "Aplikasi web evaluasi dan klasifikasi email spam berbasis Machine Learning. Membandingkan performa Complement Naive Bayes (CNB) vs XGBoost dengan penerapan Domain Adaptation untuk mengatasi fenomena Concept Drift pada dataset email modern.",
+    longDescription: "Aplikasi web penelitian untuk mengklasifikasikan email spam vs ham yang dibangun dengan Flask dan antarmuka web modern. Mengkomparasikan Complement Naive Bayes (CNB) yang dirancang khusus untuk dataset teks tidak seimbang dengan XGBoost, dilengkapi metode Domain Adaptation untuk memitigasi Concept Drift, pengujian massal via file .csv, serta visualisasi Confusion Matrix interaktif.",
     keyFeatures: [
-      "Komparasi performa real-time: Naive Bayes vs XGBoost",
+      "Komparasi performa: Complement Naive Bayes (CNB) vs XGBoost",
+      "Penerapan Domain Adaptation dalam mengatasi fenomena Concept Drift",
       "Mode evaluasi batch dataset via file .csv untuk pengujian massal",
       "Tuning fleksibel rasio kelas data (10:90 hingga 90:10)",
-      "Penyimpanan dan perbandingan riwayat eksperimen dengan catatan khusus"
+      "Visualisasi interaktif Confusion Matrix, Precision, Recall, & F1-Score"
     ],
     techStack: ["Python", "Scikit-Learn", "XGBoost", "Flask", "Pandas", "Chart.js"],
     githubUrl: "https://github.com/Raflyf/Spam-Email",
