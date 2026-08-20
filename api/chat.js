@@ -670,6 +670,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'vision',
       effort: 'medium',
+      omniCandidates: ['Vision-model', 'meta-llama/llama-3.2-11b-vision-instruct:free', 'nvidia/nemotron-nano-9b'],
       label: 'Vision & Multimodal Perception'
     };
   }
@@ -681,6 +682,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'trivial_casual',
       effort: 'low',
+      omniCandidates: ['Nemotron-3-Super-120B', 'DeepSeek-V4-Flash', 'MiniMax-M3', 'Nemotron-3-Ultra-550B'],
       label: 'Casual Greeting & Quick Interaction (Instant Response)'
     };
   }
@@ -691,6 +693,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
+      omniCandidates: ['Antigravity-Thinker', 'Nemotron-3-Ultra-550B', 'DeepSeek-V4-Flash', 'Nemotron-3-Super-120B'],
       label: 'Deep Reasoning & Mathematical Derivations (Antigravity & Nemotron 550B)'
     };
   }
@@ -701,6 +704,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'high',
+      omniCandidates: ['Codex-5.3', 'qwen/qwen-2.5-coder-32b-instruct', 'Antigravity-Thinker', 'DeepSeek-V4-Flash'],
       label: 'Heavy Coding & System Architecture (Codex & Qwen Coder)'
     };
   }
@@ -711,6 +715,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'medium',
+      omniCandidates: ['Codex-5.3', 'qwen/qwen-2.5-coder-32b-instruct', 'DeepSeek-V4-Flash', 'Nemotron-3-Super-120B'],
       label: 'Coding & Algorithm Synthesis (Codex & Qwen Coder)'
     };
   }
@@ -719,6 +724,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   return {
     category: 'basic_standard',
     effort: 'medium',
+    omniCandidates: ['Nemotron-3-Ultra-550B', 'Nemotron-3-Super-120B', 'DeepSeek-V4-Flash', 'Codex-5.3', 'Antigravity-Thinker', 'MiniMax-M3'],
     label: 'Standard Q&A & Technical Synthesis (Fast Balanced Model Pool)'
   };
 }
@@ -825,7 +831,7 @@ export default async function handler(req, res) {
       : reasoningEffort;
 
     let targetModel = (model === 'auto' || !model)
-      ? queryIntent.omniCandidates[0]
+      ? (queryIntent?.omniCandidates?.[0] || 'Nemotron-3-Ultra-550B')
       : model;
 
     if (hasImages && (model === 'auto' || !model)) {
