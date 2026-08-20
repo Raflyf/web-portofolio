@@ -323,43 +323,118 @@ async function fetchLiveRepoContext(query = '') {
 }
 
 /**
- * Universal Web Page Deep Scraper
- * Extracts clean readable text from any arbitrary URL across the open internet.
+ * Crawl4AI & Firecrawl Inspired Fit-Markdown & Semantic Content Extractor
+ * Heuristically strips boilerplate/navigation/script noise, isolates primary semantic
+ * article containers, and converts HTML tables/headings/lists to clean LLM-Ready Markdown.
+ */
+function extractFitMarkdownContent(rawHtml, sourceUrl = '') {
+  if (!rawHtml || typeof rawHtml !== 'string') return '';
+  
+  if (!rawHtml.includes('<html') && !rawHtml.includes('<body') && !rawHtml.includes('<div') && !rawHtml.includes('<p')) {
+    return rawHtml.slice(0, 4500).trim();
+  }
+
+  let html = rawHtml;
+
+  // 1. Isolate primary semantic content container if present
+  const semanticContainers = [
+    /<article\b[^>]*>([\s\S]*?)<\/article>/i,
+    /<main\b[^>]*>([\s\S]*?)<\/main>/i,
+    /<div\b[^>]*(?:id|class)=["'][^"']*(?:main-content|post-content|article-body|entry-content|markdown-body|documentation|docs-content)[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+    /<section\b[^>]*(?:id|class)=["'][^"']*(?:content|article|docs)[^"']*["'][^>]*>([\s\S]*?)<\/section>/i
+  ];
+
+  for (const regex of semanticContainers) {
+    const match = html.match(regex);
+    if (match && match[1] && match[1].length > 300) {
+      html = match[1];
+      break;
+    }
+  }
+
+  // 2. Prune Noise & Non-Content Nodes (Fit-Markdown Heuristic Pruning)
+  html = html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+    .replace(/<noscript\b[^<]*(?:(?!<\/noscript>)<[^<]*)*<\/noscript>/gi, ' ')
+    .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, ' ')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, ' ')
+    .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, ' ')
+    .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, ' ')
+    .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, ' ')
+    .replace(/<aside\b[^<]*(?:(?!<\/aside>)<[^<]*)*<\/aside>/gi, ' ')
+    .replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, ' ')
+    .replace(/<button\b[^<]*(?:(?!<\/button>)<[^<]*)*<\/button>/gi, ' ')
+    .replace(/<dialog\b[^<]*(?:(?!<\/dialog>)<[^<]*)*<\/dialog>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ');
+
+  // 3. Convert HTML Structure into Clean Markdown (Tables, Headings, Lists, Code)
+  html = html.replace(/<pre\b[^>]*><code\b[^>]*>([\s\S]*?)<\/code><\/pre>/gi, (m, code) => `\n\`\`\`\n${code.replace(/<[^>]+>/g, '').trim()}\n\`\`\`\n`);
+  html = html.replace(/<code\b[^>]*>([\s\S]*?)<\/code>/gi, (m, code) => ` \`${code.replace(/<[^>]+>/g, '').trim()}\` `);
+
+  html = html.replace(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi, '\n\n# $1\n');
+  html = html.replace(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi, '\n\n## $1\n');
+  html = html.replace(/<h3\b[^>]*>([\s\S]*?)<\/h3>/gi, '\n\n### $1\n');
+  html = html.replace(/<h[4-6]\b[^>]*>([\s\S]*?)<\/h[4-6]>/gi, '\n\n#### $1\n');
+
+  html = html.replace(/<blockquote\b[^>]*>([\s\S]*?)<\/blockquote>/gi, '\n> $1\n');
+
+  html = html.replace(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi, (m, row) => {
+    const cells = [];
+    const cellRegex = /<(?:td|th)\b[^>]*>([\s\S]*?)<\/(?:td|th)>/gi;
+    let match;
+    while ((match = cellRegex.exec(row)) !== null) {
+      cells.push(match[1].replace(/<[^>]+>/g, '').trim());
+    }
+    return cells.length > 0 ? `| ${cells.join(' | ')} |\n` : '';
+  });
+
+  html = html.replace(/<li\b[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1');
+  html = html.replace(/<(?:strong|b)\b[^>]*>([\s\S]*?)<\/(?:strong|b)>/gi, '**$1**');
+  html = html.replace(/<(?:em|i)\b[^>]*>([\s\S]*?)<\/(?:em|i)>/gi, '*$1*');
+
+  html = html.replace(/<br\s*\/?>/gi, '\n');
+  html = html.replace(/<p\b[^>]*>([\s\S]*?)<\/p>/gi, '\n\n$1\n');
+  html = html.replace(/<\/(?:div|section|article)>/gi, '\n');
+
+  html = html.replace(/<[^>]+>/g, ' ');
+
+  const entityMap = {
+    '&quot;': '"', '&#39;': "'", '&amp;': '&', '&lt;': '<', '&gt;': '>',
+    '&nbsp;': ' ', '&mdash;': '—', '&ndash;': '–', '&bull;': '•', '&hellip;': '...'
+  };
+  html = html.replace(/&(?:quot|#39|amp|lt|gt|nbsp|mdash|ndash|bull|hellip);/g, m => entityMap[m] || ' ');
+
+  const lines = html.split('\n')
+    .map(line => line.replace(/\s+/g, ' ').trim())
+    .filter(line => line.length > 0);
+
+  let cleanMarkdown = lines.join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  return cleanMarkdown.slice(0, 4500);
+}
+
+/**
+ * Universal Web Page Deep Scraper (Crawl4AI & Firecrawl Enhanced)
+ * Fetches and transforms any arbitrary URL into clean LLM-Ready Fit-Markdown.
  */
 async function scrapeDirectWebpageContent(url) {
   if (!url || typeof url !== 'string') return '';
   try {
     const res = await fetchWithTimeout(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 UniversalWebCrawler/2026',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Crawl4AI-Firecrawl-HybridEngine/2026',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7'
       }
-    }, 3500);
+    }, 4000);
 
     if (!res.ok) return '';
     const rawText = await res.text();
     if (!rawText || rawText.length < 20) return '';
 
-    // If it is plain text / JSON / Markdown
-    if (!rawText.includes('<html') && !rawText.includes('<body')) {
-      return rawText.slice(0, 4000).trim();
-    }
-
-    // Clean HTML to readable text
-    let clean = rawText
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
-      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, ' ')
-      .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, ' ')
-      .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, ' ')
-      .replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, ' ')
-      .replace(/<!--[\s\S]*?-->/g, ' ')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/&(?:quot|#39|amp|lt|gt|nbsp);/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    return clean.slice(0, 4000).trim();
+    return extractFitMarkdownContent(rawText, url);
   } catch (_) {
     return '';
   }
