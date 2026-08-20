@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.92.0';
-import { telemetry } from './telemetry.js?v=10.92.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.93.0';
+import { telemetry } from './telemetry.js?v=10.93.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -1002,12 +1002,12 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
 \`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\``;
 
     const effortTokensMap = {
-      'LOW': 4096,
-      'MEDIUM': 8192,
-      'HIGH': 8192,
-      'THINKING': 8192
+      'LOW': 8192,
+      'MEDIUM': 16384,
+      'HIGH': 16384,
+      'THINKING': 16384
     };
-    const calculatedMaxTokens = effortTokensMap[targetEffort] || 8192;
+    const calculatedMaxTokens = effortTokensMap[targetEffort] || 16384;
 
     // Helper: Safe JSON or SSE stream extractor
     const extractContentFromResponseText = (rawText) => {

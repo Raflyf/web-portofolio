@@ -915,7 +915,7 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 480000);
 
-    const maxTokensConfig = effectiveEffort === 'low' ? 4096 : 8192;
+    const maxTokensConfig = effectiveEffort === 'low' ? 8192 : 16384;
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
@@ -1132,7 +1132,8 @@ Langkah yang WAJIB Anda lakukan:
             model: 'MiniMax-M3',
             messages: [
               { role: 'user', content: `${systemPromptWithSearch}\n\n${assembledQuery}` }
-            ]
+            ],
+            max_tokens: maxTokensConfig
           })
         }, tOut);
 
