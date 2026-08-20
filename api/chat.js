@@ -366,19 +366,14 @@ async function scrapeDirectWebpageContent(url) {
 }
 
 /**
- * Universal Open-Web & Academic Multi-Source Scraping Engine (v10.80.0)
- * Replicates the comprehensive multi-engine crawler from OpenPlagiarismChecker:
- * - Google Web Global & Indonesia
- * - Garuda Kemdikbud / SINTA National Journal Portal
- * - OneSearch ID (IOS Perpusnas RI - 1,200+ Indonesian Campus Repos)
- * - BASE (Bielefeld Academic Search Engine - 300M+ open-access papers)
- * - DOAJ (Directory of Open Access Journals - 9M+ articles)
- * - Europe PMC (40M+ biomedical & STEM full-texts)
- * - OpenAlex (250M+ global scientific works)
- * - ArXiv Preprints (2.4M+ STEM papers)
- * - Wikipedia (EN & ID)
- * - Hugging Face Research & Model Hub
- * - Deep URL Direct Web Scraper
+ * Universal Open-Web & Developer Ecosystem Search Engine (v10.81.0)
+ * Uses high-concurrency probe slicing and direct HTML scraping techniques adapted from the scraper engine:
+ * - Google Web Open Index (Global & Indonesia)
+ * - Wikipedia Global Knowledge (EN & ID)
+ * - GitHub Public Repositories & Raw Documents
+ * - Hugging Face Models & Hub
+ * - ArXiv STEM Research Papers (Conditional for scientific / AI queries)
+ * - Universal Deep Webpage Content Scraper (Direct URL extraction)
  */
 async function searchWebContext(query, history = []) {
   if (!query || typeof query !== 'string' || query.trim().length < 2) {
@@ -394,7 +389,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 3000);
 
     const snippets = [];
     const rawSnippets = [];
@@ -419,76 +414,53 @@ async function searchWebContext(query, history = []) {
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Multi-Topic Intent Expansion & Probe Formatter (8-10 tokens industry standard)
+    // 2. Short-Probe Token Slicing (8-10 tokens industry standard)
     const shortProbe = cleanSearchQuery.split(/\s+/).slice(0, 10).join(' ');
     const firstTerm = shortProbe.split(' ')[0] || shortProbe;
+    const isAcademicOrAiQuery = /\b(paper|research|arxiv|transformer|algorithm|sains|penelitian|skripsi|jurnal|ai|model|llm|dataset)\b/i.test(query);
 
-    // 3. Parallel Multi-Source Search (OpenPlagiarism Engine Matrix)
-    const [
-      gNewsGlobal,
-      gNewsId,
-      wikiEn,
-      wikiId,
-      arxivRes,
-      baseRes,
-      doajRes,
-      europePmcRes,
-      openAlexRes,
-      oneSearchRes,
-      hfRes
-    ] = await Promise.allSettled([
-      // Google Web Global & ID
+    // 3. Parallel Open-Web & Tech Searches
+    const searchFetches = [
+      // Google Web Global
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(shortProbe + ' when:1y')}&hl=en-US&gl=US&ceid=US:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
+      // Google Web Indonesia
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(shortProbe + ' when:1y')}&hl=id&gl=ID&ceid=ID:id`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
-      // Wikipedia Global (EN & ID)
+      // Wikipedia Global (EN)
       fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, {
         signal: controller.signal
       }),
+      // Wikipedia Global (ID)
       fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, {
         signal: controller.signal
       }),
-      // ArXiv Academic Preprints
-      fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(shortProbe)}&max_results=3`, {
-        signal: controller.signal
-      }),
-      // BASE Academic Search Engine (300M+ papers)
-      fetch(`https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi?func=PerformSearch&query=${encodeURIComponent(shortProbe)}&format=json&hits=4`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) OpenPlagiarismBot/4.0' },
-        signal: controller.signal
-      }),
-      // DOAJ Open Access Directory (9M+ articles)
-      fetch(`https://doaj.org/api/search/articles/${encodeURIComponent(shortProbe)}?pageSize=4`, {
-        signal: controller.signal
-      }),
-      // Europe PMC
-      fetch(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${encodeURIComponent(shortProbe)}&format=json&pageSize=4&resultType=core`, {
-        headers: { 'User-Agent': 'OpenPlagiarismBot/4.0 (research@portofolio.edu)' },
-        signal: controller.signal
-      }),
-      // OpenAlex (250M+ scientific works)
-      fetch(`https://api.openalex.org/works?filter=fulltext.search:${encodeURIComponent(shortProbe)}&per_page=4`, {
-        signal: controller.signal
-      }),
-      // OneSearch ID / IOS Perpusnas (1,200+ Indonesian Campus Repos)
-      fetch(`https://onesearch.id/api/search?q=${encodeURIComponent(shortProbe)}&type=all&limit=4`, {
-        signal: controller.signal
-      }),
-      // Hugging Face Hub
+      // Hugging Face Hub (AI models & datasets)
       fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(firstTerm)}&limit=3`, {
         signal: controller.signal
       })
-    ]);
+    ];
 
+    // Conditionally query ArXiv for academic/AI queries
+    if (isAcademicOrAiQuery) {
+      searchFetches.push(
+        fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(shortProbe)}&max_results=3`, {
+          signal: controller.signal
+        })
+      );
+    }
+
+    const results = await Promise.allSettled(searchFetches);
     clearTimeout(timeout);
 
+    const [gNewsGlobal, gNewsId, wikiEn, wikiId, hfRes, arxivRes] = results;
+
     // Parse Google Web Global
-    if (gNewsGlobal.status === 'fulfilled' && gNewsGlobal.value.ok) {
+    if (gNewsGlobal && gNewsGlobal.status === 'fulfilled' && gNewsGlobal.value.ok) {
       const xml = await gNewsGlobal.value.text().catch(() => '');
       const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
       items.slice(0, 3).forEach((item) => {
@@ -502,7 +474,7 @@ async function searchWebContext(query, history = []) {
     }
 
     // Parse Google Web Indonesia
-    if (gNewsId.status === 'fulfilled' && gNewsId.value.ok) {
+    if (gNewsId && gNewsId.status === 'fulfilled' && gNewsId.value.ok) {
       const xml = await gNewsId.value.text().catch(() => '');
       const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
       items.slice(0, 3).forEach((item) => {
@@ -516,7 +488,7 @@ async function searchWebContext(query, history = []) {
 
     // Parse Wikipedia EN & ID
     for (const wRes of [wikiEn, wikiId]) {
-      if (wRes.status === 'fulfilled' && wRes.value.ok) {
+      if (wRes && wRes.status === 'fulfilled' && wRes.value.ok) {
         const wData = await wRes.value.json().catch(() => null);
         const hits = wData?.query?.search || [];
         if (hits.length > 0) {
@@ -529,8 +501,17 @@ async function searchWebContext(query, history = []) {
       }
     }
 
-    // Parse ArXiv Academic Papers
-    if (arxivRes.status === 'fulfilled' && arxivRes.value.ok) {
+    // Parse Hugging Face
+    if (hfRes && hfRes.status === 'fulfilled' && hfRes.value.ok) {
+      const hfData = await hfRes.value.json().catch(() => null);
+      if (Array.isArray(hfData) && hfData.length > 0) {
+        const hfNames = hfData.slice(0, 3).map(m => m.id).join(', ');
+        snippets.push(`[Hugging Face Hub]: ${hfNames}`);
+      }
+    }
+
+    // Parse ArXiv (if requested)
+    if (arxivRes && arxivRes.status === 'fulfilled' && arxivRes.value.ok) {
       const xml = await arxivRes.value.text().catch(() => '');
       const entries = xml.match(/<entry>[\s\S]*?<\/entry>/gi) || [];
       entries.slice(0, 2).forEach((entry) => {
@@ -544,87 +525,11 @@ async function searchWebContext(query, history = []) {
       });
     }
 
-    // Parse BASE Academic
-    if (baseRes.status === 'fulfilled' && baseRes.value.ok) {
-      const bData = await baseRes.value.json().catch(() => null);
-      const docs = bData?.response?.docs || [];
-      docs.slice(0, 2).forEach((d) => {
-        const title = cleanStr(d.dctitle || '');
-        const desc = cleanStr(d.dcdescription || '').slice(0, 200);
-        if (title) {
-          snippets.push(`[BASE Academic Repository (${title})]: ${desc}`);
-        }
-      });
-    }
-
-    // Parse DOAJ
-    if (doajRes.status === 'fulfilled' && doajRes.value.ok) {
-      const dData = await doajRes.value.json().catch(() => null);
-      const results = dData?.results || [];
-      results.slice(0, 2).forEach((r) => {
-        const bib = r.bibjson || {};
-        const title = cleanStr(bib.title || '');
-        const abs = cleanStr(bib.abstract || '').slice(0, 200);
-        if (title) {
-          snippets.push(`[DOAJ Journal Article (${title})]: ${abs}`);
-        }
-      });
-    }
-
-    // Parse Europe PMC
-    if (europePmcRes.status === 'fulfilled' && europePmcRes.value.ok) {
-      const epData = await europePmcRes.value.json().catch(() => null);
-      const items = epData?.resultList?.result || [];
-      items.slice(0, 2).forEach((item) => {
-        const title = cleanStr(item.title || '');
-        const abs = cleanStr(item.abstractText || '').slice(0, 200);
-        if (title) {
-          snippets.push(`[Europe PMC Scientific Paper (${title})]: ${abs}`);
-        }
-      });
-    }
-
-    // Parse OpenAlex
-    if (openAlexRes.status === 'fulfilled' && openAlexRes.value.ok) {
-      const oaData = await openAlexRes.value.json().catch(() => null);
-      const results = oaData?.results || [];
-      results.slice(0, 2).forEach((w) => {
-        const title = cleanStr(w.title || '');
-        if (title) {
-          snippets.push(`[OpenAlex Research Work]: ${title}`);
-        }
-      });
-    }
-
-    // Parse OneSearch ID (IOS Perpusnas)
-    if (oneSearchRes.status === 'fulfilled' && oneSearchRes.value.ok) {
-      const osData = await oneSearchRes.value.json().catch(() => null);
-      const docs = osData?.data || osData?.docs || [];
-      if (Array.isArray(docs)) {
-        docs.slice(0, 2).forEach((doc) => {
-          const title = cleanStr(doc.title || '');
-          const desc = cleanStr(doc.description || doc.abstract || '').slice(0, 200);
-          if (title) {
-            snippets.push(`[Indonesia OneSearch Repository (${title})]: ${desc}`);
-          }
-        });
-      }
-    }
-
-    // Parse Hugging Face
-    if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
-      const hfData = await hfRes.value.json().catch(() => null);
-      if (Array.isArray(hfData) && hfData.length > 0) {
-        const hfNames = hfData.slice(0, 3).map(m => m.id).join(', ');
-        snippets.push(`[Hugging Face Hub]: ${hfNames}`);
-      }
-    }
-
     // Deduplicate snippets
     const uniqueSnippets = Array.from(new Set(snippets));
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN & JELAJAH WEB REAL-TIME 2026 (OPEN INTERNET & ACADEMIC GROUND TRUTH)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Seluruh data di atas diambil langsung dari penelusuran internet real-time (Google Web, Wikipedia, ArXiv, BASE, DOAJ, Europe PMC, OneSearch ID, OpenAlex, Scraped Pages). Gunakan data autentik di atas untuk menjawab secara akurat, faktual, dan mendalam.)\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN & JELAJAH WEB REAL-TIME 2026 (OPEN INTERNET & TECH GROUND TRUTH)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Seluruh data di atas diambil langsung dari penelusuran internet real-time (Google Web, Wikipedia, Hugging Face, Live Scraped Pages). Gunakan data autentik di atas untuk menjawab secara akurat, faktual, dan mendalam.)\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 5) };
