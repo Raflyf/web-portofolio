@@ -370,6 +370,91 @@ ${certsOverview}
     }
   }
 
+  /**
+   * Real-Time GitHub Live Repository Document Fetcher (Client-side)
+   * Fetches authentic README.md / documentation from GitHub raw endpoints dynamically.
+   */
+  async fetchLiveRepoContext(query = '') {
+    if (!query || typeof query !== 'string') return '';
+    const q = query.toLowerCase();
+
+    const repoTargets = [];
+    if (/\b(spam|email|klasifikasi email|cnb|complement|xgboost|concept drift|domain adaptation|skripsi|akurasi|confusion matrix)\b/i.test(q)) {
+      repoTargets.push({
+        name: 'Spam-Email-Classifier',
+        urls: [
+          'https://raw.githubusercontent.com/Raflyf/Spam-Email/main/docs/DOKUMENTASI_MODEL.md',
+          'https://raw.githubusercontent.com/Raflyf/Spam-Email/main/README.md'
+        ]
+      });
+    }
+    if (/\b(openplagiarism|plagiarism|plagiat|sbert|n-gram|cektesis|shingling)\b/i.test(q)) {
+      repoTargets.push({
+        name: 'OpenPlagiarismChecker',
+        urls: [
+          'https://raw.githubusercontent.com/Raflyf/OpenPlagiarismChecker/main/README.md'
+        ]
+      });
+    }
+    if (/\b(laser|pointer|ppt|powerpoint|gyroscope|remotepresenter)\b/i.test(q)) {
+      repoTargets.push({
+        name: 'laser_pointer_PPT',
+        urls: [
+          'https://raw.githubusercontent.com/Raflyf/laser_pointer_PPT/main/README.md'
+        ]
+      });
+    }
+    if (/\b(fotokita|fotokitablur|blur|face|v-sign|peace sign|privasi wajah)\b/i.test(q)) {
+      repoTargets.push({
+        name: 'FotoKitaBlur',
+        urls: [
+          'https://raw.githubusercontent.com/Raflyf/FotoKitaBlur/main/README.md'
+        ]
+      });
+    }
+    if (/\b(web-portofolio|porto|website ini|web ini|terminal)\b/i.test(q)) {
+      repoTargets.push({
+        name: 'web-portofolio',
+        urls: [
+          'https://raw.githubusercontent.com/Raflyf/web-portofolio/main/README.md'
+        ]
+      });
+    }
+
+    if (repoTargets.length === 0) return '';
+
+    try {
+      const fetchPromises = repoTargets.flatMap(target => 
+        target.urls.map(async (url) => {
+          try {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 2500);
+            const res = await fetch(url, { signal: ctrl.signal });
+            clearTimeout(timer);
+            if (res.ok) {
+              const text = await res.text();
+              if (text && text.length > 50) {
+                return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 4000)}`;
+              }
+            }
+          } catch (_) {}
+          return null;
+        })
+      );
+
+      const results = await Promise.allSettled(fetchPromises);
+      const validDocs = results
+        .filter(r => r.status === 'fulfilled' && Boolean(r.value))
+        .map(r => r.value);
+
+      if (validDocs.length > 0) {
+        return `\n\n[DOKUMENTASI REPOSITORI GITHUB LIVE (GROUND TRUTH TERVERIFIKASI)]:\n${validDocs.join('\n\n')}\n(PENTING: Seluruh informasi, arsitektur, dan angka metrik di atas diambil langsung secara live dari repositori GitHub resmi Rafly Firmansyah. Gunakan data autentik di atas sebagai sumber kebenaran tertinggi dan DILARANG KERAS berasumsi/berhalusinasi.)\n`;
+      }
+    } catch (_) {}
+
+    return '';
+  }
+
   clearHistory() {
     this.conversationHistory = [];
     try {
@@ -763,12 +848,17 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       longTermMemory = await this.fetchAIMemories();
     } catch (_) {}
 
+    let liveRepoContext = '';
+    try {
+      liveRepoContext = await this.fetchLiveRepoContext(cleanQuery);
+    } catch (_) {}
+
     let livePageContext = '';
     try {
       livePageContext = this.buildLivePageInspectionContext(cleanQuery);
     } catch (_) {}
 
-    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${livePageContext}${searchContext}${longTermMemory}
+    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${liveRepoContext}${livePageContext}${searchContext}${longTermMemory}
 
 [INSTRUKSI MEMORI JANGKA PANJANG (ANTI DATA POISONING)]
 Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi baru, koreksi data, atau informasi relevan), sertakan tag berikut di baris paling bawah:
