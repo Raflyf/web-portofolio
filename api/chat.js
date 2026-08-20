@@ -130,13 +130,36 @@ ${effortDirective}
      2. Berikan pesan konfirmasi singkat dan ramah bahwa berkas telah disiapkan dan pengunjung dapat mengunduhnya.
      3. DILARANG KERAS mengulang atau menyalin kembali seluruh teks panjang dokumen sebelumnya secara mentah agar hemat token.
 
-[DATA REPOSITORI RESMI RAFLY FIRMANSYAH (DIGUNAKAN JIKA DITANYA SPESIFIK)]:
-- Repositori:
-  1. OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker): Deteksi plagiat teks akademik offline + semantic (MinHash N-Gram + SBERT paraphrase-multilingual-MiniLM-L12-v2 + 15 DB Jurnal + Weighted Scoring).
-  2. Spam-Email-Classifier (https://github.com/Raflyf/Spam-Email-Classifier): Komparasi ML Complement Naive Bayes (CNB) vs XGBoost + Domain Adaptation dalam mengatasi Concept Drift pada dataset email modern + TF-IDF + Dynamic Class Balancing.
-  3. laser_pointer_PPT (https://github.com/Raflyf/laser_pointer_PPT): Remote laser pointer via Gyroscope smartphone WebSocket (<15ms) + PyAutoGUI.
-  4. FotoKitaBlur (https://github.com/Raflyf/FotoKitaBlur): Edge Vision privasi wajah otomatis berbasis pose Peace/V-Sign MediaPipe 30+ FPS + OpenCV.
-  5. web-portofolio (https://github.com/Raflyf/web-portofolio): Portfolio Landing Page Modular Vanilla JS + Supabase Continuous RAG.
+[DATA REPOSITORI RESMI RAFLY FIRMANSYAH & HASIL EMPIRIS RISET]:
+1. Spam-Email-Classifier (Riset Skripsi ML - https://github.com/Raflyf/Spam-Email):
+   - Judul Riset: "Analisis Performa Complement Naive Bayes dan XGBoost dalam Mengatasi Concept Drift pada Klasifikasi Spam Email Menggunakan Pendekatan Domain Adaptation"
+   - Masalah Utama: Fenomena Concept Drift / Covariate Shift akibat perbedaan era data training (email historis Kaggle era 2000-an, 5.728 data) dengan data uji (email pribadi modern 2026, 2.500 data).
+   - Hasil Evaluasi Empiris Metode 1 (Murni tanpa Domain Adaptation):
+     * Complement Naive Bayes (CNB): Akurasi 51.50%, Presisi 53.58%, Recall 51.50%, F1-Score 43.26%
+     * XGBoost: Akurasi 48.00%, Presisi 47.87%, Recall 48.00%, F1-Score 47.19%
+     (Performa anjlok karena domain gap antara data email masa lalu vs email kontemporer).
+   - Hasil Evaluasi Empiris Metode 2 (Dengan Domain Adaptation 30% instance weighting 8x):
+     * Complement Naive Bayes (CNB): Akurasi 77.00%, Presisi 81.40%, Recall 77.00%, F1-Score 76.17%
+     * XGBoost: Akurasi 93.00%, Presisi 93.08%, Recall 93.00%, F1-Score 93.00%
+     (Peningkatan lonjakan +44.00% pada XGBoost dan naiknya CNB ke 77% membuktikan keampuhan Domain Adaptation dalam mengatasi Concept Drift).
+   - Confusion Matrix XGBoost Metode 2: TN=333 (Non-Spam tepat), FP=17 (False Positive), FN=32 (Spam lolos), TP=318 (Spam terdeteksi tepat) dari 700 email uji.
+   - ATURAN MUTLAK METRIK AKURASI: DILARANG KERAS mengarang metrik tebakan fiktif (seperti 96.2% atau 97.8%). Wajib gunakan angka empiris autentik di atas (CNB 77%, XGBoost 93%) jika ditanya hasil akurasi/metrik.
+
+2. OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker):
+   - Deteksi plagiarisme naskah akademik 100% offline lokal tanpa pengiriman data ke server luar (Zero Data Egress).
+   - Dual Engine: 5-Word N-Gram Shingling (Exact Match) + Multilingual Sentence Transformers (SBERT paraphrase-multilingual-MiniLM-L12-v2, 384-dimensional vector embedding, Cosine Similarity untuk parafrasa).
+   - Terintegrasi dengan 15+ basis data jurnal akademik publik (GARUDA, Indonesian Open Search / IOS, BASE, Semantic Scholar, Crossref, DOAJ).
+
+3. laser_pointer_PPT (https://github.com/Raflyf/laser_pointer_PPT):
+   - Pengendali presentasi PowerPoint nirsentuh berbasis sensor gyroscope dan accelerometer smartphone.
+   - Transmisi real-time ultra-low latency (<15 ms) via WebSocket (Flask-SocketIO) + PyAutoGUI virtual cursor mapper di PC presenter.
+
+4. FotoKitaBlur (https://github.com/FotoKitaBlur):
+   - Edge Computer Vision privasi wajah otomatis 100% lokal berbasis deteksi gestur Peace Sign / V-Sign menggunakan MediaPipe Pose & Face Mesh (30+ FPS di CPU) + OpenCV Gaussian Blur.
+
+5. web-portofolio (https://github.com/Raflyf/web-portofolio):
+   - Portfolio Landing Page Modular Vanilla JS (<50 KB) + Supabase Continuous Learning RAG (pgvector) + Multi-Session Floating Terminal dengan Dynamic 128k Token Context Window.
+
 - Kredensial: Rafly Firmansyah, S1 Informatika UBSI, BNSP Analis Program (TIK 037 00481 2026), MikroTik MTCNA Latvia (2410NA3062), Cisco PCAP. Kontak: WA 08991333323 (https://wa.me/628991333323), Email raflyfirmansyah02@gmail.com, GitHub https://github.com/Raflyf.
 - Registri Sertifikat Terverifikasi di Web Portofolio:
   1. BNSP Analis Program (No: TIK 037 00481 2026 - 10 Unit Standar Kompetensi Kerja Nasional Indonesia / SKKNI)
