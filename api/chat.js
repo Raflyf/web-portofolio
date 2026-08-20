@@ -53,15 +53,19 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
 `;
   } else {
     effortDirective = isEnglish ? `
-[MODE BALANCED & STANDARD DEPTH (MEDIUM)]:
-- Provide a well-balanced, informative, clearly structured response.
-- Highlight 3-4 essential points or a standard comparison table with concise explanations, completing 100% cleanly.
+[MODE BALANCED & FAST RESPONSIVENESS (MEDIUM EFFORT)]:
+- The user is in Medium / Balanced Mode (Default Auto).
+- Deliver a high-yield, structured, and snappy response (Target length: 250-450 words).
+- Directly highlight the 3-4 most critical core points using clean bullet points or a compact table.
+- AVOID writing 5+ giant multi-page essay chapters or unrequested code dumps unless specifically requested (High/Thinking mode).
+- Keep inference fast, responsive, and 100% complete.
 ` : `
-[MODE STANDAR / SEDANG (BALANCED DEPTH - MEDIUM)]:
-- Pengguna memilih Mode Sedang / Standar.
-- Sajikan jawaban berbobot sedang yang jelas, terstruktur, dan proporsional.
-- Uraikan 3–4 poin esensial atau sajikan tabel komparasi standar beserta ringkasan penjelasan singkat.
-- Panjang jawaban moderat (tidak terlalu singkat seperti mode low, dan tidak sepanjang mode high), serta selesai tuntas 100%.
+[MODE SEDANG / STANDAR (BALANCED & FAST RESPONSIVE - MEDIUM)]:
+- Pengguna memilih Mode Sedang / Standar (Auto Balanced Depth).
+- Sajikan jawaban yang padat, berbobot, langsung ke inti poin, dan cepat dibaca (Target panjang: 250–450 kata).
+- Sorot 3–4 poin kunci paling esensial menggunakan format poin/tabel ringkas yang tajam dan to-the-point.
+- HINDARI menulis bab esai bertingkat 5 bagian yang terlampau panjang atau code-dump multi-file berlebihan kecuali pengguna secara eksplisit meminta mode Riset Mendalam (HIGH) atau Thinking CoT (THINKING).
+- Pastikan respon terbit dengan cepat (<3–5 detik), selesai tuntas 100%, dan nyaman dipahami.
 `;
   }
 
@@ -677,8 +681,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasCodeKeywords || hasCodeBlocks) {
     return {
       category: 'heavy_coding',
-      effort: 'high',
-      label: 'Heavy Coding & Algorithm Synthesis (Benchmark SOTA: Codex & Qwen Coder)'
+      effort: 'medium',
+      label: 'Coding & Algorithm Synthesis (Benchmark SOTA: Codex & Qwen Coder)'
     };
   }
 
@@ -691,7 +695,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasReasoningKeywords && !isCasualOrClosing) {
     return {
       category: 'deep_reasoning',
-      effort: 'thinking',
+      effort: 'medium',
       label: 'Deep Reasoning & Brainstorming (Benchmark SOTA: Antigravity & Nemotron Ultra 550B)'
     };
   }
@@ -699,7 +703,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   // 3. Basic / Casual / Standard Q&A (User Specified Default Priority Hierarchy)
   return {
     category: 'basic_standard',
-    effort: 'low',
+    effort: 'medium',
     label: 'Basic / Standard Q&A (User Priority Hierarchy: Nemotron Ultra -> Super -> Laguna -> DeepSeek V4 -> Codex -> Antigravity -> Vision -> MiniMax)'
   };
 }
@@ -1049,8 +1053,17 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenRouter(mName, tOut = 15000) {
+    async function callOpenRouter(mName, tOut = 20000) {
       if (OPENROUTER_KEYS.length === 0) return null;
+
+      const reasoningBudgetMap = {
+        low: { max_tokens: 256, effort: 'low' },
+        medium: { max_tokens: 1024, effort: 'medium' },
+        high: { max_tokens: 4096, effort: 'high' },
+        thinking: { max_tokens: 8192, effort: 'high' }
+      };
+      const reasoningSetting = reasoningBudgetMap[effectiveEffort] || reasoningBudgetMap.medium;
+
       for (const orKey of OPENROUTER_KEYS) {
         try {
           const res = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
@@ -1065,7 +1078,8 @@ Langkah yang WAJIB Anda lakukan:
               model: mName,
               messages: baseTextMessages,
               max_tokens: maxTokensConfig,
-              temperature: tempConfig
+              temperature: tempConfig,
+              reasoning: reasoningSetting
             })
           }, tOut);
 
