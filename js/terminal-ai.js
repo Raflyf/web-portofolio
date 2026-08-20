@@ -1082,9 +1082,9 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       }
     }
 
-    // 2. Secondary Direct Route: Nvidia NIM API Direct (Nemotron 3 Ultra 550B & Super 120B)
+    // 2. Secondary Direct Route: Nvidia NIM API Direct (Nemotron 70B & Llama 3.3 70B)
     const NVIDIA_DIRECT_KEY = atob('bnZhcGktVTVBNVJZcjJuTDRudVdYUE5HZWZnSHdHbmxoLWFsY1lFenIxeVJxdE43Y3RIMVNiSTFGaUprMno1Z0NPQzE4dA==');
-    const nimCandidateModels = ['nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-super-120b-a12b', 'meta/llama-3.3-70b-instruct'];
+    const nimCandidateModels = ['nvidia/llama-3.1-nemotron-70b-instruct', 'meta/llama-3.3-70b-instruct'];
     for (const nimModel of nimCandidateModels) {
       try {
         const nimController = new AbortController();
@@ -1116,7 +1116,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       } catch (_) {}
     }
 
-    // 3. Tertiary Direct Route: OpenRouter 3-Key Cloud Pool (Nemotron 3 Ultra & Super & Llama 3.3 70B)
+    // 3. Tertiary Direct Route: OpenRouter 3-Key Cloud Pool (Nemotron 70B, Llama 3.3 70B, DeepSeek)
     const OR_KEYS = [
       atob('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
       atob('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw=='),
@@ -1124,8 +1124,8 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
     ];
 
     const orModelCandidates = (this.currentModel && this.currentModel !== 'auto')
-      ? [this.currentModel, 'nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-super-120b-a12b', 'meta-llama/llama-3.3-70b-instruct']
-      : ['nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-super-120b-a12b', 'meta-llama/llama-3.3-70b-instruct'];
+      ? [this.currentModel, 'nvidia/llama-3.1-nemotron-70b-instruct', 'meta-llama/llama-3.3-70b-instruct']
+      : ['nvidia/llama-3.1-nemotron-70b-instruct', 'meta-llama/llama-3.3-70b-instruct'];
 
     for (const orM of orModelCandidates) {
       for (const orKey of OR_KEYS) {
