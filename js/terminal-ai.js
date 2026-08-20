@@ -1124,8 +1124,8 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
     ];
 
     const orModelCandidates = (this.currentModel && this.currentModel !== 'auto')
-      ? [this.currentModel, 'nvidia/llama-3.1-nemotron-70b-instruct', 'deepseek/deepseek-chat', 'qwen/qwen-2.5-72b-instruct', 'qwen/qwen-2.5-coder-32b-instruct', 'meta-llama/llama-3.3-70b-instruct']
-      : ['nvidia/llama-3.1-nemotron-70b-instruct', 'deepseek/deepseek-chat', 'qwen/qwen-2.5-72b-instruct', 'qwen/qwen-2.5-coder-32b-instruct', 'meta-llama/llama-3.3-70b-instruct'];
+      ? [this.currentModel, 'nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'qwen/qwen-2.5-72b-instruct', 'qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
+      : ['nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3-super-120b-a12b:free', 'qwen/qwen-2.5-72b-instruct', 'qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct'];
 
     for (const orM of orModelCandidates) {
       for (const orKey of OR_KEYS) {
