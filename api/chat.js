@@ -1144,26 +1144,22 @@ Langkah yang WAJIB Anda lakukan:
           // 3. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute & OpenCode)
           { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
           { provider: 'opencode', model: 'deepseek-v4-flash-free' },
-          // 4. 550B MoE Flagship: Nemotron Ultra
-          { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          // 4. Nemotron Flagship Series
+          { provider: 'nim', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'openrouter', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
           { provider: 'ollama', model: 'nemotron-3-ultra' },
           { provider: 'omniroute', model: 'nemotron-laguna' },
-          // 5. 120B SOTA Super
-          { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
-          { provider: 'ollama', model: 'nemotron-3-super' },
-          // 6. Llama 3.3 70B
-          { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
-          { provider: 'opencode', model: 'llama-3.3-70b-free' },
-          { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
-          // 7. Qwen 2.5 Coder 32B (Disimpan di tier bawah)
+          // 5. DeepSeek Chat & Qwen 2.5 Coder 32B SOTA Coding
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
           { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-          // 8. OpenRouter DeepSeek Chat (Tier Bawah) & Gemma
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
-          { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
+          // 6. MiniMax Frontier
+          { provider: 'minimax', model: 'MiniMax-M3' },
+          // 7. ABSOLUTE LAST RESORT ONLY: Llama 3.3 70B (Hanya jika semua provider di atas limit)
+          { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
+          { provider: 'opencode', model: 'llama-3.3-70b-free' },
+          { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
         ];
       }
 
@@ -1174,72 +1170,60 @@ Langkah yang WAJIB Anda lakukan:
           // 2. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute & OpenCode)
           { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
           { provider: 'opencode', model: 'deepseek-v4-flash-free' },
-          // 3. 550B MoE Flagship Research: Nemotron Ultra
-          { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          // 3. Nemotron Flagship Series Research
+          { provider: 'nim', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'openrouter', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
           { provider: 'ollama', model: 'nemotron-3-ultra' },
           { provider: 'omniroute', model: 'nemotron-laguna' },
           // 4. Deep Analytical Logic: Codex
           { provider: 'omniroute', model: 'Codex' },
-          // 5. Llama 3.3 70B SOTA General
+          // 5. DeepSeek Chat & Qwen 2.5 72B
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
+          { provider: 'openrouter', model: 'qwen/qwen-2.5-72b-instruct' },
+          { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
+          // 6. MiniMax Frontier
+          { provider: 'minimax', model: 'MiniMax-M3' },
+          // 7. ABSOLUTE LAST RESORT ONLY: Llama 3.3 70B (Hanya jika semua provider di atas limit)
           { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
           { provider: 'opencode', model: 'llama-3.3-70b-free' },
-          { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
-          // 6. 120B Super
-          { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
-          { provider: 'ollama', model: 'nemotron-3-super' },
-          // 7. Qwen 2.5 Coder 32B (Disimpan di tier bawah)
-          { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
-          { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-          // 8. OpenRouter DeepSeek Chat (Tier Bawah) & Gemma
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
-          { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
+          { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
         ];
       }
 
       // Default: Basic / Casual / Standard Q&A (User Specified Exact Hierarchy)
       return [
-        // 1. Nemotron Ultra (Semua Provider)
-        { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+        // 1. Nemotron Flagship (Semua Provider)
+        { provider: 'nim', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
         { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+        { provider: 'openrouter', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
         { provider: 'ollama', model: 'nemotron-3-ultra' },
-
-        // 2. Nemotron Super (Semua Provider)
-        { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
-        { provider: 'ollama', model: 'nemotron-3-super' },
-
-        // 3. Nemotron Laguna (OmniRoute)
         { provider: 'omniroute', model: 'nemotron-laguna' },
 
-        // 4. DeepSeek V4 Flash Free (OmniRoute & OpenCode)
+        // 2. DeepSeek V4 Flash Free (OmniRoute & OpenCode)
         { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
         { provider: 'opencode', model: 'deepseek-v4-flash-free' },
 
-        // 5. Codex (OmniRoute)
+        // 3. Codex & Antigravity (OmniRoute)
         { provider: 'omniroute', model: 'Codex' },
-
-        // 6. Antigravity (OmniRoute)
         { provider: 'omniroute', model: 'Antigravity' },
 
-        // 7. Vision-model (OmniRoute)
+        // 4. Vision-model (OmniRoute)
         { provider: 'omniroute', model: 'Vision-model' },
 
-        // 8. MiniMax M3 (Semua Provider)
-        { provider: 'ollama', model: 'minimax-m3' },
-        { provider: 'minimax', model: 'MiniMax-M3' },
+        // 5. DeepSeek Chat & Qwen 2.5
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
+        { provider: 'openrouter', model: 'qwen/qwen-2.5-72b-instruct' },
+        { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
 
-        // 9. Sisa Provider & Model (Tier Bawah)
+        // 6. MiniMax M3
+        { provider: 'minimax', model: 'MiniMax-M3' },
+        { provider: 'ollama', model: 'minimax-m3' },
+
+        // 7. ABSOLUTE LAST RESORT ONLY: Llama 3.3 70B
         { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
         { provider: 'opencode', model: 'llama-3.3-70b-free' },
-        { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' },
-        { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
-        { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
-        { provider: 'openrouter', model: 'google/gemma-3-27b-it' }
+        { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
       ];
     }
 
