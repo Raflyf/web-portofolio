@@ -835,11 +835,54 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  transition: border-color 0.15s ease;
+  transition: all 0.25s var(--ease-smooth-out, ease);
+  position: relative;
 }
 
 .ai-model-card:hover {
   border-color: var(--border-highlight);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.ai-model-card.is-top-active {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-primary) 100%);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.12);
+}
+
+.ai-model-card.is-top-active:hover {
+  border-color: var(--accent-emerald);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.2);
+}
+
+.ai-model-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: var(--accent-emerald);
+}
+
+.ai-model-rank-pulse {
+  width: 5px;
+  height: 5px;
+  background-color: var(--accent-emerald);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--accent-emerald);
+  animation: modelPulseDot 1.5s infinite ease-in-out;
+}
+
+@keyframes modelPulseDot {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.2); }
 }
 
 .ai-model-card-header {

@@ -1035,10 +1035,11 @@ class DashboardApp {
 
     const modelStatsMap = {};
     MODELS_CATALOG.forEach(m => {
-      modelStatsMap[m.id] = { ...m, manualCount: 0, autoCount: 0, total: 0 };
+      modelStatsMap[m.id] = { ...m, manualCount: 0, autoCount: 0, total: 0, lastUsedAt: 0 };
     });
 
     actualConsultations.forEach(e => {
+      const ts = new Date(e.created_at || 0).getTime() || 0;
       const t = (e.event_target || '').trim();
       const l = (e.event_label || '').trim();
       const isAuto = t.startsWith('auto:') || t === 'auto' || l.includes('[Auto ➔') || l.includes('Auto Router') || (!t.includes(':') && t === 'auto');
@@ -1051,6 +1052,9 @@ class DashboardApp {
         if (matchedModel) {
           modelStatsMap[matchedModel.id].autoCount++;
           modelStatsMap[matchedModel.id].total++;
+          if (ts > modelStatsMap[matchedModel.id].lastUsedAt) {
+            modelStatsMap[matchedModel.id].lastUsedAt = ts;
+          }
           const breakdownLabel = `${matchedModel.name} · ${matchedModel.category}`;
           autoResolvedBreakdown[breakdownLabel] = (autoResolvedBreakdown[breakdownLabel] || 0) + 1;
         } else {
@@ -1067,6 +1071,9 @@ class DashboardApp {
         if (matchedModel) {
           modelStatsMap[matchedModel.id].manualCount++;
           modelStatsMap[matchedModel.id].total++;
+          if (ts > modelStatsMap[matchedModel.id].lastUsedAt) {
+            modelStatsMap[matchedModel.id].lastUsedAt = ts;
+          }
         }
       }
     });
@@ -1080,10 +1087,24 @@ class DashboardApp {
       totalCountEl.textContent = `${totalConsultations.toLocaleString('id-ID')}x`;
     }
 
-    const modelStats = MODELS_CATALOG.map(m => modelStatsMap[m.id]);
+    // Dynamic Auto-Sort: Separate Router Card and sort individual Model Cards dynamically
+    const routerCard = modelStatsMap['auto-router'];
+    const nonRouterStats = MODELS_CATALOG
+      .filter(m => !m.isRouterCard)
+      .map(m => modelStatsMap[m.id]);
+
+    // Primary: Most recently used timestamp (lastUsedAt DESC). The active model instantly jumps to #1!
+    // Secondary: Highest total usage count (total DESC).
+    nonRouterStats.sort((a, b) => {
+      const timeDiff = (b.lastUsedAt || 0) - (a.lastUsedAt || 0);
+      if (timeDiff !== 0) return timeDiff;
+      return (b.total || 0) - (a.total || 0);
+    });
+
+    const modelStats = routerCard ? [routerCard, ...nonRouterStats] : nonRouterStats;
     const maxModelCount = Math.max(1, ...modelStats.map(m => m.total));
 
-    gridEl.innerHTML = modelStats.map(m => {
+    gridEl.innerHTML = modelStats.map((m, index) => {
       const pct = Math.round((m.total / maxModelCount) * 100);
 
       if (m.isRouterCard) {
@@ -1147,10 +1168,27 @@ class DashboardApp {
         `;
       }
 
+      // Rank Badges & Active Highlighting for dynamically sorted model cards
+      let rankBadgeHtml = '';
+      let isTopActive = false;
+      if (m.total > 0) {
+        if (index === 1) { // Position #1 among individual models
+          isTopActive = true;
+          rankBadgeHtml = `<span class="ai-model-rank-badge"><span class="ai-model-rank-pulse"></span> #1 AKTIF</span>`;
+        } else if (index === 2) {
+          rankBadgeHtml = `<span class="ai-model-rank-badge" style="background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.35);color:var(--accent-cyan);">#2</span>`;
+        } else if (index === 3) {
+          rankBadgeHtml = `<span class="ai-model-rank-badge" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.35);color:var(--accent-amber);">#3</span>`;
+        }
+      }
+
       return `
-        <div class="ai-model-card">
+        <div class="ai-model-card ${isTopActive ? 'is-top-active' : ''}">
           <div class="ai-model-card-header">
-            <span class="ai-model-category-tag">${this.sanitize(m.category)}</span>
+            <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+              <span class="ai-model-category-tag">${this.sanitize(m.category)}</span>
+              ${rankBadgeHtml}
+            </div>
             <span class="ai-model-count" style="color:${m.color};">${m.total}x</span>
           </div>
 
