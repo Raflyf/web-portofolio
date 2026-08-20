@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.92.0';
-import { telemetry } from './telemetry.js?v=10.92.0';
-import { terminalAI } from './terminal-ai.js?v=10.92.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.93.0';
+import { telemetry } from './telemetry.js?v=10.93.0';
+import { terminalAI } from './terminal-ai.js?v=10.93.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
