@@ -616,7 +616,7 @@
               </div>
               <div class="terminal-title">rafly@portfolio-lab:~ (bash / AI Engine)</div>
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <button id="terminal-history-btn" class="terminal-header-btn" type="button" title="Pilih & Buka Riwayat Percakapan (Ctrl+H)" aria-label="Buka Riwayat Percakapan">
+                <button id="terminal-history-btn" class="terminal-header-btn terminal-header-btn--history" type="button" title="Pilih & Buka Riwayat Percakapan (Ctrl+H)" aria-label="Buka Riwayat Percakapan">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                   <span>Riwayat</span>
                 </button>
@@ -679,7 +679,7 @@
 
             <div class="terminal-chips-bar" role="toolbar" aria-label="Pintasan Perintah Terminal">
               <span style="font-family:var(--font-mono);font-size:var(--fs-caption);color:var(--text-dim);align-self:center;">Pintasan:</span>
-              <button type="button" class="terminal-chip" data-cmd="history">riwayat (Ctrl+H)</button>
+              <button type="button" class="terminal-chip terminal-chip--history" data-cmd="history">riwayat (Ctrl+H)</button>
               <button type="button" class="terminal-chip" data-cmd="new">+ sesi baru</button>
               <button type="button" class="terminal-chip" data-cmd="skills">skills</button>
               <button type="button" class="terminal-chip" data-cmd="projects">projects</button>
@@ -889,6 +889,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busting for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=10.73.0"></script>
+  <script type="module" src="js/main.js?v=10.74.0"></script>
 </body>
 </html>

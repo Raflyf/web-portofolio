@@ -144,7 +144,9 @@ export function initTerminal() {
     try {
       const raw = localStorage.getItem(CONVOS_STORAGE_KEY);
       const list = raw ? JSON.parse(raw) : [];
-      return Array.isArray(list) ? list : [];
+      if (!Array.isArray(list)) return [];
+      // Only treat convos with at least 1 actual message as valid saved history
+      return list.filter(c => Array.isArray(c.bubbles) && c.bubbles.length > 0);
     } catch (_) {
       return [];
     }
@@ -152,7 +154,8 @@ export function initTerminal() {
 
   function saveAllConvos(convos) {
     try {
-      localStorage.setItem(CONVOS_STORAGE_KEY, JSON.stringify(convos.slice(0, 50)));
+      const validConvos = convos.filter(c => Array.isArray(c.bubbles) && c.bubbles.length > 0);
+      localStorage.setItem(CONVOS_STORAGE_KEY, JSON.stringify(validConvos.slice(0, 50)));
     } catch (_) {}
   }
 
@@ -170,18 +173,6 @@ export function initTerminal() {
 
   function createNewConvo() {
     const newId = 'convo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-    const newConvo = {
-      id: newId,
-      title: 'Sesi Percakapan Baru',
-      preview: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      bubbles: [],
-      history: []
-    };
-    const convos = getAllConvos();
-    convos.unshift(newConvo);
-    saveAllConvos(convos);
     setActiveConvoId(newId);
 
     if (terminalAI && typeof terminalAI.clearHistory === 'function') {
@@ -190,7 +181,7 @@ export function initTerminal() {
     terminalBody.innerHTML = '';
     renderWelcomeMessage();
     appendLine(`⚡ [Sesi Percakapan Baru Dimulai]: Silakan ajukan pertanyaan atau instruksi Anda.`, false, '', false);
-    return newConvo;
+    return { id: newId, bubbles: [] };
   }
 
   function switchConvo(convoId) {
@@ -437,50 +428,6 @@ export function initTerminal() {
       <div class="terminal-line" style="margin-bottom:8px;">Pilih Model AI atau tanyakan apapun secara bebas. Anda juga dapat melampirkan gambar/PDF!</div>
     `;
     terminalBody.appendChild(welcomeBox);
-
-    // If there are saved conversations, show interactive session management prompt
-    const convos = getAllConvos();
-    if (convos.length > 0) {
-      const existingBanner = document.getElementById('terminal-session-banner');
-      if (existingBanner) existingBanner.remove();
-
-      const banner = document.createElement('div');
-      banner.id = 'terminal-session-banner';
-      banner.className = 'terminal-session-banner';
-      banner.style.cssText = 'margin: 0.55rem 0 0.85rem 0; padding: 0.55rem 0.85rem; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; font-size: 0.775rem; font-family: var(--font-mono);';
-      banner.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-body);">
-          <span style="color: var(--accent-cyan); font-size: 0.95rem;">📁</span>
-          <span>Tersimpan <strong>${convos.length} sesi percakapan</strong> di peramban ini</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <button type="button" id="btn-open-convo-history" style="background: var(--accent-cyan); color: #020617; border: none; border-radius: 4px; padding: 0.28rem 0.75rem; font-weight: 700; font-size: 0.725rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; transition: opacity 0.2s;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span>Buka Riwayat (Pilih Sesi)</span>
-          </button>
-          <button type="button" id="btn-start-fresh-convo" style="background: transparent; color: var(--accent-emerald); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 0.28rem 0.65rem; font-size: 0.725rem; cursor: pointer;">
-            <span>+ Sesi Baru</span>
-          </button>
-        </div>
-      `;
-      terminalBody.appendChild(banner);
-
-      const openHistoryBtn = banner.querySelector('#btn-open-convo-history');
-      const startFreshBtn = banner.querySelector('#btn-start-fresh-convo');
-
-      if (openHistoryBtn) {
-        openHistoryBtn.addEventListener('click', () => {
-          openConvoHistoryModal();
-        });
-      }
-
-      if (startFreshBtn) {
-        startFreshBtn.addEventListener('click', () => {
-          banner.remove();
-          createNewConvo();
-        });
-      }
-    }
   }
 
   // Conversation history modal listeners
@@ -509,6 +456,17 @@ export function initTerminal() {
     });
   }
 
+  if (convoModal) {
+    convoModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        closeConvoHistoryModal();
+      }
+    }, true);
+  }
+
   if (convoSearchInput) {
     convoSearchInput.addEventListener('input', () => {
       renderConvoList(convoSearchInput.value);
@@ -517,6 +475,8 @@ export function initTerminal() {
     convoSearchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         closeConvoHistoryModal();
       } else if (e.key === 'Enter') {
         e.preventDefault();
@@ -529,8 +489,17 @@ export function initTerminal() {
     });
   }
 
-  // Global shortcut Ctrl+H to open conversation history modal
+  // Global shortcut Ctrl+H to open history & intercept ESC when history modal is active
   window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (convoModal && convoModal.style.display === 'flex') {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        closeConvoHistoryModal();
+        return;
+      }
+    }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'h') {
       const activeEl = document.activeElement;
       if (activeEl === terminalInput || activeEl === convoSearchInput || (convoModal && convoModal.style.display === 'flex')) {
@@ -542,7 +511,7 @@ export function initTerminal() {
         }
       }
     }
-  });
+  }, true);
 
   function renderFileTray() {
     if (!fileTray) return;
@@ -1821,6 +1790,10 @@ export function initTerminal() {
     // Native cancel event (ESC key)
     terminalModal.addEventListener('cancel', (e) => {
       e.preventDefault();
+      if (convoModal && convoModal.style.display === 'flex') {
+        closeConvoHistoryModal();
+        return;
+      }
       closeTerminalModal();
     });
 
