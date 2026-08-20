@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.97.0';
-import { telemetry } from './telemetry.js?v=10.97.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.98.0';
+import { telemetry } from './telemetry.js?v=10.98.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -1266,11 +1266,7 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
               model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
               messages: fullMessagesPayload,
               max_tokens: calculatedMaxTokens,
-              temperature: 0.25,
-              reasoning: {
-                max_tokens: calculatedMaxTokens > 8192 ? 4096 : (targetEffort === 'LOW' ? 256 : 1024),
-                effort: targetEffort.toLowerCase()
-              }
+              temperature: 0.25
             }),
             signal: customCtrl.signal
           });
