@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.93.0';
-import { telemetry } from './telemetry.js?v=10.93.0';
-import { terminalAI } from './terminal-ai.js?v=10.93.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.94.0';
+import { telemetry } from './telemetry.js?v=10.94.0';
+import { terminalAI } from './terminal-ai.js?v=10.94.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -990,10 +990,18 @@ export function initTerminal() {
     // 0. Parse & execute AI Action Directives
     let content = parseAndExecuteActionTags(text);
 
+    // Protect Action badges and download cards
+    const actionBlocks = [];
+    content = content.replace(/(<div class="chat-action-badge">[\s\S]*?<\/div>|<div style="margin:8px 0;">[\s\S]*?<\/div>)/g, (m) => {
+      const ph = `§§ACTION_BLOCK_${actionBlocks.length}§§`;
+      actionBlocks.push(m);
+      return ph;
+    });
+
     // 1. Normalize line endings
     content = content.replace(/\r\n/g, '\n');
 
-    // 2. Protect Code blocks
+    // 2. Protect Code blocks (```...```)
     const codeBlocks = [];
     content = content.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
       const placeholder = `§§CODE_BLOCK_${codeBlocks.length}§§`;
@@ -1032,7 +1040,11 @@ export function initTerminal() {
 
       const placeholder = `§§TABLE_BLOCK_${tableBlocks.length}§§`;
       const formatCell = (c) => {
-        return c
+        const escaped = c
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        return escaped
           .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
           .replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:0.85em;">$1</code>');
       };
@@ -1059,12 +1071,30 @@ export function initTerminal() {
       return placeholder;
     });
 
-    // 4. Process lines for Typography & Headings
+    // 4. Protect Inline Code (`...`)
+    const inlineCodes = [];
+    content = content.replace(/`([^`]+)`/g, (match, code) => {
+      const placeholder = `§§INLINE_CODE_${inlineCodes.length}§§`;
+      const escapedInline = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      inlineCodes.push(`<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:2px 6px;border-radius:4px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.85em;font-weight:600;">${escapedInline}</code>`);
+      return placeholder;
+    });
+
+    // 5. Safely Escape ALL raw HTML tags in plain text (<title>, <meta>, <link>, <form>, <Component />, etc.)
+    content = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 6. Process lines for Typography & Headings
     const lines = content.split('\n');
     const processedLines = lines.map(line => {
       let l = line.trim();
       if (!l) return '<div style="height:0.35rem;"></div>';
-      if (l.startsWith('§§CODE_BLOCK_') || l.startsWith('§§TABLE_BLOCK_')) return l;
+      if (l.startsWith('§§CODE_BLOCK_') || l.startsWith('§§TABLE_BLOCK_') || l.startsWith('§§ACTION_BLOCK_')) return l;
 
       // Horizontal Rule
       if (/^(\-{3,}|\*{3,}|_{3,})$/.test(l)) {
@@ -1106,19 +1136,26 @@ export function initTerminal() {
 
     content = processedLines.join('\n');
 
-    // Inline styling (Bold, Italic, Code)
+    // 7. Inline styling (Bold, Italic)
     content = content
       .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
       .replace(/__(.*?)__/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
-      .replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>')
-      .replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:2px 6px;border-radius:4px;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:0.85em;font-weight:600;">$1</code>');
+      .replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>');
 
-    // Restore Code and Table blocks
+    // 8. Restore Inline Code blocks
+    inlineCodes.forEach((ic, idx) => {
+      content = content.replace(`§§INLINE_CODE_${idx}§§`, ic);
+    });
+
+    // 9. Restore Code, Table, and Action blocks
     codeBlocks.forEach((cb, idx) => {
       content = content.replace(`§§CODE_BLOCK_${idx}§§`, cb);
     });
     tableBlocks.forEach((tb, idx) => {
       content = content.replace(`§§TABLE_BLOCK_${idx}§§`, tb);
+    });
+    actionBlocks.forEach((ab, idx) => {
+      content = content.replace(`§§ACTION_BLOCK_${idx}§§`, ab);
     });
 
     return content;
