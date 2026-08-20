@@ -133,7 +133,7 @@ ${effortDirective}
 [DATA REPOSITORI RESMI RAFLY FIRMANSYAH (DIGUNAKAN JIKA DITANYA SPESIFIK)]:
 - Repositori:
   1. OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker): Deteksi plagiat teks akademik offline + semantic (MinHash N-Gram + SBERT paraphrase-multilingual-MiniLM-L12-v2 + 15 DB Jurnal + Weighted Scoring).
-  2. Spam-Email-Classifier (https://github.com/Raflyf/Spam-Email-Classifier): Komparasi ML Naive Bayes vs XGBoost + TF-IDF + Dynamic Class Balancing.
+  2. Spam-Email-Classifier (https://github.com/Raflyf/Spam-Email-Classifier): Komparasi ML Complement Naive Bayes (CNB) vs XGBoost + Domain Adaptation dalam mengatasi Concept Drift pada dataset email modern + TF-IDF + Dynamic Class Balancing.
   3. laser_pointer_PPT (https://github.com/Raflyf/laser_pointer_PPT): Remote laser pointer via Gyroscope smartphone WebSocket (<15ms) + PyAutoGUI.
   4. FotoKitaBlur (https://github.com/Raflyf/FotoKitaBlur): Edge Vision privasi wajah otomatis berbasis pose Peace/V-Sign MediaPipe 30+ FPS + OpenCV.
   5. web-portofolio (https://github.com/Raflyf/web-portofolio): Portfolio Landing Page Modular Vanilla JS + Supabase Continuous RAG.

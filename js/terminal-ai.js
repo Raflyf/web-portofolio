@@ -31,12 +31,13 @@ const SEMANTIC_PATTERNS = [
     ]
   },
   {
-    keywords: ['spam', 'email', 'naive bayes', 'xgboost', 'klasifikasi', 'imbalanced', 'smote', 'f1-score'],
+    keywords: ['spam', 'email', 'complement naive bayes', 'naive bayes', 'cnb', 'xgboost', 'klasifikasi', 'imbalanced', 'concept drift', 'domain adaptation', 'f1-score'],
     respond: () => [
       "[RISET TERAPAN: Spam-Email Classifier & Evaluator]",
       "----------------------------------------------------------------",
       "Aplikasi web klasifikasi dan komparasi performa model Machine Learning:",
-      "  - Komparasi Algoritma  : Multinomial Naive Bayes vs XGBoost",
+      "  - Komparasi Algoritma  : Complement Naive Bayes (CNB) vs XGBoost",
+      "  - Domain Adaptation    : Penanganan fenomena Concept Drift pada dataset email modern",
       "  - Fitur Unggulan       : Dynamic Class Balancing (slider rasio 10:90 - 90:10)",
       "  - Metrik Evaluasi      : Confusion Matrix, Precision, Recall, F1-Score",
       "  - Stack Teknologi      : Python, Flask, Pandas, Scikit-Learn, Chart.js"
@@ -652,7 +653,7 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
 [DATA REPOSITORI RESMI RAFLY FIRMANSYAH (DIGUNAKAN JIKA DITANYA SPESIFIK)]:
 - Repositori:
   1. OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker): Deteksi plagiat teks akademik offline + semantic SBERT MiniLM-L12 + 15 DB Jurnal.
-  2. Spam-Email-Classifier (https://github.com/Raflyf/Spam-Email-Classifier): Komparasi ML Naive Bayes vs XGBoost + Dynamic Class Balancing.
+  2. Spam-Email-Classifier (https://github.com/Raflyf/Spam-Email-Classifier): Komparasi ML Complement Naive Bayes (CNB) vs XGBoost + Domain Adaptation dalam mengatasi Concept Drift pada dataset email modern + Dynamic Class Balancing.
   3. laser_pointer_PPT (https://github.com/Raflyf/laser_pointer_PPT): Remote laser pointer via Gyroscope smartphone WebSocket (<15ms) + PyAutoGUI.
   4. FotoKitaBlur (https://github.com/Raflyf/FotoKitaBlur): Edge Vision privasi wajah otomatis berbasis pose Peace/V-Sign MediaPipe 30+ FPS + OpenCV.
   5. web-portofolio (https://github.com/Raflyf/web-portofolio): Portfolio Landing Page Modular Vanilla JS + Supabase Continuous RAG.
