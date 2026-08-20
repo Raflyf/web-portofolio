@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.97.0';
-import { telemetry } from './telemetry.js?v=10.97.0';
-import { terminalAI } from './terminal-ai.js?v=10.97.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.98.0';
+import { telemetry } from './telemetry.js?v=10.98.0';
+import { terminalAI } from './terminal-ai.js?v=10.98.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -171,7 +171,7 @@ export function initTerminal() {
     }
   }
 
-  function createNewConvo() {
+  function createNewConvo(showNotice = true) {
     const newId = 'convo_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
     setActiveConvoId(newId);
 
@@ -180,7 +180,9 @@ export function initTerminal() {
     }
     terminalBody.innerHTML = '';
     renderWelcomeMessage();
-    appendLine(`⚡ [Sesi Percakapan Baru Dimulai]: Silakan ajukan pertanyaan atau instruksi Anda.`, false, '', false);
+    if (showNotice) {
+      appendLine(`⚡ [Sesi Percakapan Baru Dimulai]: Silakan ajukan pertanyaan atau instruksi Anda.`, false, '', false);
+    }
     return { id: newId, bubbles: [] };
   }
 
@@ -1646,16 +1648,8 @@ export function initTerminal() {
     }
   }
 
-  // Initial startup: restore existing active conversation or prepare clean new conversation
-  const initialActiveId = getActiveConvoId();
-  const allExistingConvos = getAllConvos();
-  if (initialActiveId && allExistingConvos.some(c => c.id === initialActiveId)) {
-    switchConvo(initialActiveId);
-  } else if (allExistingConvos.length > 0) {
-    switchConvo(allExistingConvos[0].id);
-  } else {
-    createNewConvo();
-  }
+  // Initial startup: Always present a clean fresh terminal while keeping previous convos safe in history
+  createNewConvo(false);
 
   // Form submit listener
   terminalForm.addEventListener('submit', (e) => {

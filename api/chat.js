@@ -1071,14 +1071,6 @@ Langkah yang WAJIB Anda lakukan:
     async function callOpenRouter(mName, tOut = 20000) {
       if (OPENROUTER_KEYS.length === 0) return null;
 
-      const reasoningBudgetMap = {
-        low: { max_tokens: 256, effort: 'low' },
-        medium: { max_tokens: 1024, effort: 'medium' },
-        high: { max_tokens: 4096, effort: 'high' },
-        thinking: { max_tokens: 8192, effort: 'high' }
-      };
-      const reasoningSetting = reasoningBudgetMap[effectiveEffort] || reasoningBudgetMap.medium;
-
       for (const orKey of OPENROUTER_KEYS) {
         try {
           const res = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
@@ -1093,8 +1085,7 @@ Langkah yang WAJIB Anda lakukan:
               model: mName,
               messages: baseTextMessages,
               max_tokens: maxTokensConfig,
-              temperature: tempConfig,
-              reasoning: reasoningSetting
+              temperature: tempConfig
             })
           }, tOut);
 
