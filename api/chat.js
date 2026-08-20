@@ -366,14 +366,15 @@ async function scrapeDirectWebpageContent(url) {
 }
 
 /**
- * Universal Open-Web & Developer Ecosystem Search Engine (v10.81.0)
- * Uses high-concurrency probe slicing and direct HTML scraping techniques adapted from the scraper engine:
- * - Google Web Open Index (Global & Indonesia)
- * - Wikipedia Global Knowledge (EN & ID)
- * - GitHub Public Repositories & Raw Documents
- * - Hugging Face Models & Hub
- * - ArXiv STEM Research Papers (Conditional for scientific / AI queries)
- * - Universal Deep Webpage Content Scraper (Direct URL extraction)
+ * 100% Unrestricted Universal Open-Web Search & Deep Crawling Engine (v10.82.0)
+ * Concurrently queries all major global search indices and knowledge repositories with ZERO restrictions:
+ * - Google Web Global Index & Google Web Indonesia Index
+ * - DuckDuckGo Open Web Search
+ * - Wikipedia Global Encyclopedia (English & Indonesian)
+ * - ArXiv Global Preprints & Scientific Paper Repository
+ * - OpenAlex Global Cross-Disciplinary Research Index (250M+ records)
+ * - Hugging Face Hub (Models, Datasets, AI Research)
+ * - Universal Direct Webpage Content Scraper (Arbitrary URL extraction)
  */
 async function searchWebContext(query, history = []) {
   if (!query || typeof query !== 'string' || query.trim().length < 2) {
@@ -389,7 +390,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+    const timeout = setTimeout(() => controller.abort(), 3500);
 
     const snippets = [];
     const rawSnippets = [];
@@ -414,12 +415,11 @@ async function searchWebContext(query, history = []) {
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Short-Probe Token Slicing (8-10 tokens industry standard)
+    // 2. Short-Probe Token Slicing (8-10 tokens standard)
     const shortProbe = cleanSearchQuery.split(/\s+/).slice(0, 10).join(' ');
     const firstTerm = shortProbe.split(' ')[0] || shortProbe;
-    const isAcademicOrAiQuery = /\b(paper|research|arxiv|transformer|algorithm|sains|penelitian|skripsi|jurnal|ai|model|llm|dataset)\b/i.test(query);
 
-    // 3. Parallel Open-Web & Tech Searches
+    // 3. Parallel Unrestricted Multi-Source Search Across the Entire Internet
     const searchFetches = [
       // Google Web Global
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(shortProbe + ' when:1y')}&hl=en-US&gl=US&ceid=US:en`, {
@@ -439,25 +439,32 @@ async function searchWebContext(query, history = []) {
       fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, {
         signal: controller.signal
       }),
-      // Hugging Face Hub (AI models & datasets)
+      // ArXiv Scientific Preprints & Papers
+      fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(shortProbe)}&max_results=3`, {
+        signal: controller.signal
+      }),
+      // OpenAlex Global Research Index (250M+ Works)
+      fetch(`https://api.openalex.org/works?filter=fulltext.search:${encodeURIComponent(shortProbe)}&per_page=3`, {
+        signal: controller.signal
+      }),
+      // Hugging Face Hub (AI Models & Datasets)
       fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(firstTerm)}&limit=3`, {
+        signal: controller.signal
+      }),
+      // DuckDuckGo Open Web HTML Index
+      fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(shortProbe)}`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        },
         signal: controller.signal
       })
     ];
 
-    // Conditionally query ArXiv for academic/AI queries
-    if (isAcademicOrAiQuery) {
-      searchFetches.push(
-        fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(shortProbe)}&max_results=3`, {
-          signal: controller.signal
-        })
-      );
-    }
-
     const results = await Promise.allSettled(searchFetches);
     clearTimeout(timeout);
 
-    const [gNewsGlobal, gNewsId, wikiEn, wikiId, hfRes, arxivRes] = results;
+    const [gNewsGlobal, gNewsId, wikiEn, wikiId, arxivRes, openAlexRes, hfRes, ddgRes] = results;
 
     // Parse Google Web Global
     if (gNewsGlobal && gNewsGlobal.status === 'fulfilled' && gNewsGlobal.value.ok) {
@@ -501,16 +508,7 @@ async function searchWebContext(query, history = []) {
       }
     }
 
-    // Parse Hugging Face
-    if (hfRes && hfRes.status === 'fulfilled' && hfRes.value.ok) {
-      const hfData = await hfRes.value.json().catch(() => null);
-      if (Array.isArray(hfData) && hfData.length > 0) {
-        const hfNames = hfData.slice(0, 3).map(m => m.id).join(', ');
-        snippets.push(`[Hugging Face Hub]: ${hfNames}`);
-      }
-    }
-
-    // Parse ArXiv (if requested)
+    // Parse ArXiv Scientific Preprints
     if (arxivRes && arxivRes.status === 'fulfilled' && arxivRes.value.ok) {
       const xml = await arxivRes.value.text().catch(() => '');
       const entries = xml.match(/<entry>[\s\S]*?<\/entry>/gi) || [];
@@ -520,7 +518,40 @@ async function searchWebContext(query, history = []) {
         const pTitle = cleanStr(tMatch ? tMatch[1] : '');
         const pSummary = cleanStr(sMatch ? sMatch[1] : '').slice(0, 250);
         if (pTitle) {
-          snippets.push(`[ArXiv Research Paper (${pTitle})]: ${pSummary}`);
+          snippets.push(`[ArXiv Preprints (${pTitle})]: ${pSummary}`);
+        }
+      });
+    }
+
+    // Parse OpenAlex Global Research
+    if (openAlexRes && openAlexRes.status === 'fulfilled' && openAlexRes.value.ok) {
+      const oaData = await openAlexRes.value.json().catch(() => null);
+      const results = oaData?.results || [];
+      results.slice(0, 2).forEach((w) => {
+        const title = cleanStr(w.title || '');
+        if (title) {
+          snippets.push(`[OpenAlex Research]: ${title}`);
+        }
+      });
+    }
+
+    // Parse Hugging Face
+    if (hfRes && hfRes.status === 'fulfilled' && hfRes.value.ok) {
+      const hfData = await hfRes.value.json().catch(() => null);
+      if (Array.isArray(hfData) && hfData.length > 0) {
+        const hfNames = hfData.slice(0, 3).map(m => m.id).join(', ');
+        snippets.push(`[Hugging Face Hub]: ${hfNames}`);
+      }
+    }
+
+    // Parse DuckDuckGo Open Web HTML
+    if (ddgRes && ddgRes.status === 'fulfilled' && ddgRes.value.ok) {
+      const html = await ddgRes.value.text().catch(() => '');
+      const ddgMatches = html.match(/<a class="result__snippet[^>]*>([\s\S]*?)<\/a>/gi) || [];
+      ddgMatches.slice(0, 3).forEach((m) => {
+        const text = cleanStr(m);
+        if (text && text.length > 20 && !isJunkArticle(text)) {
+          snippets.push(`[DuckDuckGo Open Web]: ${text}`);
         }
       });
     }
@@ -529,7 +560,7 @@ async function searchWebContext(query, history = []) {
     const uniqueSnippets = Array.from(new Set(snippets));
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN & JELAJAH WEB REAL-TIME 2026 (OPEN INTERNET & TECH GROUND TRUTH)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Seluruh data di atas diambil langsung dari penelusuran internet real-time (Google Web, Wikipedia, Hugging Face, Live Scraped Pages). Gunakan data autentik di atas untuk menjawab secara akurat, faktual, dan mendalam.)\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN & JELAJAH INTERNET TERBUKA REAL-TIME 2026 (UNRESTRICTED OPEN WEB GROUND TRUTH)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Seluruh data di atas diambil langsung dari penelusuran internet real-time (Google Web, DuckDuckGo, Wikipedia, ArXiv, OpenAlex, Hugging Face, Live Scraped Web Pages). Gunakan data autentik di atas untuk menjawab secara akurat, faktual, komprehensif, dan tidak berhalusinasi.)\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 5) };
