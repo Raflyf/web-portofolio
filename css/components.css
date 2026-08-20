@@ -1760,9 +1760,15 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 
   .terminal-chip {
     flex-shrink: 0 !important;
-    padding: 0.18rem 0.45rem !important;
-    font-size: 0.68rem !important;
+    padding: 0.28rem 0.6rem !important;
+    min-height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.72rem !important;
     white-space: nowrap !important;
+    border-radius: var(--radius-sm) !important;
+    touch-action: manipulation;
   }
 
   /* 5. Maximize Inline Terminal Height on mobile */
