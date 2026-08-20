@@ -831,23 +831,23 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
         await Promise.allSettled(urlPromises);
       }
 
-      // 2. Open Search across Open Web & Tech (Wikipedia EN/ID, Hugging Face Hub, and conditional ArXiv)
+      // 2. 100% Unrestricted Open Web Search Matrix (Wikipedia, OpenAlex, ArXiv, Hugging Face)
       const stopWords = /^(saya|aku|kamu|anda|ingin|tolong|coba|bisa|minta|mohon|mau|apakah|apa|kenapa|mengapa|bagaimana|gimana|kapan|dimana|adalah|untuk|pada|di|ke|dari|dengan|kalo|jika|buat|buatkan|tampilkan|jelaskan|uraikan|proyek|project|tentang|soal|yg|yang|ada|ini|itu|dan|atau|web|porto|portofolio|github|nya)\b/gi;
       const searchKeywords = cleanQuery.replace(stopWords, '').replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
       const shortProbe = searchKeywords.split(' ').slice(0, 8).join(' ');
-      const isAcademicOrAi = /\b(paper|research|arxiv|transformer|algorithm|sains|penelitian|skripsi|jurnal|ai|model|llm|dataset)\b/i.test(cleanQuery);
       
       if (shortProbe.length >= 2) {
         const searchCtrl = new AbortController();
-        const searchTimer = setTimeout(() => searchCtrl.abort(), 2800);
+        const searchTimer = setTimeout(() => searchCtrl.abort(), 3000);
         const firstTerm = shortProbe.split(' ')[0];
         const searchPromises = [
           fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, { signal: searchCtrl.signal }),
           fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, { signal: searchCtrl.signal }),
+          fetch(`https://api.openalex.org/works?filter=fulltext.search:${encodeURIComponent(shortProbe)}&per_page=3`, { signal: searchCtrl.signal }),
           fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(firstTerm)}&limit=3`, { signal: searchCtrl.signal })
         ];
 
-        const [wikiRes, wikiIdRes, hfRes] = await Promise.allSettled(searchPromises);
+        const [wikiRes, wikiIdRes, openAlexRes, hfRes] = await Promise.allSettled(searchPromises);
         clearTimeout(searchTimer);
 
         for (const wRes of [wikiRes, wikiIdRes]) {
@@ -861,17 +861,26 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
           }
         }
 
+        if (openAlexRes.status === 'fulfilled' && openAlexRes.value.ok) {
+          const oaData = await openAlexRes.value.json().catch(() => null);
+          const works = oaData?.results || [];
+          works.slice(0, 2).forEach((w) => {
+            const title = w.title || '';
+            if (title) snippets.push(`[Open Web/Research Index (${title})]`);
+          });
+        }
+
         if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
           const hfData = await hfRes.value.json().catch(() => null);
           if (Array.isArray(hfData) && hfData.length > 0) {
             const names = hfData.slice(0, 3).map(m => m.id).join(', ');
-            snippets.push(`[Hugging Face Models]: ${names}`);
+            snippets.push(`[Hugging Face Hub]: ${names}`);
           }
         }
       }
 
       if (snippets.length > 0) {
-        searchContext = `\n\n[HASIL PENCARIAN & JELAJAH WEB REAL-TIME 2026 (OPEN INTERNET & ACADEMIC GROUND TRUTH)]:\n${snippets.join('\n')}`;
+        searchContext = `\n\n[HASIL PENCARIAN & JELAJAH INTERNET TERBUKA REAL-TIME 2026 (UNRESTRICTED OPEN WEB GROUND TRUTH)]:\n${snippets.join('\n')}`;
         snippets.forEach(s => {
           if (s && s.length > 15) {
             this.saveAIMemory(s);
