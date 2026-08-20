@@ -1144,19 +1144,20 @@ Langkah yang WAJIB Anda lakukan:
           // 3. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute & OpenCode)
           { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
           { provider: 'opencode', model: 'deepseek-v4-flash-free' },
-          // 4. Nemotron Flagship Series
-          { provider: 'nim', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
+          // 4. Nemotron Flagship Series (550B Ultra & Laguna)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-          { provider: 'openrouter', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
+          { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'ollama', model: 'nemotron-3-ultra' },
           { provider: 'omniroute', model: 'nemotron-laguna' },
-          // 5. DeepSeek Chat & Qwen 2.5 Coder 32B SOTA Coding
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
+          // 5. Qwen 2.5 Coder 32B SOTA Coding & MiniMax M3
           { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
           { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-          // 6. MiniMax Frontier
+          { provider: 'openrouter', model: 'qwen/qwen-2.5-72b-instruct' },
           { provider: 'minimax', model: 'MiniMax-M3' },
-          // 7. ABSOLUTE LAST RESORT ONLY: Llama 3.3 70B (Hanya jika semua provider di atas limit)
+          // 6. ABSOLUTE LAST RESORT ONLY: DeepSeek Generic Chat & Llama 3.3 70B (Hanya jika model utama limit)
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
           { provider: 'opencode', model: 'llama-3.3-70b-free' },
           { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
@@ -1170,21 +1171,21 @@ Langkah yang WAJIB Anda lakukan:
           // 2. Juara All-Round SOTA: DeepSeek V4 Flash Free (OmniRoute & OpenCode)
           { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
           { provider: 'opencode', model: 'deepseek-v4-flash-free' },
-          // 3. Nemotron Flagship Series Research
-          { provider: 'nim', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
+          // 3. Nemotron Flagship Series Research (550B Ultra & Laguna)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
           { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-          { provider: 'openrouter', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
+          { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
           { provider: 'ollama', model: 'nemotron-3-ultra' },
           { provider: 'omniroute', model: 'nemotron-laguna' },
           // 4. Deep Analytical Logic: Codex
           { provider: 'omniroute', model: 'Codex' },
-          // 5. DeepSeek Chat & Qwen 2.5 72B
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
+          // 5. Qwen 2.5 72B & MiniMax M3
           { provider: 'openrouter', model: 'qwen/qwen-2.5-72b-instruct' },
           { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-          // 6. MiniMax Frontier
           { provider: 'minimax', model: 'MiniMax-M3' },
-          // 7. ABSOLUTE LAST RESORT ONLY: Llama 3.3 70B (Hanya jika semua provider di atas limit)
+          // 6. ABSOLUTE LAST RESORT ONLY: DeepSeek Generic Chat & Llama 3.3 70B (Hanya jika model utama limit)
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
           { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
           { provider: 'opencode', model: 'llama-3.3-70b-free' },
           { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
@@ -1194,9 +1195,10 @@ Langkah yang WAJIB Anda lakukan:
       // Default: Basic / Casual / Standard Q&A (User Specified Exact Hierarchy)
       return [
         // 1. Nemotron Flagship (Semua Provider)
-        { provider: 'nim', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
         { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-        { provider: 'openrouter', model: 'nvidia/llama-3.1-nemotron-70b-instruct' },
+        { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
         { provider: 'ollama', model: 'nemotron-3-ultra' },
         { provider: 'omniroute', model: 'nemotron-laguna' },
 
@@ -1211,16 +1213,14 @@ Langkah yang WAJIB Anda lakukan:
         // 4. Vision-model (OmniRoute)
         { provider: 'omniroute', model: 'Vision-model' },
 
-        // 5. DeepSeek Chat & Qwen 2.5
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
+        // 5. Qwen 2.5 & MiniMax M3
         { provider: 'openrouter', model: 'qwen/qwen-2.5-72b-instruct' },
         { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-
-        // 6. MiniMax M3
         { provider: 'minimax', model: 'MiniMax-M3' },
         { provider: 'ollama', model: 'minimax-m3' },
 
-        // 7. ABSOLUTE LAST RESORT ONLY: Llama 3.3 70B
+        // 6. ABSOLUTE LAST RESORT ONLY: DeepSeek Generic Chat & Llama 3.3 70B
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat' },
         { provider: 'nim', model: 'meta/llama-3.3-70b-instruct' },
         { provider: 'opencode', model: 'llama-3.3-70b-free' },
         { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
