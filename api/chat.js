@@ -1343,34 +1343,34 @@ Langkah yang WAJIB Anda lakukan:
         || effectiveEffort === 'thinking';
 
       if (isAnalysisOrComparison) {
-        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> HIGH-IQ RESILIENT CASCADE
+        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> NEMOTRON 3 ULTRA 550B MoE SEBAGAI PRIORITAS #1
         return [
           // 1. OmniRoute Dedicated Gateway (Probe cepat 2.5s jika tunnel aktif)
           { provider: 'omniroute', model: omniModel, timeout: 2500 },
 
-          // 2. Prioritas #1: Nemotron 3.5 Lightning (1M Context SOTA, Sub-8s High Intelligence)
+          // 2. Prioritas #1: Nemotron 3 Ultra 550B MoE (OpenRouter - Flagship Penalaran Mendalam)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
+
+          // 3. Prioritas #2: Nemotron 3.5 Lightning (1M Context SOTA, Cepat & Cerdas)
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 6000 },
 
-          // 3. Prioritas #2: MiniMax-M3 dari Ollama Cloud Hub (456B MoE SOTA)
+          // 4. Prioritas #3: MiniMax-M3 dari Ollama Cloud Hub (456B MoE SOTA)
           { provider: 'ollama', model: 'minimax-m3', timeout: 6000 },
 
-          // 4. Prioritas #3: Nemotron 3 Super dari Ollama Cloud Hub
+          // 5. Prioritas #4: Nemotron 3 Super dari Ollama Cloud Hub
           { provider: 'ollama', model: 'nemotron-3-super', timeout: 6000 },
 
-          // 5. Prioritas #4: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
+          // 6. Prioritas #5: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 6000 },
 
-          // 6. Prioritas #5: LiquidAI LFM 2.5 (2.6B Dynamic Sub-2s Guaranteed Instant Failover)
+          // 7. Prioritas #6: LiquidAI LFM 2.5 (2.6B Dynamic Sub-2s Guaranteed Instant Failover)
           { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 5000 },
 
-          // 7. Prioritas #6: Nemotron 3 Nano dari Ollama Cloud Hub
+          // 8. Prioritas #7: Nemotron 3 Nano dari Ollama Cloud Hub
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
 
-          // 8. Prioritas #7: Nemotron 3 Nano 30B (OpenRouter)
+          // 9. Prioritas #8: Nemotron 3 Nano 30B (OpenRouter)
           { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 },
-
-          // 9. Prioritas #8: Nemotron 3 Ultra 550B MoE (OpenRouter)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 6000 },
 
           // 10. Prioritas #9: OpenCode Zen Cloud Pool
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3000 },
