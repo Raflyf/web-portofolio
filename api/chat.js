@@ -1079,7 +1079,7 @@ Langkah yang WAJIB Anda lakukan:
       const cleanM = mName.replace(/^opencode\//, '');
       for (const ocKey of OPENCODE_KEYS) {
         try {
-          const res = await fetchWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+          const res = await fetchWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1088,7 +1088,7 @@ Langkah yang WAJIB Anda lakukan:
             body: JSON.stringify({
               model: cleanM,
               messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
+              max_tokens: Math.min(maxTokensConfig, 3500),
               temperature: tempConfig
             })
           }, tOut);
