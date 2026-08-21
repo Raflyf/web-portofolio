@@ -1021,10 +1021,12 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
-    // Calibrated token limits for complete zero-truncation deep analysis within sub-10s
+    // Token limits: generous enough for full dual-project deep analysis tables
+    // LOW=900 (greeting/casual), NORMAL=1800 (~6.5k chars), THINKING=2800 (~10k chars)
+    // Nano-30B generates ~120 tok/s → 1800 tok ≈ 15s, 2800 tok ≈ 23s — within 48s budget
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 700 
-      : (effectiveEffort === 'thinking' ? 1400 : 900);
+      ? 900 
+      : (effectiveEffort === 'thinking' ? 2800 : 1800);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
