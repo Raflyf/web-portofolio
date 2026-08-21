@@ -1138,7 +1138,7 @@ Langkah yang WAJIB Anda lakukan:
         } else {
           const errTxt = await res.text();
           providerErrors.push(`OmniRoute ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
-          if ([502, 503, 521, 522, 524, 530].includes(res.status)) {
+          if ([400, 404, 500, 502, 503, 520, 521, 522, 523, 524, 530].includes(res.status)) {
             isOmniOffline = true;
           }
         }
@@ -1403,24 +1403,34 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     // ========================================================================
-    // EXECUTE PIPELINE
+    // EXECUTE PIPELINE WITH GLOBAL 48s HARD BUDGET GUARD
     // ========================================================================
     const executionPipeline = buildExecutionPipeline();
+    const requestStartTime = Date.now();
 
     for (const step of executionPipeline) {
+      const elapsed = Date.now() - requestStartTime;
+      const remainingMs = 48000 - elapsed;
+      if (remainingMs <= 3500) {
+        // Stop before hitting Vercel's 60s hard timeout (FUNCTION_INVOCATION_TIMEOUT)
+        break;
+      }
+
+      const stepTimeout = Math.min(step.timeout || 15000, Math.max(3000, remainingMs - 1500));
       let result = null;
+
       if (step.provider === 'omniroute') {
-        result = await callOmniRoute(step.model, step.timeout || 25000);
+        result = await callOmniRoute(step.model, Math.min(stepTimeout, 3500));
       } else if (step.provider === 'nim') {
-        result = await callNvidiaNim(step.model, step.timeout || 25000);
+        result = await callNvidiaNim(step.model, stepTimeout);
       } else if (step.provider === 'opencode') {
-        result = await callOpenCode(step.model, step.timeout || 15000);
+        result = await callOpenCode(step.model, stepTimeout);
       } else if (step.provider === 'openrouter') {
-        result = await callOpenRouter(step.model, step.timeout || 15000);
+        result = await callOpenRouter(step.model, stepTimeout);
       } else if (step.provider === 'ollama') {
-        result = await callOllama(step.model, step.timeout || 25000);
+        result = await callOllama(step.model, stepTimeout);
       } else if (step.provider === 'minimax') {
-        result = await callMiniMax(step.timeout || 20000);
+        result = await callMiniMax(stepTimeout);
       }
 
       if (result) return result;
