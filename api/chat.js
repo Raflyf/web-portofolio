@@ -133,7 +133,12 @@ ${effortDirective}
    - DILARANG KERAS melakukan overclaim berlebihan (seperti "model tercanggih di dunia", "akurasi 100% sempurna"). Sampaikan hasil riset apa adanya secara objektif, presisi, dan berbasis data empiris.
 3. PANDUAN INFORMASI REAL-TIME & PENGETAHUAN UNIVERSAL TERKINI (PRIORITASKAN PENCARIAN WEB LIVE):
    - Sistem Anda secara otomatis menyuntikkan hasil pencarian web, rilis berita, dan referensi real-time terkini secara live pada bagian [HASIL PENCARIAN WEB & BERITA REAL-TIME].
-   - Untuk SEGALA TOPIK — baik rilis teknologi & model AI (Gemini, Claude, GPT, Mistral, DeepSeek, Llama), framework & tools pemrograman (React, Svelte, Python, Rust, Go), berita dunia & ekonomi, sains & riset akademik, hingga budaya & peristiwa global — ANDA WAJIB MEMBACA DAN MEMPRIORITASKAN FAKTA DARI HASIL PENCARIAN TERSEBUT sebagai rujukan utama Anda, sehingga wawasan Anda selalu adaptif, akurat, dan terhubung dengan dunia nyata tahun 2026.
+   - **PENENTUAN VERSI TERBARU (URUTAN KRONOLOGIS MUTLAK):**
+     * Perhatikan tanggal publikasi (pubDate / bulan / tahun) pada setiap hasil pencarian yang diberikan.
+     * Hasil pencarian telah diurutkan dari tanggal yang paling baru (Agustus 2026).
+     * Rilis dengan tanggal/bulan paling akhir (misalnya Agustus 2026 lebih baru dari Juli/April 2026) adalah VERSI YANG PALING TERKINI DAN TERAKHIR DIRILIS.
+     * Contoh: Jika hasil pencarian memuat rilis Agustus 2026 (seperti Claude Sonnet 5 / Fable 5, Gemini 3.7 Flash), Anda WAJIB menyatakan bahwa model bulan Agustus 2026 tersebut adalah versi yang PALING BARU dirilis, bukan versi bulan-bulan sebelumnya.
+   - Untuk SEGALA TOPIK — baik rilis teknologi & model AI (Gemini, Claude, GPT, Mistral, DeepSeek, Llama), framework & tools pemrograman (React, Svelte, Python, Rust, Go), berita dunia & ekonomi, sains & riset akademik, hingga budaya & peristiwa global — ANDA WAJIB MEMBACA DAN MEMPRIORITASKAN FAKTA DARI HASIL PENCARIAN TERSEBUT sebagai rujukan utama Anda.
    - Sampaikan informasi secara akurat, lugas, dan sesuai fakta rilisan yang tercatat di hasil pencarian tersebut tanpa membatasi diri pada cutoff pelatihan lama.
 4. KEJUJURAN ATAS KETERBATASAN INFORMASI (HONEST UNCERTAINTY):
    - Jika pengguna menanyakan fakta spesifik yang datanya tidak tersedia di dalam portofolio, memori, maupun hasil pencarian internet, AKUI DENGAN JUJUR DAN RAMAH bahwa Anda belum memiliki informasi tersebut atau pengetahuan saat ini terbatas untuk topik tersebut.
@@ -556,7 +561,7 @@ async function searchWebContext(query, history = []) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2600);
 
-    const snippets = [];
+    const structuredSnippets = [];
     const rawSnippets = [];
 
     // Helper to sanitize XML / HTML entities
@@ -572,7 +577,10 @@ async function searchWebContext(query, history = []) {
       const urlPromises = urlMatches.slice(0, 2).map(async (url) => {
         const pageText = await scrapeDirectWebpageContent(url);
         if (pageText && pageText.length > 50) {
-          snippets.push(`[Live Webpage Content (${url})]:\n${pageText}`);
+          structuredSnippets.push({
+            text: `[Live Webpage Content (${url})]:\n${pageText}`,
+            timestamp: Date.now() + 1000000000 // Highest priority
+          });
           rawSnippets.push(`[Scraped URL]: ${url}`);
         }
       });
@@ -648,7 +656,10 @@ async function searchWebContext(query, history = []) {
                 const h = hits[0];
                 const snip = cleanStr(h.snippet);
                 if (snip && !isJunkArticle(snip)) {
-                  snippets.push(`[Referensi Ensiklopedia (${h.title})]: ${snip}`);
+                  structuredSnippets.push({
+                    text: `[Referensi Ensiklopedia (${h.title})]: ${snip}`,
+                    timestamp: 1000
+                  });
                   rawSnippets.push(`[Wikipedia]: ${h.title}`);
                 }
               }
@@ -657,28 +668,39 @@ async function searchWebContext(query, history = []) {
             if (Array.isArray(parsed?.items)) {
               parsed.items.slice(0, 2).forEach(repo => {
                 const desc = cleanStr(repo.description);
-                snippets.push(`[GitHub Repository (${repo.full_name}, ${repo.stargazers_count} stars)]: ${desc || 'Open-source repository'}`);
+                structuredSnippets.push({
+                  text: `[GitHub Repository (${repo.full_name}, ${repo.stargazers_count} stars)]: ${desc || 'Open-source repository'}`,
+                  timestamp: 2000
+                });
                 rawSnippets.push(`[GitHub]: ${repo.full_name}`);
               });
             }
             // HuggingFace
             if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.id) {
               const models = parsed.slice(0, 3).map(m => m.id).join(', ');
-              snippets.push(`[Hugging Face Hub Models]: ${models}`);
+              structuredSnippets.push({
+                text: `[Hugging Face Hub Models]: ${models}`,
+                timestamp: 3000
+              });
               rawSnippets.push(`[HuggingFace]: ${models}`);
             }
           } catch (_) {}
         } else {
           // RSS News Feed
           const items = textData.match(/<item>[\s\S]*?<\/item>/gi) || [];
-          items.slice(0, 4).forEach((item) => {
+          items.slice(0, 6).forEach((item) => {
             const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
             const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
             const title = cleanStr(titleMatch ? titleMatch[1] : '');
             const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
             if (title && !isJunkArticle(title)) {
-              const entry = pubDate ? `[Berita Live (${pubDate})]: ${title}` : `[Berita Live]: ${title}`;
-              snippets.push(entry);
+              let ts = 0;
+              if (pubDate) {
+                const parsedDate = new Date(pubDate).getTime();
+                if (!isNaN(parsedDate)) ts = parsedDate;
+              }
+              const entry = pubDate ? `[Berita Terkini (${pubDate})]: ${title}` : `[Berita Terkini]: ${title}`;
+              structuredSnippets.push({ text: entry, timestamp: ts });
               rawSnippets.push(title);
             }
           });
@@ -686,14 +708,26 @@ async function searchWebContext(query, history = []) {
       }
     }
 
-    // Deduplicate snippets (top 8 for rich, authentic factual grounding)
-    const uniqueSnippets = Array.from(new Set(snippets)).slice(0, 8);
-    let formattedPrompt = '';
-    if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (SUMBER LIVE TERVERIFIKASI)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Gunakan fakta-fakta berita, referensi, dan rilis terkini pada hasil pencarian di atas sebagai rujukan utama.)\n`;
+    // Sort all snippets chronologically descending (newest timestamp first)
+    structuredSnippets.sort((a, b) => b.timestamp - a.timestamp);
+
+    // Deduplicate snippets (top 10 for rich, authentic factual grounding)
+    const seen = new Set();
+    const uniqueSnippets = [];
+    for (const item of structuredSnippets) {
+      if (!seen.has(item.text)) {
+        seen.add(item.text);
+        uniqueSnippets.push(item.text);
+      }
+      if (uniqueSnippets.length >= 10) break;
     }
 
-    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 8) };
+    let formattedPrompt = '';
+    if (uniqueSnippets.length > 0) {
+      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (DIURUTKAN DARI TANGGAL PALING TERBARU)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Data di atas telah diurutkan berdasarkan tanggal publikasi paling baru ke lama. Gunakan rilis dengan tanggal PALING AKHIR/TERKINI sebagai versi model terbaru.)\n`;
+    }
+
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
   } catch (_) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
