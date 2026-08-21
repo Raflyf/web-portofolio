@@ -711,30 +711,41 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'trivial_casual',
       effort: 'low',
-      omniCandidates: ['Nemotron-3-Super-120B', 'DeepSeek-V4-Flash', 'MiniMax-M3', 'Nemotron-3-Ultra-550B'],
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
       label: 'Casual Greeting & Quick Interaction (Instant Response)'
     };
   }
 
-  // 1. Rigorous Multi-Step Mathematical Proof, Chain of Thought, Formal Thesis Derivations
+  // 1. In-Depth Project Analysis, Multi-Repository Breakdown, and Architectural Inquiries
+  const isDeepAnalysis = /\b(jelaskan dan analisi|jelaskan dan analisis|analisis|analisa|bedahkan|bedah|evaluasi mendalam|secara mendalam|lebih dalam|komprehensif|arsitektur sistem|bandingkan|perbandingan|detail|rinci|lengkap|github)\b/i.test(q) && len > 35;
+  if (isDeepAnalysis) {
+    return {
+      category: 'project_architecture',
+      effort: 'high',
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
+      label: 'Deep Architecture & Technical Analysis (Codex & Antigravity)'
+    };
+  }
+
+  // 2. Rigorous Multi-Step Mathematical Proof, Chain of Thought, Formal Thesis Derivations
   const hasRigorousThinkingKeywords = /\b(turunkan rumus|matematis|bukti matematis|pembuktian matematis|formula matematis|chain of thought|step by step reasoning|penalaran mendalam|bedah logika mendalam|analisis statistik mendalam|evaluasi empiris skripsi|perhitungan matriks|probabilitas bayesian)\b/i.test(q);
   if (hasRigorousThinkingKeywords) {
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
-      omniCandidates: ['Antigravity-Thinker', 'Nemotron-3-Ultra-550B', 'DeepSeek-V4-Flash', 'Nemotron-3-Super-120B'],
-      label: 'Deep Reasoning & Mathematical Derivations (Antigravity & Nemotron 550B)'
+      omniCandidates: ['Antigravity', 'Codex', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
+      label: 'Deep Reasoning & Mathematical Derivations (Antigravity & Codex)'
     };
   }
 
-  // 2. Heavy Coding, Multi-File Full System Implementations, Large Script Synthesis
+  // 3. Heavy Coding, Multi-File Full System Implementations, Large Script Synthesis
   const hasHeavyCodeKeywords = /\b(buatkan full script|buatkan full kode|arsitektur microservice|implementasikan sistem|buatkan backend lengkap|full stack implementasi|buatkan boilerplate|sistem auth lengkap|pipeline dataform|dbt pipeline|docker compose full|kubernetes manifest)\b/i.test(q) || (docAttachments.length > 0 && len > 150);
   if (hasHeavyCodeKeywords) {
     return {
       category: 'heavy_coding',
       effort: 'high',
-      omniCandidates: ['Codex-5.3', 'qwen/qwen-2.5-coder-32b-instruct', 'Antigravity-Thinker', 'DeepSeek-V4-Flash'],
-      label: 'Heavy Coding & System Architecture (Codex & Qwen Coder)'
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
+      label: 'Heavy Coding & System Architecture (Codex)'
     };
   }
 
@@ -1242,15 +1253,15 @@ Langkah yang WAJIB Anda lakukan:
       if (isExplicit) {
         const t = targetModel.toLowerCase();
         if (t.includes('codex') || t.includes('gpt-5')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Codex', timeout: 18000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Codex', timeout: 30000 }];
         } else if (t.includes('antigravity') || t.includes('opus')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Antigravity', timeout: 18000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Antigravity', timeout: 30000 }];
         } else if (t.includes('vision')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Vision-model', timeout: 18000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Vision-model', timeout: 30000 }];
         } else if (t.includes('deepseek-v4') || t.includes('deepseek')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 18000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 30000 }];
         } else if (t.includes('laguna') || t.includes('nemotron')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'nemotron-laguna', timeout: 30000 }];
         } else if (t.startsWith('opencode/')) {
           const ocM = targetModel.replace(/^opencode\//, '');
           return [
@@ -1263,28 +1274,28 @@ Langkah yang WAJIB Anda lakukan:
         }
       } else {
         // Auto / Dynamic Routing berdasarkan intent:
-        if (queryIntent.category === 'heavy_coding') {
+        if (queryIntent.category === 'project_architecture' || queryIntent.category === 'deep_reasoning') {
           omniCandidates = [
-            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
-            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 30000 },
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 30000 }
+          ];
+        } else if (queryIntent.category === 'heavy_coding') {
+          omniCandidates = [
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 30000 },
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 30000 }
           ];
         } else if (queryIntent.category === 'vision') {
           omniCandidates = [
-            { provider: 'omniroute', model: 'Vision-model', timeout: 18000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 18000 }
-          ];
-        } else if (queryIntent.category === 'deep_reasoning') {
-          omniCandidates = [
-            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
-            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }
+            { provider: 'omniroute', model: 'Vision-model', timeout: 30000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 }
           ];
         } else {
           omniCandidates = [
-            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
-            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 30000 },
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 30000 }
           ];
         }
       }

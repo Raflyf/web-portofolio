@@ -886,12 +886,13 @@ Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Ra
       (len <= 25 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|bikin|buatkan|debug|error)\b/i.test(q))
     );
     const isFileExportQuery = !hasImages && /\b(dalam file|bentuk \.md|bentuk file|jadikan file|download file|unduh file|kirim file|simpan file|save file|bikin file|buat file|jadikan \.md|jadikan \.txt|jadikan \.pdf|format \.md|format file|file \.md)\b/i.test(q);
+    const isDeepAnalysis = !hasImages && /\b(jelaskan dan analisi|jelaskan dan analisis|analisis|analisa|bedahkan|bedah|evaluasi mendalam|secara mendalam|lebih dalam|komprehensif|arsitektur sistem|bandingkan|perbandingan|detail|rinci|lengkap|github)\b/i.test(q) && len > 35;
     const isRigorousMathThinking = !hasImages && /\b(turunkan rumus|matematis|bukti matematis|pembuktian matematis|formula matematis|chain of thought|step by step reasoning|penalaran mendalam|bedah logika mendalam|analisis statistik mendalam|evaluasi empiris skripsi|perhitungan matriks|probabilitas bayesian)\b/i.test(q);
     const isHeavyCodingFull = !hasImages && (/\b(buatkan full script|buatkan full kode|arsitektur microservice|implementasikan sistem|buatkan backend lengkap|full stack implementasi|buatkan boilerplate|sistem auth lengkap|pipeline dataform|dbt pipeline|docker compose full|kubernetes manifest)\b/i.test(q) || (attachments.length > 0 && len > 150));
 
     // Resolve Effort: Priority to UI Dropdown Selection if not 'auto'
     const explicitEffort = (this.reasoningEffort && this.reasoningEffort !== 'auto') ? this.reasoningEffort.toUpperCase() : null;
-    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isCasualOrShort || isFileExportQuery ? 'LOW' : (isRigorousMathThinking ? 'THINKING' : (isHeavyCodingFull ? 'HIGH' : 'MEDIUM'))));
+    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isCasualOrShort || isFileExportQuery ? 'LOW' : (isDeepAnalysis || isHeavyCodingFull ? 'HIGH' : (isRigorousMathThinking ? 'THINKING' : 'MEDIUM'))));
 
     // Real-Time Client-Side Universal Web Search Crawler
     let searchContext = '';
