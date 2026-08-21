@@ -672,6 +672,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasImages) {
     return {
       category: 'vision',
+      isAnalysisOrComparison: true,
       effort: 'medium',
       omniCandidates: ['Vision-model', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/minimax-m3'],
       label: 'Vision & Multimodal Perception (Gemini 3.1 Flash & MiniMax M3)'
@@ -684,20 +685,23 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (isCasualOrClosing) {
     return {
       category: 'trivial_casual',
+      isAnalysisOrComparison: false,
       effort: 'low',
       omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
-      label: 'Casual Greeting & Quick Interaction (Instant Response)'
+      label: 'Casual Greeting & Quick Interaction (Nemotron Nano 30B)'
     };
   }
 
-  // 1. In-Depth Project Analysis, Multi-Repository Breakdown, and Architectural Inquiries
-  const isDeepAnalysis = /\b(jelaskan dan analisi|jelaskan dan analisis|analisis|analisa|bedahkan|bedah|evaluasi mendalam|secara mendalam|lebih dalam|komprehensif|arsitektur sistem|bandingkan|perbandingan|detail|rinci|lengkap|github)\b/i.test(q) && len > 35;
+  // 1. In-Depth Project Analysis, Multi-Repository Breakdown, Explanations, and Comparative Studies
+  const hasAnalysisOrComparisonKeywords = /\b(jelaskan dan analisi|jelaskan dan analisis|analisis|analisa|bedahkan|bedah|evaluasi mendalam|secara mendalam|lebih dalam|komprehensif|arsitektur sistem|bandingkan|perbandingan|komparasi|jelaskan|jelas|penjelasan|perbedaan|persamaan|detail|rinci|lengkap|kelebihan|kekurangan|trade-off|tradeoff|skripsi|github)\b/i.test(q);
+  const isDeepAnalysis = (hasAnalysisOrComparisonKeywords && (len > 30 || /\b(analisis|analisa|perbandingan|bandingkan|komparasi|jelaskan|bedah|arsitektur)\b/i.test(q))) || len > 120;
   if (isDeepAnalysis) {
     return {
       category: 'project_architecture',
+      isAnalysisOrComparison: true,
       effort: 'high',
-      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
-      label: 'Deep Architecture & Technical Analysis (Codex & Antigravity)'
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      label: 'Deep Architecture, Explanation & Comparative Analysis (Nemotron Ultra 550B)'
     };
   }
 
@@ -706,9 +710,10 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasRigorousThinkingKeywords) {
     return {
       category: 'deep_reasoning',
+      isAnalysisOrComparison: true,
       effort: 'thinking',
-      omniCandidates: ['Antigravity', 'Codex', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
-      label: 'Deep Reasoning & Mathematical Derivations (Antigravity & Codex)'
+      omniCandidates: ['Antigravity', 'Codex', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      label: 'Deep Reasoning & Mathematical Derivations (Nemotron Ultra 550B)'
     };
   }
 
@@ -717,9 +722,10 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasHeavyCodeKeywords) {
     return {
       category: 'heavy_coding',
+      isAnalysisOrComparison: true,
       effort: 'high',
-      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
-      label: 'Heavy Coding & System Architecture (Codex)'
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      label: 'Heavy Coding & System Architecture (Nemotron Ultra 550B & Codex)'
     };
   }
 
@@ -728,18 +734,20 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   if (hasCodeKeywords) {
     return {
       category: 'heavy_coding',
+      isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
       effort: 'medium',
-      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
-      label: 'Coding & Algorithm Synthesis (Codex & Antigravity)'
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      label: 'Coding & Algorithm Synthesis (Nemotron & Codex)'
     };
   }
 
-  // 5. Standard Informative, Conceptual, Feature Comparisons, Q&A (e.g. React 19, Web API, RAG, Best Practices)
+  // 5. Standard Informative, Conceptual, Ordinary Q&A (Nemotron Nano 30B)
   return {
     category: 'basic_standard',
+    isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
     effort: 'medium',
     omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/nemotron-3-ultra', 'ollama/minimax-m3'],
-    label: 'Standard Q&A & Technical Synthesis (Fast Balanced Model Pool)'
+    label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Ultra 550B)' : 'Standard Q&A (Nemotron Nano 30B)'
   };
 }
 
@@ -908,7 +916,7 @@ export default async function handler(req, res) {
       : reasoningEffort;
 
     let targetModel = (model === 'auto' || !model)
-      ? (queryIntent?.omniCandidates?.[0] || 'Nemotron-3-Ultra-550B')
+      ? (queryIntent?.isAnalysisOrComparison ? 'Nemotron-3-Ultra-550B' : 'Nemotron-3-Nano-30B')
       : model;
 
     if (hasImages && (model === 'auto' || !model)) {
@@ -1266,10 +1274,30 @@ Langkah yang WAJIB Anda lakukan:
     function buildExecutionPipeline() {
       if (model && model !== 'auto') {
         const t = model.toLowerCase();
+        if (t.includes('ultra')) {
+          return [
+            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 16000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 }
+          ];
+        }
+        if (t.includes('nano')) {
+          return [
+            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 16000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 12000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 }
+          ];
+        }
         if (t.includes('codex') || t.includes('gpt-5')) {
           return [
             { provider: 'omniroute', model: 'Codex', timeout: 22000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 16000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
             { provider: 'openrouter', model: 'openrouter/free', timeout: 18000 }
           ];
         }
@@ -1283,33 +1311,55 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
+      const isAnalysisOrComparison = queryIntent.isAnalysisOrComparison 
+        || queryIntent.category === 'project_architecture' 
+        || queryIntent.category === 'deep_reasoning' 
+        || queryIntent.category === 'heavy_coding'
+        || effectiveEffort === 'high'
+        || effectiveEffort === 'thinking';
 
+      if (isAnalysisOrComparison) {
+        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> NEMOTRON 3 ULTRA 550B MoE (Jawaban Memuaskan, Kaya, Komprehensif)
+        return [
+          // 1. OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
+          { provider: 'omniroute', model: omniModel, timeout: 18000 },
+
+          // 2. Prioritas #2: Nemotron 3 Ultra 550B MoE (OpenRouter - SOTA Flagship untuk Analisis & Perbandingan)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
+
+          // 3. Prioritas #3: Nemotron 3 Ultra dari OpenCode (Fast 4s guard)
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
+
+          // 4. Prioritas #4: Nemotron 3 Ultra dari Ollama Cloud Hub (6s)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
+
+          // 5. Prioritas #5: Nemotron 3 Super 120B dari OpenRouter (16s)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 16000 },
+
+          // 6. Prioritas #6: Nemotron 3 Nano 30B dari OpenRouter (Fast Fallback jika Ultra overload)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
+
+          // 7. Prioritas #7: OpenRouter Universal Free Auto-Router
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 18000 }
+        ];
+      }
+
+      // [PERCAKAPAN & PERTANYAAN BIASA] -> NEMOTRON 3 NANO 30B (Ultra-Fast <1s, Snappy & Nyaman)
       return [
-        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
+        // 1. OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
         { provider: 'omniroute', model: omniModel, timeout: 18000 },
 
-        // 2. Prioritas #2: Nemotron 3 Nano 30B dari OpenRouter (openrouter.ai - 16s Verified Fast)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 16000 },
+        // 2. Prioritas #2: Nemotron 3 Nano 30B dari OpenRouter (Super Cepat, Ringan untuk Obrolan Kasual)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
 
-        // 3. Prioritas #3: Nemotron 3 Ultra 550B MoE dari OpenRouter (openrouter.ai - 16s SOTA)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
+        // 3. Prioritas #3: OpenRouter Universal Free Auto-Router
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 16000 },
 
-        // 4. Prioritas #4: OpenRouter Universal Free Auto-Router (openrouter.ai - 20s Headroom)
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 20000 },
-
-        // 5. Prioritas #5: Nemotron 3 Nano Omni Reasoning dari OpenRouter (openrouter.ai - 12s)
+        // 4. Prioritas #4: Nemotron 3 Nano Omni Reasoning dari OpenRouter
         { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 12000 },
 
-        // 6. Prioritas #6: Nemotron 3 Ultra dari OpenCode (opencode.ai - 4s fast guard)
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
-
-        // 7. Prioritas #7: Nemotron 3 Ultra dari Ollama Cloud Hub (ollama.com - 6s)
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
-
-        // 8. Prioritas #8: Model Cadangan Lainnya dari OpenCode Pool
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 3000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 3000 },
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 3000 }
+        // 5. Prioritas #5: Nemotron 3 Ultra 550B MoE dari OpenRouter (Failover Cadangan)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 }
       ];
     }
 
