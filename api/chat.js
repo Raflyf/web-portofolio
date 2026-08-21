@@ -864,14 +864,43 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const hasOmni = Boolean(process.env.OMNIROUTE_URL);
+    loadLocalEnv();
+    const rawOmniUrl = (process.env.OMNIROUTE_URL || '').replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+    let isOmniAlive = false;
+    let omniLatency = null;
+
+    if (rawOmniUrl && !(process.env.VERCEL && (rawOmniUrl.includes('127.0.0.1') || rawOmniUrl.includes('localhost')))) {
+      const pingStart = Date.now();
+      try {
+        const pingUrl = rawOmniUrl.includes('/models') ? rawOmniUrl : `${rawOmniUrl}/models`;
+        const pingRes = await fetchJsonWithTimeout(pingUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`
+          }
+        }, 1500);
+        if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || pingRes.status === 404) {
+          isOmniAlive = true;
+          omniLatency = Date.now() - pingStart;
+        }
+      } catch (_) {
+        isOmniAlive = false;
+      }
+    }
+
     const hasOpenRouter = Boolean(process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEYS);
     const hasOpenCode = Boolean(process.env.OPENCODE_API_KEY || process.env.OPENCODE_API_KEYS);
     const hasOllama = Boolean(process.env.OLLAMA_API_KEY);
     return res.status(200).json({ 
-      version: 'v10.110.0', 
+      version: 'v10.155.0', 
       status: 'online', 
-      keys: { hasOmni, hasOpenRouter, hasOpenCode, hasOllama },
+      omniroute: {
+        configured: Boolean(rawOmniUrl),
+        isOnline: isOmniAlive,
+        latencyMs: omniLatency,
+        url: rawOmniUrl ? rawOmniUrl.replace(/:[^\/@]+@/, ':***@') : null
+      },
+      keys: { hasOmni: isOmniAlive, hasOpenRouter, hasOpenCode, hasOllama },
       timestamp: Date.now() 
     });
   }
