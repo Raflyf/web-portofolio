@@ -1242,15 +1242,15 @@ Langkah yang WAJIB Anda lakukan:
       if (isExplicit) {
         const t = targetModel.toLowerCase();
         if (t.includes('codex') || t.includes('gpt-5')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Codex', timeout: 5000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Codex', timeout: 18000 }];
         } else if (t.includes('antigravity') || t.includes('opus')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Antigravity', timeout: 5000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Antigravity', timeout: 18000 }];
         } else if (t.includes('vision')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Vision-model', timeout: 5000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Vision-model', timeout: 18000 }];
         } else if (t.includes('deepseek-v4') || t.includes('deepseek')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 5000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 18000 }];
         } else if (t.includes('laguna') || t.includes('nemotron')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 }];
+          omniCandidates = [{ provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }];
         } else if (t.startsWith('opencode/')) {
           const ocM = targetModel.replace(/^opencode\//, '');
           return [
@@ -1265,28 +1265,26 @@ Langkah yang WAJIB Anda lakukan:
         // Auto / Dynamic Routing berdasarkan intent:
         if (queryIntent.category === 'heavy_coding') {
           omniCandidates = [
-            { provider: 'omniroute', model: 'Codex', timeout: 5000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
-            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 5000 }
+            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }
           ];
         } else if (queryIntent.category === 'vision') {
           omniCandidates = [
-            { provider: 'omniroute', model: 'Vision-model', timeout: 5000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 5000 }
+            { provider: 'omniroute', model: 'Vision-model', timeout: 18000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 18000 }
           ];
         } else if (queryIntent.category === 'deep_reasoning') {
           omniCandidates = [
-            { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
-            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 5000 }
+            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }
           ];
         } else {
           omniCandidates = [
-            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 5000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
-            { provider: 'omniroute', model: 'Vision-model', timeout: 5000 },
-            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 5000 }
+            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 }
           ];
         }
       }
