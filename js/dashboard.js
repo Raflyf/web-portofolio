@@ -252,10 +252,10 @@ class DashboardApp {
   }
 
   async promptSyncOmniRouteTunnel() {
-    const defaultUrl = 'https://reflects-ambassador-van-owners.trycloudflare.com/v1';
+    const defaultUrl = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
     const currentSaved = localStorage.getItem('omniroute_custom_tunnel') || defaultUrl;
     const inputUrl = window.prompt(
-      'SINKRONISASI OMNIROUTE CLOUDFLARE TUNNEL:\n\nMasukkan / perbarui URL Cloudflare Quick Tunnel aktif Anda (misal: https://xxx.trycloudflare.com/v1):',
+      'SINKRONISASI OMNIROUTE STATIC / CLOUDFLARE TUNNEL:\n\nMasukkan / perbarui URL Endpoint aktif Anda (misal: https://gullible-cytoplast-mardi.ngrok-free.dev/v1):',
       currentSaved
     );
 
