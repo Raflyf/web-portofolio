@@ -1360,19 +1360,12 @@ Langkah yang WAJIB Anda lakukan:
         return [
           // 1. OmniRoute Vision SOTA Model
           { provider: 'omniroute', model: 'Vision-model', timeout: 3000 },
-          // 2. OpenRouter Google Gemini 2.0 Flash Vision SOTA
-          { provider: 'openrouter', model: 'google/gemini-2.0-flash-exp:free', timeout: 22000 },
-          // 3. OpenRouter Google Gemini 2.0 Flash Thinking SOTA
-          { provider: 'openrouter', model: 'google/gemini-2.0-flash-thinking-exp:free', timeout: 22000 },
-          // 4. OpenRouter Meta Llama 3.2 11B Vision Instruct
-          { provider: 'openrouter', model: 'meta-llama/llama-3.2-11b-vision-instruct:free', timeout: 18000 },
-          // 5. OpenRouter Mistral Pixtral 12B Vision
-          { provider: 'openrouter', model: 'mistralai/pixtral-12b:free', timeout: 18000 },
-          // 6. OpenRouter Qwen 2 VL 72B Instruct Vision
-          { provider: 'openrouter', model: 'qwen/qwen-2-vl-72b-instruct:free', timeout: 18000 },
-          // 7. Ollama MiniMax Multimodal
-          { provider: 'ollama', model: 'minimax-m3', timeout: 18000 },
-          // 8. OpenRouter Universal Multimodal Auto-Router
+          // 2. OpenRouter Multimodal Vision SOTA Suite
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 20000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-nano-12b-v2-vl:free', timeout: 20000 },
+          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 18000 },
+          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 18000 },
+          { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 18000 },
           { provider: 'openrouter', model: 'openrouter/free', timeout: 16000 }
         ];
       }
