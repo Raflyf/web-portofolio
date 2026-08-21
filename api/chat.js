@@ -901,9 +901,13 @@ export default async function handler(req, res) {
     const cleanCustomKey = typeof customKey === 'string' ? customKey.replace(/[\r\n]/g, '').trim().slice(0, 256) : '';
     const cleanCustomProvider = typeof customProvider === 'string' ? customProvider.replace(/[^a-zA-Z0-9_-]/g, '').trim().slice(0, 32) : '';
 
-    const OMNIROUTE_URL = (cleanCustomKey && cleanCustomProvider === 'omniroute') 
+    let rawOmniUrl = (cleanCustomKey && cleanCustomProvider === 'omniroute') 
       ? (process.env.OMNIROUTE_URL || '')
       : (process.env.OMNIROUTE_URL || '');
+    if (rawOmniUrl && !rawOmniUrl.includes('/chat/completions')) {
+      rawOmniUrl = rawOmniUrl.replace(/\/+$/, '') + '/chat/completions';
+    }
+    const OMNIROUTE_URL = rawOmniUrl;
 
     const OMNIROUTE_KEY = (cleanCustomKey && cleanCustomProvider === 'omniroute')
       ? cleanCustomKey
