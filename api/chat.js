@@ -1013,11 +1013,13 @@ export default async function handler(req, res) {
       ? (process.env.OMNIROUTE_URL || '')
       : (process.env.OMNIROUTE_URL || '');
     
-    if (!rawOmniUrl || rawOmniUrl.includes('trycloudflare.com')) {
-      const dynamicTunnel = await fetchDynamicOmniRouteUrl();
-      if (dynamicTunnel) {
-        rawOmniUrl = dynamicTunnel;
-      }
+    // Always check Dynamic Tunnel from Supabase first if available
+    const dynamicTunnel = await fetchDynamicOmniRouteUrl();
+    if (dynamicTunnel) {
+      rawOmniUrl = dynamicTunnel;
+    } else if (!rawOmniUrl || rawOmniUrl.includes('ngrok-free.dev') || rawOmniUrl.includes('trycloudflare.com')) {
+      // Direct Hugging Face 24/7 Cloud Gateway fallback
+      rawOmniUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
     }
 
     if (rawOmniUrl && !rawOmniUrl.includes('/chat/completions')) {
@@ -1027,7 +1029,7 @@ export default async function handler(req, res) {
 
     const OMNIROUTE_KEY = (cleanCustomKey && cleanCustomProvider === 'omniroute')
       ? cleanCustomKey
-      : (process.env.OMNIROUTE_KEY || '');
+      : (process.env.OMNIROUTE_KEY || 'sk-omniroute');
 
     const OPENROUTER_KEYS = [
       (cleanCustomKey && (cleanCustomProvider === 'openrouter' || !cleanCustomProvider)) ? cleanCustomKey : null,
