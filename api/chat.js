@@ -579,7 +579,7 @@ async function searchWebContext(query, history = []) {
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Parallel Real-Time News Queries across Google News (Global + ID) and Bing News
+    // 2. Parallel Real-Time News & Global Search Queries across Google News (Global + ID) and Bing News
     const searchFetches = searchQueries.flatMap(targetQ => [
       // Google News Global (US / English)
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-US&gl=US&ceid=US:en`, {
@@ -598,8 +598,26 @@ async function searchWebContext(query, history = []) {
       })
     ]);
 
-    // 3. Conditional Open-Web Encyclopedic Knowledge (Definitions, History, Science, Biographies)
-    const isEncyclopedic = /\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of)\b/i.test(query);
+    // 3. GitHub Open-Source & Library Discovery (For tech / framework / code / repo queries)
+    const isTechOrCode = /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt)\b/i.test(query);
+    if (isTechOrCode) {
+      const techKeyword = searchQueries[0] || query.slice(0, 60);
+      searchFetches.push(
+        fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(techKeyword)}&sort=stars&order=desc&per_page=3`, {
+          headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
+          signal: controller.signal
+        })
+      );
+      searchFetches.push(
+        fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(techKeyword)}&limit=3`, {
+          headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
+          signal: controller.signal
+        })
+      );
+    }
+
+    // 4. Open-Web Encyclopedic Knowledge (Definitions, History, Science, Biographies)
+    const isEncyclopedic = /\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|siapa|apa|jelaskan)\b/i.test(query);
     if (isEncyclopedic) {
       const mainKeyword = query.replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|dong)\b/gi, ' ').trim();
       if (mainKeyword.length >= 3) {
@@ -620,18 +638,34 @@ async function searchWebContext(query, history = []) {
     for (const res of results) {
       if (res.status === 'fulfilled' && res.value && res.value.ok) {
         const textData = await res.value.text().catch(() => '');
-        // Check if JSON (Wikipedia)
-        if (textData.startsWith('{')) {
+        if (textData.startsWith('{') || textData.startsWith('[')) {
           try {
-            const wJson = JSON.parse(textData);
-            const hits = wJson?.query?.search || [];
-            if (hits.length > 0) {
-              const h = hits[0];
-              const snip = cleanStr(h.snippet);
-              if (snip && !isJunkArticle(snip)) {
-                snippets.push(`[Referensi Ensiklopedia (${h.title})]: ${snip}`);
-                rawSnippets.push(`[Wikipedia]: ${h.title}`);
+            const parsed = JSON.parse(textData);
+            // Wikipedia
+            if (parsed?.query?.search) {
+              const hits = parsed.query.search;
+              if (hits.length > 0) {
+                const h = hits[0];
+                const snip = cleanStr(h.snippet);
+                if (snip && !isJunkArticle(snip)) {
+                  snippets.push(`[Referensi Ensiklopedia (${h.title})]: ${snip}`);
+                  rawSnippets.push(`[Wikipedia]: ${h.title}`);
+                }
               }
+            }
+            // GitHub
+            if (Array.isArray(parsed?.items)) {
+              parsed.items.slice(0, 2).forEach(repo => {
+                const desc = cleanStr(repo.description);
+                snippets.push(`[GitHub Repository (${repo.full_name}, ${repo.stargazers_count} stars)]: ${desc || 'Open-source repository'}`);
+                rawSnippets.push(`[GitHub]: ${repo.full_name}`);
+              });
+            }
+            // HuggingFace
+            if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.id) {
+              const models = parsed.slice(0, 3).map(m => m.id).join(', ');
+              snippets.push(`[Hugging Face Hub Models]: ${models}`);
+              rawSnippets.push(`[HuggingFace]: ${models}`);
             }
           } catch (_) {}
         } else {
