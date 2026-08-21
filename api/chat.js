@@ -333,15 +333,15 @@ async function fetchLiveRepoContext(query = '') {
 
   try {
     const fetchPromises = repoTargets.flatMap(target => 
-      target.urls.map(async (url) => {
+      target.urls.slice(0, 1).map(async (url) => {
         try {
           const res = await fetchWithTimeout(url, {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PortofolioAIBot/2026' }
-          }, 3000);
+          }, 1800);
           if (res.ok) {
             const text = await res.text();
             if (text && text.length > 50) {
-              return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 4000)}`;
+              return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 2500)}`;
             }
           }
         } catch (_) {}
@@ -550,7 +550,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 1800);
 
     const snippets = [];
     const rawSnippets = [];
@@ -1070,9 +1070,12 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     const finalUserPrompt = assembledQuery;
-    const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 480000);
+    const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
-    const maxTokensConfig = effectiveEffort === 'low' ? 8192 : 16384;
+    // Calibrated token limits for ultra-responsive inference (<6-8s) without triggering 60s Vercel timeouts
+    const maxTokensConfig = effectiveEffort === 'low' 
+      ? 1024 
+      : (effectiveEffort === 'medium' ? 2048 : (effectiveEffort === 'thinking' ? 4096 : 3500));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
@@ -1328,93 +1331,66 @@ Langkah yang WAJIB Anda lakukan:
     // 3. OpenRouter nemotron-3-ultra-550b-a55b:free
     // 4. Ollama Cloud nemotron-3-ultra
     // 5. Ollama Cloud minimax-m3
-    // 6. OpenCode x-preview-f-free
-    // 7. OpenCode mimo-v2.5-free
-    // 8. OpenCode laguna-s-2.1-free
-    // 9. Remaining models at the bottom (nemotron-3-super, big-pickle, muse-spark, hy3, lightning, minimax)
-    // ========================================================================
     function buildExecutionPipeline() {
-      let omniCandidates = [];
-      const isExplicit = (model && model !== 'auto');
-
-      if (isExplicit) {
-        const t = targetModel.toLowerCase();
+      if (model && model !== 'auto') {
+        const t = model.toLowerCase();
         if (t.includes('codex') || t.includes('gpt-5')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Codex', timeout: 30000 }];
+          return [
+            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+          ];
         } else if (t.includes('antigravity') || t.includes('opus')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Antigravity', timeout: 8000 }];
+          return [
+            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+          ];
         } else if (t.includes('vision')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Vision-model', timeout: 8000 }];
+          return [
+            { provider: 'omniroute', model: 'Vision-model', timeout: 18000 },
+            { provider: 'ollama', model: 'minimax-m3', timeout: 12000 }
+          ];
         } else if (t.includes('deepseek-v4') || t.includes('deepseek')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 8000 }];
+          return [
+            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+          ];
         } else if (t.includes('laguna') || t.includes('nemotron')) {
-          omniCandidates = [{ provider: 'omniroute', model: 'nemotron-laguna', timeout: 8000 }];
+          return [
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+          ];
         } else if (t.startsWith('opencode/')) {
           const ocM = targetModel.replace(/^opencode\//, '');
           return [
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 },
             { provider: 'opencode', model: ocM, timeout: 5000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 4000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 4000 },
-            { provider: 'ollama', model: 'minimax-m3', timeout: 4000 }
-          ];
-        }
-      } else {
-        // Auto / Dynamic Routing berdasarkan intent (Timeout 4.5s agar failover sempat berjalan sebelum batas 10s Vercel):
-        if (queryIntent.category === 'project_architecture' || queryIntent.category === 'deep_reasoning') {
-          omniCandidates = [
-            { provider: 'omniroute', model: 'Codex', timeout: 5000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 4000 }
-          ];
-        } else if (queryIntent.category === 'heavy_coding') {
-          omniCandidates = [
-            { provider: 'omniroute', model: 'Codex', timeout: 5000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 4000 }
-          ];
-        } else if (queryIntent.category === 'vision') {
-          omniCandidates = [
-            { provider: 'omniroute', model: 'Vision-model', timeout: 5000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 4000 }
-          ];
-        } else {
-          omniCandidates = [
-            { provider: 'omniroute', model: 'Codex', timeout: 4500 }
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 }
           ];
         }
       }
 
+      // Auto / Dynamic Routing berdasarkan intent:
+      const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
+
       return [
-        // 1. Prioritas #1: Model OmniRoute (saat Localhost/Tunnel nyala)
-        ...omniCandidates,
+        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Port 20128 / Cloudflare Quick Tunnel)
+        { provider: 'omniroute', model: omniModel, timeout: 6500 },
 
-        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
+        // 2. Prioritas #2: OpenRouter SOTA 120B CoT (Nvidia Nemotron 3 Super 120B - Ultra Fast & Resilient)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 },
 
-        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 3500 },
+        // 3. Prioritas #3: OpenRouter SOTA MoE (Nvidia Nemotron 3 Ultra 550B)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 20000 },
 
-        // 4. Prioritas #4: Nemotron Ultra 3 dari Ollama
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 3500 },
+        // 4. Prioritas #4: Ollama Cloud Hub (Nemotron 3 Ultra)
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
 
-        // 5. Prioritas #5: MiniMax M3 dari Ollama
-        { provider: 'ollama', model: 'minimax-m3', timeout: 3500 },
+        // 5. Prioritas #5: Ollama Cloud Hub (MiniMax M3 Vision)
+        { provider: 'ollama', model: 'minimax-m3', timeout: 10000 },
 
-        // 6. Prioritas #6: X Preview F Free dari OpenCode
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 3000 },
-
-        // 7. Prioritas #7: Mimo V2.5 dari OpenCode
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 3000 },
-
-        // 8. Prioritas #8: Laguna S 2.1 dari OpenCode
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 3000 },
-
-        // 9. Prioritas #9 (Sisanya paling bawah):
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 3000 },
-        { provider: 'opencode', model: 'big-pickle', timeout: 3000 },
-        { provider: 'opencode', model: 'muse-spark-1.2-contributor-free', timeout: 3000 },
-        { provider: 'opencode', model: 'hy3-free', timeout: 3000 },
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 3000 },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 3000 }
+        // 6. Prioritas #6: OpenCode Pool (Dengan Circuit Breaker)
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 4000 }
       ];
     }
 
