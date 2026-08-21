@@ -686,11 +686,11 @@ class DashboardApp {
       offline: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`
     };
 
-    const isNIM = (s) => /\b(nim|integrate\.api\.nvidia\.com)\b/i.test(s) || (/\bnvidia\b/i.test(s) && !/\b(openrouter|ollama|opencode|omniroute)\b/i.test(s));
-    const isOpenCode = (s) => /\b(opencode|api\.opencode\.ai)\b/i.test(s);
+    const isNIM = (s) => /\b(nim|integrate\.api\.nvidia\.com)\b/i.test(s);
+    const isOpenCode = (s) => /\b(opencode|api\.opencode\.ai|opencode\.ai)\b/i.test(s);
     const isOllama = (s) => /\b(ollama|ollama\.com)\b/i.test(s);
     const isOmniRoute = (s) => /\b(omniroute|trycloudflare)\b/i.test(s);
-    const isOpenRouter = (s) => /\b(openrouter|open-router)\b/i.test(s) || (!isNIM(s) && !isOpenCode(s) && !isOllama(s) && !isOmniRoute(s) && !/\b(minimax|local_semantic)\b/i.test(s));
+    const isOpenRouter = (s) => /\b(openrouter|open-router)\b/i.test(s) || (!isOpenCode(s) && !isOllama(s) && !isOmniRoute(s) && !/\b(minimax|local_semantic)\b/i.test(s));
 
     const MODELS_CATALOG = [
       // 0. Auto Gateway Router Overview
@@ -704,95 +704,155 @@ class DashboardApp {
         isRouterCard: true
       },
 
-      // 1. NVIDIA NIM Direct API Provider
+      // 1. OmniRoute Dedicated Local Gateway (Priority #1 Combos)
       {
-        id: 'nemotron-3-ultra-nim',
-        name: 'Nvidia Nemotron 3 Ultra (550B)',
-        category: 'NVIDIA NIM Direct API',
-        tag: '550B MoE · Endpoint: api.nvidia.com',
-        icon: SVG_ICONS.flagship,
+        id: 'omniroute-codex',
+        name: 'Codex',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: Codex (GPT-5.6 Terra)',
+        icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isNIM(s) && /\b(ultra|550b)\b/i.test(s);
+          return /\b(codex|gpt-5\.6|terra)\b/i.test(s);
         }
       },
       {
-        id: 'nemotron-3-super-nim',
-        name: 'Nvidia Nemotron 3 Super (120B)',
-        category: 'NVIDIA NIM Direct API',
-        tag: '120B SOTA · Endpoint: api.nvidia.com',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isNIM(s) && /\b(super|120b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'llama-3.3-70b-nim',
-        name: 'Llama 3.3 70B Instruct',
-        category: 'NVIDIA NIM Direct API',
-        tag: '70B SOTA · Endpoint: api.nvidia.com',
-        icon: SVG_ICONS.flagship,
+        id: 'omniroute-antigravity',
+        name: 'Antigravity',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: Antigravity (Claude Opus 4.6)',
+        icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isNIM(s) && /\b(llama|70b)\b/i.test(s);
+          return /\b(antigravity|claude-opus|opus|kiro)\b/i.test(s);
         }
       },
-
-      // 2. OpenCode Cloud Multi-Account Provider
       {
-        id: 'deepseek-v4-opencode',
+        id: 'omniroute-nemotron',
+        name: 'nemotron-laguna / ultra',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: nemotron-laguna (OmniRoute)',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOmniRoute(s) && /\b(laguna|ultra-free|super-free|nemotron-laguna)\b/i.test(s);
+        }
+      },
+      {
+        id: 'omniroute-vision',
+        name: 'Vision-model',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: Vision-model (Gemini 3.1 Flash / OCR)',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOmniRoute(s) && /\b(vision-model|vision)\b/i.test(s);
+        }
+      },
+      {
+        id: 'omniroute-deepseek-v4',
         name: 'Deepseek-V4-Flash-Free',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/deepseek-v4-flash-free',
+        category: 'OmniRoute Dedicated',
+        tag: 'Model ID: Deepseek-V4-Flash-Free',
         icon: SVG_ICONS.fast,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(deepseek|v4)\b/i.test(s);
+          return isOmniRoute(s) && /\b(deepseek|v4)\b/i.test(s);
         }
       },
+
+      // 2. OpenCode Zen Cloud Pool (Priority #2 & Modern Free Tier)
       {
         id: 'nemotron-ultra-opencode',
-        name: 'Nvidia Nemotron 3 Ultra (550B)',
+        name: 'Nemotron 3 Ultra (550B)',
         category: 'OpenCode Cloud Pool',
         tag: 'Model ID: opencode/nemotron-3-ultra-free',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(ultra|550b|nemotron)\b/i.test(s);
+          return isOpenCode(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
         }
       },
       {
-        id: 'qwen-coder-opencode',
-        name: 'Qwen 2.5 Coder (32B)',
+        id: 'x-preview-opencode',
+        name: 'X-Preview Frontier Free',
         category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/qwen-2.5-coder-32b-free',
+        tag: 'Model ID: opencode/x-preview-f-free',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(x-preview|frontier)\b/i.test(s);
+        }
+      },
+      {
+        id: 'mimo-opencode',
+        name: 'Mimo v2.5 Fast Inference',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/mimo-v2.5-free',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-amber)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(mimo|mimo-v2\.5)\b/i.test(s);
+        }
+      },
+      {
+        id: 'laguna-opencode',
+        name: 'Laguna S 2.1 Free',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/laguna-s-2.1-free',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(laguna|laguna-s)\b/i.test(s);
+        }
+      },
+      {
+        id: 'muse-spark-opencode',
+        name: 'Muse Spark 1.2 Free',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/muse-spark-1.2-contributor-free',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(muse|spark)\b/i.test(s);
+        }
+      },
+      {
+        id: 'hy3-opencode',
+        name: 'HY3 Assistant Free',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/hy3-free',
+        icon: SVG_ICONS.cot,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(hy3|hunyuan)\b/i.test(s);
+        }
+      },
+      {
+        id: 'big-pickle-opencode',
+        name: 'Big Pickle Model',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/big-pickle',
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(qwen|coder)\b/i.test(s);
-        }
-      },
-      {
-        id: 'llama-3.3-opencode',
-        name: 'Llama 3.3 70B Instruct',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/llama-3.3-70b-free',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(llama|70b)\b/i.test(s);
+          return isOpenCode(s) && /\b(pickle|big-pickle)\b/i.test(s);
         }
       },
 
-      // 3. OpenRouter 3-Key Cloud Pool Provider
+      // 3. OpenRouter Modern SOTA Pool (Priority #3)
       {
         id: 'nemotron-3-ultra-openrouter',
         name: 'Nvidia Nemotron 3 Ultra (550B)',
@@ -817,121 +877,11 @@ class DashboardApp {
           return isOpenRouter(s) && /\b(super|120b)\b/i.test(s);
         }
       },
-      {
-        id: 'llama-3.3-70b-openrouter',
-        name: 'Llama 3.3 70B Instruct',
-        category: 'OpenRouter Cloud Pool',
-        tag: '70B SOTA · 3-Key Multi-Account Pool',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(llama|70b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'qwen-coder-openrouter',
-        name: 'Qwen 2.5 Coder (32B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: 'qwen/qwen-2.5-coder-32b-instruct',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(qwen|coder)\b/i.test(s);
-        }
-      },
-      {
-        id: 'google-gemma-3-openrouter',
-        name: 'Google Gemma 3 (27B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: 'google/gemma-3-27b-it',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return (isOpenRouter(s) || s.includes('gemma')) && /\b(gemma)\b/i.test(s);
-        }
-      },
-      {
-        id: 'deepseek-chat-openrouter',
-        name: 'DeepSeek Chat (OpenRouter)',
-        category: 'OpenRouter Cloud Pool',
-        tag: 'deepseek/deepseek-chat',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(deepseek|deepseek-chat)\b/i.test(s) && !/\bv4\b/i.test(s);
-        }
-      },
 
-      // 4. OmniRoute Dedicated Server Provider (Combos)
-      {
-        id: 'omniroute-codex',
-        name: 'Codex',
-        category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Codex (Heavy Coding & Architecture)',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return /\b(codex|gpt-5\.6|terra)\b/i.test(s);
-        }
-      },
-      {
-        id: 'omniroute-antigravity',
-        name: 'Antigravity',
-        category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Antigravity (Deep CoT Multi-Step)',
-        icon: SVG_ICONS.cot,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return /\b(antigravity|claude-opus|opus)\b/i.test(s);
-        }
-      },
-      {
-        id: 'omniroute-deepseek-v4',
-        name: 'Deepseek-V4-Flash-Free',
-        category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Deepseek-V4-Flash-Free',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(deepseek|v4)\b/i.test(s);
-        }
-      },
-      {
-        id: 'omniroute-vision',
-        name: 'Vision-model',
-        category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Vision-model (Image & PDF OCR)',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(vision-model|vision)\b/i.test(s);
-        }
-      },
-      {
-        id: 'omniroute-nemotron',
-        name: 'nemotron-laguna / ultra',
-        category: 'OmniRoute Dedicated',
-        tag: 'Model ID: nemotron-laguna (OmniRoute)',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(laguna|ultra-free|super-free|nemotron-laguna)\b/i.test(s);
-        }
-      },
-
-      // 5. Ollama Cloud SOTA Engine Provider (ollama.com)
+      // 4. Ollama Cloud SOTA Engine Provider (Priority #4 & #5)
       {
         id: 'nemotron-ultra-ollama',
-        name: 'Nvidia Nemotron 3 Ultra (550B)',
+        name: 'Nemotron 3 Ultra (550B)',
         category: 'Ollama Cloud Engine',
         tag: 'ollama.com · nemotron-3-ultra',
         icon: SVG_ICONS.flagship,
@@ -939,18 +889,6 @@ class DashboardApp {
         match: (t, l) => {
           const s = `${t} ${l}`;
           return isOllama(s) && /\b(ultra|550b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'nemotron-super-ollama',
-        name: 'Nvidia Nemotron 3 Super (120B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-super',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(super|120b)\b/i.test(s);
         }
       },
       {
@@ -966,10 +904,10 @@ class DashboardApp {
         }
       },
 
-      // 6. MiniMax Frontier API Provider (api.minimax.io)
+      // 5. MiniMax Frontier API Provider
       {
         id: 'minimax-m3-direct',
-        name: 'MiniMax-M3 Vision Multimodal',
+        name: 'MiniMax-M3 Frontier Vision',
         category: 'MiniMax Frontier API',
         tag: 'api.minimax.io · MiniMax-M3',
         icon: SVG_ICONS.vision,
@@ -980,7 +918,7 @@ class DashboardApp {
         }
       },
 
-      // 7. In-Browser / Local Offline Fallback
+      // 6. In-Browser Local Engine (Zero-Latency Offline)
       {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
