@@ -131,10 +131,10 @@ ${effortDirective}
    - Jawablah berdasarkan fakta nyata yang autentik dari dokumen portofolio dan hasil pencarian internet terverifikasi.
    - DILARANG KERAS mengarang metrik, angka fiktif, sertifikat palsu, atau fitur imajiner yang tidak ada pada repositori.
    - DILARANG KERAS melakukan overclaim berlebihan (seperti "model tercanggih di dunia", "akurasi 100% sempurna"). Sampaikan hasil riset apa adanya secara objektif, presisi, dan berbasis data empiris.
-3. PANDUAN INFORMASI REAL-TIME & BERITA TERKINI (PRIORITASKAN PENCARIAN WEB LIVE):
-   - Sistem Anda menyuntikkan hasil pencarian web dan berita real-time terkini secara live pada bagian [HASIL PENCARIAN WEB & BERITA REAL-TIME].
-   - Jika pengguna menanyakan berita atau perkembangan terbaru (seperti rilis model AI Claude, GPT, Gemini, atau berita teknologi hari ini), ANDA WAJIB MEMBACA DAN MENGGUNAKAN FAKTA DARI HASIL PENCARIAN TERSEBUT sebagai rujukan utama Anda, alih-alih mengandalkan batas pelatihan lama Anda.
-   - Sampaikan perkembangan terkini secara akurat, lugas, dan sesuai fakta rilisan yang tercatat di hasil pencarian tersebut.
+3. PANDUAN INFORMASI REAL-TIME & PENGETAHUAN UNIVERSAL TERKINI (PRIORITASKAN PENCARIAN WEB LIVE):
+   - Sistem Anda secara otomatis menyuntikkan hasil pencarian web, rilis berita, dan referensi real-time terkini secara live pada bagian [HASIL PENCARIAN WEB & BERITA REAL-TIME].
+   - Untuk SEGALA TOPIK — baik rilis teknologi & model AI (Gemini, Claude, GPT, Mistral, DeepSeek, Llama), framework & tools pemrograman (React, Svelte, Python, Rust, Go), berita dunia & ekonomi, sains & riset akademik, hingga budaya & peristiwa global — ANDA WAJIB MEMBACA DAN MEMPRIORITASKAN FAKTA DARI HASIL PENCARIAN TERSEBUT sebagai rujukan utama Anda, sehingga wawasan Anda selalu adaptif, akurat, dan terhubung dengan dunia nyata tahun 2026.
+   - Sampaikan informasi secara akurat, lugas, dan sesuai fakta rilisan yang tercatat di hasil pencarian tersebut tanpa membatasi diri pada cutoff pelatihan lama.
 4. KEJUJURAN ATAS KETERBATASAN INFORMASI (HONEST UNCERTAINTY):
    - Jika pengguna menanyakan fakta spesifik yang datanya tidak tersedia di dalam portofolio, memori, maupun hasil pencarian internet, AKUI DENGAN JUJUR DAN RAMAH bahwa Anda belum memiliki informasi tersebut atau pengetahuan saat ini terbatas untuk topik tersebut.
    - Contoh gaya penyampaian ramah: *"Mohon maaf, untuk detail spesifik mengenai hal tersebut saat ini belum tersedia dalam catatan repositori maupun pencarian internet. Namun, saya siap membantu jika Anda ingin membahas [topik terkait]."*
@@ -201,48 +201,51 @@ async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
 }
 
 /**
- * Intelligent Multi-Query Generator for Real-Time Live Search
- * Formulates focused factual queries for breaking news, tech releases, and conversational turns.
+ * Universal Intelligent Multi-Query Generator for Any Domain & Topic
+ * Dynamically extracts the substantive subject matter from any user prompt and conversation history
+ * to formulate parallel high-precision search queries across breaking news, live releases, and factual updates.
  */
 function formulateSmartSearchQueries(query, history = []) {
   if (!query || typeof query !== 'string') return [];
   const queries = [];
+
+  const stripFillers = (text) => {
+    return text
+      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait)\b/gi, ' ')
+      .replace(/[^\w\s\.\-]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   const qClean = query.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
+  const coreSubject = stripFillers(query).slice(0, 80);
+
   if (qClean.length >= 3) queries.push(qClean);
+  if (coreSubject.length >= 3 && coreSubject !== qClean) queries.push(coreSubject);
 
-  const qLow = (query + ' ' + (history.slice(-2).map(h => h.content || '').join(' '))).toLowerCase();
-  
-  if (qLow.includes('gemini') || qLow.includes('google ai') || qLow.includes('google deepmind')) {
-    queries.push('Google Gemini latest model release update 2026');
-    queries.push('Gemini Flash Pro Google DeepMind release 2026');
-  }
-  if (qLow.includes('claude') || qLow.includes('anthropic')) {
-    queries.push('Anthropic Claude latest model release news 2026');
-    queries.push('Claude Sonnet Opus release update 2026');
-  }
-  if (qLow.includes('gpt') || qLow.includes('openai') || qLow.includes('chatgpt') || qLow.includes('astra')) {
-    queries.push('OpenAI GPT latest model release news 2026');
-  }
-  if (qLow.includes('deepseek')) {
-    queries.push('DeepSeek AI latest model release 2026');
-  }
-  if (qLow.includes('hari ini') || qLow.includes('terbaru') || qLow.includes('berita') || qLow.includes('terkini')) {
-    queries.push('berita teknologi AI terkini hari ini 2026');
+  const searchSubject = coreSubject.length >= 3 ? coreSubject : qClean;
+  if (searchSubject.length >= 3) {
+    queries.push(`${searchSubject} latest update news 2026`);
+    queries.push(`${searchSubject} berita perkembangan terkini 2026`);
   }
 
-  // If user query is short/conversational follow-up, pull context from previous user message
+  // Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
   if (Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
     for (const pastQ of pastUserTurns.slice(0, 2)) {
-      const pastClean = pastQ.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
-      if (pastClean.length >= 4 && !queries.includes(pastClean)) {
-        queries.push(pastClean);
+      const pastSubject = stripFillers(pastQ);
+      if (pastSubject.length >= 3) {
+        const combined = `${pastSubject} ${searchSubject}`.trim().slice(0, 90);
+        if (!queries.includes(combined)) {
+          queries.push(combined);
+          queries.push(`${combined} 2026 news`);
+        }
         break;
       }
     }
   }
 
-  return Array.from(new Set(queries)).slice(0, 4);
+  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 5);
 }
 
 /**
