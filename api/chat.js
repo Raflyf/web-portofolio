@@ -1313,20 +1313,22 @@ Langkah yang WAJIB Anda lakukan:
 
       // 2. Gradio 5 API protocol attempt (if hosted on Hugging Face Spaces)
       if (OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface')) {
-        try {
-          const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-          const endpointName = 'predict';
-          const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${endpointName}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: [promptText] })
-          }, 8000);
+        const endpoints = ['predict_zerogpu', 'predict'];
+        const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
 
-          if (postRes.ok && postRes.data?.event_id) {
-            const eventId = postRes.data.event_id;
-            const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${endpointName}/${eventId}`, {
-              method: 'GET'
-            }, tOut);
+        for (const ep of endpoints) {
+          try {
+            const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: [promptText] })
+            }, 8000);
+
+            if (postRes.ok && postRes.data?.event_id) {
+              const eventId = postRes.data.event_id;
+              const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, {
+                method: 'GET'
+              }, tOut);
 
             if (sseRes.ok || sseRes.text) {
               const rawText = sseRes.text || '';
