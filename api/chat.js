@@ -903,9 +903,10 @@ export default async function handler(req, res) {
         const pingRes = await fetchJsonWithTimeout(pingUrl, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`
+            'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
+            'ngrok-skip-browser-warning': 'true'
           }
-        }, 1500);
+        }, 1800);
         if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || pingRes.status === 404) {
           isOmniAlive = true;
           omniLatency = Date.now() - pingStart;
@@ -926,9 +927,10 @@ export default async function handler(req, res) {
           const pingRes = await fetchJsonWithTimeout(pingUrl, {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`
+              'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
+              'ngrok-skip-browser-warning': 'true'
             }
-          }, 1500);
+          }, 1800);
           if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || pingRes.status === 404) {
             isOmniAlive = true;
             omniLatency = Date.now() - pingStart;
@@ -1278,7 +1280,8 @@ Langkah yang WAJIB Anda lakukan:
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OMNIROUTE_KEY}`
+            'Authorization': `Bearer ${OMNIROUTE_KEY}`,
+            'ngrok-skip-browser-warning': 'true'
           },
           body: JSON.stringify({
             model: mName,
