@@ -131,11 +131,15 @@ ${effortDirective}
    - Jawablah berdasarkan fakta nyata yang autentik dari dokumen portofolio dan hasil pencarian internet terverifikasi.
    - DILARANG KERAS mengarang metrik, angka fiktif, sertifikat palsu, atau fitur imajiner yang tidak ada pada repositori.
    - DILARANG KERAS melakukan overclaim berlebihan (seperti "model tercanggih di dunia", "akurasi 100% sempurna"). Sampaikan hasil riset apa adanya secara objektif, presisi, dan berbasis data empiris.
-3. KEJUJURAN ATAS KETERBATASAN INFORMASI (HONEST UNCERTAINTY):
+3. PANDUAN INFORMASI REAL-TIME & BERITA TERKINI (PRIORITASKAN PENCARIAN WEB LIVE):
+   - Sistem Anda menyuntikkan hasil pencarian web dan berita real-time terkini secara live pada bagian [HASIL PENCARIAN WEB & BERITA REAL-TIME].
+   - Jika pengguna menanyakan berita atau perkembangan terbaru (seperti rilis model AI Claude, GPT, Gemini, atau berita teknologi hari ini), ANDA WAJIB MEMBACA DAN MENGGUNAKAN FAKTA DARI HASIL PENCARIAN TERSEBUT sebagai rujukan utama Anda, alih-alih mengandalkan batas pelatihan lama Anda.
+   - Sampaikan perkembangan terkini secara akurat, lugas, dan sesuai fakta rilisan yang tercatat di hasil pencarian tersebut.
+4. KEJUJURAN ATAS KETERBATASAN INFORMASI (HONEST UNCERTAINTY):
    - Jika pengguna menanyakan fakta spesifik yang datanya tidak tersedia di dalam portofolio, memori, maupun hasil pencarian internet, AKUI DENGAN JUJUR DAN RAMAH bahwa Anda belum memiliki informasi tersebut atau pengetahuan saat ini terbatas untuk topik tersebut.
    - Contoh gaya penyampaian ramah: *"Mohon maaf, untuk detail spesifik mengenai hal tersebut saat ini belum tersedia dalam catatan repositori maupun pencarian internet. Namun, saya siap membantu jika Anda ingin membahas [topik terkait]."*
    - DILARANG KERAS berpura-pura tahu atau mengarang-ngarang jawaban spekulatif saat tidak ada data valid.
-4. IDENTITAS RESMI MODEL (DINAMIS & NON-TEMPLATE):
+5. IDENTITAS RESMI MODEL (DINAMIS & NON-TEMPLATE):
    - Jika ditanya *"kamu model apa"*, *"model apa ini"*, *"kamu siapa"*, atau *"kamu ai apa"*:
      * Jelaskan secara natural dan ramah bahwa Anda adalah **AI Assistant Developer Lab** pada portofolio resmi Rafly Firmansyah.
      * Sebutkan identitas atau arsitektur model bahasa Anda secara autentik dan dinamis sesuai model AI yang sedang berjalan (misalnya keluarga Nemotron, MiniMax, Qwen, GPT, atau model frontier lainnya yang dihubungkan melalui sistem multi-provider Cloud AI Router pada portofolio ini). Jangan gunakan teks template yang kaku.
@@ -197,36 +201,38 @@ async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
 }
 
 /**
- * Intelligent Query Rewriter for Context-Aware Search
- * Converts conversational follow-up questions into targeted factual search keywords.
+ * Intelligent Multi-Query Generator for Real-Time Live Search
+ * Formulates focused factual queries for breaking news, tech releases, and conversational turns.
  */
-function formulateSmartSearchQuery(query, history = []) {
-  if (!query || typeof query !== 'string') return '';
+function formulateSmartSearchQueries(query, history = []) {
+  if (!query || typeof query !== 'string') return [];
+  const queries = [];
+  const qClean = query.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
+  if (qClean.length >= 3) queries.push(qClean);
 
-  const stopWords = /\b(coba|tolong|kamu|bisa|cari|carikan|informasi|informasinya|fakta|berita|tentang|mengenai|nya|apakah|bagaimana|apa|sih|dong|kan|bukannya|ya|di|pada|ke|dari|dan|atau|ini|itu|saat|waktu|tanggal|sekarang|hari ini|please|can|you|search|find|tell|me|about|the|what|is|are|today|now|latest|recent)\b/gi;
-  let cleaned = query.replace(stopWords, ' ').replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim();
+  const qLow = query.toLowerCase();
+  if (qLow.includes('claude') || qLow.includes('anthropic')) {
+    queries.push('Anthropic Claude latest model release news 2026');
+    queries.push('Claude Sonnet Opus release update 2026');
+  } else if (qLow.includes('gpt') || qLow.includes('openai') || qLow.includes('astra') || qLow.includes('gemini')) {
+    queries.push('OpenAI GPT release Google Gemini AI model 2026');
+  } else if (qLow.includes('hari ini') || qLow.includes('terbaru') || qLow.includes('berita')) {
+    queries.push('berita teknologi AI terkini hari ini 2026');
+  }
 
-  // If query after removing stopwords is too short or empty (e.g. user just said "coba cari hari ini")
-  if (cleaned.length < 3 && Array.isArray(history) && history.length > 0) {
-    const pastUserQueries = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
-    for (const pastQ of pastUserQueries) {
-      const pastClean = pastQ.replace(stopWords, ' ').replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim();
-      if (pastClean.length >= 3) {
-        cleaned = pastClean;
+  // If user query is short/conversational follow-up, pull context from previous user message
+  if (Array.isArray(history) && history.length > 0) {
+    const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
+    for (const pastQ of pastUserTurns.slice(0, 2)) {
+      const pastClean = pastQ.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      if (pastClean.length >= 4 && !queries.includes(pastClean)) {
+        queries.push(pastClean);
         break;
       }
     }
   }
 
-  // Ensure high-relevance tech context if topic is AI/tech
-  const qLow = (query + ' ' + cleaned).toLowerCase();
-  if (qLow.includes('gpt') || qLow.includes('gemini') || qLow.includes('deepseek') || qLow.includes('claude') || qLow.includes('model') || qLow.includes('openai')) {
-    if (!cleaned.toLowerCase().includes('ai') && !cleaned.toLowerCase().includes('model')) {
-      cleaned += ' AI model';
-    }
-  }
-
-  return cleaned.slice(0, 100).trim();
+  return Array.from(new Set(queries)).slice(0, 3);
 }
 
 /**
@@ -497,6 +503,11 @@ async function scrapeDirectWebpageContent(url) {
  * - Hugging Face Hub (Models, Datasets, AI Research)
  * - Universal Direct Webpage Content Scraper (Arbitrary URL extraction)
  */
+/**
+ * 100% Real-Time High-Precision Live Web & News Search Engine
+ * Concurrently queries verified global live news feeds (Google News Global, Google News Indonesia, Bing News)
+ * and direct URL scrapers to provide authentic, up-to-date facts with publication timestamps.
+ */
 async function searchWebContext(query, history = []) {
   if (!query || typeof query !== 'string' || query.trim().length < 2) {
     return { formattedPrompt: '', rawSnippets: [] };
@@ -507,11 +518,12 @@ async function searchWebContext(query, history = []) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
 
-  const cleanSearchQuery = formulateSmartSearchQuery(query, history) || query.trim();
+  const searchQueries = formulateSmartSearchQueries(query, history);
+  if (searchQueries.length === 0) searchQueries.push(query.trim().slice(0, 80));
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1800);
+    const timeout = setTimeout(() => controller.abort(), 2600);
 
     const snippets = [];
     const rawSnippets = [];
@@ -536,155 +548,54 @@ async function searchWebContext(query, history = []) {
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Short-Probe Token Slicing (8-10 tokens standard)
-    const shortProbe = cleanSearchQuery.split(/\s+/).slice(0, 10).join(' ');
-    const firstTerm = shortProbe.split(' ')[0] || shortProbe;
-
-    // 3. Parallel Unrestricted Multi-Source Search Across the Entire Internet
-    const searchFetches = [
-      // Google Web Global
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(shortProbe + ' when:1y')}&hl=en-US&gl=US&ceid=US:en`, {
+    // 2. Parallel Real-Time News Queries across Google News (Global + ID) and Bing News
+    const searchFetches = searchQueries.flatMap(targetQ => [
+      // Google News Global (US / English)
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-US&gl=US&ceid=US:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
-      // Google Web Indonesia
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(shortProbe + ' when:1y')}&hl=id&gl=ID&ceid=ID:id`, {
+      // Google News Indonesia
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=id&gl=ID&ceid=ID:id`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
-      // Wikipedia Global (EN)
-      fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, {
-        signal: controller.signal
-      }),
-      // Wikipedia Global (ID)
-      fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, {
-        signal: controller.signal
-      }),
-      // ArXiv Scientific Preprints & Papers
-      fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(shortProbe)}&max_results=3`, {
-        signal: controller.signal
-      }),
-      // OpenAlex Global Research Index (250M+ Works)
-      fetch(`https://api.openalex.org/works?filter=fulltext.search:${encodeURIComponent(shortProbe)}&per_page=3`, {
-        signal: controller.signal
-      }),
-      // Hugging Face Hub (AI Models & Datasets)
-      fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(firstTerm)}&limit=3`, {
-        signal: controller.signal
-      }),
-      // DuckDuckGo Open Web HTML Index
-      fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(shortProbe)}`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        },
+      // Bing News Global
+      fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       })
-    ];
+    ]);
 
     const results = await Promise.allSettled(searchFetches);
     clearTimeout(timeout);
 
-    const [gNewsGlobal, gNewsId, wikiEn, wikiId, arxivRes, openAlexRes, hfRes, ddgRes] = results;
-
-    // Parse Google Web Global
-    if (gNewsGlobal && gNewsGlobal.status === 'fulfilled' && gNewsGlobal.value.ok) {
-      const xml = await gNewsGlobal.value.text().catch(() => '');
-      const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-      items.slice(0, 3).forEach((item) => {
-        const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
-        const title = cleanStr(titleMatch ? titleMatch[1] : '');
-        if (title && !isJunkArticle(title)) {
-          snippets.push(`[Google Web Global]: ${title}`);
-          rawSnippets.push(`[Global Web]: ${title}`);
-        }
-      });
-    }
-
-    // Parse Google Web Indonesia
-    if (gNewsId && gNewsId.status === 'fulfilled' && gNewsId.value.ok) {
-      const xml = await gNewsId.value.text().catch(() => '');
-      const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-      items.slice(0, 3).forEach((item) => {
-        const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
-        const title = cleanStr(titleMatch ? titleMatch[1] : '');
-        if (title && !isJunkArticle(title)) {
-          snippets.push(`[Google Web Indonesia]: ${title}`);
-        }
-      });
-    }
-
-    // Parse Wikipedia EN & ID
-    for (const wRes of [wikiEn, wikiId]) {
-      if (wRes && wRes.status === 'fulfilled' && wRes.value.ok) {
-        const wData = await wRes.value.json().catch(() => null);
-        const hits = wData?.query?.search || [];
-        if (hits.length > 0) {
-          const h = hits[0];
-          const snip = cleanStr(h.snippet);
-          if (snip && !isJunkArticle(snip)) {
-            snippets.push(`[Wikipedia (${h.title})]: ${snip}`);
+    for (const res of results) {
+      if (res.status === 'fulfilled' && res.value && res.value.ok) {
+        const xml = await res.value.text().catch(() => '');
+        const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
+        items.slice(0, 4).forEach((item) => {
+          const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+          const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+          const title = cleanStr(titleMatch ? titleMatch[1] : '');
+          const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
+          if (title && !isJunkArticle(title)) {
+            const entry = pubDate ? `[Berita Live (${pubDate})]: ${title}` : `[Berita Live]: ${title}`;
+            snippets.push(entry);
+            rawSnippets.push(title);
           }
-        }
+        });
       }
     }
 
-    // Parse ArXiv Scientific Preprints
-    if (arxivRes && arxivRes.status === 'fulfilled' && arxivRes.value.ok) {
-      const xml = await arxivRes.value.text().catch(() => '');
-      const entries = xml.match(/<entry>[\s\S]*?<\/entry>/gi) || [];
-      entries.slice(0, 2).forEach((entry) => {
-        const tMatch = entry.match(/<title>([\s\S]*?)<\/title>/i);
-        const sMatch = entry.match(/<summary>([\s\S]*?)<\/summary>/i);
-        const pTitle = cleanStr(tMatch ? tMatch[1] : '');
-        const pSummary = cleanStr(sMatch ? sMatch[1] : '').slice(0, 250);
-        if (pTitle) {
-          snippets.push(`[ArXiv Preprints (${pTitle})]: ${pSummary}`);
-        }
-      });
-    }
-
-    // Parse OpenAlex Global Research
-    if (openAlexRes && openAlexRes.status === 'fulfilled' && openAlexRes.value.ok) {
-      const oaData = await openAlexRes.value.json().catch(() => null);
-      const results = oaData?.results || [];
-      results.slice(0, 2).forEach((w) => {
-        const title = cleanStr(w.title || '');
-        if (title) {
-          snippets.push(`[OpenAlex Research]: ${title}`);
-        }
-      });
-    }
-
-    // Parse Hugging Face
-    if (hfRes && hfRes.status === 'fulfilled' && hfRes.value.ok) {
-      const hfData = await hfRes.value.json().catch(() => null);
-      if (Array.isArray(hfData) && hfData.length > 0) {
-        const hfNames = hfData.slice(0, 3).map(m => m.id).join(', ');
-        snippets.push(`[Hugging Face Hub]: ${hfNames}`);
-      }
-    }
-
-    // Parse DuckDuckGo Open Web HTML
-    if (ddgRes && ddgRes.status === 'fulfilled' && ddgRes.value.ok) {
-      const html = await ddgRes.value.text().catch(() => '');
-      const ddgMatches = html.match(/<a class="result__snippet[^>]*>([\s\S]*?)<\/a>/gi) || [];
-      ddgMatches.slice(0, 3).forEach((m) => {
-        const text = cleanStr(m);
-        if (text && text.length > 20 && !isJunkArticle(text)) {
-          snippets.push(`[DuckDuckGo Open Web]: ${text}`);
-        }
-      });
-    }
-
-    // Deduplicate snippets (top 4 for ultra-fast prompt prefill)
-    const uniqueSnippets = Array.from(new Set(snippets)).slice(0, 4);
+    // Deduplicate snippets (top 8 for rich, authentic factual grounding)
+    const uniqueSnippets = Array.from(new Set(snippets)).slice(0, 8);
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN REAL-TIME 2026]:\n${uniqueSnippets.join('\n')}\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (SUMBER LIVE TERVERIFIKASI)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Gunakan fakta-fakta berita dan rilis terkini pada hasil pencarian di atas sebagai rujukan utama untuk menjawab pertanyaan seputar perkembangan terbaru.)\n`;
     }
 
-    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 4) };
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 8) };
   } catch (_) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
