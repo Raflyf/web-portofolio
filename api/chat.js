@@ -1022,11 +1022,11 @@ Langkah yang WAJIB Anda lakukan:
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
     // Token limits: generous enough for full dual-project deep analysis tables
-    // LOW=900 (greeting/casual), NORMAL=1800 (~6.5k chars), THINKING=2800 (~10k chars)
-    // Nano-30B generates ~120 tok/s → 1800 tok ≈ 15s, 2800 tok ≈ 23s — within 48s budget
+    // LOW=900 (greeting/casual), NORMAL=2800 (~10k chars), THINKING=4000 (~14k chars)
+    // Nano-30B throughput is ~2700 tok/s → all tiers complete well within 48s budget
     const maxTokensConfig = effectiveEffort === 'low' 
       ? 900 
-      : (effectiveEffort === 'thinking' ? 2800 : 1800);
+      : (effectiveEffort === 'thinking' ? 4000 : 2800);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
