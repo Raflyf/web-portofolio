@@ -752,20 +752,94 @@ class DashboardApp {
           return isOmniRoute(s) && /\b(vision-model|vision)\b/i.test(s);
         }
       },
+
+      // 2. OpenRouter Modern SOTA Pool (Active Primary Suite)
       {
-        id: 'omniroute-deepseek-v4',
-        name: 'Deepseek-V4-Flash-Free',
-        category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Deepseek-V4-Flash-Free',
+        id: 'nemotron-3-nano-openrouter',
+        name: 'Nvidia Nemotron 3 Nano (30B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '30B A3B · Ultra-Fast Conversational SOTA',
         icon: SVG_ICONS.fast,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(deepseek|v4)\b/i.test(s);
+          return isOpenRouter(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s) && !/omni/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-3-ultra-openrouter',
+        name: 'Nvidia Nemotron 3 Ultra (550B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '550B MoE · Frontier Analytical Engine',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-35-lightning-openrouter',
+        name: 'Nvidia Nemotron 3.5 Lightning',
+        category: 'OpenRouter Cloud Pool',
+        tag: '1M Context · High-Speed Lightning Inference',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(lightning|3\.5-lightning)\b/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-3-super-openrouter',
+        name: 'Nvidia Nemotron 3 Super (120B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '120B SOTA · 3-Key Multi-Account Pool',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(super|120b)\b/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-3-omni-openrouter',
+        name: 'Nemotron 3 Nano Omni Reasoning',
+        category: 'OpenRouter Cloud Pool',
+        tag: '30B Omni CoT · Multi-Step Reasoning',
+        icon: SVG_ICONS.cot,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(omni|nano-omni)\b/i.test(s);
+        }
+      },
+      {
+        id: 'liquid-lfm-openrouter',
+        name: 'LiquidAI LFM 2.5 (2.6B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '2.6B Dynamic · Sub-2s Instant Engine',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-amber)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(liquid|lfm|2\.6b)\b/i.test(s);
+        }
+      },
+      {
+        id: 'openrouter-free-auto',
+        name: 'OpenRouter Universal Free',
+        category: 'OpenRouter Cloud Pool',
+        tag: 'openrouter/free · Universal SOTA Auto Router',
+        icon: SVG_ICONS.router,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && (/\b(openrouter\/free|universal free)\b/i.test(s) || (t === 'openrouter/free' || l.includes('openrouter/free')));
         }
       },
 
-      // 2. OpenCode Zen Cloud Pool (Priority #2 & Modern Free Tier)
+      // 3. OpenCode Zen Cloud Pool
       {
         id: 'nemotron-ultra-opencode',
         name: 'Nemotron 3 Ultra (550B)',
@@ -814,70 +888,8 @@ class DashboardApp {
           return isOpenCode(s) && /\b(laguna|laguna-s)\b/i.test(s);
         }
       },
-      {
-        id: 'muse-spark-opencode',
-        name: 'Muse Spark 1.2 Free',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/muse-spark-1.2-contributor-free',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(muse|spark)\b/i.test(s);
-        }
-      },
-      {
-        id: 'hy3-opencode',
-        name: 'HY3 Assistant Free',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/hy3-free',
-        icon: SVG_ICONS.cot,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(hy3|hunyuan)\b/i.test(s);
-        }
-      },
-      {
-        id: 'big-pickle-opencode',
-        name: 'Big Pickle Model',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/big-pickle',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(pickle|big-pickle)\b/i.test(s);
-        }
-      },
 
-      // 3. OpenRouter Modern SOTA Pool (Priority #3)
-      {
-        id: 'nemotron-3-ultra-openrouter',
-        name: 'Nvidia Nemotron 3 Ultra (550B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '550B MoE · 3-Key Multi-Account Pool',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(ultra|550b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'nemotron-3-super-openrouter',
-        name: 'Nvidia Nemotron 3 Super (120B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '120B SOTA · 3-Key Multi-Account Pool',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(super|120b)\b/i.test(s);
-        }
-      },
-
-      // 4. Ollama Cloud SOTA Engine Provider (Priority #4 & #5)
+      // 4. Ollama Cloud SOTA Engine Provider
       {
         id: 'nemotron-ultra-ollama',
         name: 'Nemotron 3 Ultra (550B)',
@@ -1000,7 +1012,19 @@ class DashboardApp {
           if ((!fallbackName || fallbackName === 'auto') && l.includes('[Auto ➔')) {
             fallbackName = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
           }
-          if (!fallbackName || fallbackName === 'auto') fallbackName = 'Nvidia Nemotron 3 Ultra (550B) · OpenRouter';
+          if (fallbackName.includes('llama-3.3-70b') || fallbackName.includes('meta-llama')) {
+            fallbackName = 'Meta Llama 3.3 (70B) · Legacy Cloud Fallback';
+          } else if (fallbackName.includes('nemotron-3-nano') || fallbackName.includes('nano-30b')) {
+            fallbackName = 'Nvidia Nemotron 3 Nano (30B) · OpenRouter Cloud Pool';
+          } else if (fallbackName.includes('nemotron-3-ultra') || fallbackName.includes('ultra-550b')) {
+            fallbackName = 'Nvidia Nemotron 3 Ultra (550B) · OpenRouter Cloud Pool';
+          } else if (fallbackName.includes('lightning')) {
+            fallbackName = 'Nvidia Nemotron 3.5 Lightning · OpenRouter Cloud Pool';
+          } else if (fallbackName.includes('liquid') || fallbackName.includes('lfm')) {
+            fallbackName = 'LiquidAI LFM 2.5 (2.6B) · OpenRouter Cloud Pool';
+          } else if (!fallbackName || fallbackName === 'auto') {
+            fallbackName = 'Nvidia Nemotron 3 Nano (30B) · OpenRouter Cloud Pool';
+          }
           autoResolvedBreakdown[fallbackName] = (autoResolvedBreakdown[fallbackName] || 0) + 1;
         }
       } else {
