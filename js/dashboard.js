@@ -507,15 +507,14 @@ class DashboardApp {
     const tag = isAuto ? 'Auto: ' : '';
 
     if (combined.includes('nemotron-3-super') || combined.includes('nemotron super') || combined.includes('120b')) return `${tag}Nvidia Nemotron 3 Super (120B)`;
-    if (combined.includes('nemotron-3-ultra') || combined.includes('nemotron ultra') || combined.includes('550b') || combined.includes('laguna') || combined.includes('ultra-free') || combined.includes('nemotron')) return `${tag}Nvidia Nemotron 3 Ultra (550B MoE)`;
-    if (combined.includes('llama-3.3') || combined.includes('llama 3.3') || combined.includes('70b')) return `${tag}Llama 3.3 70B Instruct`;
+    if (combined.includes('nemotron-3-ultra') || combined.includes('nemotron ultra') || combined.includes('550b') || combined.includes('ultra-free') || combined.includes('nemotron')) return `${tag}Nvidia Nemotron 3 Ultra (550B MoE)`;
+    if (combined.includes('laguna') || combined.includes('laguna-s')) return `${tag}Nemotron Laguna S (Jan 2026)`;
+    if (combined.includes('x-preview')) return `${tag}OpenCode X-Preview Frontier (Feb 2026)`;
     if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo') || combined.includes('minimax')) return `${tag}MiniMax-M3 Vision Multimodal`;
     if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
-    if (combined.includes('deepseek-v3') || combined.includes('deepseek-chat') || combined.includes('671b')) return `${tag}DeepSeek V3 (671B MoE)`;
     if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash`;
-    if (combined.includes('codex') || combined.includes('gpt-5')) return `${tag}Codex (GPT-5.6 Terra)`;
+    if (combined.includes('codex') || combined.includes('gpt-5') || combined.includes('koding') || combined.includes('coding')) return `${tag}Codex (GPT-5.6 Terra)`;
     if (combined.includes('antigravity') || combined.includes('opus') || combined.includes('claude')) return `${tag}Antigravity (Claude Opus 4.6)`;
-    if (combined.includes('qwen') || combined.includes('coder') || combined.includes('koding')) return `${tag}Qwen 2.5 Coder (32B)`;
     if (combined.includes('local_semantic') || combined.includes('semantic engine')) return 'Auto: Local Semantic Fallback';
 
     if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
