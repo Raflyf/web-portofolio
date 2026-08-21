@@ -851,8 +851,8 @@ function isRateLimited(clientIp) {
 // Dynamic OmniRoute Tunnel Resolver from Supabase (Zero-Redeploy Cloudflare Tunnel Sync)
 async function fetchDynamicOmniRouteUrl() {
   try {
-    const sUrl = process.env.SUPABASE_URL;
-    const sKey = process.env.SUPABASE_ANON_KEY;
+    const sUrl = process.env.SUPABASE_URL || 'https://rphyzcqwpkxtzllvymss.supabase.co';
+    const sKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
     if (!sUrl || !sKey) return null;
     const endpoint = `${sUrl.replace(/\/+$/, '')}/rest/v1/ai_memories?fact_text=like.*[OMNIROUTE_TUNNEL*&order=created_at.desc&limit=1`;
     const res = await fetchJsonWithTimeout(endpoint, {
@@ -862,7 +862,7 @@ async function fetchDynamicOmniRouteUrl() {
         'Authorization': `Bearer ${sKey}`,
         'Content-Type': 'application/json'
       }
-    }, 1500);
+    }, 1800);
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       const text = res.data[0].fact_text || '';
       const match = text.match(/\[OMNIROUTE_TUNNEL:\s*([^\]]+)\]/i);
