@@ -344,7 +344,7 @@ async function fetchLiveRepoContext(query = '') {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PortofolioAIBot/2026' }
           }, 1800);
           if (res.ok && res.text && res.text.length > 50) {
-            return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${res.text.substring(0, 1500)}`;
+            return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${res.text.substring(0, 800)}`;
           }
         } catch (_) {}
         return null;
@@ -718,14 +718,14 @@ async function searchWebContext(query, history = []) {
       });
     }
 
-    // Deduplicate snippets
-    const uniqueSnippets = Array.from(new Set(snippets));
+    // Deduplicate snippets (top 4 for ultra-fast prompt prefill)
+    const uniqueSnippets = Array.from(new Set(snippets)).slice(0, 4);
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN & JELAJAH INTERNET TERBUKA REAL-TIME 2026 (UNRESTRICTED OPEN WEB GROUND TRUTH)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Seluruh data di atas diambil langsung dari penelusuran internet real-time (Google Web, DuckDuckGo, Wikipedia, ArXiv, OpenAlex, Hugging Face, Live Scraped Web Pages). Gunakan data autentik di atas untuk menjawab secara akurat, faktual, komprehensif, dan tidak berhalusinasi.)\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN REAL-TIME 2026]:\n${uniqueSnippets.join('\n')}\n`;
     }
 
-    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 5) };
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 4) };
   } catch (_) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
@@ -1095,7 +1095,7 @@ Langkah yang WAJIB Anda lakukan:
     // Calibrated token limits for complete zero-truncation deep analysis within sub-20s
     const maxTokensConfig = effectiveEffort === 'low' 
       ? 1024 
-      : (effectiveEffort === 'medium' ? 2200 : (effectiveEffort === 'thinking' ? 4096 : 3000));
+      : (effectiveEffort === 'thinking' ? 2400 : 1800);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
