@@ -1259,7 +1259,7 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOllama(mName, tOut = 25000) {
+    async function callOllama(mName, tOut = 15000) {
       if (!OLLAMA_KEY) return null;
       try {
         const res = await fetchWithTimeout('https://ollama.com/api/chat', {
@@ -1291,10 +1291,10 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callMiniMax(tOut = 20000) {
+    async function callMiniMax(tOut = 10000) {
       if (!MINIMAX_KEY) return null;
       try {
-        const res = await fetchWithTimeout('https://api.minimax.io/v1/text/chatcompletion_v2', {
+        const res = await fetchWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1302,18 +1302,17 @@ Langkah yang WAJIB Anda lakukan:
           },
           body: JSON.stringify({
             model: 'MiniMax-M3',
-            messages: [
-              { role: 'user', content: `${systemPromptWithSearch}\n\n${assembledQuery}` }
-            ],
-            max_tokens: maxTokensConfig
+            messages: baseTextMessages,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
           })
         }, tOut);
 
         if (res.ok) {
           const data = await res.json();
-          const content = data?.choices?.[0]?.message?.content || data?.reply;
+          const content = data?.choices?.[0]?.message?.content;
           if (content && content.trim().length > 0) {
-            return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Frontier Engine');
+            return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Multimodal Production API');
           }
         } else {
           const errTxt = await res.text();
@@ -1328,47 +1327,46 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
     // BUILD MULTI-TIER EXECUTION PIPELINE
     // ========================================================================
-    // DYNAMIC EXECUTION PIPELINE (USER SPECIFIED STRICT PRIORITY HIERARCHY)
-    // 1. OmniRoute Combos Gateway (Localhost Port 20128)
-    //    -> If Localhost is Offline, instantly failover to:
-    // 2. OpenCode nemotron-3-ultra-free
-    // 3. OpenRouter nemotron-3-ultra-550b-a55b:free
-    // 4. Ollama Cloud nemotron-3-ultra
-    // 5. Ollama Cloud minimax-m3
     function buildExecutionPipeline() {
       if (model && model !== 'auto') {
         const t = model.toLowerCase();
         if (t.includes('codex') || t.includes('gpt-5')) {
           return [
-            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+            { provider: 'omniroute', model: 'Codex', timeout: 22000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 }
           ];
         } else if (t.includes('antigravity') || t.includes('opus')) {
           return [
-            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+            { provider: 'omniroute', model: 'Antigravity', timeout: 22000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 }
           ];
         } else if (t.includes('vision')) {
           return [
-            { provider: 'omniroute', model: 'Vision-model', timeout: 18000 },
+            { provider: 'omniroute', model: 'Vision-model', timeout: 20000 },
             { provider: 'ollama', model: 'minimax-m3', timeout: 12000 }
           ];
         } else if (t.includes('deepseek-v4') || t.includes('deepseek')) {
           return [
-            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 20000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 }
           ];
         } else if (t.includes('laguna') || t.includes('nemotron')) {
           return [
-            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 }
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 20000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 }
           ];
         } else if (t.startsWith('opencode/')) {
           const ocM = targetModel.replace(/^opencode\//, '');
           return [
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 },
-            { provider: 'opencode', model: ocM, timeout: 5000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 }
+            { provider: 'opencode', model: ocM, timeout: 20000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 }
           ];
         }
       }
@@ -1379,24 +1377,29 @@ Langkah yang WAJIB Anda lakukan:
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
 
       return [
-        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Waktu penuh 20s untuk kueri sulit, 4.5s untuk kueri kasual)
+        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala)
         { provider: 'omniroute', model: omniModel, timeout: omniTimeout },
 
-        // 2. Prioritas #2: OpenRouter SOTA MoE (Nvidia Nemotron 3 Ultra 550B Flagship)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 28000 },
+        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode (opencode.ai)
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
 
-        // 3. Prioritas #3: OpenRouter SOTA 120B CoT (Nvidia Nemotron 3 Super 120B)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 24000 },
+        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter (openrouter.ai)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
 
-        // 4. Prioritas #4: Ollama Cloud Hub (Nemotron 3 Ultra)
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
+        // 4. Prioritas #4: Nemotron 3 Super 120B dari OpenRouter (openrouter.ai)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 },
 
-        // 5. Prioritas #5: Ollama Cloud Hub (MiniMax M3 Vision)
+        // 5. Prioritas #5: Nemotron 3 Ultra dari Ollama Cloud Hub (ollama.com)
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+
+        // 6. Prioritas #6: MiniMax M3 Vision dari Ollama Cloud Hub
         { provider: 'ollama', model: 'minimax-m3', timeout: 10000 },
 
-        // 6. Prioritas #6: OpenCode Pool (Dengan Circuit Breaker)
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 4000 }
+        // 7. Prioritas #7: Model Cadangan Lainnya dari OpenCode Pool
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 5000 },
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 5000 },
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 5000 },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 5000 }
       ];
     }
 
