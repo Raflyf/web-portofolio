@@ -10,6 +10,35 @@
  * ============================================================================
  */
 
+import fs from 'fs';
+import path from 'path';
+
+// Automatic local environment loader (reads .env.local / .env for local testing)
+function loadLocalEnv() {
+  try {
+    const envFiles = ['.env.local', '.env'];
+    for (const f of envFiles) {
+      const fullPath = path.resolve(process.cwd(), f);
+      if (fs.existsSync(fullPath)) {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        content.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+            const idx = trimmed.indexOf('=');
+            const k = trimmed.substring(0, idx).trim();
+            const v = trimmed.substring(idx + 1).trim().replace(/^["']|["']$/g, '');
+            if (k && !process.env[k]) {
+              process.env[k] = v;
+            }
+          }
+        });
+        break;
+      }
+    }
+  } catch (_) {}
+}
+loadLocalEnv();
+
 function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
   const isEnglish = sessionLanguage === 'en';
 
