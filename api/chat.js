@@ -984,6 +984,11 @@ Langkah yang WAJIB Anda lakukan:
 
     async function callOmniRoute(mName, tOut = 25000) {
       if (!OMNIROUTE_KEY || !OMNIROUTE_URL || isOmniOffline) return null;
+      // If running on Vercel Cloud and URL is localhost/loopback, instantly skip without blocking execution
+      if (process.env.VERCEL && (OMNIROUTE_URL.includes('127.0.0.1') || OMNIROUTE_URL.includes('localhost'))) {
+        isOmniOffline = true;
+        return null;
+      }
       try {
         const payload = {
           model: mName,
