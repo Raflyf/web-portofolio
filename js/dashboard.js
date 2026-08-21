@@ -67,6 +67,7 @@ class DashboardApp {
     this.initEventListeners();
     this.initInertiaSmoothWheel();
     this.initBackToTopButton();
+    this.checkOmniRouteRealtimeStatus();
   }
 
   // =========================================================================
@@ -151,10 +152,72 @@ class DashboardApp {
 
   startRealtimePolling() {
     if (this.pollInterval) clearInterval(this.pollInterval);
-    // Real-time live background polling every 3 seconds
+    // Real-time live background polling every 3 seconds for telemetry, and OmniRoute status check every 8 seconds
+    this.checkOmniRouteRealtimeStatus();
+    let pollTick = 0;
     this.pollInterval = setInterval(() => {
       this.loadDashboardData(true);
+      pollTick++;
+      if (pollTick % 3 === 0) {
+        this.checkOmniRouteRealtimeStatus();
+      }
     }, 3000);
+  }
+
+  async checkOmniRouteRealtimeStatus() {
+    const pillEl = document.getElementById('omniroute-live-pill');
+    const dotEl = document.getElementById('omniroute-live-dot');
+    const textEl = document.getElementById('omniroute-live-text');
+    if (!pillEl && !textEl) return;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const isOnline = Boolean(data?.omniroute?.isOnline);
+      const latency = data?.omniroute?.latencyMs;
+
+      if (isOnline) {
+        if (pillEl) {
+          pillEl.classList.remove('is-offline', 'is-standby');
+          pillEl.classList.add('is-online');
+        }
+        if (dotEl) {
+          dotEl.style.backgroundColor = 'var(--accent-emerald)';
+          dotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
+        }
+        if (textEl) {
+          textEl.textContent = `HOST STATUS: ACTIVE TUNNEL (${latency ? latency + 'ms' : '<50ms'})`;
+        }
+      } else {
+        if (pillEl) {
+          pillEl.classList.remove('is-online');
+          pillEl.classList.add('is-offline', 'is-standby');
+        }
+        if (dotEl) {
+          dotEl.style.backgroundColor = 'var(--accent-amber)';
+          dotEl.style.boxShadow = 'none';
+        }
+        if (textEl) {
+          textEl.textContent = 'HOST STATUS: STANDBY / OFFLINE (Auto Cloud Failover)';
+        }
+      }
+    } catch (_) {
+      if (pillEl) {
+        pillEl.classList.remove('is-online');
+        pillEl.classList.add('is-offline', 'is-standby');
+      }
+      if (dotEl) {
+        dotEl.style.backgroundColor = 'var(--accent-amber)';
+        dotEl.style.boxShadow = 'none';
+      }
+      if (textEl) {
+        textEl.textContent = 'HOST STATUS: STANDBY / OFFLINE (Auto Cloud Failover)';
+      }
+    }
   }
 
   logout() {
@@ -770,12 +833,12 @@ class DashboardApp {
         }
       },
 
-      // 2. OmniRoute Dedicated Local Gateway (Priority #1 Combos)
+      // 2. OmniRoute Dedicated Local Gateway (The 5 Combos Configured in OmniRoute)
       {
         id: 'omniroute-codex',
         name: 'Codex',
         category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Codex (GPT-5.6 Terra)',
+        tag: 'codex/gpt-5.6-terra · Heavy Coding & Architecture',
         icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
@@ -787,7 +850,7 @@ class DashboardApp {
         id: 'omniroute-antigravity',
         name: 'Antigravity',
         category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Antigravity (Claude Opus 4.6)',
+        tag: 'claude-opus-4-6-thinking · Deep CoT Reasoning',
         icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
@@ -796,27 +859,39 @@ class DashboardApp {
         }
       },
       {
-        id: 'omniroute-nemotron',
-        name: 'nemotron-laguna',
+        id: 'omniroute-deepseek-v4',
+        name: 'Deepseek-V4-Flash-Free',
         category: 'OmniRoute Dedicated',
-        tag: 'Model ID: nemotron-laguna (Ultra Fast)',
-        icon: SVG_ICONS.flagship,
+        tag: 'opencode/deepseek-v4-flash-free · Fast Interaction',
+        icon: SVG_ICONS.fast,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(laguna|nemotron-laguna)\b/i.test(s);
+          return /\b(deepseek-v4|v4-flash|flash-free)\b/i.test(s) || (isOmniRoute(s) && /\bdeepseek\b/i.test(s));
         }
       },
       {
         id: 'omniroute-vision',
         name: 'Vision-model',
         category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Vision-model (Multimodal / OCR)',
+        tag: 'MiniMax-M3 / mimo-v2.5 · Multimodal Vision & OCR',
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
           return isOmniRoute(s) && /\b(vision-model|vision)\b/i.test(s);
+        }
+      },
+      {
+        id: 'omniroute-nemotron',
+        name: 'nemotron-laguna',
+        category: 'OmniRoute Dedicated',
+        tag: 'opencode/nemotron-3-ultra-free · Frontier MoE',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOmniRoute(s) && /\b(laguna|nemotron-laguna)\b/i.test(s);
         }
       },
 

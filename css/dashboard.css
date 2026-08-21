@@ -688,6 +688,14 @@ body {
   font-size: 0.725rem;
   font-weight: 700;
   color: var(--accent-emerald);
+  transition: all 0.25s ease;
+}
+
+.omniroute-live-pill.is-offline,
+.omniroute-live-pill.is-standby {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--accent-amber);
 }
 
 .omniroute-live-dot {
@@ -696,6 +704,13 @@ body {
   border-radius: 50%;
   background-color: var(--accent-emerald);
   box-shadow: 0 0 8px var(--accent-emerald);
+  transition: all 0.25s ease;
+}
+
+.omniroute-live-pill.is-offline .omniroute-live-dot,
+.omniroute-live-pill.is-standby .omniroute-live-dot {
+  background-color: var(--accent-amber);
+  box-shadow: none;
 }
 
 .omniroute-combos-grid {

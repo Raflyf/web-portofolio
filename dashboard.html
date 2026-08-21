@@ -262,71 +262,71 @@
             <span class="tech-tag">OMNIROUTE ARCHITECTURE</span>
             <span class="tech-tag tag-primary">TIER 1 PRIMARY GATEWAY</span>
           </div>
-          <h2 class="chart-title">OmniRoute Dedicated Host & Pipeline Topology</h2>
-          <span class="chart-subtitle">Private Model Inference Server via Cloudflare Quick Tunnel (Local Laptop Infrastructure)</span>
+          <h2 class="chart-title">OmniRoute Dedicated Host &amp; Pipeline Topology</h2>
+          <span class="chart-subtitle">Private Model Inference Server via Cloudflare Quick Tunnel (Local Infrastructure)</span>
         </div>
-        <div class="omniroute-live-pill">
-          <span class="omniroute-live-dot" aria-hidden="true"></span>
-          <span>HOST STATUS: ACTIVE TUNNEL</span>
+        <div class="omniroute-live-pill is-standby" id="omniroute-live-pill" title="Status ketersediaan tunnel lokal OmniRoute secara real-time">
+          <span class="omniroute-live-dot" id="omniroute-live-dot" aria-hidden="true"></span>
+          <span id="omniroute-live-text">HOST STATUS: MEMERIKSA...</span>
         </div>
       </div>
 
       <div class="omniroute-combos-grid">
-        <!-- Priority 1: Codex -->
+        <!-- Combo 1: Codex -->
         <div class="omniroute-combo-tile">
           <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-emerald">PRIORITY 1</span>
+            <span class="omniroute-priority-badge badge-emerald">ROUND ROBIN</span>
             <span class="omniroute-engine-tag">gpt-5.6-terra</span>
           </div>
-          <div class="omniroute-combo-name">Codex Architecture</div>
-          <div class="omniroute-combo-desc">Spesialis penalaran koding berat, rekayasa software, dan arsitektur sistem berskala besar.</div>
+          <div class="omniroute-combo-name">Codex</div>
+          <div class="omniroute-combo-desc">Spesialis rekayasa software, arsitektur sistem besar, dan penalaran koding berat (codex/gpt-5.6-terra).</div>
         </div>
 
-        <!-- Priority 2: Antigravity -->
+        <!-- Combo 2: Antigravity -->
         <div class="omniroute-combo-tile">
           <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-cyan">PRIORITY 2</span>
-            <span class="omniroute-engine-tag">claude-opus-4.6</span>
+            <span class="omniroute-priority-badge badge-cyan">ROUND ROBIN</span>
+            <span class="omniroute-engine-tag">opus-4.6-thinking</span>
           </div>
-          <div class="omniroute-combo-name">Antigravity CoT</div>
-          <div class="omniroute-combo-desc">Penalaran analitis mendalam (Deep Chain-of-Thought), sintesis riset ilmiah, dan telaah dokumen komprehensif.</div>
+          <div class="omniroute-combo-name">Antigravity</div>
+          <div class="omniroute-combo-desc">Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah, dan telaah dokumen komprehensif.</div>
         </div>
 
-        <!-- Priority 3: Nemotron 3 Ultra (550B) -->
+        <!-- Combo 3: Deepseek-V4-Flash-Free -->
         <div class="omniroute-combo-tile">
           <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-emerald">PRIORITY 3</span>
+            <span class="omniroute-priority-badge badge-emerald">ROUND ROBIN</span>
+            <span class="omniroute-engine-tag">v4-flash-free</span>
+          </div>
+          <div class="omniroute-combo-name">Deepseek-V4-Flash-Free</div>
+          <div class="omniroute-combo-desc">Mesin inferensi berlatensi rendah untuk dialog interaktif kilat dan eksplorasi kueri cepat.</div>
+        </div>
+
+        <!-- Combo 4: Vision-model -->
+        <div class="omniroute-combo-tile">
+          <div class="omniroute-tile-top">
+            <span class="omniroute-priority-badge badge-cyan">ROUND ROBIN</span>
+            <span class="omniroute-engine-tag">MiniMax-M3 / mimo</span>
+          </div>
+          <div class="omniroute-combo-name">Vision-model</div>
+          <div class="omniroute-combo-desc">Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi.</div>
+        </div>
+
+        <!-- Combo 5: nemotron-laguna -->
+        <div class="omniroute-combo-tile">
+          <div class="omniroute-tile-top">
+            <span class="omniroute-priority-badge badge-emerald">ROUND ROBIN</span>
             <span class="omniroute-engine-tag">nemotron-3-ultra</span>
           </div>
-          <div class="omniroute-combo-name">Nemotron 3 Ultra (550B)</div>
-          <div class="omniroute-combo-desc">Frontier Analytical Engine untuk sintesis riset komparatif, analisis mendalam, dan telaah arsitektur sistem.</div>
-        </div>
-
-        <!-- Priority 4: Nemotron 3 Nano (30B) -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-cyan">PRIORITY 4</span>
-            <span class="omniroute-engine-tag">nemotron-3-nano</span>
-          </div>
-          <div class="omniroute-combo-name">Nemotron 3 Nano (30B)</div>
-          <div class="omniroute-combo-desc">Inferensi instan sub-detik untuk dialog interaktif cepat, tanya-jawab portofolio, dan interaksi efisien.</div>
-        </div>
-
-        <!-- Priority 5: Vision Model -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-cyan">MULTIMODAL</span>
-            <span class="omniroute-engine-tag">minimax-m3</span>
-          </div>
-          <div class="omniroute-combo-name">Vision Multimodal</div>
-          <div class="omniroute-combo-desc">Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi.</div>
+          <div class="omniroute-combo-name">nemotron-laguna</div>
+          <div class="omniroute-combo-desc">Frontier reasoning engine untuk analisis komparatif mendalam dan bedah arsitektur proyek riset.</div>
         </div>
       </div>
 
       <div class="omniroute-footer-tiers">
         <span class="tier-label">Failover Cascade:</span>
-        <span class="tier-badge">Tier 1: OmniRoute Dedicated Gateway (Codex / Antigravity / Laguna / Vision-model)</span>
-        <span class="tier-badge">Tier 2: Ollama Cloud SOTA Hub (Nemotron Nano 30B / Super 120B / Lightning / Ultra / MiniMax-M3)</span>
+        <span class="tier-badge">Tier 1: OmniRoute Dedicated (Codex / Antigravity / Deepseek-V4-Flash / Vision-model / nemotron-laguna)</span>
+        <span class="tier-badge">Tier 2: Ollama Cloud SOTA Hub (MiniMax-M3 / Nemotron Nano 30B / Super 120B / Lightning / Ultra)</span>
         <span class="tier-badge">Tier 3: OpenRouter Multi-Key Pool (Nemotron Ultra / Nano / Lightning / Omni VL / LiquidAI)</span>
         <span class="tier-badge">Tier 4: OpenCode Zen Pool &amp; MiniMax Direct API</span>
         <span class="tier-badge">Tier 5: In-Browser Semantic Engine (Offline Resilient + Supabase Continuous RAG)</span>
