@@ -472,24 +472,42 @@ function isSafePublicUrl(urlString) {
 
 /**
  * Universal Web Page Deep Scraper (Crawl4AI & Firecrawl Enhanced)
- * Fetches and transforms any arbitrary URL into clean LLM-Ready Fit-Markdown.
+ * Uses a dual-stage pipeline: Direct Crawl4AI Fit-Markdown parser with high-fidelity Jina LLM Reader fallback.
+ * Fetches, strips boilerplate, and converts any public webpage into clean LLM-Ready Fit-Markdown.
  */
 async function scrapeDirectWebpageContent(url) {
   if (!url || typeof url !== 'string' || !isSafePublicUrl(url)) return '';
+  
+  // 1. Primary: Direct Fetch + Local Crawl4AI Fit-Markdown Engine
   try {
     const res = await fetchJsonWithTimeout(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Crawl4AI-Firecrawl-HybridEngine/2026',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7'
       }
-    }, 3000);
+    }, 2800);
 
-    if (!res.ok || !res.text || res.text.length < 20) return '';
+    if (res.ok && res.text && res.text.length > 50) {
+      const parsed = extractFitMarkdownContent(res.text, url);
+      if (parsed && parsed.length > 80) return parsed;
+    }
+  } catch (_) {}
 
-    return extractFitMarkdownContent(res.text, url);
-  } catch (_) {
-    return '';
-  }
+  // 2. Secondary Fallback: Universal LLM Reader Proxy (Handles anti-bot/JS-rendered sites)
+  try {
+    const jinaRes = await fetchJsonWithTimeout(`https://r.jina.ai/${url}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/plain'
+      }
+    }, 3200);
+
+    if (jinaRes.ok && jinaRes.text && jinaRes.text.length > 50) {
+      return jinaRes.text.slice(0, 6000).trim();
+    }
+  } catch (_) {}
+
+  return '';
 }
 
 /**
