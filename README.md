@@ -1,57 +1,62 @@
 # Portofolio Profesional & AI Developer Lab — Rafly Firmansyah
 
-Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly Firmansyah** ([@Raflyf](https://github.com/Raflyf)) — Mahasiswa S1 Informatika (UBSI) & Software Developer berfokus pada riset NLP, Computer Vision, Machine Learning, dan arsitektur web modern.
+Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly Firmansyah** ([@Raflyf](https://github.com/Raflyf)) — Mahasiswa S1 Informatika (UBSI), Analis Program Terstandar BNSP, dan Software Developer yang berfokus pada riset *Natural Language Processing* (NLP), *Computer Vision*, *Machine Learning*, dan arsitektur web modern.
 
-Dibangun dengan **HTML5 Semantik**, **Modern Vanilla CSS (OKLCH + Motion Tokens)**, **Modular JavaScript (ES6+ Modules)**, dan **Vercel Serverless Gateway**. Tanpa dependensi framework berat, berorientasi performa tinggi (Skor Lighthouse 100/100), aksesibilitas **WCAG 2.2 AA**, serta perlindungan keamanan tingkat *Enterprise*.
+Dibangun dengan **HTML5 Semantik**, **Modern Vanilla CSS (OKLCH + Motion Tokens)**, **Modular JavaScript (ES6+ Modules)**, dan **Vercel Serverless Gateway**. Dirancang tanpa dependensi framework berat untuk mencapai performa tinggi (Skor Lighthouse 100/100), aksesibilitas **WCAG 2.2 AA**, serta keamanan data komprehensif.
+
+---
+
+## Showcase Proyek Unggulan
+
+Situs web ini menyajikan dokumentasi mendalam, demonstrasi interaktif, dan arsitektur teknis dari proyek-proyek unggulan yang dikembangkan:
+
+1. **OpenPlagiarismChecker**
+   - Sistem deteksi kemiripan dokumen akademik berbasis *Dual-Engine*: *Exact Match* (5-Gram Shingling) dan *Semantic Similarity* (SBERT / Sentence-Transformers).
+   - Dilengkapi *layout-aware PDF extractor*, pencarian vektor cepat berbasis FAISS, serta privasi penuh (*zero external data transmission*).
+
+2. **Spam-Email Classifier & Evaluator**
+   - Platform riset komparasi algoritma *Complement Naive Bayes* (CNB) dan *XGBoost* dalam menangani fenomena *Concept Drift* pada email modern.
+   - Fitur *Dynamic Class Balancing* dengan rasio adaptif serta visualisasi metrik evaluasi (*Confusion Matrix*, *Precision*, *Recall*, *F1-Score*).
+
+3. **laser_pointer_PPT (Remote Presenter)**
+   - Sistem kendali presentasi jarak jauh yang mengubah sensor *gyroscope* dan *accelerometer* smartphone menjadi virtual laser pointer dan slide navigator via WebSocket real-time.
+
+4. **FotoKitaBlur (Privacy Face & Gesture Obfuscation)**
+   - Aplikasi perlindungan privasi visual yang mendeteksi wajah serta gesture *V-sign* (peace sign) secara otomatis menggunakan MediaPipe dan OpenCV untuk mencegah pencurian biometrik sidik jari.
+
+5. **Web Portofolio & AI Developer Lab**
+   - Landing page modular Vanilla JS (<50 KB) dengan terminal interaktif multi-sesi, engine RAG memori jangka panjang via Supabase PostgreSQL, dan dashboard telemetri real-time.
 
 ---
 
 ## Fitur Utama & Arsitektur Sistem
 
-### 1. AI Developer Lab & Multi-Provider Cascade Gateway
-- **OmniRoute Dedicated Server Combos (Tier #1 Priority):** Integrasi langsung ke kluster model terverifikasi berkecepatan tinggi:
-  - `nemotron-laguna`: Nemotron 3 Ultra 550B MoE Pool (96 akun aktif) untuk riset arsitektur proyek dan sintesis teknis.
-  - `Codex`: GPT-5.6 Terra / Codex untuk penalaran pemrograman dan pembuatan skrip.
-  - `Antigravity`: Claude Opus 4.6 Thinking / Sonnet 4.5 untuk penalaran logika analitis mendalam (*Extended Chain-of-Thought*).
-  - `Vision-model`: MiniMax M3 Vision untuk analisis gambar dan *optical perception*.
-  - `Deepseek-V4-Flash-Free`: Model fallback resilien dengan proteksi *fast circuit-breaker* 3.5 detik.
-- **Waktu Sistem Realtime Dinamis:** Seluruh instruksi sistem AI mengonsumsi tanggal, hari, bulan, tahun, dan waktu WIB secara dinamis mengikuti jam aktual peramban pengguna (bebas *hardcode*).
-- **Ekspansi Kuota Output Penuh (Hingga 8.192 Tokens):** Menghilangkan masalah teks terpotong (*zero truncation*) pada mode *Thinking CoT* dan *Deep Research* dengan batas komputasi hingga 8.192 tokens.
-- **Multimodal Vision & Ingesti Dokumen:** Analisis gambar dan dokumen multi-format (PDF hingga 100 halaman via `PDF.js`, teks, koding, CSV) dengan dukungan *Drag & Drop* langsung ke area terminal.
-- **Mode Penalaran Bertingkat (*Reasoning Effort*):** Pilihan eksekusi `Auto (Balanced Depth)`, `Thinking CoT (Deep Chain-of-Thought)`, `High (Deep Research)`, `Medium (Standard)`, dan `Low (Fast Response)`.
-- **Penguncian Bahasa Sesi (*Session Language Lock*):** Mengunci bahasa seluruh percakapan berdasarkan bahasa masukan pertama (Bahasa Indonesia / English) secara konsisten.
-- **Vercel Serverless Gateway (`api/chat.js`):** Menjaga kerahasiaan API Key dengan *Serverless Functions*, pembatasan muatan DOS, dan standar CORS W3C.
+### 1. Terminal Developer Lab & AI Assistant Gateway
+- **Multi-Model AI Gateway:** Terintegrasi dengan berbagai penyedia API model AI publik gratis (*Free Tier API Pool*) melalui mekanisme *smart failover cascade* yang tangguh dan otomatis.
+- **Dynamic Intent & Adaptive Effort:** Sistem secara cerdas mengklasifikasikan kompleksitas pertanyaan pengguna dan menyesuaikan kedalaman penalaran (*Reasoning Effort*: Low, Medium, High, Thinking CoT) serta anggaran token komputasi secara dinamis.
+- **RAG & Real-Time Context:** Menggabungkan pencarian web real-time, pembacaan repositori GitHub resmi secara live, dan memori jangka panjang (*Long-Term Memory*) berbasis Supabase PostgreSQL.
+- **Multimodal & Ingesti Dokumen:** Mendukung analisis visual gambar serta ekstraksi dokumen teks dan PDF multi-halaman langsung melalui antarmuka terminal.
+- **Session Language Lock:** Mengunci konsistensi bahasa respons (Bahasa Indonesia / Bahasa Inggris) sepanjang sesi percakapan aktif.
+- **Serverless Security Shield (`api/chat.js`):** Isolasi kunci API di sisi server dengan proteksi SSRF (*Server-Side Request Forgery*), pembatasan laju kueri (*Rate Limiting* 35 req/menit), sanitasi masukan, dan pemenuhan standar CORS.
 
 ### 2. Engine Interaksi Web Langsung Berbasis AI Agent (`window.portfolioAgent`)
-- **Kontrol DOM Otomatis Berbasis Perintah AI:** Memungkinkan asisten AI dan terminal berinteraksi langsung dengan antarmuka web peramban pengguna secara nyata:
-  - `Membuka Modal Proyek`: Membuka jendela dialog detail spesifikasi arsitektur proyek (`[ACTION:OPEN_PROJECT:openplagiarism]`).
-  - `Membuka Kredensial Sertifikat`: Membuka modal kredensial dan penampil dokumen sertifikasi resmi (`[ACTION:OPEN_CERTIFICATE:bnsp]`).
-  - `Pengisian Otomatis Form Kontak & Diskusi`: Mengisi kolom nama, email, dan pesan pada formulir `#contact-form` serta mengarahkan layar dengan efek sorotan cincin emerald (`[ACTION:FILL_CONTACT:name=...&email=...&message=...]`).
-  - `Navigasi Halaman Presisi`: Menjalankan *smooth scroll* dinamis ke bagian mana pun di situs web (`#projects`, `#skills`, `#certificates`, `#about`, `#contact`, `#timeline`, `#benchmarks`).
-  - `Kontrol Tautan Eksternal & Tema`: Membuka profil/repositori GitHub resmi, mengubah mode tema tampilan (gelap/terang), dan menyalin email dengan 1 perintah.
-- **Badge Indikator Aksi Web (`.chat-action-badge`):** Memberikan konfirmasi visual instan pada balon percakapan terminal ketika sebuah aksi DOM berhasil dieksekusi.
-
-### 3. Optimasi Responsif & Mobile Viewport Maximizer
-- **Tampilan Full-Height Imersif di HP (`< 768px`):** Modal terminal pada perangkat mobile menggunakan `100dvh` dengan `flex: 1` penuh pada `.terminal-body` untuk memberikan ruang vertikal maksimal pada area percakapan chat.
-- **Pintasan Perintah Geser Horizontal:** Bilah pintasan (`.terminal-chips-bar`) disusun dalam 1 baris geser horizontal ramping (*horizontal scroll*) dengan scrollbar tersembunyi.
-- **Input Form Adaptif:** Memangkas padding dan menyembunyikan label prompt pada layar sempit (`< 480px`) agar kotak ketik mendapatkan lebar penuh.
-- **Cache-Busting Universal pada Rantai Impor Modul:** Menggunakan parameter versi dinamis pada seluruh impor ES Module (`index.html` -> `main.js` -> `terminal.js` -> `terminal-ai.js` -> `data.js` & `telemetry.js`) untuk menjamin peramban selalu memuat versi logika terbaru seketika tanpa tertahan cache CDN.
+- **Kontrol DOM Otomatis Berbasis Perintah AI:** Asisten AI dapat berinteraksi langsung dengan antarmuka web pengguna:
+  - `Membuka Modal Proyek`: Menampilkan spesifikasi arsitektur proyek terkait.
+  - `Membuka Kredensial Sertifikat`: Menampilkan pratinjau dokumen sertifikasi resmi.
+  - `Navigasi Presisi`: Melakukan *smooth scroll* dinamis ke bagian situs web yang dituju (`#projects`, `#skills`, `#certificates`, `#about`, `#contact`, `#benchmarks`).
+  - `Pengisian Formulir Kontak`: Mengisi kolom formulir diskusi secara otomatis sesuai topik pembicaraan.
 
 ### 3. Panel Admin Monitoring & Telemetri Analitik (`dashboard.html`)
-- **Autentikasi Kriptografis SHA-256:** Gateway penguncian Master PIN dengan algoritma *Web Crypto SHA-256 + Salt* serta proteksi *brute-force lockout*.
-- **Visualisasi Data Real-Time (Chart.js):** 5 Kartu KPI Bento, Grafik Tren Kunjungan Harian, Heatmap Kategori Interaksi, Rasio Distribusi Perangkat, Leaderboard Perintah Terminal CLI, dan Leaderboard Sertifikat terpopuler.
-- **Backend Supabase PostgreSQL:** Skema database time-series dengan *Row Level Security (RLS)* terisolasi, proteksi panjang kolom, dan *Composite Indexes* berkecepatan tinggi.
-- **Ekspor Data Kebal Injeksi:** Fitur unduh log aktivitas ke CSV (dilengkapi sanitasi *CSV Formula Injection*) dan JSON.
+- **Autentikasi Kriptografis SHA-256:** Proteksi akses panel monitoring dengan verifikasi Master PIN *Web Crypto SHA-256 + Salt* dan *brute-force lockout*.
+- **Visualisasi Real-Time (Chart.js):** Dashboard interaktif menyajikan tren kunjungan, distribusi perangkat, kategori interaksi, leaderboard perintah CLI, dan metrik resolusi gateway AI.
+- **Supabase Time-Series Backend:** Penyimpanan log aktivitas asinkron dengan *Row Level Security* (RLS) dan indeks komposit berkecepatan tinggi.
+- **Ekspor Data Aman:** Fitur ekspor berkas log aktivitas ke format CSV (dengan proteksi *CSV Formula Injection*) dan JSON.
 
-### 4. Arsitektur UI/UX & Fisika Gerak (*Micro-Physics*)
-- **Inertia Smooth-Scroll Engine:** Peredam inersia roda tetikus (*wheel damper* 60–120fps) dengan kurva fisika kubik `easeInOutCubic`.
-- **Dialog Modal Pop-Up Global:** Tombol aksi mengambang (*Floating Action Button / FAB*) untuk mengakses Terminal AI dari bagian mana pun di situs dengan *backdrop blur* dan *body scroll locking* otomatis.
-- **Sistem Warna OKLCH:** Kontras adaptif mode gelap (*Deep Obsidian*) dan terang (*Crisp Slate*) dengan rasio kontras WCAG 2.2 AA (≥ 7:1 untuk teks utama).
-- **Pratinjau Sertifikat Mandiri (`preview.html`):** Penampil grafis dokumen resolusi tinggi multi-halaman yang kebal cegatan download otomatis.
-
-### 5. Optimalisasi SEO & Identitas Google Search
-- **Schema.org JSON-LD:** Pemasangan struktur data `@type: "WebSite"` dan `og:site_name` resmi ("Rafly Firmansyah") untuk eliminasi badge nama domain pihak ketiga.
-- **Suite Favicon Multi-Platform:** Menyediakan `favicon.svg`, `favicon.ico`, `favicon-48x48.png` (standar wajib crawler Googlebot-Favicon), `favicon-192x192.png`, `apple-touch-icon.png`, dan `site.webmanifest`.
+### 4. Sistem Desain, Aksesibilitas, & Performa
+- **Sistem Warna OKLCH:** Dukungan tema gelap (*Deep Obsidian*) dan terang (*Crisp Slate*) dengan rasio kontras tinggi sesuai standar WCAG 2.2 AA (≥ 7:1 untuk teks utama).
+- **Responsive & Mobile Viewport:** Penyesuaian viewport dinamis (`100dvh`) pada modal terminal perangkat seluler dengan bilah pintasan horizontal yang ergonomis.
+- **Inertia Smooth Scroll & Motion Tokens:** Transisi antarmuka yang halus dengan kurva fisika kubik `easeInOutCubic` yang menghormati preferensi *prefers-reduced-motion*.
+- **SEO Semantik & Favicon Suite:** Struktur data Schema.org JSON-LD lengkap, meta tag OpenGraph, serta paket favicon multi-resolusi untuk crawler mesin pencari.
 
 ---
 
@@ -61,50 +66,50 @@ Dibangun dengan **HTML5 Semantik**, **Modern Vanilla CSS (OKLCH + Motion Tokens)
 .
 ├── index.html                   # Halaman utama portofolio & markup semantik
 ├── dashboard.html               # Panel Admin Monitoring & Telemetri Analitik
-├── preview.html                 # Penampil dokumen sertifikat multi-halaman
-├── favicon.svg                  # Logo favicon vektor monokrom emerald
-├── favicon.ico                  # Favicon multi-resolusi legacy
+├── preview.html                 # Penampil dokumen sertifikat resolusi tinggi
+├── favicon.svg                  # Logo favicon vektor monokrom
+├── favicon.ico                  # Favicon multi-resolusi
 ├── site.webmanifest             # Web App Manifest & ikon PWA
 ├── robots.txt                   # Panduan perayapan search engine
-├── sitemap.xml                  # Peta situs resmi
+├── sitemap.xml                  # Peta situs XML resmi
 ├── api/
-│   └── chat.js                  # Vercel Serverless Multi-API Gateway (AI Router)
+│   └── chat.js                  # Vercel Serverless Multi-Provider AI Gateway
 ├── css/
 │   ├── style.css                # Sistem desain dasar, variabel OKLCH, tipografi
-│   ├── components.css           # Styling komponen (Navbar, Hero, Cards, Modal, Terminal Mobile)
-│   ├── dashboard.css            # Styling visual panel admin analitik
-│   └── transitions.css          # Motion tokens standar transitions-dev
+│   ├── components.css           # Komponen antarmuka (Navbar, Hero, Cards, Modal, Terminal)
+│   ├── dashboard.css            # Desain antarmuka panel admin analitik
+│   └── transitions.css          # Motion tokens dan kurva transisi
 ├── js/
-│   ├── data.js                  # Data terpusat (Proyek GitHub, Sertifikat, Timeline)
-│   ├── main.js                  # Controller utama halaman depan & event handlers
-│   ├── terminal.js              # Controller emulator CLI & antarmuka input/output
-│   ├── terminal-ai.js           # Client penghubung AI, OmniRoute dispatcher & failover
+│   ├── data.js                  # Data repositori proyek, sertifikasi, dan riwayat
+│   ├── main.js                  # Controller utama interaksi DOM & event listeners
+│   ├── terminal.js              # Controller emulator CLI terminal & parser perintah
+│   ├── terminal-ai.js           # Client integrasi AI, routing klien & failover
 │   ├── telemetry.js             # Client tracker telemetri asinkron non-blocking
 │   └── dashboard.js             # Controller analitik admin & visualisasi Chart.js
 ├── certificates/
-│   ├── *.pdf                    # Dokumen PDF autentik sertifikat
-│   └── images/                  # Grafis halaman sertifikat resolusi tinggi
+│   ├── *.pdf                    # Dokumen autentik sertifikat (BNSP, MikroTik, Cisco, dll.)
+│   └── images/                  # Pratinjau grafis dokumen sertifikat
 ├── database/
-│   └── supabase_schema.sql      # Skema DDL tabel, indeks komposit & RLS Supabase
-├── assets/                      # Ikon PNG multi-ukuran dan aset statis
+│   └── supabase_schema.sql      # Skema DDL tabel analitik, indeks komposit & RLS Supabase
+├── assets/                      # Aset gambar dan ikon statis
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml           # Otomasi deployment CI/CD ke GitHub Pages
 ├── vercel.json                  # Konfigurasi deployment & header keamanan Vercel
 ├── netlify.toml                 # Konfigurasi deployment Netlify
-├── DOCUMENTATION.md             # Dokumentasi teknis arsitektur, audit & changelog lengkap
-├── Jalankan_Lokal.bat           # Launcher server lokal 1-klik Windows
-└── README.md                    # Panduan ringkas proyek
+├── DOCUMENTATION.md             # Riwayat arsitektur, catatan audit & changelog lengkap
+├── Jalankan_Lokal.bat           # Skrip launcher server lokal Windows
+└── README.md                    # Dokumentasi utama repositori
 ```
 
 ---
 
 ## Panduan Menjalankan Secara Lokal
 
-Karena proyek ini menggunakan modul JavaScript ES6 murni, jalankan menggunakan web server lokal:
+Karena proyek ini menggunakan ES6 JavaScript Modules murni, jalankan menggunakan server web lokal:
 
-### Opsi 1: Menggunakan Script 1-Klik (Windows)
-Cukup klik dua kali berkas `Jalankan_Lokal.bat`.
+### Opsi 1: Menggunakan Script Otomatis (Windows)
+Jalankan berkas `Jalankan_Lokal.bat` dengan klik ganda.
 
 ### Opsi 2: Menggunakan Python
 ```bash
@@ -123,28 +128,25 @@ npx vercel dev
 
 ---
 
-## Pengaturan Environment Variables (Vercel)
+## Konfigurasi Environment Variables (Vercel)
 
-Untuk mengaktifkan Multi-Model AI Gateway dan Telemetri Analitik secara penuh di lingkungan produksi, tambahkan variabel lingkungan berikut pada dashboard Vercel (**Project Settings -> Environment Variables**):
+Untuk mengaktifkan fitur AI Gateway dan Telemetri Analitik secara penuh di lingkungan produksi, tambahkan variabel lingkungan berikut pada dashboard Vercel (**Project Settings -> Environment Variables**):
 
-| Nama Variabel | Penyedia / Deskripsi |
+| Nama Variabel | Deskripsi |
 |---|---|
-| `OMNIROUTE_URL` | URL Cloudflare Tunnel / Server Lokal OmniRoute |
-| `OMNIROUTE_KEY` | API Key Autentikasi OmniRoute Dedicated Server |
-| `OPENROUTER_API_KEY` | Kunci Utama OpenRouter AI Gateway (DeepSeek, Llama 3.3, Gemma, Nemotron) |
-| `OPENROUTER_API_KEYS` | Kumpulan Multi-Key OpenRouter (pisahkan dengan koma untuk rotasi otomatis) |
-| `OPENCODE_API_KEY` | Kunci Utama OpenCode Cloud (DeepSeek V4 Flash & Nemotron Ultra) |
-| `OPENCODE_API_KEYS` | Kumpulan Multi-Account OpenCode (pisahkan dengan koma) |
-| `NVIDIA_API_KEY` | Nvidia NIM Engine (Nemotron Ultra 70B, Llama 3.2 Vision) |
-| `MINIMAX_API_KEY` | MiniMax AI (MiniMax-01 M3 Vision) |
-| `OLLAMA_CLOUD_API_KEY` | Ollama Cloud (Kimi K2.7 Coder, Gemma 31B) |
-| `SUPABASE_URL` | Supabase Project REST Endpoint (Continuous RAG & Telemetry) |
-| `SUPABASE_ANON_KEY` | Supabase Anonymous Client Key dengan RLS Policy |
-
+| `OPENROUTER_API_KEY` | Kunci API gratisan utama untuk model AI cloud publik (OpenRouter) |
+| `OPENROUTER_API_KEYS` | Kumpulan kunci API gratisan OpenRouter (dipisahkan koma untuk rotasi otomatis) |
+| `OPENCODE_API_KEY` | Kunci API penyedia model cloud sekunder |
+| `OPENCODE_API_KEYS` | Kumpulan kunci API sekunder cadangan |
+| `NVIDIA_API_KEY` | Kunci API penyedia model evaluasi tambahan |
+| `MINIMAX_API_KEY` | Kunci API penyedia model multimodal/vision |
+| `OLLAMA_CLOUD_API_KEY` | Kunci API penyedia model inferensi cloud |
+| `SUPABASE_URL` | Endpoint REST project Supabase (RAG & Telemetri) |
+| `SUPABASE_ANON_KEY` | Anonymous client key Supabase dengan kebijakan RLS |
 
 ---
 
 ## Lisensi & Hak Cipta
 
-Dirilis di bawah lisensi [MIT License](https://opensource.org/licenses/MIT).  
-Dikembangkan dengan standar rekayasa perangkat lunak modern oleh **Rafly Firmansyah**.
+Proyek ini dirilis di bawah lisensi [MIT License](https://opensource.org/licenses/MIT).  
+Dikembangkan secara mandiri oleh **Rafly Firmansyah**.
