@@ -217,13 +217,18 @@ ${effortDirective}
 `;
 }
 
-async function fetchWithTimeout(url, options, timeoutMs = 10000) {
+async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timer = setTimeout(() => controller.abort(new Error(`Timeout of ${timeoutMs}ms exceeded`)), timeoutMs);
   try {
     const res = await fetch(url, { ...options, signal: controller.signal });
+    const text = await res.text();
     clearTimeout(timer);
-    return res;
+    let json = null;
+    try {
+      json = JSON.parse(text);
+    } catch (_) {}
+    return { ok: res.ok, status: res.status, data: json, text };
   } catch (err) {
     clearTimeout(timer);
     throw err;
@@ -335,14 +340,11 @@ async function fetchLiveRepoContext(query = '') {
     const fetchPromises = repoTargets.flatMap(target => 
       target.urls.slice(0, 1).map(async (url) => {
         try {
-          const res = await fetchWithTimeout(url, {
+          const res = await fetchJsonWithTimeout(url, {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PortofolioAIBot/2026' }
           }, 1800);
-          if (res.ok) {
-            const text = await res.text();
-            if (text && text.length > 50) {
-              return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 1500)}`;
-            }
+          if (res.ok && res.text && res.text.length > 50) {
+            return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${res.text.substring(0, 1500)}`;
           }
         } catch (_) {}
         return null;
@@ -1101,9 +1103,8 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
     let isOmniOffline = false;
 
-    async function callOmniRoute(mName, tOut = 25000) {
+    async function callOmniRoute(mName, tOut = 4000) {
       if (!OMNIROUTE_KEY || !OMNIROUTE_URL || isOmniOffline) return null;
-      // If running on Vercel Cloud and URL is localhost/loopback, instantly skip without blocking execution
       if (process.env.VERCEL && (OMNIROUTE_URL.includes('127.0.0.1') || OMNIROUTE_URL.includes('localhost'))) {
         isOmniOffline = true;
         return null;
@@ -1116,7 +1117,7 @@ Langkah yang WAJIB Anda lakukan:
           max_tokens: Math.max(maxTokensConfig, 1000),
           temperature: tempConfig
         };
-        const res = await fetchWithTimeout(OMNIROUTE_URL, {
+        const res = await fetchJsonWithTimeout(OMNIROUTE_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1127,15 +1128,13 @@ Langkah yang WAJIB Anda lakukan:
         }, tOut);
 
         if (res.ok) {
-          const rawText = await res.text();
           let content = '';
           let resolvedName = mName;
-          try {
-            const data = JSON.parse(rawText);
-            content = data?.choices?.[0]?.message?.content || data?.choices?.[0]?.delta?.content || '';
-            if (data.model) resolvedName = `${mName} (${data.model})`;
-          } catch (_) {
-            const lines = rawText.split('\n');
+          if (res.data) {
+            content = res.data?.choices?.[0]?.message?.content || res.data?.choices?.[0]?.delta?.content || '';
+            if (res.data.model) resolvedName = `${mName} (${res.data.model})`;
+          } else if (res.text) {
+            const lines = res.text.split('\n');
             for (const line of lines) {
               const trimmed = line.trim();
               if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
@@ -1150,8 +1149,7 @@ Langkah yang WAJIB Anda lakukan:
             return sendSuccess(content.trim(), resolvedName, 'OmniRoute Dedicated Server');
           }
         } else {
-          const errTxt = await res.text();
-          providerErrors.push(`OmniRoute ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+          providerErrors.push(`OmniRoute ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
           if ([400, 404, 500, 502, 503, 520, 521, 522, 523, 524, 530].includes(res.status)) {
             isOmniOffline = true;
           }
@@ -1163,11 +1161,11 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 25000) {
+    async function callNvidiaNim(mName, tOut = 20000) {
       if (NVIDIA_KEYS.length === 0) return null;
       for (const nvKey of NVIDIA_KEYS) {
         try {
-          const res = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
+          const res = await fetchJsonWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1182,14 +1180,12 @@ Langkah yang WAJIB Anda lakukan:
           }, tOut);
 
           if (res.ok) {
-            const data = await res.json();
-            const content = data?.choices?.[0]?.message?.content;
+            const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'NVIDIA NIM Direct API');
             }
           } else {
-            const errTxt = await res.text();
-            providerErrors.push(`Nvidia NIM ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+            providerErrors.push(`Nvidia NIM ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
           }
         } catch (err) {
           providerErrors.push(`Nvidia NIM ${mName}: ${err.message}`);
@@ -1203,7 +1199,7 @@ Langkah yang WAJIB Anda lakukan:
       const cleanM = mName.replace(/^opencode\//, '');
       for (const ocKey of OPENCODE_KEYS) {
         try {
-          const res = await fetchWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
+          const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1218,18 +1214,16 @@ Langkah yang WAJIB Anda lakukan:
           }, tOut);
 
           if (res.ok) {
-            const data = await res.json();
-            if (data?.error) {
-              providerErrors.push(`OpenCode ${cleanM}: ${data.error.message || data.error.type || 'Server Error'}`);
+            if (res.data?.error) {
+              providerErrors.push(`OpenCode ${cleanM}: ${res.data.error.message || res.data.error.type || 'Server Error'}`);
               break; // Upstream error, failover instantly
             }
-            const content = data?.choices?.[0]?.message?.content;
+            const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), `opencode/${cleanM}`, 'OpenCode Cloud Multi-Account Pool');
             }
           } else {
-            const errTxt = await res.text();
-            providerErrors.push(`OpenCode ${cleanM} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+            providerErrors.push(`OpenCode ${cleanM} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
             if (res.status !== 429) break;
           }
         } catch (err) {
@@ -1240,12 +1234,12 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenRouter(mName, tOut = 35000) {
+    async function callOpenRouter(mName, tOut = 24000) {
       if (OPENROUTER_KEYS.length === 0) return null;
 
       for (const orKey of OPENROUTER_KEYS) {
         try {
-          const res = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
+          const res = await fetchJsonWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1262,19 +1256,17 @@ Langkah yang WAJIB Anda lakukan:
           }, tOut);
 
           if (res.ok) {
-            const data = await res.json();
-            if (data?.error) {
-              providerErrors.push(`OpenRouter ${mName}: ${data.error.message || 'Error'}`);
-              if (data.error.code !== 429) break;
+            if (res.data?.error) {
+              providerErrors.push(`OpenRouter ${mName}: ${res.data.error.message || 'Error'}`);
+              if (res.data.error.code !== 429) break;
               continue;
             }
-            const content = data?.choices?.[0]?.message?.content;
+            const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'OpenRouter 3-Key Cloud Pool');
             }
           } else {
-            const errTxt = await res.text();
-            providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+            providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
             if (res.status !== 429) break;
           }
         } catch (err) {
@@ -1285,10 +1277,10 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOllama(mName, tOut = 15000) {
+    async function callOllama(mName, tOut = 12000) {
       if (!OLLAMA_KEY) return null;
       try {
-        const res = await fetchWithTimeout('https://ollama.com/api/chat', {
+        const res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1302,14 +1294,12 @@ Langkah yang WAJIB Anda lakukan:
         }, tOut);
 
         if (res.ok) {
-          const data = await res.json();
-          const content = data?.message?.content;
+          const content = res.data?.message?.content;
           if (content && content.trim().length > 0) {
             return sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
           }
         } else {
-          const errTxt = await res.text();
-          providerErrors.push(`Ollama Cloud ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+          providerErrors.push(`Ollama Cloud ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
         }
       } catch (err) {
         providerErrors.push(`Ollama Cloud ${mName}: ${err.message}`);
@@ -1320,7 +1310,7 @@ Langkah yang WAJIB Anda lakukan:
     async function callMiniMax(tOut = 10000) {
       if (!MINIMAX_KEY) return null;
       try {
-        const res = await fetchWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+        const res = await fetchJsonWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1335,14 +1325,12 @@ Langkah yang WAJIB Anda lakukan:
         }, tOut);
 
         if (res.ok) {
-          const data = await res.json();
-          const content = data?.choices?.[0]?.message?.content;
+          const content = res.data?.choices?.[0]?.message?.content;
           if (content && content.trim().length > 0) {
             return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Multimodal Production API');
           }
         } else {
-          const errTxt = await res.text();
-          providerErrors.push(`MiniMax HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+          providerErrors.push(`MiniMax HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
         }
       } catch (err) {
         providerErrors.push(`MiniMax: ${err.message}`);
@@ -1398,27 +1386,27 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       // Auto / Dynamic Routing berdasarkan intent:
-      const omniTimeout = 3500; // 3.5s OmniRoute guard for instant local/tunnel detection
+      const omniTimeout = 18000; // 18s OmniRoute headroom for deep local GPU/CPU compute
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
 
       return [
-        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 3.5s)
+        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
         { provider: 'omniroute', model: omniModel, timeout: omniTimeout },
 
         // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode (opencode.ai - 6s fast guard)
         { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
 
-        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter (openrouter.ai - 25s SOTA MoE)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+        // 3. Prioritas #3: Nemotron 3 Ultra 550B MoE dari OpenRouter (openrouter.ai - 18s SOTA)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
 
-        // 4. Prioritas #4: Nemotron 3 Super 120B dari OpenRouter (openrouter.ai - 15s)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 15000 },
+        // 4. Prioritas #4: Nemotron 3 Nano Omni Reasoning dari OpenRouter (openrouter.ai - 8s)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 8000 },
 
         // 5. Prioritas #5: Nemotron 3 Ultra dari Ollama Cloud Hub (ollama.com - 8s)
         { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
 
-        // 6. Prioritas #6: MiniMax M3 Vision dari Ollama Cloud Hub
-        { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
+        // 6. Prioritas #6: Laguna S-2.1 dari OpenRouter (openrouter.ai - 5s)
+        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 5000 },
 
         // 7. Prioritas #7: Model Cadangan Lainnya dari OpenCode Pool
         { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 4000 },
@@ -1445,7 +1433,7 @@ Langkah yang WAJIB Anda lakukan:
       let result = null;
 
       if (step.provider === 'omniroute') {
-        result = await callOmniRoute(step.model, Math.min(stepTimeout, 3500));
+        result = await callOmniRoute(step.model, stepTimeout);
       } else if (step.provider === 'nim') {
         result = await callNvidiaNim(step.model, stepTimeout);
       } else if (step.provider === 'opencode') {
