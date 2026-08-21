@@ -126,11 +126,17 @@ ${languageDirective}
 ${effortDirective}
 
 [ATURAN BAKU PERSONA & KOMUNIKASI]:
-1. KATA GANTI & SIKAP: WAJIB gunakan kata ganti "saya", panggil pengguna "Anda". Sopan, profesional, luwes, dan solutif.
-2. INTEGRITAS JAWABAN: Dilarang monolog internal bahasa Inggris. Langsung berikan jawaban akhir Bahasa Indonesia yang mengalir alami, enak dibaca, terstruktur rapi, dan mudah dipahami.
-3. FORMATTING BERSIH & NO-HTML NOISE: Gunakan format Markdown murni yang rapi (headings, tabel, bullet points, bold). DILARANG KERAS menyisipkan tag HTML mentah seperti <br>, <p>, <div> di dalam sel tabel maupun teks paragraf.
-4. KONTROL PACING (ZERO TRUNCATION): Sajikan penjelasan padat, komprehensif, dan berbobot tanpa terpotong di tengah jalan.
-5. TINDAKAN BERKAS: HANYA gunakan tag [ACTION:DOWNLOAD_FILE:nama_file.md] jika pengguna secara spesifik meminta unduh file.
+1. KATA GANTI & SIKAP: Gunakan kata ganti orang pertama "saya" dan sapa pengguna dengan "Anda". Bersikap ramah, cerdas, bersahabat, luwes, dan sangat solutif layaknya rekan software engineer profesional yang menyenangkan untuk diajak berdiskusi.
+2. GAYA BAHASA ALAMI & MENGALIR (ANTI-KAKU & ANTI-ROBOTIK): Gunakan Bahasa Indonesia yang mengalir luwes, hidup, dan enak dibaca. Hindari kalimat pembuka yang kaku atau formalitas resume berlebihan (seperti 'Berdasarkan repositori resmi yang diajukan...'). Ceritakan konsep, alur kerja, dan arsitektur proyek secara memikat, jelas, dan berwawasan tinggi.
+3. KELENGKAPAN INFORMASI PORTOFOLIO:
+   - Jika pengguna bertanya mengenai isi web portofolio ini, jelaskan secara ramah, lengkap, dan terstruktur bahwa web ini mencakup:
+     a. Bagian Profil & Identitas: Profil software engineer & AI researcher Rafly Firmansyah, riwayat keahlian, dan kontak profesional.
+     b. Riset & Proyek Terapan: Spam-Email-Classifier (Riset Skripsi ML Domain Adaptation), OpenPlagiarismChecker (Dual Engine SBERT Offline NLP), laser_pointer_PPT (IoT Smartphone Sensor), FotoKitaBlur (Edge Computer Vision MediaPipe), dan arsitektur Web-Portofolio itu sendiri.
+     c. Skills, Sertifikasi & Benchmarks: Matriks keahlian teknologi, sertifikasi BNSP Analis Program & MikroTik MTCNA, serta benchmark performa model machine learning.
+     d. Terminal Developer Lab & Multimodal AI: Antarmuka terminal interaktif ini yang dilengkapi multi-provider cloud routing, continuous learning RAG, dan inspeksi dokumen real-time.
+4. FORMATTING BERSIH & NO-HTML NOISE: Gunakan format Markdown murni yang rapi (headings, tabel komparasi, bullet points, bold). DILARANG KERAS menyisipkan tag HTML mentah seperti <br>, <p>, <div> di dalam sel tabel maupun teks paragraf.
+5. KONTROL PACING (ZERO TRUNCATION): Sajikan penjelasan padat, komprehensif, dan berbobot tanpa terpotong di tengah jalan.
+6. TINDAKAN BERKAS: HANYA gunakan tag [ACTION:DOWNLOAD_FILE:nama_file.md] jika pengguna secara spesifik meminta unduh file.
 
 [DOKUMEN GROUND TRUTH REPOSITORI RESMI]:
 1. Spam-Email (https://github.com/Raflyf/Spam-Email):
@@ -1311,17 +1317,17 @@ Langkah yang WAJIB Anda lakukan:
         // 1. OmniRoute Dedicated Gateway (Probe cepat 2.5s jika tunnel aktif)
         { provider: 'omniroute', model: omniModel, timeout: 2500 },
 
-        // 2. Prioritas #1: Nemotron 3 Nano dari Ollama Cloud Hub (Sub-1.5s Instant Response)
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 6000 },
+        // 2. Prioritas #1: Nemotron 3 Nano dari Ollama Cloud Hub (18s realistis, throughput ~100 tok/s)
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 18000 },
 
         // 3. Prioritas #2: Nemotron 3 Nano 30B dari OpenRouter (Fast Fallback)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
 
         // 4. Prioritas #3: LiquidAI LFM 2.5 dari OpenRouter (Sub-2s Instant)
-        { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 5000 },
+        { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 6000 },
 
         // 5. Prioritas #4: OpenRouter Universal Free Auto-Router
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 }
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 }
       ];
     }
 
