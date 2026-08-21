@@ -1315,7 +1315,8 @@ Langkah yang WAJIB Anda lakukan:
       if (OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface')) {
         try {
           const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-          const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/predict_zerogpu`, {
+          const endpointName = 'predict';
+          const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${endpointName}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ data: [promptText] })
@@ -1323,7 +1324,7 @@ Langkah yang WAJIB Anda lakukan:
 
           if (postRes.ok && postRes.data?.event_id) {
             const eventId = postRes.data.event_id;
-            const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/predict_zerogpu/${eventId}`, {
+            const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${endpointName}/${eventId}`, {
               method: 'GET'
             }, tOut);
 
