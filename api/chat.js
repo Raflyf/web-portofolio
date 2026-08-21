@@ -127,9 +127,10 @@ ${effortDirective}
 
 [ATURAN BAKU PERSONA & KOMUNIKASI]:
 1. KATA GANTI & SIKAP: WAJIB gunakan kata ganti "saya", panggil pengguna "Anda". Sopan, profesional, luwes, dan solutif.
-2. INTEGRITAS JAWABAN: Dilarang monolog internal bahasa Inggris. Langsung berikan jawaban akhir Bahasa Indonesia secara mandiri, tuntas, dan segar dari awal. Nol emoji.
-3. KONTROL PACING (ZERO TRUNCATION): Sajikan penjelasan padat dan berbobot (target 250–450 kata). Gunakan tabel komparasi dan poin-poin yang rapi. Dilarang code-dump raksasa tanpa diminta.
-4. TINDAKAN BERKAS: HANYA gunakan tag [ACTION:DOWNLOAD_FILE:nama_file.md] jika pengguna secara spesifik meminta unduh file.
+2. INTEGRITAS JAWABAN: Dilarang monolog internal bahasa Inggris. Langsung berikan jawaban akhir Bahasa Indonesia yang mengalir alami, enak dibaca, terstruktur rapi, dan mudah dipahami.
+3. FORMATTING BERSIH & NO-HTML NOISE: Gunakan format Markdown murni yang rapi (headings, tabel, bullet points, bold). DILARANG KERAS menyisipkan tag HTML mentah seperti <br>, <p>, <div> di dalam sel tabel maupun teks paragraf.
+4. KONTROL PACING (ZERO TRUNCATION): Sajikan penjelasan padat, komprehensif, dan berbobot tanpa terpotong di tengah jalan.
+5. TINDAKAN BERKAS: HANYA gunakan tag [ACTION:DOWNLOAD_FILE:nama_file.md] jika pengguna secara spesifik meminta unduh file.
 
 [DOKUMEN GROUND TRUTH REPOSITORI RESMI]:
 1. Spam-Email (https://github.com/Raflyf/Spam-Email):
@@ -946,7 +947,11 @@ export default async function handler(req, res) {
     const webMemories = searchResult.rawSnippets || [];
 
     const sendSuccess = (content, modelName, providerName) => {
-      let cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      let cleaned = String(content || '')
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/?(?:div|p|span)[^>]*>/gi, '')
+        .trim();
 
       // 1. Check for explicit output markers like Thus: "..." or Response:
       const markerMatch = cleaned.match(/(?:Thus|Therefore|Response|Answer|Jawaban|In Indonesian|Output):\s*["']?([\s\S]+?)["']?$/i);
@@ -1038,7 +1043,7 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     const finalUserPrompt = assembledQuery;
-    const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
+    const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt);
 
     // Maximum token limits: calibrated to maximum model capacity for exhaustive, zero-truncation responses
     // LOW=1024 (~4k chars), NORMAL=2048 (~8k chars), THINKING/HIGH=2500 (~10k chars)
@@ -1336,34 +1341,34 @@ Langkah yang WAJIB Anda lakukan:
         || effectiveEffort === 'thinking';
 
       if (isAnalysisOrComparison) {
-        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> NEMOTRON 3 ULTRA 550B MoE SEBAGAI PRIORITAS UTAMA (#1)
+        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> HIGH-IQ SOTA CASCADE (NEMOTRON 3.5 LIGHTNING, LAGUNA S, SUPER 120B, ULTRA)
         return [
           // 1. OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
           { provider: 'omniroute', model: omniModel, timeout: 18000 },
 
-          // 2. Prioritas #1: Nemotron 3 Ultra 550B MoE dari OpenRouter (26s Window)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 26000 },
+          // 2. Prioritas #1: Nemotron 3.5 Lightning (1M Context SOTA, Sub-8s, High Intelligence)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
 
-          // 3. Prioritas #2: LiquidAI LFM 2.5 dari OpenRouter (8s - Sub-3s Instant High-Speed Failover)
-          { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 8000 },
+          // 3. Prioritas #2: Poolside Laguna S 2.1 (262k Context, Deep Architecture Reasoning)
+          { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 12000 },
 
-          // 4. Prioritas #3: Nemotron 3 Nano 30B dari OpenRouter (10s - Verified 3.5k chars Markdown)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
+          // 4. Prioritas #3: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 14000 },
 
-          // 5. Prioritas #4: Nemotron 3 Nano dari Ollama Cloud Hub (8s)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+          // 5. Prioritas #4: Nemotron 3 Super (Ollama Cloud Hub)
+          { provider: 'ollama', model: 'nemotron-3-super', timeout: 10000 },
 
-          // 6. Prioritas #5: Nemotron 3 Ultra dari Ollama Cloud Hub (10s)
+          // 6. Prioritas #5: Nemotron 3 Ultra 550B MoE (OpenRouter)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
+
+          // 7. Prioritas #6: Nemotron 3 Ultra (Ollama Cloud Hub)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
 
-          // 7. Prioritas #6: Nemotron 3 Super dari Ollama Cloud Hub (8s)
-          { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+          // 8. Prioritas #7: LiquidAI LFM 2.5 (2.6B Dynamic Sub-2s Failover)
+          { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 8000 },
 
-          // 8. Prioritas #7: MiniMax-M3 dari Ollama Cloud Hub (8s)
+          // 9. Prioritas #8: MiniMax-M3 dari Ollama Cloud Hub (8s)
           { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
-
-          // 9. Prioritas #8: Nemotron 3.5 Lightning dari OpenRouter (8s)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
 
           // 10. Prioritas #9: OpenCode Zen Cloud Pool (3s)
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3000 },
