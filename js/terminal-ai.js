@@ -707,6 +707,15 @@ ${certsOverview}
     // 3. High-Precision In-Browser Semantic Engine Fallback (Emergency Offline Mode)
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
+      this.lastExecutionInfo = {
+        isAuto: true,
+        resolvedModel: 'Local Pattern Engine',
+        requestedModel: this.currentModel,
+        isFailover: true,
+        provider: 'In-Browser Offline Mode',
+        effort: 'OFFLINE',
+        category: 'offline_fallback'
+      };
       if (telemetry) {
         telemetry.logEvent('ai_query_resolved', 'auto:local_semantic', `[Auto ➔ Local Semantic Engine] ${cleanQuery.substring(0, 60)}`);
       }
