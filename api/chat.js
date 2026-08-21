@@ -13,6 +13,10 @@
 import fs from 'fs';
 import path from 'path';
 
+export const config = {
+  maxDuration: 60
+};
+
 // Automatic local environment loader (reads .env.local / .env for local testing)
 function loadLocalEnv() {
   try {
@@ -1150,6 +1154,9 @@ Langkah yang WAJIB Anda lakukan:
           }
         } catch (err) {
           providerErrors.push(`OpenCode ${mName}: ${err.message}`);
+          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
+            break;
+          }
           continue;
         }
       }
@@ -1242,7 +1249,7 @@ Langkah yang WAJIB Anda lakukan:
       if (MINIMAX_KEYS.length === 0) return null;
       for (const mmKey of MINIMAX_KEYS) {
         try {
-          const res = await fetchJsonWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+          const res = await fetchJsonWithTimeout('https://api.minimax.io/v1/text/chatcompletion_v2', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1285,12 +1292,12 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('ultra')) {
           return [
             { provider: 'omniroute', model: 'Codex', timeout: 18000 },
-            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
+            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 10000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 }
           ];
         }
         if (t.includes('nano')) {
@@ -1305,8 +1312,9 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('codex') || t.includes('gpt-5')) {
           return [
             { provider: 'omniroute', model: 'Codex', timeout: 22000 },
-            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 12000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
             { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 }
           ];
         }
@@ -1328,37 +1336,43 @@ Langkah yang WAJIB Anda lakukan:
         || effectiveEffort === 'thinking';
 
       if (isAnalysisOrComparison) {
-        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> FAST SOTA ENGINES WITH MATRIX COMPREHENSION
+        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> NEMOTRON 3 ULTRA 550B MoE SEBAGAI PRIORITAS UTAMA (#1)
         return [
           // 1. OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
           { provider: 'omniroute', model: omniModel, timeout: 18000 },
 
-          // 2. Prioritas #2: LiquidAI LFM 2.5 dari OpenRouter (14s - Sub-3s Verified Instant High-Speed)
-          { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 14000 },
+          // 2. Prioritas #1: Nemotron 3 Ultra 550B MoE dari OpenRouter (26s Window)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 26000 },
 
-          // 3. Prioritas #3: Nemotron 3 Nano 30B dari OpenRouter (14s - Verified 3.5k chars Markdown)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
+          // 3. Prioritas #2: LiquidAI LFM 2.5 dari OpenRouter (8s - Sub-3s Instant High-Speed Failover)
+          { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 8000 },
 
-          // 4. Prioritas #4: Nemotron 3 Nano dari Ollama Cloud Hub (10s)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 10000 },
+          // 4. Prioritas #3: Nemotron 3 Nano 30B dari OpenRouter (10s - Verified 3.5k chars Markdown)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
 
-          // 5. Prioritas #5: Nemotron 3 Ultra 550B MoE dari OpenRouter (10s)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
+          // 5. Prioritas #4: Nemotron 3 Nano dari Ollama Cloud Hub (8s)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
 
-          // 6. Prioritas #6: Nemotron 3.5 Lightning dari OpenRouter (10s)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
-
-          // 7. Prioritas #7: OpenRouter Universal Free Auto-Router (12s)
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 },
-
-          // 8. Prioritas #8: Nemotron 3 Ultra dari Ollama Cloud Hub (10s)
+          // 6. Prioritas #5: Nemotron 3 Ultra dari Ollama Cloud Hub (10s)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
 
-          // 9. Prioritas #9: MiniMax-M3 dari Ollama Cloud Hub (8s)
+          // 7. Prioritas #6: Nemotron 3 Super dari Ollama Cloud Hub (8s)
+          { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+
+          // 8. Prioritas #7: MiniMax-M3 dari Ollama Cloud Hub (8s)
           { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
 
-          // 10. Prioritas #10: OpenCode Zen Cloud Pool (4s)
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 }
+          // 9. Prioritas #8: Nemotron 3.5 Lightning dari OpenRouter (8s)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
+
+          // 10. Prioritas #9: OpenCode Zen Cloud Pool (3s)
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3000 },
+
+          // 11. Prioritas #10: MiniMax-M3 Direct API (6s)
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 },
+
+          // 12. Prioritas #11: OpenRouter Universal Free Auto-Router (10s)
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 }
         ];
       }
 
