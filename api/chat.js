@@ -1272,24 +1272,32 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
     let isOmniOffline = false;
 
-    async function callOmniRoute(mName, tOut = 4000) {
-      if (!OMNIROUTE_KEY || !OMNIROUTE_URL || isOmniOffline) return null;
+    async function callOmniRoute(mName, tOut = 18000) {
+      if (!OMNIROUTE_URL || isOmniOffline) return null;
       if (process.env.VERCEL && (OMNIROUTE_URL.includes('127.0.0.1') || OMNIROUTE_URL.includes('localhost'))) {
         return null;
       }
+
+      const lastUserMsg = (openRouterMessages && openRouterMessages.length > 0)
+        ? (openRouterMessages[openRouterMessages.length - 1]?.content || query)
+        : query;
+      const promptText = typeof lastUserMsg === 'string' ? lastUserMsg : JSON.stringify(lastUserMsg);
+
+      // 1. Direct OpenAI JSON format attempt
       try {
         const res = await fetchJsonWithTimeout(OMNIROUTE_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OMNIROUTE_KEY}`,
+            'Authorization': `Bearer ${OMNIROUTE_KEY || 'sk-omniroute'}`,
             'ngrok-skip-browser-warning': 'true'
           },
           body: JSON.stringify({
             model: mName,
             messages: openRouterMessages,
             max_tokens: maxTokensConfig,
-            temperature: tempConfig
+            temperature: tempConfig,
+            stream: false
           })
         }, tOut);
 
@@ -1298,16 +1306,51 @@ Langkah yang WAJIB Anda lakukan:
           if (content && content.trim().length > 0) {
             return sendSuccess(content.trim(), mName, 'OmniRoute Dedicated Gateway');
           }
-        } else {
-          providerErrors.push(`OmniRoute ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-          if (res.status === 404 || res.status === 502 || res.status === 503) {
-            isOmniOffline = true;
-          }
         }
       } catch (err) {
-        providerErrors.push(`OmniRoute ${mName}: ${err.message}`);
-        isOmniOffline = true;
+        providerErrors.push(`OmniRoute ${mName} Direct: ${err.message}`);
       }
+
+      // 2. Gradio 5 API protocol attempt (if hosted on Hugging Face Spaces)
+      if (OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface')) {
+        try {
+          const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+          const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/predict_zerogpu`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: [promptText] })
+          }, 8000);
+
+          if (postRes.ok && postRes.data?.event_id) {
+            const eventId = postRes.data.event_id;
+            const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/predict_zerogpu/${eventId}`, {
+              method: 'GET'
+            }, tOut);
+
+            if (sseRes.ok || sseRes.text) {
+              const rawText = sseRes.text || '';
+              const lines = rawText.split('\n');
+              for (const line of lines) {
+                if (line.startsWith('data:')) {
+                  const p = line.replace(/^data:\s*/, '').trim();
+                  if (p && p !== 'null') {
+                    try {
+                      const arr = JSON.parse(p);
+                      if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string' && arr[0].trim().length > 0) {
+                        return sendSuccess(arr[0].trim(), mName, 'OmniRoute Dedicated Gateway');
+                      }
+                    } catch (_) {}
+                  }
+                }
+              }
+            }
+          }
+        } catch (err) {
+          providerErrors.push(`OmniRoute ${mName} Gradio: ${err.message}`);
+        }
+      }
+
+      isOmniOffline = true;
       return null;
     }
 
