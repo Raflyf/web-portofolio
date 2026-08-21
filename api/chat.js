@@ -1093,78 +1093,7 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 8000) {
-      if (NVIDIA_KEYS.length === 0) return null;
-      for (const nvKey of NVIDIA_KEYS) {
-        try {
-          const res = await fetchJsonWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${nvKey}`
-            },
-            body: JSON.stringify({
-              model: mName,
-              messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig
-            })
-          }, tOut);
 
-          if (res.ok) {
-            const content = res.data?.choices?.[0]?.message?.content;
-            if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'NVIDIA NIM Direct API');
-            }
-          } else {
-            providerErrors.push(`Nvidia NIM ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            continue;
-          }
-        } catch (err) {
-          providerErrors.push(`Nvidia NIM ${mName}: ${err.message}`);
-          continue;
-        }
-      }
-      return null;
-    }
-
-    async function callOpenCode(mName, tOut = 6000) {
-      if (OPENCODE_KEYS.length === 0) return null;
-      for (const ocKey of OPENCODE_KEYS) {
-        try {
-          const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ocKey}`
-            },
-            body: JSON.stringify({
-              model: mName,
-              messages: baseTextMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig
-            })
-          }, tOut);
-
-          if (res.ok) {
-            const content = res.data?.choices?.[0]?.message?.content;
-            if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'OpenCode High-Speed Cloud Pool');
-            }
-          } else {
-            providerErrors.push(`OpenCode ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            continue;
-          }
-        } catch (err) {
-          providerErrors.push(`OpenCode ${mName}: ${err.message}`);
-          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
-            break;
-          }
-          continue;
-        }
-      }
-      return null;
-    }
 
     async function callOpenRouter(mName, tOut = 10000) {
       if (OPENROUTER_KEYS.length === 0) return null;
