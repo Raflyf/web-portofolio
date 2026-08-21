@@ -305,6 +305,48 @@ class TerminalAIEngine {
     }
   }
 
+  /**
+   * Fetch matching dynamic memories directly from Supabase for Semantic Engine Fallback
+   */
+  async fetchMatchingSupabaseMemories(query) {
+    try {
+      const config = this.getSupabaseConfig();
+      if (!config.url || !config.anonKey) return [];
+
+      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text,created_at&order=created_at.desc&limit=30`;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 2500);
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        headers: {
+          'apikey': config.anonKey,
+          'Authorization': `Bearer ${config.anonKey}`,
+          'Content-Type': 'application/json'
+        },
+        signal: ctrl.signal
+      });
+      clearTimeout(timer);
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) return [];
+
+      const qWords = (query || '').toLowerCase().split(/[\s,?.!]+/).filter(w => w.length > 2);
+      
+      const matched = data
+        .map(d => (d.fact_text || '').trim())
+        .filter(t => t.length > 5 && !t.startsWith('[Q&A Context]'))
+        .filter(t => {
+          const tLow = t.toLowerCase();
+          return qWords.length === 0 || qWords.some(w => tLow.includes(w));
+        })
+        .slice(0, 5);
+
+      return matched;
+    } catch (_) {
+      return [];
+    }
+  }
+
   saveAIMemory(fact) {
     try {
       const config = this.getSupabaseConfig();
@@ -605,46 +647,49 @@ ${certsOverview}
         ];
       }
 
-      // Direct Client Failover on Network / CORS Error
-      const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
-      if (this.isAborted) return { isAborted: true };
-      if (directRes) {
-        return directRes;
-      }
     }
 
-    // 2. Direct Client Failover fallback
-    const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
-    if (directRes) {
-      return directRes;
-    }
+    // 2. High-Precision Hybrid Semantic & Supabase Dynamic Memory Fallback (Offline/Rate-Limit Resilience)
+    const [semanticMatch, dynamicMemories] = await Promise.all([
+      Promise.resolve(this.checkSemanticMatch(cleanQuery)),
+      this.fetchMatchingSupabaseMemories(cleanQuery)
+    ]);
 
-    // 3. High-Precision In-Browser Semantic Engine Fallback (Emergency Offline Mode)
-    const semanticMatch = this.checkSemanticMatch(cleanQuery);
-    if (semanticMatch) {
+    if (semanticMatch || (dynamicMemories && dynamicMemories.length > 0)) {
       this.lastExecutionInfo = {
         isAuto: true,
-        resolvedModel: 'Local Pattern Engine',
+        resolvedModel: 'Local Semantic Engine + Supabase RAG',
         requestedModel: this.currentModel,
         isFailover: true,
-        provider: 'In-Browser Offline Mode',
-        effort: 'OFFLINE',
+        provider: 'Hybrid Offline RAG Memory',
+        effort: 'OFFLINE_RAG',
         category: 'offline_fallback'
       };
       if (telemetry) {
-        telemetry.logEvent('ai_query_resolved', 'auto:local_semantic', `[Auto ➔ Local Semantic Engine] ${cleanQuery.substring(0, 60)}`);
+        telemetry.logEvent('ai_query_resolved', 'auto:local_semantic_supabase', `[Auto ➔ Local Semantic + Supabase] ${cleanQuery.substring(0, 60)}`);
       }
-      return [
-        "[OFFLINE RESILIENCE: Local Pattern Engine]",
-        "Koneksi gateway cloud sedang tidak terjangkau. Menampilkan ringkasan basis data lokal:",
-        "",
-        ...semanticMatch
+
+      const responseLines = [
+        "[OFFLINE RESILIENCE: Local Semantic Engine + Supabase Memory]",
+        "Koneksi gateway model AI sedang padat/terbatas. Menampilkan basis data lokal & memori RAG terverifikasi:",
+        ""
       ];
+
+      if (semanticMatch) {
+        responseLines.push(...semanticMatch);
+      }
+
+      if (dynamicMemories && dynamicMemories.length > 0) {
+        if (semanticMatch) responseLines.push("", "--- FAKTA TERBARU DARI DATABASE SUPABASE RAG ---");
+        dynamicMemories.forEach(m => responseLines.push(`• ${m}`));
+      }
+
+      return responseLines;
     }
 
-    // 4. Generic friendly response if completely offline
+    // 3. Generic friendly response if completely offline and no match found
     return [
-      "Maaf, saat ini koneksi ke seluruh gateway model AI sedang mengalami kendala jaringan.",
+      "Maaf, saat ini koneksi ke seluruh gateway model AI sedang mengalami kendala jaringan atau antrean penuh.",
       "Anda dapat mengulangi pertanyaan Anda kembali, atau menggunakan perintah CLI seperti 'skills', 'projects', 'certifs', 'benchmarks', 'contact'."
     ];
   }
