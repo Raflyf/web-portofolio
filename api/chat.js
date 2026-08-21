@@ -341,7 +341,7 @@ async function fetchLiveRepoContext(query = '') {
           if (res.ok) {
             const text = await res.text();
             if (text && text.length > 50) {
-              return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 2500)}`;
+              return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 1500)}`;
             }
           }
         } catch (_) {}
@@ -1080,10 +1080,10 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
-    // Calibrated token limits for complete zero-truncation deep analysis
+    // Calibrated token limits for complete zero-truncation deep analysis within sub-20s
     const maxTokensConfig = effectiveEffort === 'low' 
       ? 1024 
-      : (effectiveEffort === 'medium' ? 2500 : (effectiveEffort === 'thinking' ? 8192 : 6144));
+      : (effectiveEffort === 'medium' ? 2200 : (effectiveEffort === 'thinking' ? 4096 : 3000));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
@@ -1188,7 +1188,7 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 15000) {
+    async function callOpenCode(mName, tOut = 6000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanM = mName.replace(/^opencode\//, '');
       for (const ocKey of OPENCODE_KEYS) {
@@ -1202,13 +1202,17 @@ Langkah yang WAJIB Anda lakukan:
             body: JSON.stringify({
               model: cleanM,
               messages: baseTextMessages,
-              max_tokens: Math.min(maxTokensConfig, 3500),
+              max_tokens: Math.min(maxTokensConfig, 2200),
               temperature: tempConfig
             })
           }, tOut);
 
           if (res.ok) {
             const data = await res.json();
+            if (data?.error) {
+              providerErrors.push(`OpenCode ${cleanM}: ${data.error.message || data.error.type || 'Server Error'}`);
+              break; // Upstream error, failover instantly
+            }
             const content = data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), `opencode/${cleanM}`, 'OpenCode Cloud Multi-Account Pool');
@@ -1216,15 +1220,17 @@ Langkah yang WAJIB Anda lakukan:
           } else {
             const errTxt = await res.text();
             providerErrors.push(`OpenCode ${cleanM} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+            if (res.status !== 429) break;
           }
         } catch (err) {
           providerErrors.push(`OpenCode ${cleanM}: ${err.message}`);
+          break; // Timeout or network error, failover instantly
         }
       }
       return null;
     }
 
-    async function callOpenRouter(mName, tOut = 20000) {
+    async function callOpenRouter(mName, tOut = 35000) {
       if (OPENROUTER_KEYS.length === 0) return null;
 
       for (const orKey of OPENROUTER_KEYS) {
@@ -1247,6 +1253,11 @@ Langkah yang WAJIB Anda lakukan:
 
           if (res.ok) {
             const data = await res.json();
+            if (data?.error) {
+              providerErrors.push(`OpenRouter ${mName}: ${data.error.message || 'Error'}`);
+              if (data.error.code !== 429) break;
+              continue;
+            }
             const content = data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'OpenRouter 3-Key Cloud Pool');
@@ -1254,10 +1265,11 @@ Langkah yang WAJIB Anda lakukan:
           } else {
             const errTxt = await res.text();
             providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
-            if (res.status === 429) continue;
+            if (res.status !== 429) break;
           }
         } catch (err) {
           providerErrors.push(`OpenRouter ${mName}: ${err.message}`);
+          break; // Timeout or network error, failover instantly
         }
       }
       return null;
@@ -1376,18 +1388,18 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       // Auto / Dynamic Routing berdasarkan intent:
-      const omniTimeout = 6500; // 6.5s OmniRoute timeout to prevent serverless function starvation
+      const omniTimeout = 3500; // 3.5s OmniRoute guard for instant local/tunnel detection
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
 
       return [
-        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 6.5s guard)
+        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 3.5s)
         { provider: 'omniroute', model: omniModel, timeout: omniTimeout },
 
-        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode (opencode.ai - 14s)
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 14000 },
+        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode (opencode.ai - 6s fast guard)
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
 
-        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter (openrouter.ai - 22s)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 22000 },
+        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter (openrouter.ai - 25s SOTA MoE)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
 
         // 4. Prioritas #4: Nemotron 3 Super 120B dari OpenRouter (openrouter.ai - 15s)
         { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 15000 },
@@ -1399,9 +1411,9 @@ Langkah yang WAJIB Anda lakukan:
         { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
 
         // 7. Prioritas #7: Model Cadangan Lainnya dari OpenCode Pool
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 4000 },
         { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 4000 },
         { provider: 'opencode', model: 'x-preview-f-free', timeout: 4000 },
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 4000 },
         { provider: 'minimax', model: 'MiniMax-M3', timeout: 4000 }
       ];
     }
