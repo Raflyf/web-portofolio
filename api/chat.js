@@ -1199,8 +1199,8 @@ Langkah yang WAJIB Anda lakukan:
             }
           } else {
             providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (res.text?.includes('upstream') || res.status === 404) {
-              break;
+            if (res.text?.includes('upstream') || res.text?.includes('Rate limit') || res.status === 404 || res.status === 429) {
+              break; // Instant break on model-not-found, upstream error, or account daily free-tier limit
             }
             continue;
           }
