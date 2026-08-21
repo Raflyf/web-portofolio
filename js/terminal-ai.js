@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.99.0';
-import { telemetry } from './telemetry.js?v=10.99.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.100.0';
+import { telemetry } from './telemetry.js?v=10.100.0';
 
 // ============================================================================
 // 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
@@ -1065,184 +1065,10 @@ Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi 
       return finalContent.split('\n');
     };
 
-    // 1. ABSOLUTE PRIORITY #1: Dedicated OmniRoute Gateway Pool (Nemotron Laguna 3 Ultra Priority)
-    const OMNI_URL = 'https://ceremony-cent-triumph-hands.trycloudflare.com/v1/chat/completions';
-    const OMNI_KEY = atob('c2stN2E5YjUxYTI2NDc2OGUzMi1iM2Y5YjctNmUxY2RhY2Q=');
-
-    let omniCandidates = [];
-    if (this.currentModel && this.currentModel !== 'auto') {
-      omniCandidates = [this.currentModel, 'nemotron-laguna', 'Codex', 'Antigravity', 'Deepseek-V4-Flash-Free'];
-    } else if (isHeavyCoding) {
-      omniCandidates = ['Codex', 'Antigravity', 'Deepseek-V4-Flash-Free', 'nemotron-laguna'];
-    } else if (isDeepReasoning) {
-      omniCandidates = ['Antigravity', 'Deepseek-V4-Flash-Free', 'nemotron-laguna', 'Codex'];
-    } else if (hasImages) {
-      omniCandidates = ['Vision-model', 'Antigravity', 'Codex'];
-    } else {
-      // Basic / Standard Hierarchy: Nemotron -> DeepSeek V4 -> Codex -> Antigravity -> Vision
-      omniCandidates = ['nemotron-laguna', 'Deepseek-V4-Flash-Free', 'Codex', 'Antigravity', 'Vision-model'];
-    }
-
-    // Assemble 128k Token Context Window (~480,000 chars) dynamically from full session history
-    const systemStr = typeof fullSystemPrompt === 'string' ? fullSystemPrompt : JSON.stringify(fullSystemPrompt || '');
-    const userStr = typeof userMessageContent === 'string' ? userMessageContent : JSON.stringify(userMessageContent || '');
-    let currentBudget = 480000 - (systemStr.length + userStr.length);
-    if (currentBudget < 10000) currentBudget = 10000;
-
-    const validHistory = Array.isArray(this.conversationHistory) ? this.conversationHistory : [];
-    const selectedHistory = [];
-
-    for (let i = validHistory.length - 1; i >= 0; i--) {
-      const item = validHistory[i];
-      if (!item || !item.content) continue;
-      const contentStr = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
-      if (contentStr.length <= currentBudget) {
-        selectedHistory.unshift({
-          role: item.role === 'assistant' ? 'assistant' : 'user',
-          content: item.content
-        });
-        currentBudget -= contentStr.length;
-      } else {
-        if (currentBudget > 2000) {
-          selectedHistory.unshift({
-            role: item.role === 'assistant' ? 'assistant' : 'user',
-            content: contentStr.slice(-currentBudget)
-          });
-        }
-        break;
-      }
-    }
-
-    const fullMessagesPayload = [
-      { role: 'system', content: fullSystemPrompt },
-      ...selectedHistory,
-      { role: 'user', content: userMessageContent }
-    ];
-
-    let isTunnelReachable = true;
-    for (const omniModel of omniCandidates) {
-      if (!isTunnelReachable) break;
-      try {
-        const omniController = new AbortController();
-        const omniTimeout = setTimeout(() => omniController.abort(), 60000);
-
-        const omniRes = await fetch(OMNI_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OMNI_KEY}`
-          },
-          body: JSON.stringify({
-            model: omniModel,
-            messages: fullMessagesPayload,
-            max_tokens: calculatedMaxTokens,
-            temperature: 0.25,
-            stream: false
-          }),
-          signal: omniController.signal
-        });
-
-        clearTimeout(omniTimeout);
-
-        if (omniRes.ok) {
-          const rawText = await omniRes.text();
-          const content = extractContentFromResponseText(rawText);
-          if (content && content.length > 5) {
-            const resLines = dispatchSuccess(content, omniModel, 'OmniRoute Dedicated Gateway');
-            if (resLines) return resLines;
-          }
-        } else {
-          // If Cloudflare tunnel returns 502/503/521/522/524/530, server is offline
-          if ([502, 503, 521, 522, 524, 530].includes(omniRes.status)) {
-            isTunnelReachable = false;
-            break;
-          }
-        }
-      } catch (_) {
-        // Network failure / DNS unreachable -> instantly cascade to cloud backups
-        isTunnelReachable = false;
-        break;
-      }
-    }
-
-    // 2. Secondary Direct Route: Nvidia NIM API Direct (Nemotron 70B & Llama 3.3 70B)
-    const NVIDIA_DIRECT_KEY = atob('bnZhcGktVTVBNVJZcjJuTDRudVdYUE5HZWZnSHdHbmxoLWFsY1lFenIxeVJxdE43Y3RIMVNiSTFGaUprMno1Z0NPQzE4dA==');
-    const nimCandidateModels = ['nvidia/llama-3.1-nemotron-70b-instruct', 'meta/llama-3.3-70b-instruct'];
-    for (const nimModel of nimCandidateModels) {
-      try {
-        const nimController = new AbortController();
-        const nimTimeout = setTimeout(() => nimController.abort(), 45000);
-        const nimRes = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + NVIDIA_DIRECT_KEY
-          },
-          body: JSON.stringify({
-            model: nimModel,
-            messages: fullMessagesPayload,
-            max_tokens: calculatedMaxTokens,
-            temperature: 0.25
-          }),
-          signal: nimController.signal
-        });
-        clearTimeout(nimTimeout);
-
-        if (nimRes.ok) {
-          const rawText = await nimRes.text();
-          const content = extractContentFromResponseText(rawText);
-          if (content && content.length > 5) {
-            const resLines = dispatchSuccess(content, nimModel, 'Nvidia NIM Direct Gateway');
-            if (resLines) return resLines;
-          }
-        }
-      } catch (_) {}
-    }
-
-    // 3. Tertiary Direct Route: OpenRouter 3-Key Cloud Pool (Nemotron 70B, Llama 3.3 70B, DeepSeek)
-    const OR_KEYS = [
-      atob('c2stb3ItdjEtNzlhMzk1Y2YwOGQyNmY2ZDQwMDA2Njg5ZGI5ZTNhYzkwZmI1ZDc5OWViNzA0MTJkYTQ4ZTIzNGU0ZjJmZDE5MQ=='),
-      atob('c2stb3ItdjEtODJmMjVhYzFlYjU3YmI0MmVhZjAxM2ZlYzM4OTkwZTM1ZDY2ZDg3NjM3ZTkxNmFiZjk2NTM3NWM1NGUzZTM2Nw=='),
-      atob('c2stb3ItdjEtN2EzYzM5ODZjY2JjMGI2NDEyYjE2Yzc4Yzc2MmNkNzU2OTYwNDc0ODNhMjdiMTg4MTllZmI1OTk0NGY4ZWQ0Mw==')
-    ];
-
-    const orModelCandidates = (this.currentModel && this.currentModel !== 'auto')
-      ? [this.currentModel, 'nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'minimax/minimax-m3', 'nvidia/nemotron-3-super-120b-a12b:free', 'qwen/qwen-2.5-72b-instruct', 'qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct']
-      : ['nvidia/nemotron-3-ultra-550b-a55b', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'minimax/minimax-m3', 'nvidia/nemotron-3-super-120b-a12b:free', 'qwen/qwen-2.5-72b-instruct', 'qwen/qwen-2.5-coder-32b-instruct', 'deepseek/deepseek-chat', 'meta-llama/llama-3.3-70b-instruct'];
-
-    for (const orM of orModelCandidates) {
-      for (const orKey of OR_KEYS) {
-        try {
-          const orController = new AbortController();
-          const orTimeout = setTimeout(() => orController.abort(), 50000);
-          const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + orKey,
-              'HTTP-Referer': (typeof window !== 'undefined' ? window.location.href : 'https://raflyf.github.io/web-portofolio/'),
-              'X-Title': 'Rafly Portfolio Lab'
-            },
-            body: JSON.stringify({
-              model: orM,
-              messages: fullMessagesPayload,
-              max_tokens: calculatedMaxTokens,
-              temperature: 0.25
-            }),
-            signal: orController.signal
-          });
-          clearTimeout(orTimeout);
-
-          if (orRes.ok) {
-            const rawText = await orRes.text();
-            const content = extractContentFromResponseText(rawText);
-            if (content && content.length > 5) {
-              const resLines = dispatchSuccess(content, orM, 'OpenRouter 3-Key Cloud Pool');
-              if (resLines) return resLines;
-            }
-          }
-        } catch (_) {}
-      }
+    // Direct client-side execution is strictly reserved for users providing their own custom key via `setkey`
+    // All public traffic without custom keys is securely handled by the Vercel serverless gateway (/api/chat) via process.env
+    if (!this.customApiKey) {
+      return null;
     }
 
     // 4. Custom User Key (if provided via `setkey`)
