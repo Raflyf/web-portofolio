@@ -982,7 +982,14 @@ body {
 .ai-model-auto-list {
   max-height: 168px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 0.4rem;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(6, 182, 212, 0.5) rgba(255, 255, 255, 0.03);
+  pointer-events: auto;
+  touch-action: pan-y;
 }
 
 .ai-model-auto-list::-webkit-scrollbar {
