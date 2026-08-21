@@ -82,19 +82,17 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
 `;
   } else {
     effortDirective = isEnglish ? `
-[MODE BALANCED & FAST RESPONSIVENESS (MEDIUM EFFORT)]:
+[MODE BALANCED & COMPREHENSIVE (MEDIUM EFFORT)]:
 - The user is in Medium / Balanced Mode (Default Auto).
-- Deliver a high-yield, structured, and snappy response (Target length: 250-450 words).
-- Directly highlight the 3-4 most critical core points using clean bullet points or a compact table.
-- AVOID writing 5+ giant multi-page essay chapters or unrequested code dumps unless specifically requested (High/Thinking mode).
-- Keep inference fast, responsive, and 100% complete.
+- Deliver a clear, well-structured, informative, and satisfying response.
+- Use clean Markdown formatting (tables, bullet points, headers) and ensure all comparisons, explanations, or code blocks are 100% complete.
+- Ensure the entire answer finishes completely and naturally without truncation.
 ` : `
-[MODE SEDANG / STANDAR (BALANCED & FAST RESPONSIVE - MEDIUM)]:
+[MODE SEDANG / STANDAR (BALANCED & COMPREHENSIVE - MEDIUM)]:
 - Pengguna memilih Mode Sedang / Standar (Auto Balanced Depth).
-- Sajikan jawaban yang padat, berbobot, langsung ke inti poin, dan cepat dibaca (Target panjang: 250–450 kata).
-- Sorot 3–4 poin kunci paling esensial menggunakan format poin/tabel ringkas yang tajam dan to-the-point.
-- HINDARI menulis bab esai bertingkat 5 bagian yang terlampau panjang atau code-dump multi-file berlebihan kecuali pengguna secara eksplisit meminta mode Riset Mendalam (HIGH) atau Thinking CoT (THINKING).
-- Pastikan respon terbit dengan cepat (<3–5 detik), selesai tuntas 100%, dan nyaman dipahami.
+- Sajikan jawaban yang jelas, terstruktur, berbobot, memuaskan, dan mudah dipahami.
+- Gunakan format Markdown yang rapi (tabel komparasi, poin-poin penjelasan, sub-judul) dan pastikan seluruh perbandingan, uraian teknis, atau tabel diselesaikan secara penuh.
+- Pastikan seluruh respon berakhir tuntas 100% dari awal hingga kesimpulan tanpa pernah terpotong di tengah jalan.
 `;
   }
 
@@ -1029,12 +1027,11 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
-    // Token limits: generous enough for full dual-project deep analysis tables
-    // LOW=900 (greeting/casual), NORMAL=2800 (~10k chars), THINKING=4000 (~14k chars)
-    // Nano-30B throughput is ~2700 tok/s → all tiers complete well within 48s budget
+    // Maximum token limits: ensures rich, exhaustive, satisfying answers with ZERO truncation
+    // LOW=1500 (~5.5k chars), NORMAL=6144 (~22k chars), THINKING/HIGH=8192 (~30k chars)
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 900 
-      : (effectiveEffort === 'thinking' ? 4000 : 2800);
+      ? 1500 
+      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 8192 : 6144);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
