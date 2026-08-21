@@ -678,29 +678,6 @@ ${certsOverview}
 
         return finalResponse.split('\n');
       }
-
-      // Check for high-priority local semantic knowledge match first
-      const semanticMatch = this.checkSemanticMatch(cleanQuery);
-      if (semanticMatch) {
-        if (telemetry) {
-          telemetry.logEvent('ai_query_resolved', 'auto:local_semantic', `[Auto ➔ Local Semantic Engine] ${cleanQuery.substring(0, 60)}`);
-        }
-        return semanticMatch;
-      }
-
-      // Dynamic Backend Error Display ➔ Direct Client Failover
-      if (data && !data.success) {
-        const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
-        if (this.isAborted) return { isAborted: true };
-        if (directRes) {
-          return directRes;
-        }
-
-        const semanticMatch = this.checkSemanticMatch(cleanQuery);
-        if (semanticMatch) {
-          return semanticMatch;
-        }
-      }
     } catch (netErr) {
       if (this.isAborted || (netErr && netErr.name === 'AbortError' && this.isAborted)) {
         return { isAborted: true };
@@ -719,11 +696,6 @@ ${certsOverview}
       if (directRes) {
         return directRes;
       }
-
-      const semanticMatch = this.checkSemanticMatch(cleanQuery);
-      if (semanticMatch) {
-        return semanticMatch;
-      }
     }
 
     // 2. Direct Client Failover fallback
@@ -732,15 +704,23 @@ ${certsOverview}
       return directRes;
     }
 
-    // 3. High-Precision In-Browser Semantic Engine Fallback
+    // 3. High-Precision In-Browser Semantic Engine Fallback (Emergency Offline Mode)
     const semanticMatch = this.checkSemanticMatch(cleanQuery);
     if (semanticMatch) {
-      return semanticMatch;
+      if (telemetry) {
+        telemetry.logEvent('ai_query_resolved', 'auto:local_semantic', `[Auto ➔ Local Semantic Engine] ${cleanQuery.substring(0, 60)}`);
+      }
+      return [
+        "[OFFLINE RESILIENCE: Local Pattern Engine]",
+        "Koneksi gateway cloud sedang tidak terjangkau. Menampilkan ringkasan basis data lokal:",
+        "",
+        ...semanticMatch
+      ];
     }
 
     // 4. Generic friendly response if completely offline
     return [
-      "Maaf, saat ini koneksi ke model AI sedang mengalami kendala jaringan.",
+      "Maaf, saat ini koneksi ke seluruh gateway model AI sedang mengalami kendala jaringan.",
       "Anda dapat mengulangi pertanyaan Anda kembali, atau menggunakan perintah CLI seperti 'skills', 'projects', 'certifs', 'benchmarks', 'contact'."
     ];
   }
