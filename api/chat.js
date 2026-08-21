@@ -754,8 +754,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 0. Casual greetings, short conversational messages, acknowledgments (exact word matching only)
-  const isCasualOrClosing = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(q);
+  // 0. Casual greetings, identity questions, acknowledgments, simple chit-chat
+  const isCasualOrClosing = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(q);
   
   if (isCasualOrClosing) {
     return {
@@ -816,13 +816,14 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 5. Standard Informative, Conceptual, Ordinary Q&A (Nemotron Nano 30B)
+  // 5. Standard Informative, Conceptual, Ordinary Q&A
+  const isShortQuery = len < 40 && !hasAnalysisOrComparisonKeywords;
   return {
-    category: 'basic_standard',
+    category: isShortQuery ? 'trivial_casual' : 'basic_standard',
     isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
-    effort: 'medium',
+    effort: isShortQuery ? 'low' : 'medium',
     omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/nemotron-3-ultra', 'ollama/minimax-m3'],
-    label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Ultra 550B)' : 'Standard Q&A (Nemotron Nano 30B)'
+    label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Ultra 550B)' : (isShortQuery ? 'Quick Interaction (Nemotron Nano 30B)' : 'Standard Q&A (Nemotron Nano 30B)')
   };
 }
 
