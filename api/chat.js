@@ -906,9 +906,10 @@ export default async function handler(req, res) {
 
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
 
+      if (res.headersSent) return true;
       const isSpecific = (model && model !== 'auto');
       const isFailover = isSpecific && !modelName.toLowerCase().includes(targetModel.toLowerCase().split('/').pop().replace(/-free$/i, ''));
-      return res.status(200).json({
+      res.status(200).json({
         success: true,
         response: cleaned,
         model: modelName,
@@ -919,6 +920,7 @@ export default async function handler(req, res) {
         category: queryIntent.category,
         webMemories: webMemories
       });
+      return true;
     };
 
     const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort)}${webContext}${longTermMemory}
@@ -1406,6 +1408,8 @@ Langkah yang WAJIB Anda lakukan:
       if (result) return result;
     }
 
+    if (res.headersSent) return;
+
     // If all providers in the pipeline failed or timed out:
     const noKeysConfigured = !OPENROUTER_KEY && !NVIDIA_KEY && !OPENCODE_KEY && !MINIMAX_KEY && !OLLAMA_KEY && !OMNIROUTE_KEY;
     const errorMsg = noKeysConfigured 
@@ -1421,6 +1425,7 @@ Langkah yang WAJIB Anda lakukan:
     });
 
   } catch (globalErr) {
+    if (res.headersSent) return;
     return res.status(500).json({
       success: false,
       error: `Serverless Gateway Exception: ${globalErr.message}`
