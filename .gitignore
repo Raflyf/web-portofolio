@@ -6,9 +6,11 @@ Thumbs.db
 node_modules/
 npm-debug.log*
 
-# Environment & Temp
+# Environment & Secrets (NEVER COMMIT PRODUCTION SECRETS)
 .env
-.env.local
+.env.*
+!.env.example
+*.local
 *.log
 .system_generated/
 .agents/
