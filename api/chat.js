@@ -1043,11 +1043,11 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assembleDynamicMessages(systemPromptWithSearch, history, finalUserPrompt);
 
-    // Maximum token limits: Elevated to maximum model capacity for exhaustive, zero-truncation deep analysis
-    // LOW=2048 (~8k chars), NORMAL=4096 (~16k chars), THINKING/HIGH=5120 (~20k chars)
+    // Maximum token limits: Elevated to absolute frontier model capacity for unlimited, ultra-long exhaustive analysis
+    // LOW=4096 (~16k chars), NORMAL=8192 (~32k chars), THINKING/HIGH=10240 (~40k chars)
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 2048 
-      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 5120 : 4096);
+      ? 4096 
+      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 10240 : 8192);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
