@@ -1375,21 +1375,22 @@ Langkah yang WAJIB Anda lakukan:
     // BUILD MULTI-TIER EXECUTION PIPELINE
     // ========================================================================
     function buildExecutionPipeline() {
-      // 0. MULTIMODAL & VISION PIPELINE (Prioritas Mutlak saat Mengunggah Gambar / Foto)
+      // 0. MULTIMODAL & VISION PIPELINE (Prioritas Mutlak MiniMax-M3 & Model Vision Resmi)
       if (hasImages || (model && model.toLowerCase().includes('vision'))) {
         return [
-          // 1. OmniRoute Vision SOTA Model (Fast local check)
+          // 1. Ollama Cloud MiniMax-M3 Multimodal (Prioritas #1 Vision & Multimodal)
+          { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
+          // 2. MiniMax Direct Production API
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
+          // 3. OmniRoute Dedicated Vision SOTA Model
           { provider: 'omniroute', model: 'Vision-model', timeout: 2500 },
-          // 2. OpenRouter Multimodal Vision SOTA Suite (Calibrated fast timeout sub-3.5s per model)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 3500 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-nano-12b-v2-vl:free', timeout: 3500 },
-          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 3500 },
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 3500 },
-          // 3. Ollama Cloud SOTA Hub Cascade (Intelligent Assistant Fallback if Vision Pool is Rate-Limited)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
-          { provider: 'ollama', model: 'nemotron-3.5-lightning', timeout: 8000 },
-          { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 9000 }
+          // 4. OpenRouter Multimodal Vision SOTA Suite
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 4000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-nano-12b-v2-vl:free', timeout: 4000 },
+          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 4000 },
+          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 4000 },
+          { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 4000 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 4000 }
         ];
       }
 
