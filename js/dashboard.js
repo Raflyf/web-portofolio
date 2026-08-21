@@ -506,8 +506,12 @@ class DashboardApp {
     const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
     const tag = isAuto ? 'Auto: ' : '';
 
+    if (combined.includes('nemotron-3.5-lightning') || combined.includes('lightning')) return `${tag}Nvidia Nemotron 3.5 Lightning (1M Context)`;
     if (combined.includes('nemotron-3-super') || combined.includes('nemotron super') || combined.includes('120b')) return `${tag}Nvidia Nemotron 3 Super (120B)`;
+    if (combined.includes('nemotron-3-nano-omni') || combined.includes('nano-omni') || combined.includes('nano-12b-v2-vl')) return `${tag}Nemotron Omni / VL Vision Multimodal`;
+    if (combined.includes('nemotron-3-nano') || combined.includes('nemotron nano') || combined.includes('nano:30b') || combined.includes('30b')) return `${tag}Nvidia Nemotron 3 Nano (30B)`;
     if (combined.includes('nemotron-3-ultra') || combined.includes('nemotron ultra') || combined.includes('550b') || combined.includes('ultra-free') || combined.includes('nemotron')) return `${tag}Nvidia Nemotron 3 Ultra (550B MoE)`;
+    if (combined.includes('gemma-4') || combined.includes('gemma')) return `${tag}Google Gemma 4 Vision Multimodal`;
     if (combined.includes('laguna') || combined.includes('laguna-s')) return `${tag}Nemotron Laguna S (Jan 2026)`;
     if (combined.includes('x-preview')) return `${tag}OpenCode X-Preview Frontier (Feb 2026)`;
     if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo') || combined.includes('minimax')) return `${tag}MiniMax-M3 Vision Multimodal`;
@@ -515,6 +519,7 @@ class DashboardApp {
     if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash`;
     if (combined.includes('codex') || combined.includes('gpt-5') || combined.includes('koding') || combined.includes('coding')) return `${tag}Codex (GPT-5.6 Terra)`;
     if (combined.includes('antigravity') || combined.includes('opus') || combined.includes('claude')) return `${tag}Antigravity (Claude Opus 4.6)`;
+    if (combined.includes('openrouter/free') || combined.includes('universal free')) return `${tag}OpenRouter Universal Free Auto Router`;
     if (combined.includes('local_semantic') || combined.includes('semantic engine')) return 'Auto: Local Semantic Fallback';
 
     if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
@@ -703,7 +708,69 @@ class DashboardApp {
         isRouterCard: true
       },
 
-      // 1. OmniRoute Dedicated Local Gateway (Priority #1 Combos)
+      // 1. Ollama Cloud SOTA Hub (High Throughput SOTA Engines)
+      {
+        id: 'nemotron-nano-ollama',
+        name: 'Nemotron 3 Nano (30B)',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3-nano:30b (Sub-1.5s Fast Q&A)',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(nano|30b)\b/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-super-ollama',
+        name: 'Nemotron 3 Super (120B)',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3-super (CoT Reasoning)',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(super|120b)\b/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-lightning-ollama',
+        name: 'Nemotron 3.5 Lightning',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3.5-lightning (1M Context SOTA)',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(lightning|3\.5-lightning)\b/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-ultra-ollama',
+        name: 'Nemotron 3 Ultra (550B)',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3-ultra (550B MoE)',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(ultra|550b)\b/i.test(s);
+        }
+      },
+      {
+        id: 'minimax-m3-ollama',
+        name: 'MiniMax-M3 Multimodal',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · minimax-m3 (Vision Multimodal)',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(minimax|m3|mimo)\b/i.test(s);
+        }
+      },
+
+      // 2. OmniRoute Dedicated Local Gateway (Priority #1 Combos)
       {
         id: 'omniroute-codex',
         name: 'Codex',
@@ -730,21 +797,21 @@ class DashboardApp {
       },
       {
         id: 'omniroute-nemotron',
-        name: 'nemotron-laguna / ultra',
+        name: 'nemotron-laguna',
         category: 'OmniRoute Dedicated',
-        tag: 'Model ID: nemotron-laguna (OmniRoute)',
+        tag: 'Model ID: nemotron-laguna (Ultra Fast)',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(laguna|ultra-free|super-free|nemotron-laguna)\b/i.test(s);
+          return isOmniRoute(s) && /\b(laguna|nemotron-laguna)\b/i.test(s);
         }
       },
       {
         id: 'omniroute-vision',
         name: 'Vision-model',
         category: 'OmniRoute Dedicated',
-        tag: 'Model ID: Vision-model (Gemini 3.1 Flash / OCR)',
+        tag: 'Model ID: Vision-model (Multimodal / OCR)',
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
@@ -753,7 +820,7 @@ class DashboardApp {
         }
       },
 
-      // 2. OpenRouter Modern SOTA Pool (Active Primary Suite)
+      // 3. OpenRouter Modern SOTA Pool (Multi-Key Cloud Pool)
       {
         id: 'nemotron-3-ultra-openrouter',
         name: 'Nvidia Nemotron 3 Ultra (550B)',
@@ -775,19 +842,19 @@ class DashboardApp {
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s) && !/omni/i.test(s);
+          return isOpenRouter(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s) && !/omni|vl/i.test(s);
         }
       },
       {
-        id: 'liquid-lfm-openrouter',
-        name: 'LiquidAI LFM 2.5 (2.6B)',
+        id: 'nemotron-vision-openrouter',
+        name: 'Nemotron Omni / VL Vision',
         category: 'OpenRouter Cloud Pool',
-        tag: '2.6B Dynamic · Sub-2s Instant Engine',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-amber)',
+        tag: 'Multimodal Vision · Image Perception & OCR',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(liquid|lfm|2\.6b)\b/i.test(s);
+          return isOpenRouter(s) && /\b(omni|vl|vision-instruct|pixtral|gemma-4)\b/i.test(s);
         }
       },
       {
@@ -803,6 +870,18 @@ class DashboardApp {
         }
       },
       {
+        id: 'liquid-lfm-openrouter',
+        name: 'LiquidAI LFM 2.5 (2.6B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '2.6B Dynamic · Sub-2s Instant Engine',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-amber)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(liquid|lfm|2\.6b)\b/i.test(s);
+        }
+      },
+      {
         id: 'openrouter-free-auto',
         name: 'OpenRouter Universal Free',
         category: 'OpenRouter Cloud Pool',
@@ -812,56 +891,6 @@ class DashboardApp {
         match: (t, l) => {
           const s = `${t} ${l}`;
           return isOpenRouter(s) && (/\b(openrouter\/free|universal free)\b/i.test(s) || (t === 'openrouter/free' || l.includes('openrouter/free')));
-        }
-      },
-
-      // 3. Ollama Cloud SOTA Engine Provider
-      {
-        id: 'nemotron-ultra-ollama',
-        name: 'Nemotron 3 Ultra (550B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-ultra',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(ultra|550b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'nemotron-nano-ollama',
-        name: 'Nemotron 3 Nano (30B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-nano:30b (Sub-1.5s)',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(nano|30b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'nemotron-super-ollama',
-        name: 'Nemotron 3 Super (120B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-super',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(super|120b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'minimax-m3-ollama',
-        name: 'MiniMax-M3 Vision Multimodal',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · minimax-m3',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(minimax|m3|mimo)\b/i.test(s);
         }
       },
 
@@ -898,7 +927,7 @@ class DashboardApp {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
         category: 'In-Browser Engine',
-        tag: 'In-Browser Sub-15ms Pattern Matcher',
+        tag: 'In-Browser Sub-15ms Pattern Matcher + Supabase RAG',
         icon: SVG_ICONS.offline,
         color: 'var(--text-muted)',
         match: (t, l) => {
