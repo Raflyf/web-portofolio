@@ -1218,142 +1218,106 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
     // BUILD MULTI-TIER EXECUTION PIPELINE
     // ========================================================================
+    // DYNAMIC EXECUTION PIPELINE (USER SPECIFIED STRICT PRIORITY HIERARCHY)
+    // 1. OmniRoute Combos Gateway (Localhost Port 20128)
+    //    -> If Localhost is Offline, instantly failover to:
+    // 2. OpenCode nemotron-3-ultra-free
+    // 3. OpenRouter nemotron-3-ultra-550b-a55b:free
+    // 4. Ollama Cloud nemotron-3-ultra
+    // 5. Ollama Cloud minimax-m3
+    // 6. OpenCode x-preview-f-free
+    // 7. OpenCode mimo-v2.5-free
+    // 8. OpenCode laguna-s-2.1-free
+    // 9. Remaining models at the bottom (nemotron-3-super, big-pickle, muse-spark, hy3, lightning, minimax)
+    // ========================================================================
     function buildExecutionPipeline() {
+      let omniCandidates = [];
       const isExplicit = (model && model !== 'auto');
+
       if (isExplicit) {
         const t = targetModel.toLowerCase();
         if (t.includes('codex') || t.includes('gpt-5')) {
-          return [
-            { provider: 'omniroute', model: 'Codex' },
-            { provider: 'opencode', model: 'qwen-2.5-coder-32b-free' },
-            { provider: 'openrouter', model: 'qwen/qwen-2.5-coder-32b-instruct' },
-            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' }
-          ];
-        }
-        if (t.includes('antigravity') || t.includes('opus')) {
-          return [
-            { provider: 'omniroute', model: 'Antigravity' },
-            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
-            { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct' }
-          ];
-        }
-        if (t.includes('opencode')) {
+          omniCandidates = [{ provider: 'omniroute', model: 'Codex', timeout: 5000 }];
+        } else if (t.includes('antigravity') || t.includes('opus')) {
+          omniCandidates = [{ provider: 'omniroute', model: 'Antigravity', timeout: 5000 }];
+        } else if (t.includes('vision')) {
+          omniCandidates = [{ provider: 'omniroute', model: 'Vision-model', timeout: 5000 }];
+        } else if (t.includes('deepseek-v4') || t.includes('deepseek')) {
+          omniCandidates = [{ provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 5000 }];
+        } else if (t.includes('laguna') || t.includes('nemotron')) {
+          omniCandidates = [{ provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 }];
+        } else if (t.startsWith('opencode/')) {
           const ocM = targetModel.replace(/^opencode\//, '');
           return [
             { provider: 'opencode', model: ocM },
-            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' }
-          ];
-        }
-        if (t.includes('nemotron-3-ultra') || (t.includes('ultra') && t.includes('nemotron'))) {
-          return [
-            { provider: 'nim', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
             { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b' },
-            { provider: 'ollama', model: 'nemotron-3-ultra' }
-          ];
-        }
-        if (t.includes('nemotron-3-super') || (t.includes('super') && t.includes('nemotron'))) {
-          return [
-            { provider: 'nim', model: 'nvidia/nemotron-3-super-120b-a12b' },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b' },
-            { provider: 'ollama', model: 'nemotron-3-super' }
-          ];
-        }
-        if (t.includes('vision') || t.includes('minimax')) {
-          return [
-            { provider: 'omniroute', model: 'Vision-model' },
-            { provider: 'minimax', model: 'MiniMax-M3' },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
+            { provider: 'ollama', model: 'nemotron-3-ultra' },
             { provider: 'ollama', model: 'minimax-m3' }
           ];
         }
+      } else {
+        // Auto / Dynamic Routing berdasarkan intent:
+        if (queryIntent.category === 'heavy_coding') {
+          omniCandidates = [
+            { provider: 'omniroute', model: 'Codex', timeout: 5000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
+            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 5000 }
+          ];
+        } else if (queryIntent.category === 'vision') {
+          omniCandidates = [
+            { provider: 'omniroute', model: 'Vision-model', timeout: 5000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 5000 }
+          ];
+        } else if (queryIntent.category === 'deep_reasoning') {
+          omniCandidates = [
+            { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 5000 }
+          ];
+        } else {
+          omniCandidates = [
+            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 5000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
+            { provider: 'omniroute', model: 'Vision-model', timeout: 5000 },
+            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 5000 }
+          ];
+        }
       }
 
-      // Auto Mode: Dynamic Category-Based Ranking
-      if (queryIntent.category === 'vision') {
-        return [
-          { provider: 'omniroute', model: 'Vision-model' },
-          { provider: 'minimax', model: 'MiniMax-M3' },
-          { provider: 'ollama', model: 'minimax-m3' },
-          { provider: 'omniroute', model: 'Antigravity' },
-          { provider: 'omniroute', model: 'Codex' }
-        ];
-      }
-
-      if (queryIntent.category === 'heavy_coding') {
-        return [
-          // 1. HumanEval & SWE-Bench #1 SOTA: Codex (OmniRoute)
-          { provider: 'omniroute', model: 'Codex' },
-          // 2. Multi-Step Architecture Review: Antigravity (OmniRoute)
-          { provider: 'omniroute', model: 'Antigravity' },
-          // 3. MiniMax Frontier M3 (Ollama / OpenRouter)
-          { provider: 'ollama', model: 'minimax-m3' },
-          { provider: 'minimax', model: 'MiniMax-M3' },
-          // 4. OpenCode 2026 Coding & Logic Engines
-          { provider: 'opencode', model: 'big-pickle' },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-          { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free' },
-          // 5. Nemotron Flagship Series (550B Ultra & Laguna)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
-          { provider: 'omniroute', model: 'nemotron-laguna' },
-          { provider: 'ollama', model: 'nemotron-3-ultra' },
-          // 6. Fast Inference SOTA Free Models
-          { provider: 'opencode', model: 'mimo-v2.5-free' },
-          { provider: 'opencode', model: 'laguna-s-2.1-free' },
-          { provider: 'opencode', model: 'x-preview-f-free' }
-        ];
-      }
-
-      if (queryIntent.category === 'deep_reasoning') {
-        return [
-          // 1. LMSYS #1 Chatbot Arena / Claude Opus 4.6 Thinking: Antigravity
-          { provider: 'omniroute', model: 'Antigravity' },
-          // 2. Nemotron Flagship 550B Ultra & Super 120B (Dec 2025 - 2026)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-          { provider: 'ollama', model: 'nemotron-3-ultra' },
-          { provider: 'omniroute', model: 'nemotron-laguna' },
-          // 3. MiniMax Frontier M3
-          { provider: 'ollama', model: 'minimax-m3' },
-          { provider: 'minimax', model: 'MiniMax-M3' },
-          // 4. Codex (GPT-5.6 Terra)
-          { provider: 'omniroute', model: 'Codex' },
-          // 5. OpenCode Modern 2026 Reasoning Engines
-          { provider: 'opencode', model: 'x-preview-f-free' },
-          { provider: 'opencode', model: 'big-pickle' },
-          { provider: 'opencode', model: 'mimo-v2.5-free' },
-          { provider: 'opencode', model: 'laguna-s-2.1-free' }
-        ];
-      }
-
-      // Default: Basic / Casual / Standard Q&A (Modern Models Only)
       return [
-        // 1. Nemotron Flagship Series (Dec 2025 - 2026)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
+        // 1. Prioritas #1: Semua Model Combos OmniRoute (saat Localhost nyala)
+        ...omniCandidates,
+
+        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode
         { provider: 'opencode', model: 'nemotron-3-ultra-free' },
-        { provider: 'omniroute', model: 'nemotron-laguna' },
+
+        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free' },
+
+        // 4. Prioritas #4: Nemotron Ultra 3 dari Ollama
         { provider: 'ollama', model: 'nemotron-3-ultra' },
 
-        // 2. MiniMax Frontier M3 (Feb 2026)
+        // 5. Prioritas #5: MiniMax M3 dari Ollama
         { provider: 'ollama', model: 'minimax-m3' },
-        { provider: 'minimax', model: 'MiniMax-M3' },
 
-        // 3. Codex & Antigravity (OmniRoute - Feb 2026)
-        { provider: 'omniroute', model: 'Codex' },
-        { provider: 'omniroute', model: 'Antigravity' },
-
-        // 4. Vision-model (OmniRoute - Feb 2026)
-        { provider: 'omniroute', model: 'Vision-model' },
-
-        // 5. OpenCode Modern Fast Models (Jan - Feb 2026)
-        { provider: 'opencode', model: 'laguna-s-2.1-free' },
-        { provider: 'opencode', model: 'mimo-v2.5-free' },
+        // 6. Prioritas #6: X Preview F Free dari OpenCode
         { provider: 'opencode', model: 'x-preview-f-free' },
+
+        // 7. Prioritas #7: Mimo V2.5 dari OpenCode
+        { provider: 'opencode', model: 'mimo-v2.5-free' },
+
+        // 8. Prioritas #8: Laguna S 2.1 dari OpenCode
+        { provider: 'opencode', model: 'laguna-s-2.1-free' },
+
+        // 9. Prioritas #9 (Sisanya paling bawah):
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
+        { provider: 'opencode', model: 'big-pickle' },
         { provider: 'opencode', model: 'muse-spark-1.2-contributor-free' },
-        { provider: 'opencode', model: 'hy3-free' }
+        { provider: 'opencode', model: 'hy3-free' },
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free' },
+        { provider: 'minimax', model: 'MiniMax-M3' }
       ];
     }
 
