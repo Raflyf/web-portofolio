@@ -1273,7 +1273,7 @@ Langkah yang WAJIB Anda lakukan:
       if (OLLAMA_KEYS.length === 0) return null;
       for (const olKey of OLLAMA_KEYS) {
         try {
-          const res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
+          let res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1289,6 +1289,26 @@ Langkah yang WAJIB Anda lakukan:
               }
             })
           }, tOut);
+
+          // If Ollama rejects images array (400 does not support image input), retry cleanly with text messages
+          if (!res.ok && res.status === 400 && (res.text || '').includes('image input')) {
+            res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${olKey}`
+              },
+              body: JSON.stringify({
+                model: mName,
+                messages: baseTextMessages,
+                stream: false,
+                options: {
+                  num_predict: maxTokensConfig,
+                  temperature: tempConfig
+                }
+              })
+            }, tOut);
+          }
 
           if (res.ok) {
             const content = res.data?.message?.content;
@@ -1358,15 +1378,18 @@ Langkah yang WAJIB Anda lakukan:
       // 0. MULTIMODAL & VISION PIPELINE (Prioritas Mutlak saat Mengunggah Gambar / Foto)
       if (hasImages || (model && model.toLowerCase().includes('vision'))) {
         return [
-          // 1. OmniRoute Vision SOTA Model
-          { provider: 'omniroute', model: 'Vision-model', timeout: 3000 },
-          // 2. OpenRouter Multimodal Vision SOTA Suite
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 20000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-nano-12b-v2-vl:free', timeout: 20000 },
-          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 18000 },
-          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 18000 },
-          { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 18000 },
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 16000 }
+          // 1. OmniRoute Vision SOTA Model (Fast local check)
+          { provider: 'omniroute', model: 'Vision-model', timeout: 2500 },
+          // 2. OpenRouter Multimodal Vision SOTA Suite (Calibrated fast timeout sub-3.5s per model)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 3500 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-nano-12b-v2-vl:free', timeout: 3500 },
+          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 3500 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 3500 },
+          // 3. Ollama Cloud SOTA Hub Cascade (Intelligent Assistant Fallback if Vision Pool is Rate-Limited)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+          { provider: 'ollama', model: 'nemotron-3.5-lightning', timeout: 8000 },
+          { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 9000 }
         ];
       }
 

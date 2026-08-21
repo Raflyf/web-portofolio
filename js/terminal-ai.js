@@ -16,6 +16,20 @@ import { telemetry } from './telemetry.js?v=10.100.0';
 // ============================================================================
 const SEMANTIC_PATTERNS = [
   {
+    keywords: ['github', 'repo', 'repositori', 'source code', 'link github', 'git', 'web-portofolio', 'raflyf'],
+    respond: () => [
+      "Repositori resmi GitHub untuk portofolio dan riset Rafly Firmansyah:",
+      "• Web Portofolio (Utama) : https://github.com/Raflyf/web-portofolio",
+      "• Profil Akun GitHub     : https://github.com/Raflyf (@Raflyf)",
+      "",
+      "Repositori Riset Open-Source:",
+      "1. OpenPlagiarismChecker : https://github.com/Raflyf/OpenPlagiarismChecker",
+      "2. Spam-Email-Classifier : https://github.com/Raflyf/Spam-Email-Classifier",
+      "3. Laser-Pointer-PPT     : https://github.com/Raflyf/Laser-Pointer-PPT-Presenter-Gesture",
+      "4. FotoKitaBlur          : https://github.com/Raflyf/FotoKitaBlur"
+    ]
+  },
+  {
     keywords: ['plagiarism', 'plagiat', 'turnitin', 'openplagiarism', 'skripsi', 'n-gram', 'shingling', 'sentence transformer', 'semantic paraphrasing'],
     respond: () => [
       "[RISET AKADEMIK UNGGULAN: OpenPlagiarismChecker]",
@@ -26,8 +40,7 @@ const SEMANTIC_PATTERNS = [
       "  - Repository Indexed   : 15+ Basis data jurnal (GARUDA, Neliti, BASE, dll)",
       "  - Stack Teknologi      : Python, Flask, PyTorch, Scikit-Learn",
       "  - Status Riset         : Siap deployment riset skripsi 2026",
-      "",
-      "Ketik 'projects' untuk link repositori GitHub."
+      "  - Repositori GitHub    : https://github.com/Raflyf/OpenPlagiarismChecker"
     ]
   },
   {
@@ -40,7 +53,8 @@ const SEMANTIC_PATTERNS = [
       "  - Domain Adaptation    : Penanganan fenomena Concept Drift pada dataset email modern",
       "  - Fitur Unggulan       : Dynamic Class Balancing (slider rasio 10:90 - 90:10)",
       "  - Metrik Evaluasi      : Confusion Matrix, Precision, Recall, F1-Score",
-      "  - Stack Teknologi      : Python, Flask, Pandas, Scikit-Learn, Chart.js"
+      "  - Stack Teknologi      : Python, Flask, Pandas, Scikit-Learn, Chart.js",
+      "  - Repositori GitHub    : https://github.com/Raflyf/Spam-Email-Classifier"
     ]
   },
   {
@@ -51,7 +65,8 @@ const SEMANTIC_PATTERNS = [
       "Pengendali slide presentasi nirsentuh berbasis sensor gerak smartphone:",
       "  - Sensor               : DeviceOrientation & Gyroscope Smartphone",
       "  - Komunikasi Real-time : WebSocket via Flask-SocketIO (Low Latency)",
-      "  - Kontrol Kursor       : PyAutoGUI virtual cursor mapper di PC presenter"
+      "  - Kontrol Kursor       : PyAutoGUI virtual cursor mapper di PC presenter",
+      "  - Repositori GitHub    : https://github.com/Raflyf/Laser-Pointer-PPT-Presenter-Gesture"
     ]
   },
   {
@@ -62,7 +77,20 @@ const SEMANTIC_PATTERNS = [
       "Aplikasi otomatisasi privasi kamera real-time:",
       "  - Gesture Recognition  : MediaPipe Tasks Vision (deteksi gestur Peace/V-Sign)",
       "  - Image Processing     : OpenCV Gaussian Blur filter otomatis",
-      "  - Kecepatan            : Real-time 30+ FPS Edge Inference di browser/PC"
+      "  - Kecepatan            : Real-time 30+ FPS Edge Inference di browser/PC",
+      "  - Repositori GitHub    : https://github.com/Raflyf/FotoKitaBlur"
+    ]
+  },
+  {
+    keywords: ['proyek', 'project', 'karya', 'aplikasi', 'portofolio', 'daftar project'],
+    respond: () => [
+      "Daftar 4 Proyek Riset Unggulan Rafly Firmansyah:",
+      "1. OpenPlagiarismChecker (NLP) - https://github.com/Raflyf/OpenPlagiarismChecker",
+      "2. Spam-Email-Classifier (ML) - https://github.com/Raflyf/Spam-Email-Classifier",
+      "3. Laser-Pointer-PPT (IoT) - https://github.com/Raflyf/Laser-Pointer-PPT-Presenter-Gesture",
+      "4. FotoKitaBlur (Computer Vision) - https://github.com/Raflyf/FotoKitaBlur",
+      "",
+      "Ketik 'projects' pada terminal untuk ringkasan teknis lengkap."
     ]
   },
   {
@@ -87,6 +115,41 @@ const SEMANTIC_PATTERNS = [
       "Sertifikasi teknis internasional dari MikroTikls SIA (Riga, Latvia):",
       "  - Credential ID : 2410NA3062",
       "  - Kompetensi    : RouterOS, Static Routing, Firewall, DHCP, Bandwidth Queue, Wireless"
+    ]
+  },
+  {
+    keywords: ['sertifikat', 'sertif', 'kredensial', 'sertifikasi', 'transkrip', 'prestasi', 'piagam'],
+    respond: () => [
+      "Kredensial & Sertifikasi Utama Terverifikasi (Total 10 Sertifikat):",
+      "1. BNSP: Analis Program (No. Reg: TIK 037 00481 2026)",
+      "2. MikroTik MTCNA Latvia (Credential ID: 2410NA3062)",
+      "3. Cisco Python PCAP Certified (OpenEDG)",
+      "4. Kominfo Digital Entrepreneurship Academy (DEA)",
+      "5. Harisenin Full-Stack Web Development SiM-K",
+      "",
+      "Ketik 'certifs' pada terminal untuk melihat daftar lengkap beserta kredensial."
+    ]
+  },
+  {
+    keywords: ['profil', 'biodata', 'tentang', 'siapa', 'about', 'pendidikan', 'kampus', 'kuliah', 'ubsi', 'sukabumi'],
+    respond: () => [
+      "Profil Pengembang:",
+      `• Nama        : ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
+      `• Pendidikan  : ${DEVELOPER_PROFILE.degree}`,
+      `• Kampus      : ${DEVELOPER_PROFILE.institution}`,
+      `• Fokus Bidang: ${DEVELOPER_PROFILE.bio}`,
+      `• Kontak      : WA ${DEVELOPER_PROFILE.whatsapp} | Email ${DEVELOPER_PROFILE.email}`
+    ]
+  },
+  {
+    keywords: ['skill', 'keahlian', 'kemampuan', 'tech stack', 'teknologi', 'stack', 'pemrograman', 'bahasa'],
+    respond: () => [
+      "Matriks Keterampilan Teknis Rafly Firmansyah:",
+      "• AI / ML    : Python, PyTorch, Scikit-Learn, XGBoost, Sentence Transformers, NLP",
+      "• Vision     : MediaPipe Vision, OpenCV, Edge Inference",
+      "• Backend    : Flask, REST API, WebSockets, PHP, MySQL, Supabase",
+      "• Frontend   : Vanilla JavaScript ES6+, Modern HTML5/CSS3, Chart.js",
+      "• Network    : MikroTik RouterOS (MTCNA), Network Security & Firewall"
     ]
   },
   {
@@ -330,16 +393,25 @@ class TerminalAIEngine {
       const data = await res.json();
       if (!Array.isArray(data) || data.length === 0) return [];
 
-      const qWords = (query || '').toLowerCase().split(/[\s,?.!]+/).filter(w => w.length > 2);
-      
+      // Filter out conversational Indonesian/English stopwords to prevent false-positive article matches
+      const STOP_WORDS = new Set([
+        'ini', 'itu', 'nya', 'yg', 'yang', 'dan', 'atau', 'di', 'ke', 'dari', 'bukan', 'apa',
+        'apakah', 'gimana', 'bagaimana', 'kenapa', 'mengapa', 'kalo', 'kalau', 'jika', 'ada',
+        'bisa', 'saya', 'kamu', 'anda', 'the', 'is', 'are', 'was', 'were', 'for', 'with',
+        'not', 'and', 'or', 'what', 'how', 'why', 'who', 'cek', 'sini', 'tips', 'contoh',
+        'bocoran', 'drama', 'sih', 'dong', 'ya', 'kan', 'nih'
+      ]);
+      const qWords = (query || '').toLowerCase().split(/[\s,?.!]+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
+      if (qWords.length === 0) return [];
+
       const matched = data
         .map(d => (d.fact_text || '').trim())
-        .filter(t => t.length > 5 && !t.startsWith('[Q&A Context]'))
+        .filter(t => t.length > 10 && !t.startsWith('[Q&A Context]') && !t.includes(' ➔ '))
         .filter(t => {
           const tLow = t.toLowerCase();
-          return qWords.length === 0 || qWords.some(w => tLow.includes(w));
+          return qWords.some(w => new RegExp(`\\b${w}\\b`, 'i').test(tLow));
         })
-        .slice(0, 5);
+        .slice(0, 3);
 
       return matched;
     } catch (_) {
@@ -649,7 +721,7 @@ ${certsOverview}
 
     }
 
-    // 2. High-Precision Hybrid Semantic & Supabase Dynamic Memory Fallback (Offline/Rate-Limit Resilience)
+    // 2. High-Precision Semantic Match & Contextual Offline Resilience
     const [semanticMatch, dynamicMemories] = await Promise.all([
       Promise.resolve(this.checkSemanticMatch(cleanQuery)),
       this.fetchMatchingSupabaseMemories(cleanQuery)
@@ -658,39 +730,56 @@ ${certsOverview}
     if (semanticMatch || (dynamicMemories && dynamicMemories.length > 0)) {
       this.lastExecutionInfo = {
         isAuto: true,
-        resolvedModel: 'Local Semantic Engine + Supabase RAG',
+        resolvedModel: 'Local Semantic Knowledge Base',
         requestedModel: this.currentModel,
         isFailover: true,
-        provider: 'Hybrid Offline RAG Memory',
+        provider: 'In-Browser Semantic Engine',
         effort: 'OFFLINE_RAG',
         category: 'offline_fallback'
       };
       if (telemetry) {
-        telemetry.logEvent('ai_query_resolved', 'auto:local_semantic_supabase', `[Auto ➔ Local Semantic + Supabase] ${cleanQuery.substring(0, 60)}`);
+        telemetry.logEvent('ai_query_resolved', 'auto:local_semantic_engine', `[Auto ➔ Local Semantic Engine] ${cleanQuery.substring(0, 60)}`);
       }
 
-      const responseLines = [
-        "[OFFLINE RESILIENCE: Local Semantic Engine + Supabase Memory]",
-        "Koneksi gateway model AI sedang padat/terbatas. Menampilkan basis data lokal & memori RAG terverifikasi:",
-        ""
-      ];
+      const responseLines = [];
 
       if (semanticMatch) {
         responseLines.push(...semanticMatch);
       }
 
+      if (attachments && attachments.length > 0 && semanticMatch) {
+        responseLines.push(
+          "",
+          "ℹ️ *[Catatan]*: Lampiran file/gambar Anda telah terunggah. Karena koneksi vision cloud sedang padat, asisten menampilkan informasi terverifikasi langsung dari basis data portofolio."
+        );
+      }
+
       if (dynamicMemories && dynamicMemories.length > 0) {
-        if (semanticMatch) responseLines.push("", "--- FAKTA TERBARU DARI DATABASE SUPABASE RAG ---");
+        if (semanticMatch) {
+          responseLines.push("", "--- FAKTA TERKAIT DARI SUPABASE RAG ---");
+        }
         dynamicMemories.forEach(m => responseLines.push(`• ${m}`));
       }
 
       return responseLines;
     }
 
-    // 3. Generic friendly response if completely offline and no match found
+    // 3. Contextual fallback if asking about github or general assistance
+    const qLower = cleanQuery.toLowerCase();
+    if (qLower.includes('github') || qLower.includes('repo') || qLower.includes('git')) {
+      return [
+        "Repositori resmi GitHub untuk portofolio Rafly Firmansyah adalah:",
+        "👉 https://github.com/Raflyf/web-portofolio",
+        "",
+        "Akun GitHub Pengembang:",
+        "👉 https://github.com/Raflyf (@Raflyf)"
+      ];
+    }
+
+    // 4. Generic friendly response if completely offline and no match found
     return [
-      "Maaf, saat ini koneksi ke seluruh gateway model AI sedang mengalami kendala jaringan atau antrean penuh.",
-      "Anda dapat mengulangi pertanyaan Anda kembali, atau menggunakan perintah CLI seperti 'skills', 'projects', 'certifs', 'benchmarks', 'contact'."
+      "Maaf, saat ini koneksi ke server AI sedang mengalami antrean penuh.",
+      "Anda dapat mengulang pertanyaan Anda, atau menggunakan perintah terminal langsung seperti 'skills', 'projects', 'certifs', 'models', 'contact'."
     ];
   }
 
