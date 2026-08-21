@@ -567,24 +567,57 @@ async function searchWebContext(query, history = []) {
       })
     ]);
 
+    // 3. Conditional Open-Web Encyclopedic Knowledge (Definitions, History, Science, Biographies)
+    const isEncyclopedic = /\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of)\b/i.test(query);
+    if (isEncyclopedic) {
+      const mainKeyword = query.replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|dong)\b/gi, ' ').trim();
+      if (mainKeyword.length >= 3) {
+        searchFetches.push(
+          fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+            signal: controller.signal
+          }),
+          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+            signal: controller.signal
+          })
+        );
+      }
+    }
+
     const results = await Promise.allSettled(searchFetches);
     clearTimeout(timeout);
 
     for (const res of results) {
       if (res.status === 'fulfilled' && res.value && res.value.ok) {
-        const xml = await res.value.text().catch(() => '');
-        const items = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
-        items.slice(0, 4).forEach((item) => {
-          const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
-          const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
-          const title = cleanStr(titleMatch ? titleMatch[1] : '');
-          const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
-          if (title && !isJunkArticle(title)) {
-            const entry = pubDate ? `[Berita Live (${pubDate})]: ${title}` : `[Berita Live]: ${title}`;
-            snippets.push(entry);
-            rawSnippets.push(title);
-          }
-        });
+        const textData = await res.value.text().catch(() => '');
+        // Check if JSON (Wikipedia)
+        if (textData.startsWith('{')) {
+          try {
+            const wJson = JSON.parse(textData);
+            const hits = wJson?.query?.search || [];
+            if (hits.length > 0) {
+              const h = hits[0];
+              const snip = cleanStr(h.snippet);
+              if (snip && !isJunkArticle(snip)) {
+                snippets.push(`[Referensi Ensiklopedia (${h.title})]: ${snip}`);
+                rawSnippets.push(`[Wikipedia]: ${h.title}`);
+              }
+            }
+          } catch (_) {}
+        } else {
+          // RSS News Feed
+          const items = textData.match(/<item>[\s\S]*?<\/item>/gi) || [];
+          items.slice(0, 4).forEach((item) => {
+            const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+            const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+            const title = cleanStr(titleMatch ? titleMatch[1] : '');
+            const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
+            if (title && !isJunkArticle(title)) {
+              const entry = pubDate ? `[Berita Live (${pubDate})]: ${title}` : `[Berita Live]: ${title}`;
+              snippets.push(entry);
+              rawSnippets.push(title);
+            }
+          });
+        }
       }
     }
 
@@ -592,7 +625,7 @@ async function searchWebContext(query, history = []) {
     const uniqueSnippets = Array.from(new Set(snippets)).slice(0, 8);
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (SUMBER LIVE TERVERIFIKASI)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Gunakan fakta-fakta berita dan rilis terkini pada hasil pencarian di atas sebagai rujukan utama untuk menjawab pertanyaan seputar perkembangan terbaru.)\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (SUMBER LIVE TERVERIFIKASI)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Gunakan fakta-fakta berita, referensi, dan rilis terkini pada hasil pencarian di atas sebagai rujukan utama.)\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 8) };
