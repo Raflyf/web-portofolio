@@ -1125,6 +1125,51 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assembleDynamicMessages(systemPromptWithSearch, history, finalUserPrompt);
 
+    // Multimodal payload for OpenRouter / OpenAI compatible Vision APIs
+    let openRouterMessages = baseTextMessages;
+    if (hasImages && imageAttachments.length > 0) {
+      openRouterMessages = baseTextMessages.map((msg, idx) => {
+        if (idx === baseTextMessages.length - 1 && msg.role === 'user') {
+          const contentParts = [];
+          if (typeof msg.content === 'string' && msg.content.trim()) {
+            contentParts.push({ type: 'text', text: msg.content.trim() });
+          }
+          imageAttachments.forEach(att => {
+            let dataUrl = att.data || att.base64 || att.url || '';
+            if (dataUrl) {
+              if (!dataUrl.startsWith('data:') && !dataUrl.startsWith('http')) {
+                dataUrl = `data:${att.type || 'image/jpeg'};base64,${dataUrl}`;
+              }
+              contentParts.push({
+                type: 'image_url',
+                image_url: { url: dataUrl }
+              });
+            }
+          });
+          return { role: 'user', content: contentParts };
+        }
+        return msg;
+      });
+    }
+
+    // Multimodal payload for Ollama Cloud (Ollama expects 'images' field with raw base64 array in user message)
+    let ollamaMessages = baseTextMessages;
+    if (hasImages && imageAttachments.length > 0) {
+      const base64List = imageAttachments.map(att => {
+        const raw = att.data || att.base64 || att.url || '';
+        return raw.replace(/^data:image\/[^;]+;base64,/, '');
+      }).filter(Boolean);
+
+      if (base64List.length > 0) {
+        ollamaMessages = baseTextMessages.map((msg, idx) => {
+          if (idx === baseTextMessages.length - 1 && msg.role === 'user') {
+            return { ...msg, images: base64List };
+          }
+          return msg;
+        });
+      }
+    }
+
     // Maximum token limits: Elevated to absolute frontier model capacity for unlimited, ultra-long exhaustive analysis
     // LOW=4096 (~16k chars), NORMAL=8192 (~32k chars), THINKING/HIGH=10240 (~40k chars)
     const maxTokensConfig = effectiveEffort === 'low' 
@@ -1151,7 +1196,7 @@ Langkah yang WAJIB Anda lakukan:
           },
           body: JSON.stringify({
             model: mName,
-            messages: baseTextMessages,
+            messages: openRouterMessages,
             max_tokens: maxTokensConfig,
             temperature: tempConfig
           })
@@ -1175,8 +1220,6 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-
-
     async function callOpenRouter(mName, tOut = 10000) {
       if (OPENROUTER_KEYS.length === 0) return null;
 
@@ -1192,7 +1235,7 @@ Langkah yang WAJIB Anda lakukan:
             },
             body: JSON.stringify({
               model: mName,
-              messages: baseTextMessages,
+              messages: openRouterMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
@@ -1238,7 +1281,7 @@ Langkah yang WAJIB Anda lakukan:
             },
             body: JSON.stringify({
               model: mName,
-              messages: baseTextMessages,
+              messages: ollamaMessages,
               stream: false,
               options: {
                 num_predict: maxTokensConfig,
@@ -1312,6 +1355,28 @@ Langkah yang WAJIB Anda lakukan:
     // BUILD MULTI-TIER EXECUTION PIPELINE
     // ========================================================================
     function buildExecutionPipeline() {
+      // 0. MULTIMODAL & VISION PIPELINE (Prioritas Mutlak saat Mengunggah Gambar / Foto)
+      if (hasImages || (model && model.toLowerCase().includes('vision'))) {
+        return [
+          // 1. OmniRoute Vision SOTA Model
+          { provider: 'omniroute', model: 'Vision-model', timeout: 3000 },
+          // 2. OpenRouter Google Gemini 2.0 Flash Vision SOTA
+          { provider: 'openrouter', model: 'google/gemini-2.0-flash-exp:free', timeout: 22000 },
+          // 3. OpenRouter Google Gemini 2.0 Flash Thinking SOTA
+          { provider: 'openrouter', model: 'google/gemini-2.0-flash-thinking-exp:free', timeout: 22000 },
+          // 4. OpenRouter Meta Llama 3.2 11B Vision Instruct
+          { provider: 'openrouter', model: 'meta-llama/llama-3.2-11b-vision-instruct:free', timeout: 18000 },
+          // 5. OpenRouter Mistral Pixtral 12B Vision
+          { provider: 'openrouter', model: 'mistralai/pixtral-12b:free', timeout: 18000 },
+          // 6. OpenRouter Qwen 2 VL 72B Instruct Vision
+          { provider: 'openrouter', model: 'qwen/qwen-2-vl-72b-instruct:free', timeout: 18000 },
+          // 7. Ollama MiniMax Multimodal
+          { provider: 'ollama', model: 'minimax-m3', timeout: 18000 },
+          // 8. OpenRouter Universal Multimodal Auto-Router
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 16000 }
+        ];
+      }
+
       if (model && model !== 'auto') {
         const t = model.toLowerCase();
         if (t.includes('ultra')) {
@@ -1342,16 +1407,9 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 }
           ];
         }
-        if (t.includes('vision')) {
-          return [
-            { provider: 'omniroute', model: 'Vision-model', timeout: 20000 },
-            { provider: 'ollama', model: 'minimax-m3', timeout: 16000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 14000 }
-          ];
-        }
       }
 
-      const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
+      const omniModel = 'Codex';
       const isAnalysisOrComparison = queryIntent.isAnalysisOrComparison 
         || queryIntent.category === 'project_architecture' 
         || queryIntent.category === 'deep_reasoning' 
