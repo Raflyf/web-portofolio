@@ -1000,6 +1000,9 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?:^|\n)\|\s*([•\-\*]\s*[^|\n]+?)\s*\|\s*(?:\n|$)/g, '\n$1\n');
       cleaned = cleaned.replace(/\s*\|\s*$/gm, '');
 
+      // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
+      cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
+
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
 
       if (res.headersSent) return true;
