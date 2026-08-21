@@ -4,9 +4,9 @@
  * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
  * Features:
  * - 🌐 Real-Time Web Search & Encyclopedic Knowledge (Live 2026 Context)
- * - 🖼️ Multimodal Vision Recognition (Qwen 2 VL 72B Vision)
+ * - 🖼️ Multimodal Vision Recognition (Gemini 3.1 Flash / MiniMax M3 Vision)
  * - 📄 Document & PDF Analysis (Text & Code Ingestion)
- * - ⚡ Smart Multi-Provider Cascade (OpenCode, Nvidia NIM, MiniMax, Ollama Cloud, OpenRouter)
+ * - ⚡ Smart Multi-Provider Cascade (OmniRoute, OpenCode, OpenRouter, Ollama Cloud, MiniMax)
  * ============================================================================
  */
 
@@ -457,11 +457,56 @@ function extractFitMarkdownContent(rawHtml, sourceUrl = '') {
 }
 
 /**
+ * SSRF & Private Network Shield
+ * Prevents attackers from targeting loopback (127.0.0.1), localhost, cloud metadata, or private internal LANs.
+ */
+function isSafePublicUrl(urlString) {
+  if (!urlString || typeof urlString !== 'string') return false;
+  try {
+    const parsed = new URL(urlString);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    const host = parsed.hostname.toLowerCase();
+    
+    // Block loopback, localhost, internal namespaces, and cloud metadata hostnames
+    if (
+      host === 'localhost' ||
+      host.endsWith('.localhost') ||
+      host.endsWith('.local') ||
+      host === '127.0.0.1' ||
+      host === '0.0.0.0' ||
+      host === '::1' ||
+      host === '169.254.169.254' ||
+      host === 'metadata.google.internal' ||
+      host === 'instance-data'
+    ) {
+      return false;
+    }
+
+    // Block private IPv4 ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16)
+    const ipMatch = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (ipMatch) {
+      const b0 = parseInt(ipMatch[1], 10);
+      const b1 = parseInt(ipMatch[2], 10);
+      if (b0 === 10) return false;
+      if (b0 === 127) return false;
+      if (b0 === 169 && b1 === 254) return false;
+      if (b0 === 172 && b1 >= 16 && b1 <= 31) return false;
+      if (b0 === 192 && b1 === 168) return false;
+      if (b0 === 0 || b0 >= 224) return false;
+    }
+
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
  * Universal Web Page Deep Scraper (Crawl4AI & Firecrawl Enhanced)
  * Fetches and transforms any arbitrary URL into clean LLM-Ready Fit-Markdown.
  */
 async function scrapeDirectWebpageContent(url) {
-  if (!url || typeof url !== 'string') return '';
+  if (!url || typeof url !== 'string' || !isSafePublicUrl(url)) return '';
   try {
     const res = await fetchWithTimeout(url, {
       headers: {
@@ -699,8 +744,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'vision',
       effort: 'medium',
-      omniCandidates: ['Vision-model', 'meta-llama/llama-3.2-11b-vision-instruct:free', 'nvidia/nemotron-nano-9b'],
-      label: 'Vision & Multimodal Perception'
+      omniCandidates: ['Vision-model', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/minimax-m3'],
+      label: 'Vision & Multimodal Perception (Gemini 3.1 Flash & MiniMax M3)'
     };
   }
 
@@ -722,7 +767,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'project_architecture',
       effort: 'high',
-      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
       label: 'Deep Architecture & Technical Analysis (Codex & Antigravity)'
     };
   }
@@ -733,7 +778,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'deep_reasoning',
       effort: 'thinking',
-      omniCandidates: ['Antigravity', 'Codex', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
+      omniCandidates: ['Antigravity', 'Codex', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
       label: 'Deep Reasoning & Mathematical Derivations (Antigravity & Codex)'
     };
   }
@@ -744,29 +789,51 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     return {
       category: 'heavy_coding',
       effort: 'high',
-      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free'],
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
       label: 'Heavy Coding & System Architecture (Codex)'
     };
   }
 
-  // 3. Standard Coding & Snippets
+  // 4. Standard Coding & Snippets
   const hasCodeKeywords = /\b(script|koding|coding|function|def |class |async |await |import |export |const |let |var |sql|select .* from|regex|refactor|debug|fix bug|error|syntax)\b/i.test(q) || /\b(python|javascript|typescript|golang|rust|php|pytorch|react|flask)\b/i.test(q);
   if (hasCodeKeywords) {
     return {
       category: 'heavy_coding',
       effort: 'medium',
-      omniCandidates: ['Codex-5.3', 'qwen/qwen-2.5-coder-32b-instruct', 'DeepSeek-V4-Flash', 'Nemotron-3-Super-120B'],
-      label: 'Coding & Algorithm Synthesis (Codex & Qwen Coder)'
+      omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free'],
+      label: 'Coding & Algorithm Synthesis (Codex & Antigravity)'
     };
   }
 
-  // 4. Standard Informative, Conceptual, Feature Comparisons, Q&A (e.g. React 19, Web API, RAG, Best Practices)
+  // 5. Standard Informative, Conceptual, Feature Comparisons, Q&A (e.g. React 19, Web API, RAG, Best Practices)
   return {
     category: 'basic_standard',
     effort: 'medium',
-    omniCandidates: ['Nemotron-3-Ultra-550B', 'Nemotron-3-Super-120B', 'DeepSeek-V4-Flash', 'Codex-5.3', 'Antigravity-Thinker', 'MiniMax-M3'],
+    omniCandidates: ['Codex', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/nemotron-3-ultra', 'ollama/minimax-m3'],
     label: 'Standard Q&A & Technical Synthesis (Fast Balanced Model Pool)'
   };
+}
+
+// In-memory rate limiting (35 requests per minute per IP)
+const rateLimitCache = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 35;
+
+function isRateLimited(clientIp) {
+  if (!clientIp || clientIp === 'unknown-client') return false;
+  const now = Date.now();
+  const record = rateLimitCache.get(clientIp);
+  if (!record || (now - record.startTime) > RATE_LIMIT_WINDOW_MS) {
+    rateLimitCache.set(clientIp, { count: 1, startTime: now });
+    if (rateLimitCache.size > 2000) {
+      for (const [k, v] of rateLimitCache.entries()) {
+        if (now - v.startTime > RATE_LIMIT_WINDOW_MS) rateLimitCache.delete(k);
+      }
+    }
+    return false;
+  }
+  record.count += 1;
+  return record.count > MAX_REQUESTS_PER_WINDOW;
 }
 
 export default async function handler(req, res) {
@@ -788,6 +855,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
+  // 0. Client IP Extraction & Anti-Abuse Rate Limiting
+  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown-client';
+  if (isRateLimited(clientIp)) {
+    return res.status(429).json({ 
+      error: 'Too Many Requests: Permintaan melebihi batas wajar (35 kueri/menit). Silakan coba lagi dalam beberapa detik.' 
+    });
+  }
+
   try {
     const { 
       query = '', 
@@ -803,52 +878,64 @@ export default async function handler(req, res) {
 
     // 1. Strict Payload Boundary Checks (Prevent memory exhaustion and DOS)
     if (typeof query === 'string' && query.length > 50000) {
-      return res.status(413).json({ error: 'Payload Too Large: Query exceeds 50,000 character limit.' });
+      return res.status(413).json({ error: 'Payload Too Large: Query melebihi batas 50.000 karakter.' });
     }
 
     if (Array.isArray(attachments) && attachments.length > 10) {
-      return res.status(400).json({ error: 'Bad Request: Maximum 10 file attachments allowed per request.' });
+      return res.status(400).json({ error: 'Bad Request: Maksimal 10 lampiran per permintaan.' });
+    }
+
+    if (Array.isArray(attachments)) {
+      for (const a of attachments) {
+        if (a && a.base64 && typeof a.base64 === 'string' && a.base64.length > 12 * 1024 * 1024) {
+          return res.status(413).json({ error: 'Payload Too Large: Ukuran lampiran file melebihi batas 8MB.' });
+        }
+      }
     }
 
     if (!query && (!attachments || attachments.length === 0)) {
       return res.status(400).json({ error: 'Query prompt or file attachment is required' });
     }
 
-    const OMNIROUTE_URL = (customKey && customProvider === 'omniroute') 
+    // Sanitize user-provided keys against CRLF injection
+    const cleanCustomKey = typeof customKey === 'string' ? customKey.replace(/[\r\n]/g, '').trim().slice(0, 256) : '';
+    const cleanCustomProvider = typeof customProvider === 'string' ? customProvider.replace(/[^a-zA-Z0-9_-]/g, '').trim().slice(0, 32) : '';
+
+    const OMNIROUTE_URL = (cleanCustomKey && cleanCustomProvider === 'omniroute') 
       ? (process.env.OMNIROUTE_URL || '')
       : (process.env.OMNIROUTE_URL || '');
 
-    const OMNIROUTE_KEY = (customKey && customProvider === 'omniroute')
-      ? customKey
+    const OMNIROUTE_KEY = (cleanCustomKey && cleanCustomProvider === 'omniroute')
+      ? cleanCustomKey
       : (process.env.OMNIROUTE_KEY || '');
 
     const OPENROUTER_KEYS = [
-      (customKey && (customProvider === 'openrouter' || !customProvider)) ? customKey : null,
+      (cleanCustomKey && (cleanCustomProvider === 'openrouter' || !cleanCustomProvider)) ? cleanCustomKey : null,
       process.env.OPENROUTER_API_KEY,
       ...(process.env.OPENROUTER_API_KEYS ? process.env.OPENROUTER_API_KEYS.split(',').map(s => s.trim()) : [])
     ].filter((v, i, a) => v && a.indexOf(v) === i);
     const OPENROUTER_KEY = OPENROUTER_KEYS[0] || null;
 
     const NVIDIA_KEYS = [
-      (customKey && customProvider === 'nvidia') ? customKey : null,
+      (cleanCustomKey && cleanCustomProvider === 'nvidia') ? cleanCustomKey : null,
       process.env.NVIDIA_API_KEY,
       ...(process.env.NVIDIA_API_KEYS ? process.env.NVIDIA_API_KEYS.split(',').map(s => s.trim()) : [])
     ].filter((v, i, a) => v && a.indexOf(v) === i);
     const NVIDIA_KEY = NVIDIA_KEYS[0] || null;
 
     const OPENCODE_KEYS = [
-      (customKey && customProvider === 'opencode') ? customKey : null,
+      (cleanCustomKey && cleanCustomProvider === 'opencode') ? cleanCustomKey : null,
       process.env.OPENCODE_API_KEY,
       ...(process.env.OPENCODE_API_KEYS ? process.env.OPENCODE_API_KEYS.split(',').map(s => s.trim()) : [])
     ].filter((v, i, a) => v && a.indexOf(v) === i);
     const OPENCODE_KEY = OPENCODE_KEYS[0] || null;
 
-    const MINIMAX_KEY = (customKey && customProvider === 'minimax') 
-      ? customKey 
+    const MINIMAX_KEY = (cleanCustomKey && cleanCustomProvider === 'minimax') 
+      ? cleanCustomKey 
       : process.env.MINIMAX_API_KEY;
 
-    const OLLAMA_KEY = (customKey && (customProvider === 'ollamacloud' || customProvider === 'ollama')) 
-      ? customKey 
+    const OLLAMA_KEY = (cleanCustomKey && (cleanCustomProvider === 'ollamacloud' || cleanCustomProvider === 'ollama')) 
+      ? cleanCustomKey 
       : (process.env.OLLAMA_CLOUD_API_KEY || process.env.OLLAMA_API_KEY);
 
     const providerErrors = [];

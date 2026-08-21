@@ -917,8 +917,12 @@ export function initTerminal() {
   }
 
   // Global helper for inline download cards
-  window.__downloadTerminalFile = (filename, content) => {
-    triggerFileDownload(filename, content || '');
+  const downloadCache = new Map();
+  window.__executeDownloadById = (id) => {
+    const item = downloadCache.get(id);
+    if (item) {
+      triggerFileDownload(item.filename, item.content || '');
+    }
   };
 
   function parseAndExecuteActionTags(rawText) {
@@ -933,9 +937,11 @@ export function initTerminal() {
         const parts = parsedPayload.split(':');
         const filename = parts[0]?.trim() || 'dokumen_portofolio.md';
         const fileContent = parts.slice(1).join(':').trim() || rawText.replace(actionRegex, '').trim();
+        const downloadId = 'dl_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
+        downloadCache.set(downloadId, { filename, content: fileContent });
 
-        // Render interactive click-to-download button (NO forced auto-download popup)
-        return `\n<div style="margin:8px 0;"><button type="button" class="terminal-download-card" onclick="window.__downloadTerminalFile('${filename}', \`${fileContent.replace(/[`\\]/g, '\\$&')}\`)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> <span>📥 Unduh Berkas Markdown: ${filename}</span></button></div>\n`;
+        // Render interactive click-to-download button safely without inline string escaping risks
+        return `\n<div style="margin:8px 0;"><button type="button" class="terminal-download-card" onclick="window.__executeDownloadById('${downloadId}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> <span>📥 Unduh Berkas Markdown: ${escapeHtml(filename)}</span></button></div>\n`;
       }
 
       // Filter out pseudo/fictional action tags emitted by AI models
@@ -1513,7 +1519,7 @@ export function initTerminal() {
         const validKeywords = [
           'auto', 'codex', 'antigravity', 'deepseek', 'deepseek-v4', 'v4', 'flash',
           'nemotron', 'nemotron-ultra', 'ultra', 'nemotron-super', 'super', 'laguna',
-          'llama', 'llama-3.3', 'qwen', 'qwen-coder', 'gemma', 'minimax', 'm3', 'vision',
+          'mimo', 'x-preview', 'muse', 'hy3', 'big-pickle', 'minimax', 'm3', 'vision',
           'nvidia', 'opencode', 'openrouter', 'omniroute', 'ollama'
         ];
         
