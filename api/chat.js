@@ -1374,11 +1374,13 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       // Auto / Dynamic Routing berdasarkan intent:
+      const isComplexQuery = ['project_architecture', 'deep_reasoning', 'heavy_coding'].includes(queryIntent.category) || ['high', 'thinking'].includes(effectiveEffort);
+      const omniTimeout = isComplexQuery ? 20000 : 4500;
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
 
       return [
-        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Port 20128 / Cloudflare Quick Tunnel - Fast 4s Timeout)
-        { provider: 'omniroute', model: omniModel, timeout: 4000 },
+        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Waktu penuh 20s untuk kueri sulit, 4.5s untuk kueri kasual)
+        { provider: 'omniroute', model: omniModel, timeout: omniTimeout },
 
         // 2. Prioritas #2: OpenRouter SOTA MoE (Nvidia Nemotron 3 Ultra 550B Flagship)
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 28000 },
