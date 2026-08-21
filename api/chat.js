@@ -884,13 +884,21 @@ export default async function handler(req, res) {
     ].filter((v, i, a) => v && a.indexOf(v) === i);
     const OPENCODE_KEY = OPENCODE_KEYS[0] || null;
 
-    const MINIMAX_KEY = (cleanCustomKey && cleanCustomProvider === 'minimax') 
-      ? cleanCustomKey 
-      : process.env.MINIMAX_API_KEY;
+    const MINIMAX_KEYS = [
+      (cleanCustomKey && cleanCustomProvider === 'minimax') ? cleanCustomKey : null,
+      process.env.MINIMAX_API_KEY,
+      ...(process.env.MINIMAX_API_KEYS ? process.env.MINIMAX_API_KEYS.split(',').map(s => s.trim()) : [])
+    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const MINIMAX_KEY = MINIMAX_KEYS[0] || null;
 
-    const OLLAMA_KEY = (cleanCustomKey && (cleanCustomProvider === 'ollamacloud' || cleanCustomProvider === 'ollama')) 
-      ? cleanCustomKey 
-      : (process.env.OLLAMA_CLOUD_API_KEY || process.env.OLLAMA_API_KEY);
+    const OLLAMA_KEYS = [
+      (cleanCustomKey && (cleanCustomProvider === 'ollamacloud' || cleanCustomProvider === 'ollama')) ? cleanCustomKey : null,
+      process.env.OLLAMA_CLOUD_API_KEY,
+      process.env.OLLAMA_API_KEY,
+      ...(process.env.OLLAMA_CLOUD_API_KEYS ? process.env.OLLAMA_CLOUD_API_KEYS.split(',').map(s => s.trim()) : []),
+      ...(process.env.OLLAMA_API_KEYS ? process.env.OLLAMA_API_KEYS.split(',').map(s => s.trim()) : [])
+    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const OLLAMA_KEY = OLLAMA_KEYS[0] || null;
 
     const providerErrors = [];
 
@@ -1028,11 +1036,11 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
-    // Maximum token limits: calibrated for rich, exhaustive responses without choking serverless budget
-    // LOW=800 (~3k chars), NORMAL=1200 (~4.5k chars), THINKING/HIGH=1500 (~5.5k chars)
+    // Maximum token limits: calibrated to maximum model capacity for exhaustive, zero-truncation responses
+    // LOW=1024 (~4k chars), NORMAL=2048 (~8k chars), THINKING/HIGH=2500 (~10k chars)
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 800 
-      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 1500 : 1200);
+      ? 1024 
+      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 2500 : 2048);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
@@ -1043,50 +1051,31 @@ Langkah yang WAJIB Anda lakukan:
     async function callOmniRoute(mName, tOut = 4000) {
       if (!OMNIROUTE_KEY || !OMNIROUTE_URL || isOmniOffline) return null;
       if (process.env.VERCEL && (OMNIROUTE_URL.includes('127.0.0.1') || OMNIROUTE_URL.includes('localhost'))) {
-        isOmniOffline = true;
         return null;
       }
       try {
-        const payload = {
-          model: mName,
-          messages: baseTextMessages,
-          stream: false,
-          max_tokens: Math.max(maxTokensConfig, 1000),
-          temperature: tempConfig
-        };
         const res = await fetchJsonWithTimeout(OMNIROUTE_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${OMNIROUTE_KEY}`
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            model: mName,
+            messages: baseTextMessages,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
+          })
         }, tOut);
 
         if (res.ok) {
-          let content = '';
-          let resolvedName = mName;
-          if (res.data) {
-            content = res.data?.choices?.[0]?.message?.content || res.data?.choices?.[0]?.delta?.content || '';
-            if (res.data.model) resolvedName = `${mName} (${res.data.model})`;
-          } else if (res.text) {
-            const lines = res.text.split('\n');
-            for (const line of lines) {
-              const trimmed = line.trim();
-              if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
-                try {
-                  const chunk = JSON.parse(trimmed.slice(6));
-                  content += chunk?.choices?.[0]?.delta?.content || chunk?.choices?.[0]?.message?.content || '';
-                } catch (_) {}
-              }
-            }
-          }
+          const content = res.data?.choices?.[0]?.message?.content;
           if (content && content.trim().length > 0) {
-            return sendSuccess(content.trim(), resolvedName, 'OmniRoute Dedicated Server');
+            return sendSuccess(content.trim(), mName, 'OmniRoute Dedicated Gateway');
           }
         } else {
           providerErrors.push(`OmniRoute ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-          if ([400, 404, 500, 502, 503, 520, 521, 522, 523, 524, 530].includes(res.status)) {
+          if (res.status === 404 || res.status === 502 || res.status === 503) {
             isOmniOffline = true;
           }
         }
@@ -1097,7 +1086,7 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 20000) {
+    async function callNvidiaNim(mName, tOut = 8000) {
       if (NVIDIA_KEYS.length === 0) return null;
       for (const nvKey of NVIDIA_KEYS) {
         try {
@@ -1122,9 +1111,11 @@ Langkah yang WAJIB Anda lakukan:
             }
           } else {
             providerErrors.push(`Nvidia NIM ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            continue;
           }
         } catch (err) {
           providerErrors.push(`Nvidia NIM ${mName}: ${err.message}`);
+          continue;
         }
       }
       return null;
@@ -1155,9 +1146,11 @@ Langkah yang WAJIB Anda lakukan:
             }
           } else {
             providerErrors.push(`OpenCode ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            continue;
           }
         } catch (err) {
           providerErrors.push(`OpenCode ${mName}: ${err.message}`);
+          continue;
         }
       }
       return null;
@@ -1199,6 +1192,9 @@ Langkah yang WAJIB Anda lakukan:
           }
         } catch (err) {
           providerErrors.push(`OpenRouter ${mName}: ${err.message}`);
+          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
+            break; // Skip slow/overloaded model immediately to next cascade
+          }
           continue;
         }
       }
@@ -1206,62 +1202,76 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     async function callOllama(mName, tOut = 12000) {
-      if (!OLLAMA_KEY) return null;
-      try {
-        const res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OLLAMA_KEY}`
-          },
-          body: JSON.stringify({
-            model: mName,
-            messages: baseTextMessages,
-            stream: false
-          })
-        }, tOut);
+      if (OLLAMA_KEYS.length === 0) return null;
+      for (const olKey of OLLAMA_KEYS) {
+        try {
+          const res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${olKey}`
+            },
+            body: JSON.stringify({
+              model: mName,
+              messages: baseTextMessages,
+              stream: false
+            })
+          }, tOut);
 
-        if (res.ok) {
-          const content = res.data?.message?.content;
-          if (content && content.trim().length > 0) {
-            return sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
+          if (res.ok) {
+            const content = res.data?.message?.content;
+            if (content && content.trim().length > 0) {
+              return sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
+            }
+          } else {
+            providerErrors.push(`Ollama Cloud ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            continue;
           }
-        } else {
-          providerErrors.push(`Ollama Cloud ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+        } catch (err) {
+          providerErrors.push(`Ollama Cloud ${mName}: ${err.message}`);
+          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
+            break;
+          }
+          continue;
         }
-      } catch (err) {
-        providerErrors.push(`Ollama Cloud ${mName}: ${err.message}`);
       }
       return null;
     }
 
     async function callMiniMax(tOut = 10000) {
-      if (!MINIMAX_KEY) return null;
-      try {
-        const res = await fetchJsonWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${MINIMAX_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'MiniMax-M3',
-            messages: baseTextMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig
-          })
-        }, tOut);
+      if (MINIMAX_KEYS.length === 0) return null;
+      for (const mmKey of MINIMAX_KEYS) {
+        try {
+          const res = await fetchJsonWithTimeout('https://api.minimax.chat/v1/text/chatcompletion_v2', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${mmKey}`
+            },
+            body: JSON.stringify({
+              model: 'MiniMax-M3',
+              messages: baseTextMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, tOut);
 
-        if (res.ok) {
-          const content = res.data?.choices?.[0]?.message?.content;
-          if (content && content.trim().length > 0) {
-            return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Multimodal Production API');
+          if (res.ok) {
+            const content = res.data?.choices?.[0]?.message?.content;
+            if (content && content.trim().length > 0) {
+              return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Multimodal Production API');
+            }
+          } else {
+            providerErrors.push(`MiniMax HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            continue;
           }
-        } else {
-          providerErrors.push(`MiniMax HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+        } catch (err) {
+          providerErrors.push(`MiniMax: ${err.message}`);
+          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
+            break;
+          }
+          continue;
         }
-      } catch (err) {
-        providerErrors.push(`MiniMax: ${err.message}`);
       }
       return null;
     }
@@ -1275,10 +1285,10 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('ultra')) {
           return [
             { provider: 'omniroute', model: 'Codex', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
+            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
-            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 8000 },
             { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 }
           ];
@@ -1286,18 +1296,18 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('nano')) {
           return [
             { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 10000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
-            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 8000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 14000 }
+            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 10000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 }
           ];
         }
         if (t.includes('codex') || t.includes('gpt-5')) {
           return [
             { provider: 'omniroute', model: 'Codex', timeout: 22000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 14000 }
+            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 }
           ];
         }
         if (t.includes('vision')) {
@@ -1318,22 +1328,22 @@ Langkah yang WAJIB Anda lakukan:
         || effectiveEffort === 'thinking';
 
       if (isAnalysisOrComparison) {
-        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> NEMOTRON 3 ULTRA 550B & SOTA CLOUD ENGINES
+        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> FAST SOTA ENGINES WITH MATRIX COMPREHENSION
         return [
           // 1. OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
           { provider: 'omniroute', model: omniModel, timeout: 18000 },
 
-          // 2. Prioritas #2: Nemotron 3 Ultra 550B MoE dari OpenRouter (10s)
+          // 2. Prioritas #2: LiquidAI LFM 2.5 dari OpenRouter (14s - Sub-3s Verified Instant High-Speed)
+          { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 14000 },
+
+          // 3. Prioritas #3: Nemotron 3 Nano 30B dari OpenRouter (14s - Verified 3.5k chars Markdown)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 },
+
+          // 4. Prioritas #4: Nemotron 3 Nano dari Ollama Cloud Hub (10s)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 10000 },
+
+          // 5. Prioritas #5: Nemotron 3 Ultra 550B MoE dari OpenRouter (10s)
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
-
-          // 3. Prioritas #3: Nemotron 3 Nano 30B dari OpenRouter (10s - Verified 3.5k chars Markdown)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
-
-          // 4. Prioritas #4: LiquidAI LFM 2.5 dari OpenRouter (8s - Verified 4.1s Sub-2s Response)
-          { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 8000 },
-
-          // 5. Prioritas #5: Nemotron 3 Nano dari Ollama Cloud Hub (8s)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
 
           // 6. Prioritas #6: Nemotron 3.5 Lightning dari OpenRouter (10s)
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
@@ -1341,11 +1351,11 @@ Langkah yang WAJIB Anda lakukan:
           // 7. Prioritas #7: OpenRouter Universal Free Auto-Router (12s)
           { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 },
 
-          // 8. Prioritas #8: Nemotron 3 Ultra dari Ollama Cloud Hub (12s)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+          // 8. Prioritas #8: Nemotron 3 Ultra dari Ollama Cloud Hub (10s)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
 
-          // 9. Prioritas #9: MiniMax-M3 dari Ollama Cloud Hub (10s)
-          { provider: 'ollama', model: 'minimax-m3', timeout: 10000 },
+          // 9. Prioritas #9: MiniMax-M3 dari Ollama Cloud Hub (8s)
+          { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
 
           // 10. Prioritas #10: OpenCode Zen Cloud Pool (4s)
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 }
