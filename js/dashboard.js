@@ -755,18 +755,6 @@ class DashboardApp {
 
       // 2. OpenRouter Modern SOTA Pool (Active Primary Suite)
       {
-        id: 'nemotron-3-nano-openrouter',
-        name: 'Nvidia Nemotron 3 Nano (30B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '30B A3B · Ultra-Fast Conversational SOTA',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s) && !/omni/i.test(s);
-        }
-      },
-      {
         id: 'nemotron-3-ultra-openrouter',
         name: 'Nvidia Nemotron 3 Ultra (550B)',
         category: 'OpenRouter Cloud Pool',
@@ -779,39 +767,15 @@ class DashboardApp {
         }
       },
       {
-        id: 'nemotron-35-lightning-openrouter',
-        name: 'Nvidia Nemotron 3.5 Lightning',
+        id: 'nemotron-3-nano-openrouter',
+        name: 'Nvidia Nemotron 3 Nano (30B)',
         category: 'OpenRouter Cloud Pool',
-        tag: '1M Context · High-Speed Lightning Inference',
+        tag: '30B A3B · Ultra-Fast Conversational SOTA',
         icon: SVG_ICONS.fast,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(lightning|3\.5-lightning)\b/i.test(s);
-        }
-      },
-      {
-        id: 'nemotron-3-super-openrouter',
-        name: 'Nvidia Nemotron 3 Super (120B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '120B SOTA · 3-Key Multi-Account Pool',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(super|120b)\b/i.test(s);
-        }
-      },
-      {
-        id: 'nemotron-3-omni-openrouter',
-        name: 'Nemotron 3 Nano Omni Reasoning',
-        category: 'OpenRouter Cloud Pool',
-        tag: '30B Omni CoT · Multi-Step Reasoning',
-        icon: SVG_ICONS.cot,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(omni|nano-omni)\b/i.test(s);
+          return isOpenRouter(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s) && !/omni/i.test(s);
         }
       },
       {
@@ -827,6 +791,18 @@ class DashboardApp {
         }
       },
       {
+        id: 'nemotron-35-lightning-openrouter',
+        name: 'Nvidia Nemotron 3.5 Lightning',
+        category: 'OpenRouter Cloud Pool',
+        tag: '1M Context · High-Speed Lightning Inference',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(lightning|3\.5-lightning)\b/i.test(s);
+        }
+      },
+      {
         id: 'openrouter-free-auto',
         name: 'OpenRouter Universal Free',
         category: 'OpenRouter Cloud Pool',
@@ -839,57 +815,7 @@ class DashboardApp {
         }
       },
 
-      // 3. OpenCode Zen Cloud Pool
-      {
-        id: 'nemotron-ultra-opencode',
-        name: 'Nemotron 3 Ultra (550B)',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/nemotron-3-ultra-free',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
-        }
-      },
-      {
-        id: 'x-preview-opencode',
-        name: 'X-Preview Frontier Free',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/x-preview-f-free',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(x-preview|frontier)\b/i.test(s);
-        }
-      },
-      {
-        id: 'mimo-opencode',
-        name: 'Mimo v2.5 Fast Inference',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/mimo-v2.5-free',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(mimo|mimo-v2\.5)\b/i.test(s);
-        }
-      },
-      {
-        id: 'laguna-opencode',
-        name: 'Laguna S 2.1 Free',
-        category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/laguna-s-2.1-free',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(laguna|laguna-s)\b/i.test(s);
-        }
-      },
-
-      // 4. Ollama Cloud SOTA Engine Provider
+      // 3. Ollama Cloud SOTA Engine Provider
       {
         id: 'nemotron-ultra-ollama',
         name: 'Nemotron 3 Ultra (550B)',
@@ -903,6 +829,30 @@ class DashboardApp {
         }
       },
       {
+        id: 'nemotron-nano-ollama',
+        name: 'Nemotron 3 Nano (30B)',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3-nano:30b (Sub-1.5s)',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(nano|30b)\b/i.test(s);
+        }
+      },
+      {
+        id: 'nemotron-super-ollama',
+        name: 'Nemotron 3 Super (120B)',
+        category: 'Ollama Cloud Engine',
+        tag: 'ollama.com · nemotron-3-super',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOllama(s) && /\b(super|120b)\b/i.test(s);
+        }
+      },
+      {
         id: 'minimax-m3-ollama',
         name: 'MiniMax-M3 Vision Multimodal',
         category: 'Ollama Cloud Engine',
@@ -912,6 +862,20 @@ class DashboardApp {
         match: (t, l) => {
           const s = `${t} ${l}`;
           return isOllama(s) && /\b(minimax|m3|mimo)\b/i.test(s);
+        }
+      },
+
+      // 4. OpenCode Zen Cloud Pool
+      {
+        id: 'nemotron-ultra-opencode',
+        name: 'Nemotron 3 Ultra (550B)',
+        category: 'OpenCode Cloud Pool',
+        tag: 'Model ID: opencode/nemotron-3-ultra-free',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
         }
       },
 
