@@ -1372,34 +1372,33 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       // Auto / Dynamic Routing berdasarkan intent:
-      const isComplexQuery = ['project_architecture', 'deep_reasoning', 'heavy_coding'].includes(queryIntent.category) || ['high', 'thinking'].includes(effectiveEffort);
-      const omniTimeout = isComplexQuery ? 20000 : 4500;
+      const omniTimeout = 6500; // 6.5s OmniRoute timeout to prevent serverless function starvation
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
 
       return [
-        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala)
+        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 6.5s guard)
         { provider: 'omniroute', model: omniModel, timeout: omniTimeout },
 
-        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode (opencode.ai)
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
+        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode (opencode.ai - 14s)
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 14000 },
 
-        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter (openrouter.ai)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+        // 3. Prioritas #3: Nemotron 3 Ultra dari OpenRouter (openrouter.ai - 22s)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 22000 },
 
-        // 4. Prioritas #4: Nemotron 3 Super 120B dari OpenRouter (openrouter.ai)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 },
+        // 4. Prioritas #4: Nemotron 3 Super 120B dari OpenRouter (openrouter.ai - 15s)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 15000 },
 
-        // 5. Prioritas #5: Nemotron 3 Ultra dari Ollama Cloud Hub (ollama.com)
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+        // 5. Prioritas #5: Nemotron 3 Ultra dari Ollama Cloud Hub (ollama.com - 8s)
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
 
         // 6. Prioritas #6: MiniMax M3 Vision dari Ollama Cloud Hub
-        { provider: 'ollama', model: 'minimax-m3', timeout: 10000 },
+        { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
 
         // 7. Prioritas #7: Model Cadangan Lainnya dari OpenCode Pool
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 5000 },
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 5000 },
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 5000 },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 5000 }
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 4000 },
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 4000 },
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 4000 },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 4000 }
       ];
     }
 
