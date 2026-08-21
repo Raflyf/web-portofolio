@@ -1076,10 +1076,10 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
-    // Calibrated token limits for ultra-responsive inference (<6-8s) without triggering 60s Vercel timeouts
+    // Calibrated token limits for complete zero-truncation deep analysis
     const maxTokensConfig = effectiveEffort === 'low' 
       ? 1024 
-      : (effectiveEffort === 'medium' ? 2048 : (effectiveEffort === 'thinking' ? 4096 : 3500));
+      : (effectiveEffort === 'medium' ? 2500 : (effectiveEffort === 'thinking' ? 8192 : 6144));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
@@ -1377,14 +1377,14 @@ Langkah yang WAJIB Anda lakukan:
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
 
       return [
-        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Port 20128 / Cloudflare Quick Tunnel)
-        { provider: 'omniroute', model: omniModel, timeout: 6500 },
+        // 1. Prioritas #1: OmniRoute Dedicated Gateway (Port 20128 / Cloudflare Quick Tunnel - Fast 4s Timeout)
+        { provider: 'omniroute', model: omniModel, timeout: 4000 },
 
-        // 2. Prioritas #2: OpenRouter SOTA 120B CoT (Nvidia Nemotron 3 Super 120B - Ultra Fast & Resilient)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 },
+        // 2. Prioritas #2: OpenRouter SOTA MoE (Nvidia Nemotron 3 Ultra 550B Flagship)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 28000 },
 
-        // 3. Prioritas #3: OpenRouter SOTA MoE (Nvidia Nemotron 3 Ultra 550B)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 20000 },
+        // 3. Prioritas #3: OpenRouter SOTA 120B CoT (Nvidia Nemotron 3 Super 120B)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 24000 },
 
         // 4. Prioritas #4: Ollama Cloud Hub (Nemotron 3 Ultra)
         { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
