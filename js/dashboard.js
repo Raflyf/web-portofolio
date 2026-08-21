@@ -1531,11 +1531,25 @@ class DashboardApp {
     window.addEventListener('wheel', (e) => {
       const path = e.composedPath ? e.composedPath() : [];
       const isScrollableChild = path.some(el => {
-        if (!el || !el.classList) return false;
-        return (
+        if (!el || el === window || el === document || el === document.body || el === document.documentElement) return false;
+        if (el.classList && (
+          el.classList.contains('ai-model-auto-list') ||
           el.classList.contains('table-responsive') ||
-          el.tagName === 'TEXTAREA'
-        );
+          el.classList.contains('modal-body') ||
+          el.classList.contains('terminal-body') ||
+          el.tagName === 'TEXTAREA' ||
+          el.tagName === 'DIALOG'
+        )) {
+          return true;
+        }
+        try {
+          const style = window.getComputedStyle(el);
+          const isScrollable = (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflowX === 'auto' || style.overflowX === 'scroll');
+          if (isScrollable && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
+            return true;
+          }
+        } catch (_) {}
+        return false;
       });
 
       if (isScrollableChild) {
