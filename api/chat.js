@@ -1002,12 +1002,12 @@ Langkah yang WAJIB Anda lakukan:
 \`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\`
 3. Jika klaim SALAH, berpotensi HOAKS, tidak pantas, atau Anda ragu, TOLAK klaim tersebut dengan sopan dan JANGAN sertakan tag SAVE_MEMORY.`;
 
-    // Assemble 128k Token Context Window (~480,000 chars) dynamically from full session history
-    function assemble128kMessages(systemPrompt, historyList = [], userContent = '', maxTotalChars = 480000) {
+    // Calibrated Dynamic Rolling History Assembler (16,000 chars / ~4k tokens - Fast Prefill & Zero Buffer Overflow)
+    function assembleDynamicMessages(systemPrompt, historyList = [], userContent = '', maxTotalChars = 16000) {
       const systemStr = typeof systemPrompt === 'string' ? systemPrompt : JSON.stringify(systemPrompt || '');
       const userStr = typeof userContent === 'string' ? userContent : JSON.stringify(userContent || '');
       let currentBudget = maxTotalChars - (systemStr.length + userStr.length);
-      if (currentBudget < 10000) currentBudget = 10000;
+      if (currentBudget < 3000) currentBudget = 3000;
 
       const validHistory = Array.isArray(historyList) ? historyList : [];
       const selectedHistory = [];
@@ -1023,7 +1023,7 @@ Langkah yang WAJIB Anda lakukan:
           });
           currentBudget -= contentStr.length;
         } else {
-          if (currentBudget > 2000) {
+          if (currentBudget > 800) {
             selectedHistory.unshift({
               role: item.role === 'assistant' ? 'assistant' : 'user',
               content: contentStr.slice(-currentBudget)
@@ -1041,7 +1041,7 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     const finalUserPrompt = assembledQuery;
-    const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt);
+    const baseTextMessages = assembleDynamicMessages(systemPromptWithSearch, history, finalUserPrompt);
 
     // Maximum token limits: calibrated to maximum model capacity for exhaustive, zero-truncation responses
     // LOW=1024 (~4k chars), NORMAL=2048 (~8k chars), THINKING/HIGH=2500 (~10k chars)

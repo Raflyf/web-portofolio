@@ -648,8 +648,8 @@ ${certsOverview}
         // Record conversation turn for dynamic context
         this.conversationHistory.push({ role: 'user', content: cleanQuery });
         this.conversationHistory.push({ role: 'assistant', content: finalResponse });
-        if (this.conversationHistory.length > 500) {
-          this.conversationHistory = this.conversationHistory.slice(-500);
+        if (this.conversationHistory.length > 20) {
+          this.conversationHistory = this.conversationHistory.slice(-20);
         }
         this.saveHistoryToSession();
 
