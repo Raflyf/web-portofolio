@@ -1311,3 +1311,31 @@ body {
   border-color: var(--border-card);
 }
 
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 32px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.omniroute-header-pill {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.08);
+  transition: all 0.2s ease;
+}
+
+.omniroute-header-pill:hover {
+  border-color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.omniroute-header-pill.is-online {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.1);
+}
+
