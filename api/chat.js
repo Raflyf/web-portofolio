@@ -1283,7 +1283,34 @@ Langkah yang WAJIB Anda lakukan:
         : query;
       const promptText = typeof lastUserMsg === 'string' ? lastUserMsg : JSON.stringify(lastUserMsg);
 
-      // 1. Direct OpenAI JSON format attempt
+      // 1. Direct Hugging Face /api/omniroute FASTAPI endpoint (Ultra-fast direct path)
+      if (OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface')) {
+        try {
+          const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+          const res = await fetchJsonWithTimeout(`${baseUrl}/api/omniroute`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: promptText,
+              model: mName,
+              messages: openRouterMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, tOut);
+
+          if (res.ok) {
+            const content = res.data?.choices?.[0]?.message?.content || (typeof res.data === 'string' ? res.data : null);
+            if (content && content.trim().length > 0) {
+              return sendSuccess(content.trim(), mName, 'OmniRoute Dedicated Gateway');
+            }
+          }
+        } catch (err) {
+          providerErrors.push(`OmniRoute ${mName} Direct FastAPI: ${err.message}`);
+        }
+      }
+
+      // 2. Direct OpenAI JSON format attempt
       try {
         const res = await fetchJsonWithTimeout(OMNIROUTE_URL, {
           method: 'POST',
