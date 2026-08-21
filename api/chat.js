@@ -210,13 +210,23 @@ function formulateSmartSearchQueries(query, history = []) {
   const qClean = query.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
   if (qClean.length >= 3) queries.push(qClean);
 
-  const qLow = query.toLowerCase();
+  const qLow = (query + ' ' + (history.slice(-2).map(h => h.content || '').join(' '))).toLowerCase();
+  
+  if (qLow.includes('gemini') || qLow.includes('google ai') || qLow.includes('google deepmind')) {
+    queries.push('Google Gemini latest model release update 2026');
+    queries.push('Gemini Flash Pro Google DeepMind release 2026');
+  }
   if (qLow.includes('claude') || qLow.includes('anthropic')) {
     queries.push('Anthropic Claude latest model release news 2026');
     queries.push('Claude Sonnet Opus release update 2026');
-  } else if (qLow.includes('gpt') || qLow.includes('openai') || qLow.includes('astra') || qLow.includes('gemini')) {
-    queries.push('OpenAI GPT release Google Gemini AI model 2026');
-  } else if (qLow.includes('hari ini') || qLow.includes('terbaru') || qLow.includes('berita')) {
+  }
+  if (qLow.includes('gpt') || qLow.includes('openai') || qLow.includes('chatgpt') || qLow.includes('astra')) {
+    queries.push('OpenAI GPT latest model release news 2026');
+  }
+  if (qLow.includes('deepseek')) {
+    queries.push('DeepSeek AI latest model release 2026');
+  }
+  if (qLow.includes('hari ini') || qLow.includes('terbaru') || qLow.includes('berita') || qLow.includes('terkini')) {
     queries.push('berita teknologi AI terkini hari ini 2026');
   }
 
@@ -232,7 +242,7 @@ function formulateSmartSearchQueries(query, history = []) {
     }
   }
 
-  return Array.from(new Set(queries)).slice(0, 3);
+  return Array.from(new Set(queries)).slice(0, 4);
 }
 
 /**
@@ -673,8 +683,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 0. Casual greetings, short conversational messages, acknowledgments
-  const isCasualOrClosing = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|paham|mengerti)\b/i.test(q) || (len <= 25 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|buatkan|bikin|debug|error)\b/i.test(q));
+  // 0. Casual greetings, short conversational messages, acknowledgments (exact word matching only)
+  const isCasualOrClosing = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(q);
   
   if (isCasualOrClosing) {
     return {
@@ -926,15 +936,14 @@ export default async function handler(req, res) {
       targetModel = 'Vision-model';
     }
 
+    const isSingleWordGreeting = /^(halo|hai|hey|tes|test|ping|oke|ok|sip|makasih|terima kasih)$/i.test(query.trim());
     const [searchResult, liveRepoContext] = await Promise.all([
-      (queryIntent.category === 'project_architecture' || queryIntent.category === 'trivial_casual')
+      isSingleWordGreeting
         ? Promise.resolve({ formattedPrompt: '', rawSnippets: [] })
         : searchWebContext(query, history),
       fetchLiveRepoContext(query)
     ]);
-    const webContext = (queryIntent.category === 'trivial_casual') 
-      ? '' 
-      : `${liveRepoContext}${searchResult.formattedPrompt}`;
+    const webContext = `${liveRepoContext}${searchResult.formattedPrompt}`;
     const webMemories = searchResult.rawSnippets || [];
 
     const sendSuccess = (content, modelName, providerName) => {
