@@ -168,11 +168,15 @@ class DashboardApp {
     const pillEl = document.getElementById('omniroute-live-pill');
     const dotEl = document.getElementById('omniroute-live-dot');
     const textEl = document.getElementById('omniroute-live-text');
-    if (!pillEl && !textEl) return;
+
+    const headerPillEl = document.getElementById('header-omniroute-pill');
+    const headerDotEl = document.getElementById('header-omniroute-dot');
+    const headerTextEl = document.getElementById('header-omniroute-text');
 
     let isOnline = false;
     let latencyText = '';
     let statusLabel = '';
+    let headerStatusLabel = '';
 
     // 1. Check Cloud Serverless Gateway Status (/api/chat)
     try {
@@ -186,7 +190,8 @@ class DashboardApp {
           isOnline = true;
           const lat = data.omniroute.latencyMs;
           latencyText = lat ? `${lat}ms` : '<40ms';
-          statusLabel = `HOST STATUS: ACTIVE TUNNEL (${latencyText})`;
+          statusLabel = `HOST STATUS: ACTIVE (${latencyText})`;
+          headerStatusLabel = `OMNIROUTE: ONLINE (${latencyText})`;
         }
       }
     } catch (_) {}
@@ -209,13 +214,14 @@ class DashboardApp {
             isOnline = true;
             const t1 = Math.round(performance.now() - t0);
             statusLabel = `HOST STATUS: LOCAL ACTIVE (:20128 - ${t1}ms)`;
+            headerStatusLabel = `OMNIROUTE: LOCAL (:20128 - ${t1}ms)`;
             break;
           }
         } catch (_) {}
       }
     }
 
-    // 3. Update Visual State
+    // 3. Update Visual State for Card Pill & Header Pill
     if (isOnline) {
       if (pillEl) {
         pillEl.classList.remove('is-offline', 'is-standby');
@@ -228,6 +234,17 @@ class DashboardApp {
       }
       if (textEl) {
         textEl.textContent = statusLabel || 'HOST STATUS: ACTIVE TUNNEL (<50ms)';
+      }
+
+      if (headerPillEl) {
+        headerPillEl.classList.add('is-online');
+      }
+      if (headerDotEl) {
+        headerDotEl.style.backgroundColor = 'var(--accent-emerald)';
+        headerDotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
+      }
+      if (headerTextEl) {
+        headerTextEl.textContent = headerStatusLabel || 'OMNIROUTE: ONLINE';
       }
     } else {
       if (pillEl) {
@@ -242,20 +259,35 @@ class DashboardApp {
       if (textEl) {
         textEl.textContent = 'HOST STATUS: STANDBY / OFFLINE (Auto Cloud Failover)';
       }
+
+      if (headerPillEl) {
+        headerPillEl.classList.remove('is-online');
+      }
+      if (headerDotEl) {
+        headerDotEl.style.backgroundColor = 'var(--accent-amber)';
+        headerDotEl.style.boxShadow = 'none';
+      }
+      if (headerTextEl) {
+        headerTextEl.textContent = 'OMNIROUTE: STANDBY';
+      }
     }
 
-    // Attach click-to-sync Cloudflare tunnel handler once
+    // Attach click-to-sync handler once to card pill and header pill
     if (pillEl && !pillEl.dataset.hasTunnelHandler) {
       pillEl.dataset.hasTunnelHandler = 'true';
       pillEl.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
     }
+    if (headerPillEl && !headerPillEl.dataset.hasTunnelHandler) {
+      headerPillEl.dataset.hasTunnelHandler = 'true';
+      headerPillEl.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
+    }
   }
 
   async promptSyncOmniRouteTunnel() {
-    const defaultUrl = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+    const defaultUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
     const currentSaved = localStorage.getItem('omniroute_custom_tunnel') || defaultUrl;
     const inputUrl = window.prompt(
-      'SINKRONISASI OMNIROUTE STATIC / CLOUDFLARE TUNNEL:\n\nMasukkan / perbarui URL Endpoint aktif Anda (misal: https://gullible-cytoplast-mardi.ngrok-free.dev/v1):',
+      'SINKRONISASI OMNIROUTE 24/7 CLOUD / STATIC TUNNEL:\n\nMasukkan / perbarui URL Endpoint aktif Anda (misal Hugging Face / Ngrok / Cloudflare):\nContoh: https://rflyyyf-omniroute-gateway.hf.space/v1',
       currentSaved
     );
 
@@ -282,9 +314,48 @@ class DashboardApp {
         } catch (_) {}
       }
 
-      alert(`Tunnel URL berhasil disinkronkan ke Cloud:\n${cleanUrl}\n\nGateway akan memverifikasi status host sekarang.`);
+      alert(`Endpoint OmniRoute berhasil disinkronkan ke Cloud:\n${cleanUrl}\n\nGateway akan memverifikasi status host sekarang.`);
       await this.checkOmniRouteRealtimeStatus();
     }
+  }
+
+  buildPaginationNumbers(currentPage, totalPages, dataAttribute) {
+    if (totalPages <= 1) return '';
+    const pages = [];
+    const delta = 2; // Pages around current
+
+    pages.push(1);
+
+    const left = Math.max(2, currentPage - delta);
+    const right = Math.min(totalPages - 1, currentPage + delta);
+
+    if (left > 2) {
+      pages.push('...');
+    }
+
+    for (let i = left; i <= right; i++) {
+      pages.push(i);
+    }
+
+    if (right < totalPages - 1) {
+      pages.push('...');
+    }
+
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+
+    return pages.map(p => {
+      if (p === '...') {
+        return `<span class="pagination-ellipsis" aria-hidden="true">…</span>`;
+      }
+      const isActive = p === currentPage;
+      return `
+        <button type="button" class="pagination-btn ${isActive ? 'active' : ''}" ${dataAttribute}="${p}" aria-label="Halaman ${p}">
+          ${p}
+        </button>
+      `;
+    }).join('');
   }
 
   logout() {
@@ -1396,14 +1467,7 @@ class DashboardApp {
         return;
       }
 
-      let pageButtonsHtml = '';
-      for (let i = 1; i <= totalPages; i++) {
-        pageButtonsHtml += `
-          <button type="button" class="pagination-btn ${i === this.memoryCurrentPage ? 'active' : ''}" data-mempage="${i}" aria-label="Halaman ${i}">
-            ${i}
-          </button>
-        `;
-      }
+      const pageButtonsHtml = this.buildPaginationNumbers(this.memoryCurrentPage, totalPages, 'data-mempage');
 
       pagEl.innerHTML = `
         <span class="pagination-info">Menampilkan ${startIdx + 1}-${endIdx} dari ${total} fakta (Halaman ${this.memoryCurrentPage}/${totalPages})</span>
@@ -1546,21 +1610,7 @@ class DashboardApp {
         return;
       }
 
-      let pageButtonsHtml = '';
-      const maxButtons = 7;
-      let startPage = Math.max(1, this.tableCurrentPage - Math.floor(maxButtons / 2));
-      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-      if (endPage - startPage + 1 < maxButtons) {
-        startPage = Math.max(1, endPage - maxButtons + 1);
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageButtonsHtml += `
-          <button type="button" class="pagination-btn ${i === this.tableCurrentPage ? 'active' : ''}" data-tablepage="${i}" aria-label="Halaman ${i}">
-            ${i}
-          </button>
-        `;
-      }
+      const pageButtonsHtml = this.buildPaginationNumbers(this.tableCurrentPage, totalPages, 'data-tablepage');
 
       pagEl.innerHTML = `
         <span class="pagination-info">Menampilkan ${startIdx + 1}-${endIdx} dari ${total} aktivitas (Halaman ${this.tableCurrentPage}/${totalPages})</span>
