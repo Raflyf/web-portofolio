@@ -852,7 +852,16 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    return res.status(200).json({ version: 'v10.110.0', status: 'online', timestamp: Date.now() });
+    const hasOmni = Boolean(process.env.OMNIROUTE_URL);
+    const hasOpenRouter = Boolean(process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEYS);
+    const hasOpenCode = Boolean(process.env.OPENCODE_API_KEY || process.env.OPENCODE_API_KEYS);
+    const hasOllama = Boolean(process.env.OLLAMA_API_KEY);
+    return res.status(200).json({ 
+      version: 'v10.110.0', 
+      status: 'online', 
+      keys: { hasOmni, hasOpenRouter, hasOpenCode, hasOllama },
+      timestamp: Date.now() 
+    });
   }
 
   if (req.method !== 'POST') {
@@ -868,6 +877,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    const requestStartTime = Date.now();
     const { 
       query = '', 
       model = 'auto', 
@@ -1419,20 +1429,19 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     // ========================================================================
-    // EXECUTE PIPELINE WITH GLOBAL 48s HARD BUDGET GUARD
+    // EXECUTE PIPELINE WITH GLOBAL 45s HARD BUDGET GUARD
     // ========================================================================
     const executionPipeline = buildExecutionPipeline();
-    const requestStartTime = Date.now();
 
     for (const step of executionPipeline) {
       const elapsed = Date.now() - requestStartTime;
-      const remainingMs = 48000 - elapsed;
-      if (remainingMs <= 3500) {
+      const remainingMs = 45000 - elapsed;
+      if (remainingMs <= 3000) {
         // Stop before hitting Vercel's 60s hard timeout (FUNCTION_INVOCATION_TIMEOUT)
         break;
       }
 
-      const stepTimeout = Math.min(step.timeout || 15000, Math.max(3000, remainingMs - 1500));
+      const stepTimeout = Math.min(step.timeout || 15000, Math.max(2500, remainingMs - 1000));
       let result = null;
 
       if (step.provider === 'omniroute') {
