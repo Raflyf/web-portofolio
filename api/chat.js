@@ -818,9 +818,12 @@ export default async function handler(req, res) {
     ].filter((v, i, a) => v && a.indexOf(v) === i);
     const OPENROUTER_KEY = OPENROUTER_KEYS[0] || null;
 
-    const NVIDIA_KEY = (customKey && customProvider === 'nvidia') 
-      ? customKey 
-      : process.env.NVIDIA_API_KEY;
+    const NVIDIA_KEYS = [
+      (customKey && customProvider === 'nvidia') ? customKey : null,
+      process.env.NVIDIA_API_KEY,
+      ...(process.env.NVIDIA_API_KEYS ? process.env.NVIDIA_API_KEYS.split(',').map(s => s.trim()) : [])
+    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const NVIDIA_KEY = NVIDIA_KEYS[0] || null;
 
     const OPENCODE_KEYS = [
       (customKey && customProvider === 'opencode') ? customKey : null,
@@ -1035,34 +1038,36 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     async function callNvidiaNim(mName, tOut = 25000) {
-      if (!NVIDIA_KEY) return null;
-      try {
-        const res = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${NVIDIA_KEY}`
-          },
-          body: JSON.stringify({
-            model: mName,
-            messages: baseTextMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig
-          })
-        }, tOut);
+      if (NVIDIA_KEYS.length === 0) return null;
+      for (const nvKey of NVIDIA_KEYS) {
+        try {
+          const res = await fetchWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${nvKey}`
+            },
+            body: JSON.stringify({
+              model: mName,
+              messages: baseTextMessages,
+              max_tokens: maxTokensConfig,
+              temperature: tempConfig
+            })
+          }, tOut);
 
-        if (res.ok) {
-          const data = await res.json();
-          const content = data?.choices?.[0]?.message?.content;
-          if (content && content.trim().length > 0) {
-            return sendSuccess(content.trim(), mName, 'NVIDIA NIM Direct API');
+          if (res.ok) {
+            const data = await res.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (content && content.trim().length > 0) {
+              return sendSuccess(content.trim(), mName, 'NVIDIA NIM Direct API');
+            }
+          } else {
+            const errTxt = await res.text();
+            providerErrors.push(`Nvidia NIM ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
           }
-        } else {
-          const errTxt = await res.text();
-          providerErrors.push(`Nvidia NIM ${mName} HTTP ${res.status}: ${errTxt.slice(0, 100)}`);
+        } catch (err) {
+          providerErrors.push(`Nvidia NIM ${mName}: ${err.message}`);
         }
-      } catch (err) {
-        providerErrors.push(`Nvidia NIM ${mName}: ${err.message}`);
       }
       return null;
     }
