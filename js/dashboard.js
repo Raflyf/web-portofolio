@@ -170,45 +170,70 @@ class DashboardApp {
     const textEl = document.getElementById('omniroute-live-text');
     if (!pillEl && !textEl) return;
 
+    let isOnline = false;
+    let latencyText = '';
+    let statusLabel = '';
+
+    // 1. Check Cloud Serverless Gateway Status (/api/chat)
     try {
       const res = await fetch('/api/chat', {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const isOnline = Boolean(data?.omniroute?.isOnline);
-      const latency = data?.omniroute?.latencyMs;
-
-      if (isOnline) {
-        if (pillEl) {
-          pillEl.classList.remove('is-offline', 'is-standby');
-          pillEl.classList.add('is-online');
-        }
-        if (dotEl) {
-          dotEl.style.backgroundColor = 'var(--accent-emerald)';
-          dotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
-        }
-        if (textEl) {
-          textEl.textContent = `HOST STATUS: ACTIVE TUNNEL (${latency ? latency + 'ms' : '<50ms'})`;
-        }
-      } else {
-        if (pillEl) {
-          pillEl.classList.remove('is-online');
-          pillEl.classList.add('is-offline', 'is-standby');
-        }
-        if (dotEl) {
-          dotEl.style.backgroundColor = 'var(--accent-amber)';
-          dotEl.style.boxShadow = 'none';
-        }
-        if (textEl) {
-          textEl.textContent = 'HOST STATUS: STANDBY / OFFLINE (Auto Cloud Failover)';
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.omniroute?.isOnline) {
+          isOnline = true;
+          const lat = data.omniroute.latencyMs;
+          latencyText = lat ? `${lat}ms` : '<40ms';
+          statusLabel = `HOST STATUS: ACTIVE TUNNEL (${latencyText})`;
         }
       }
-    } catch (_) {
+    } catch (_) {}
+
+    // 2. Direct In-Browser Localhost Probe (For Local Server at 127.0.0.1:20128 / localhost:20128)
+    if (!isOnline && typeof window !== 'undefined') {
+      const localTargets = ['http://localhost:20128/v1/models', 'http://127.0.0.1:20128/v1/models'];
+      for (const targetUrl of localTargets) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 700);
+          const t0 = performance.now();
+          const localRes = await fetch(targetUrl, {
+            method: 'GET',
+            mode: 'cors',
+            signal: controller.signal
+          });
+          clearTimeout(timer);
+          if (localRes.ok || localRes.status === 200 || localRes.status === 401) {
+            isOnline = true;
+            const t1 = Math.round(performance.now() - t0);
+            statusLabel = `HOST STATUS: LOCAL ACTIVE (:20128 - ${t1}ms)`;
+            break;
+          }
+        } catch (_) {}
+      }
+    }
+
+    // 3. Update Visual State
+    if (isOnline) {
+      if (pillEl) {
+        pillEl.classList.remove('is-offline', 'is-standby');
+        pillEl.classList.add('is-online');
+        pillEl.style.cursor = 'pointer';
+      }
+      if (dotEl) {
+        dotEl.style.backgroundColor = 'var(--accent-emerald)';
+        dotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
+      }
+      if (textEl) {
+        textEl.textContent = statusLabel || 'HOST STATUS: ACTIVE TUNNEL (<50ms)';
+      }
+    } else {
       if (pillEl) {
         pillEl.classList.remove('is-online');
         pillEl.classList.add('is-offline', 'is-standby');
+        pillEl.style.cursor = 'pointer';
       }
       if (dotEl) {
         dotEl.style.backgroundColor = 'var(--accent-amber)';
@@ -217,6 +242,48 @@ class DashboardApp {
       if (textEl) {
         textEl.textContent = 'HOST STATUS: STANDBY / OFFLINE (Auto Cloud Failover)';
       }
+    }
+
+    // Attach click-to-sync Cloudflare tunnel handler once
+    if (pillEl && !pillEl.dataset.hasTunnelHandler) {
+      pillEl.dataset.hasTunnelHandler = 'true';
+      pillEl.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
+    }
+  }
+
+  async promptSyncOmniRouteTunnel() {
+    const defaultUrl = 'https://reflects-ambassador-van-owners.trycloudflare.com/v1';
+    const currentSaved = localStorage.getItem('omniroute_custom_tunnel') || defaultUrl;
+    const inputUrl = window.prompt(
+      'SINKRONISASI OMNIROUTE CLOUDFLARE TUNNEL:\n\nMasukkan / perbarui URL Cloudflare Quick Tunnel aktif Anda (misal: https://xxx.trycloudflare.com/v1):',
+      currentSaved
+    );
+
+    if (inputUrl && inputUrl.trim().startsWith('http')) {
+      const cleanUrl = inputUrl.trim().replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+      localStorage.setItem('omniroute_custom_tunnel', cleanUrl);
+
+      // Push to Supabase Continuous Memory so Vercel Serverless instantly routes to it
+      const config = this.getSupabaseConfig();
+      if (config && config.url && config.anonKey) {
+        try {
+          await fetch(`${config.url}/rest/v1/ai_memories`, {
+            method: 'POST',
+            headers: {
+              'apikey': config.anonKey,
+              'Authorization': `Bearer ${config.anonKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fact_text: `[OMNIROUTE_TUNNEL: ${cleanUrl}]`,
+              session_id: 'admin_dashboard_sync'
+            })
+          });
+        } catch (_) {}
+      }
+
+      alert(`Tunnel URL berhasil disinkronkan ke Cloud:\n${cleanUrl}\n\nGateway akan memverifikasi status host sekarang.`);
+      await this.checkOmniRouteRealtimeStatus();
     }
   }
 
