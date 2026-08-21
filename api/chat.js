@@ -1312,21 +1312,27 @@ Langkah yang WAJIB Anda lakukan:
         ];
       }
 
-      // [PERCAKAPAN RECEH & OBROLAN KASUAL] -> WAJIB MODEL NANO 30B (TANPA MINIMAX)
+      // [PERCAKAPAN RECEH & OBROLAN KASUAL] -> PRIORITAS NANO 30B DENGAN OLLAMA CLOUD BACKUP
       return [
         // 1. OmniRoute Dedicated Gateway (Probe cepat 2.5s jika tunnel aktif)
         { provider: 'omniroute', model: omniModel, timeout: 2500 },
 
-        // 2. Prioritas #1: Nemotron 3 Nano dari Ollama Cloud Hub (18s realistis, throughput ~100 tok/s)
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 18000 },
+        // 2. Prioritas #1: Nemotron 3 Nano dari Ollama Cloud Hub (22s realistis, throughput ~100 tok/s)
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 22000 },
 
-        // 3. Prioritas #2: Nemotron 3 Nano 30B dari OpenRouter (Fast Fallback)
+        // 3. Prioritas #2: Nemotron 3 Super dari Ollama Cloud Hub (Fast Cluster Failover)
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
+
+        // 4. Prioritas #3: Nemotron 3.5 Lightning dari Ollama Cloud Hub (Fast 1M Context Failover)
+        { provider: 'ollama', model: 'nemotron-3.5-lightning', timeout: 12000 },
+
+        // 5. Prioritas #4: Nemotron 3 Nano 30B dari OpenRouter (Fast Fallback)
         { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
 
-        // 4. Prioritas #3: LiquidAI LFM 2.5 dari OpenRouter (Sub-2s Instant)
+        // 6. Prioritas #5: LiquidAI LFM 2.5 dari OpenRouter (Sub-2s Instant)
         { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 6000 },
 
-        // 5. Prioritas #4: OpenRouter Universal Free Auto-Router
+        // 7. Prioritas #6: OpenRouter Universal Free Auto-Router
         { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 }
       ];
     }
