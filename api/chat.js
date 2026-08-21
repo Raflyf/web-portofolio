@@ -848,6 +848,32 @@ function isRateLimited(clientIp) {
   return record.count > MAX_REQUESTS_PER_WINDOW;
 }
 
+// Dynamic OmniRoute Tunnel Resolver from Supabase (Zero-Redeploy Cloudflare Tunnel Sync)
+async function fetchDynamicOmniRouteUrl() {
+  try {
+    const sUrl = process.env.SUPABASE_URL;
+    const sKey = process.env.SUPABASE_ANON_KEY;
+    if (!sUrl || !sKey) return null;
+    const endpoint = `${sUrl.replace(/\/+$/, '')}/rest/v1/ai_memories?fact_text=like.*[OMNIROUTE_TUNNEL*&order=created_at.desc&limit=1`;
+    const res = await fetchJsonWithTimeout(endpoint, {
+      method: 'GET',
+      headers: {
+        'apikey': sKey,
+        'Authorization': `Bearer ${sKey}`,
+        'Content-Type': 'application/json'
+      }
+    }, 1500);
+    if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+      const text = res.data[0].fact_text || '';
+      const match = text.match(/\[OMNIROUTE_TUNNEL:\s*([^\]]+)\]/i);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
 export default async function handler(req, res) {
   // Dynamic Standard-Compliant CORS Headers
   const origin = req.headers.origin || '*';
@@ -865,10 +891,11 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     loadLocalEnv();
-    const rawOmniUrl = (process.env.OMNIROUTE_URL || '').replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+    let rawOmniUrl = (process.env.OMNIROUTE_URL || '').replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
     let isOmniAlive = false;
     let omniLatency = null;
 
+    // 1. Try environment configured URL first
     if (rawOmniUrl && !(process.env.VERCEL && (rawOmniUrl.includes('127.0.0.1') || rawOmniUrl.includes('localhost')))) {
       const pingStart = Date.now();
       try {
@@ -888,11 +915,34 @@ export default async function handler(req, res) {
       }
     }
 
+    // 2. If env URL is dead or unset, check dynamic Supabase synced tunnel URL
+    if (!isOmniAlive) {
+      const dynamicTunnel = await fetchDynamicOmniRouteUrl();
+      if (dynamicTunnel && dynamicTunnel !== rawOmniUrl) {
+        const cleanDyn = dynamicTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+        const pingStart = Date.now();
+        try {
+          const pingUrl = cleanDyn.includes('/models') ? cleanDyn : `${cleanDyn}/models`;
+          const pingRes = await fetchJsonWithTimeout(pingUrl, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`
+            }
+          }, 1500);
+          if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || pingRes.status === 404) {
+            isOmniAlive = true;
+            omniLatency = Date.now() - pingStart;
+            rawOmniUrl = cleanDyn;
+          }
+        } catch (_) {}
+      }
+    }
+
     const hasOpenRouter = Boolean(process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEYS);
     const hasOpenCode = Boolean(process.env.OPENCODE_API_KEY || process.env.OPENCODE_API_KEYS);
     const hasOllama = Boolean(process.env.OLLAMA_API_KEY);
     return res.status(200).json({ 
-      version: 'v10.155.0', 
+      version: 'v10.156.0', 
       status: 'online', 
       omniroute: {
         configured: Boolean(rawOmniUrl),
@@ -960,6 +1010,14 @@ export default async function handler(req, res) {
     let rawOmniUrl = (cleanCustomKey && cleanCustomProvider === 'omniroute') 
       ? (process.env.OMNIROUTE_URL || '')
       : (process.env.OMNIROUTE_URL || '');
+    
+    if (!rawOmniUrl || rawOmniUrl.includes('trycloudflare.com')) {
+      const dynamicTunnel = await fetchDynamicOmniRouteUrl();
+      if (dynamicTunnel) {
+        rawOmniUrl = dynamicTunnel;
+      }
+    }
+
     if (rawOmniUrl && !rawOmniUrl.includes('/chat/completions')) {
       rawOmniUrl = rawOmniUrl.replace(/\/+$/, '') + '/chat/completions';
     }
