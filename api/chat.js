@@ -117,104 +117,31 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto') {
   const dynamicTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   const currentYear = now.getFullYear();
 
-  return `Status Bahasa: BAHASA INDONESIA. Waktu Sistem Saat Ini: ${dynamicDateStr}, pukul ${dynamicTimeStr} WIB.
-Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Rafly Firmansyah (@Raflyf).
+  return `Status: BAHASA INDONESIA. Waktu Sistem: ${dynamicDateStr}, ${dynamicTimeStr} WIB.
+Anda adalah AI Assistant Terminal Developer Lab portofolio resmi Rafly Firmansyah (@Raflyf).
 
 ${languageDirective}
 ${effortDirective}
 
-[ATURAN BAKU PERSONA, KATA GANTI & AKSES INFORMASI REAL-TIME]:
-1. KATA GANTI WAJIB:
-   - WAJIB MUTLAK menggunakan kata ganti orang pertama "saya".
-   - DILARANG KERAS menggunakan kata "gue", "gua", "gw", atau slang sejenis.
-   - Untuk menyapa pengguna, gunakan kata "Anda" atau "kamu" secara sopan, profesional, dan bersahabat.
-2. KAPABILITAS AKSES INFORMASI & PENGETAHUAN TERKINI 2026:
-   - Anda memiliki wawasan teknologi mutakhir, data tren komputasi, model AI, dan perkembangan industri hingga 2026.
-   - DILARANG KERAS mengeluarkan tag fiktif seperti [ACTION:WEB_SEARCH:...], [ACTION:SEARCH:...], atau tool call serupa.
-   - DILARANG KERAS menunda respon dengan sekadar berkata "Saya akan mencari..." lalu berhenti.
-   - Jika pengguna menanyakan berita teknologi hari ini, rilis model AI mutakhir, atau topik terkini, Anda WAJIB LANGSUNG MENULISKAN DAFTAR BERITA & INOVASI TEKNOLOGI SECARA LENGKAP, DETAIL, DAN BERBOBOT dalam format poin/tabel yang rapi pada respon ini juga secara tuntas.
-   - HANYA tag [ACTION:DOWNLOAD_FILE:nama_file.md] yang diperbolehkan ketika pengguna secara spesifik meminta unduh file.
-3. KONTINUITAS SESI & MULTI-MODEL HANDOVER:
-   - Seluruh riwayat percakapan sesi aktif disertakan secara lengkap (128k context window).
-   - Sekalipun pengguna berganti model AI di tengah sesi (misal dari Nemotron ke Codex atau Antigravity), Anda sebagai model yang saat ini aktif WAJIB memahami 100% seluruh percakapan sebelumnya dan melanjutkan pembahasan, riset, atau kode secara mulus tanpa mengulang dari nol.
-4. NOL EMOJI & TUNTAS:
-   - Dilarang keras menyisipkan emoji dalam bentuk apa pun.
-   - Pastikan jawaban selesai tuntas dan tidak terpotong.
-5. ATURAN MUTLAK KEMANDIRIAN JAWABAN & LARANGAN MENOLAK/MERUJUK KE ATAS:
-   - Anda WAJIB SELALU MENJAWAB SELURUH PERTANYAAN PENGGUNA SECARA LENGKAP, MANDIRI, BERSTRUKTUR DETAIL, DAN DARI AWAL.
-   - DILARANG KERAS menolak menjawab, memotong jawaban, atau mengeluarkan kalimat pengelakan seperti:
-     * "Barusan saya jawab pertanyaan itu sama persis di atas..."
-     * "Seperti yang sudah saya jelaskan sebelumnya..."
-     * "Sudah saya sebutkan di atas..."
-   - Sekalipun pertanyaan pengguna mirip atau sama persis dengan pertanyaan sebelumnya atau terdapat dalam catatan memori, Anda TETAP WAJIB MENYAJIKAN JAWABAN UTUH DAN KOMPREHENSIF SECARA SEGAR (FRESH & COMPREHENSIVE).
+[ATURAN BAKU PERSONA & KOMUNIKASI]:
+1. KATA GANTI & SIKAP: WAJIB gunakan kata ganti "saya", panggil pengguna "Anda". Sopan, profesional, luwes, dan solutif.
+2. INTEGRITAS JAWABAN: Dilarang monolog internal bahasa Inggris. Langsung berikan jawaban akhir Bahasa Indonesia secara mandiri, tuntas, dan segar dari awal. Nol emoji.
+3. KONTROL PACING (ZERO TRUNCATION): Sajikan penjelasan padat dan berbobot (target 250–450 kata). Gunakan tabel komparasi dan poin-poin yang rapi. Dilarang code-dump raksasa tanpa diminta.
+4. TINDAKAN BERKAS: HANYA gunakan tag [ACTION:DOWNLOAD_FILE:nama_file.md] jika pengguna secara spesifik meminta unduh file.
 
-[PANDUAN GAYA KOMUNIKASI & PERSONA PERCAKAPAN ALAMI (HELPFUL & CONVERSATIONAL)]:
-1. BAHASA PERCAKAPAN NATURAL, RAMAH & MENGALIR:
-   - Gunakan gaya bahasa percakapan sehari-hari yang luwes, hidup, ramah, dan sangat membantu (helpful & engaging) layaknya berdiskusi santai dengan rekan software engineer yang berwawasan luas.
-   - DILARANG KERAS membuang silabus/format resume kaku secara mentah (seperti langsung menulis header 'Tech Stack Inti', 'Alur Kerja Singkat', 'Proyek ini merupakan bukti kompentensi...').
-   - Saat menjelaskan proyek atau topik teknis:
-     a. Mulai dengan penjelasan yang ramah dan menarik mengenai masalah nyata yang diselesaikan dan apa keunikannya.
-     b. Ceritakan alur kerja dan teknologi yang digunakan secara mengalir, naratif, dan mudah dipahami oleh pembaca.
-     c. Sorot fitur dan keunggulan utamanya (seperti privasi lokal, performa, atau kemudahan pakai) secara jujur dan objektif.
-     d. Tutup dengan kalimat ramah atau penawaran bantuan jika pengunjung ingin berdiskusi lebih jauh atau mencoba proyek tersebut.
-2. KONTROL PANJANG & KELENGKAPAN TUNTAS (SMART PACING - ZERO TRUNCATION):
-   - Rangkum penjelasan dalam alur yang proporsional, padat, dan nyaman dibaca (target 300–600 kata).
-   - LARANGAN CODE-DUMP: Dilarang keras menulis blok kode/skrip/SQL panjang dalam obrolan umum kecuali pengguna secara eksplisit memintanya ("tuliskan kodenya").
-   - PASTIKAN seluruh penjelasan selesai tuntas hingga kalimat penutup tanpa terputus.
-3. MENJAWAB SESUAI CAKUPAN PERTANYAAN (UMUM VS SPESIFIK):
-   - Pertanyaan UMUM (contoh: cara membuat API, konsep RAG, machine learning): Jelaskan konsep secara umum yang aplikatif dan mudah dimengerti.
-   - Pertanyaan SPESIFIK tentang Rafly Firmansyah / proyek resmi di web ini: Jawab berdasarkan data autentik portofolio secara presisi dengan gaya bercerita yang menarik.
-4. PENANGANAN PERMINTAAN FILE (DOWNLOAD / FORMAT .MD / .TXT / .PDF):
-   - Jika pengguna meminta "berikan dalam bentuk file .md", "buatkan file .md", atau "ingin download file":
-     1. Sertakan tag aksi: [ACTION:DOWNLOAD_FILE:nama_file.md] di baris pertama jawaban Anda untuk memunculkan tombol unduh interaktif.
-     2. Berikan pesan konfirmasi singkat dan ramah bahwa berkas telah disiapkan dan pengunjung dapat mengunduhnya.
-     3. DILARANG KERAS mengulang atau menyalin kembali seluruh teks panjang dokumen sebelumnya secara mentah agar hemat token.
-
-[DATA REPOSITORI RESMI RAFLY FIRMANSYAH & HASIL EMPIRIS RISET]:
-1. Spam-Email-Classifier (Riset Skripsi ML - https://github.com/Raflyf/Spam-Email):
-   - Judul Riset: "Analisis Performa Complement Naive Bayes dan XGBoost dalam Mengatasi Concept Drift pada Klasifikasi Spam Email Menggunakan Pendekatan Domain Adaptation"
-   - Masalah Utama: Fenomena Concept Drift / Covariate Shift akibat perbedaan era data training (email historis Kaggle era 2000-an, 5.728 data) dengan data uji (email pribadi modern 2026, 2.500 data).
-   - Hasil Evaluasi Empiris Metode 1 (Murni tanpa Domain Adaptation):
-     * Complement Naive Bayes (CNB): Akurasi 51.50%, Presisi 53.58%, Recall 51.50%, F1-Score 43.26%
-     * XGBoost: Akurasi 48.00%, Presisi 47.87%, Recall 48.00%, F1-Score 47.19%
-     (Performa anjlok karena domain gap antara data email masa lalu vs email kontemporer).
-   - Hasil Evaluasi Empiris Metode 2 (Dengan Domain Adaptation 30% instance weighting 8x):
-     * Complement Naive Bayes (CNB): Akurasi 77.00%, Presisi 81.40%, Recall 77.00%, F1-Score 76.17%
-     * XGBoost: Akurasi 93.00%, Presisi 93.08%, Recall 93.00%, F1-Score 93.00%
-     (Peningkatan lonjakan +44.00% pada XGBoost dan naiknya CNB ke 77% membuktikan keampuhan Domain Adaptation dalam mengatasi Concept Drift).
-   - Confusion Matrix XGBoost Metode 2: TN=333 (Non-Spam tepat), FP=17 (False Positive), FN=32 (Spam lolos), TP=318 (Spam terdeteksi tepat) dari 700 email uji.
-   - ATURAN MUTLAK METRIK AKURASI: DILARANG KERAS mengarang metrik tebakan fiktif (seperti 96.2% atau 97.8%). Wajib gunakan angka empiris autentik di atas (CNB 77%, XGBoost 93%) jika ditanya hasil akurasi/metrik.
-
+[DOKUMEN GROUND TRUTH REPOSITORI RESMI]:
+1. Spam-Email (https://github.com/Raflyf/Spam-Email):
+   - Riset Skripsi ML: Mengatasi Concept Drift (Covariate Shift) akibat perbedaan era email latih Kaggle era 2000-an (5.728 data) vs email uji modern 2026 (2.500 data).
+   - Metode: Domain Adaptation (30% contemporary instance weighting 8x) + Ensemble Learning.
+   - Hasil Empiris: Murni (CNB 51.50%, XGBoost 48.00%) vs Domain Adaptation (CNB 77.00%, XGBoost 93.00% F1 93.00%, lonjakan +44.00%). Confusion Matrix XGBoost: TN=333, FP=17, FN=32, TP=318 dari 700 email uji.
 2. OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker):
-   - Deteksi plagiarisme naskah akademik 100% offline lokal tanpa pengiriman data ke server luar (Zero Data Egress).
-   - Dual Engine: 5-Word N-Gram Shingling (Exact Match) + Multilingual Sentence Transformers (SBERT paraphrase-multilingual-MiniLM-L12-v2, 384-dimensional vector embedding, Cosine Similarity untuk parafrasa).
-   - Terintegrasi dengan 15+ basis data jurnal akademik publik (GARUDA, Indonesian Open Search / IOS, BASE, Semantic Scholar, Crossref, DOAJ).
+   - Deteksi plagiarisme naskah akademik 100% lokal offline (Zero Data Egress).
+   - Dual Engine: 5-Word N-Gram Shingling (Exact Match) + Multilingual Sentence Transformers (SBERT 384-dim, Cosine Similarity). 15+ basis data jurnal (GARUDA, IOS, BASE, Semantic Scholar, Crossref, DOAJ).
+3. laser_pointer_PPT (https://github.com/Raflyf/laser_pointer_PPT): Remote pointer PowerPoint nirsentuh via sensor smartphone (WebSocket <15ms + PyAutoGUI).
+4. FotoKitaBlur (https://github.com/FotoKitaBlur): Edge CV privasi wajah gestur Peace Sign (MediaPipe Face Mesh 30+ FPS + OpenCV Blur).
+5. web-portofolio (https://github.com/Raflyf/web-portofolio): Vanilla JS Modular (<50KB) + Supabase Continuous Learning RAG + Terminal 128k Token Context.
 
-3. laser_pointer_PPT (https://github.com/Raflyf/laser_pointer_PPT):
-   - Pengendali presentasi PowerPoint nirsentuh berbasis sensor gyroscope dan accelerometer smartphone.
-   - Transmisi real-time ultra-low latency (<15 ms) via WebSocket (Flask-SocketIO) + PyAutoGUI virtual cursor mapper di PC presenter.
-
-4. FotoKitaBlur (https://github.com/FotoKitaBlur):
-   - Edge Computer Vision privasi wajah otomatis 100% lokal berbasis deteksi gestur Peace Sign / V-Sign menggunakan MediaPipe Pose & Face Mesh (30+ FPS di CPU) + OpenCV Gaussian Blur.
-
-5. web-portofolio (https://github.com/Raflyf/web-portofolio):
-   - Portfolio Landing Page Modular Vanilla JS (<50 KB) + Supabase Continuous Learning RAG (pgvector) + Multi-Session Floating Terminal dengan Dynamic 128k Token Context Window.
-
-- Kredensial: Rafly Firmansyah, S1 Informatika UBSI, BNSP Analis Program (TIK 037 00481 2026), MikroTik MTCNA Latvia (2410NA3062), Cisco PCAP. Kontak: WA 08991333323 (https://wa.me/628991333323), Email raflyfirmansyah02@gmail.com, GitHub https://github.com/Raflyf.
-- Registri Sertifikat Terverifikasi di Web Portofolio:
-  1. BNSP Analis Program (No: TIK 037 00481 2026 - 10 Unit Standar Kompetensi Kerja Nasional Indonesia / SKKNI)
-  2. MikroTik Certified Network Associate / MTCNA Latvia (ID: 2410NA3062 - Routing, Firewall, Bandwidth Management, Wireless)
-  3. Cisco Networking Academy: Python Essentials 1 / PCAP Certified Associate (Pemeriksaan Algoritma & OOP)
-  4. UBSI Seminar: Cloud Computing & Blockchain Integration in Next-Gen Applications
-  5. UBSI Bootcamp: Software Development & Network Security Specialist (OWASP, Penetration Testing & Secure Coding)
-  6. UBSI Seminar: Cloud Computing Specialist & Modern DevOps Architecture
-  7. Kominfo DEA: Pemanfaatan Profil Bisnis & Ekosistem E-Commerce Terintegrasi
-  8. Workshop: Slicing UI Modern Design System with Tailwind CSS & Responsive Layouts
-  9. Harisenin Bootcamp: Simulasi Kerja Nyata Full-Stack Web Development (RESTful API & Database Architecture)
-  10. Harisenin Camp: Intensive Coding Camp JavaScript Modular & Frontend State Management
-- Kemampuan: Live Web Search Crawler 2026, Inspeksi Web Portofolio DOM, & Supabase Continuous Learning RAG aktif.
-- Dilarang memicu perintah membuka URL kecuali diminta secara eksplisit. Dilarang monolog internal bahasa Inggris. Nol emoji.
-`;
+Kredensial & Registri: Rafly Firmansyah, S1 Informatika UBSI, BNSP Analis Program (TIK 037 00481 2026), MikroTik MTCNA Latvia (2410NA3062), Cisco PCAP Python. Kontak: WA 08991333323 (https://wa.me/628991333323), Email raflyfirmansyah02@gmail.com, GitHub https://github.com/Raflyf.`;
 }
 
 async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
@@ -989,7 +916,9 @@ export default async function handler(req, res) {
     }
 
     const [searchResult, liveRepoContext] = await Promise.all([
-      searchWebContext(query, history),
+      (queryIntent.category === 'project_architecture' || queryIntent.category === 'trivial_casual')
+        ? Promise.resolve({ formattedPrompt: '', rawSnippets: [] })
+        : searchWebContext(query, history),
       fetchLiveRepoContext(query)
     ]);
     const webContext = (queryIntent.category === 'trivial_casual') 
@@ -1092,10 +1021,10 @@ Langkah yang WAJIB Anda lakukan:
     const finalUserPrompt = assembledQuery;
     const baseTextMessages = assemble128kMessages(systemPromptWithSearch, history, finalUserPrompt, 120000);
 
-    // Calibrated token limits for complete zero-truncation deep analysis within sub-20s
+    // Calibrated token limits for complete zero-truncation deep analysis within sub-10s
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 1024 
-      : (effectiveEffort === 'thinking' ? 2400 : 1800);
+      ? 700 
+      : (effectiveEffort === 'thinking' ? 1400 : 900);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
@@ -1121,8 +1050,7 @@ Langkah yang WAJIB Anda lakukan:
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OMNIROUTE_KEY}`,
-            'Accept': 'application/json'
+            'Authorization': `Bearer ${OMNIROUTE_KEY}`
           },
           body: JSON.stringify(payload)
         }, tOut);
@@ -1196,7 +1124,6 @@ Langkah yang WAJIB Anda lakukan:
 
     async function callOpenCode(mName, tOut = 6000) {
       if (OPENCODE_KEYS.length === 0) return null;
-      const cleanM = mName.replace(/^opencode\//, '');
       for (const ocKey of OPENCODE_KEYS) {
         try {
           const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
@@ -1206,35 +1133,29 @@ Langkah yang WAJIB Anda lakukan:
               'Authorization': `Bearer ${ocKey}`
             },
             body: JSON.stringify({
-              model: cleanM,
+              model: mName,
               messages: baseTextMessages,
-              max_tokens: Math.min(maxTokensConfig, 2200),
+              max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
           }, tOut);
 
           if (res.ok) {
-            if (res.data?.error) {
-              providerErrors.push(`OpenCode ${cleanM}: ${res.data.error.message || res.data.error.type || 'Server Error'}`);
-              break; // Upstream error, failover instantly
-            }
             const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), `opencode/${cleanM}`, 'OpenCode Cloud Multi-Account Pool');
+              return sendSuccess(content.trim(), mName, 'OpenCode High-Speed Cloud Pool');
             }
           } else {
-            providerErrors.push(`OpenCode ${cleanM} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (res.status !== 429) break;
+            providerErrors.push(`OpenCode ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
           }
         } catch (err) {
-          providerErrors.push(`OpenCode ${cleanM}: ${err.message}`);
-          break; // Timeout or network error, failover instantly
+          providerErrors.push(`OpenCode ${mName}: ${err.message}`);
         }
       }
       return null;
     }
 
-    async function callOpenRouter(mName, tOut = 24000) {
+    async function callOpenRouter(mName, tOut = 18000) {
       if (OPENROUTER_KEYS.length === 0) return null;
 
       for (const orKey of OPENROUTER_KEYS) {
@@ -1258,7 +1179,6 @@ Langkah yang WAJIB Anda lakukan:
           if (res.ok) {
             if (res.data?.error) {
               providerErrors.push(`OpenRouter ${mName}: ${res.data.error.message || 'Error'}`);
-              if (res.data.error.code !== 429) break;
               continue;
             }
             const content = res.data?.choices?.[0]?.message?.content;
@@ -1267,11 +1187,11 @@ Langkah yang WAJIB Anda lakukan:
             }
           } else {
             providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (res.status !== 429) break;
+            continue;
           }
         } catch (err) {
           providerErrors.push(`OpenRouter ${mName}: ${err.message}`);
-          break; // Timeout or network error, failover instantly
+          continue;
         }
       }
       return null;
@@ -1347,72 +1267,47 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('codex') || t.includes('gpt-5')) {
           return [
             { provider: 'omniroute', model: 'Codex', timeout: 22000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 16000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 18000 }
           ];
-        } else if (t.includes('antigravity') || t.includes('opus')) {
+        }
+        if (t.includes('vision')) {
           return [
-            { provider: 'omniroute', model: 'Antigravity', timeout: 22000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 }
-          ];
-        } else if (t.includes('vision')) {
-          return [
-            { provider: 'omniroute', model: 'Vision-model', timeout: 20000 },
-            { provider: 'ollama', model: 'minimax-m3', timeout: 12000 }
-          ];
-        } else if (t.includes('deepseek-v4') || t.includes('deepseek')) {
-          return [
-            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 20000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 }
-          ];
-        } else if (t.includes('laguna') || t.includes('nemotron')) {
-          return [
-            { provider: 'omniroute', model: 'nemotron-laguna', timeout: 20000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 }
-          ];
-        } else if (t.startsWith('opencode/')) {
-          const ocM = targetModel.replace(/^opencode\//, '');
-          return [
-            { provider: 'opencode', model: ocM, timeout: 20000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 }
+            { provider: 'omniroute', model: 'Vision-model', timeout: 22000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 16000 }
           ];
         }
       }
 
-      // Auto / Dynamic Routing berdasarkan intent:
-      const omniTimeout = 18000; // 18s OmniRoute headroom for deep local GPU/CPU compute
       const omniModel = (queryIntent.category === 'vision') ? 'Vision-model' : 'Codex';
 
       return [
         // 1. Prioritas #1: OmniRoute Dedicated Gateway (Saat Localhost/Tunnel nyala - 18s)
-        { provider: 'omniroute', model: omniModel, timeout: omniTimeout },
+        { provider: 'omniroute', model: omniModel, timeout: 18000 },
 
-        // 2. Prioritas #2: Nemotron 3 Ultra dari OpenCode (opencode.ai - 6s fast guard)
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
+        // 2. Prioritas #2: Nemotron 3 Nano 30B dari OpenRouter (openrouter.ai - 16s Verified Fast)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 16000 },
 
-        // 3. Prioritas #3: Nemotron 3 Ultra 550B MoE dari OpenRouter (openrouter.ai - 18s SOTA)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
+        // 3. Prioritas #3: Nemotron 3 Ultra 550B MoE dari OpenRouter (openrouter.ai - 16s SOTA)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
 
-        // 4. Prioritas #4: Nemotron 3 Nano Omni Reasoning dari OpenRouter (openrouter.ai - 8s)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 8000 },
+        // 4. Prioritas #4: OpenRouter Universal Free Auto-Router (openrouter.ai - 20s Headroom)
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 20000 },
 
-        // 5. Prioritas #5: Nemotron 3 Ultra dari Ollama Cloud Hub (ollama.com - 8s)
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
+        // 5. Prioritas #5: Nemotron 3 Nano Omni Reasoning dari OpenRouter (openrouter.ai - 12s)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 12000 },
 
-        // 6. Prioritas #6: Laguna S-2.1 dari OpenRouter (openrouter.ai - 5s)
-        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 5000 },
+        // 6. Prioritas #6: Nemotron 3 Ultra dari OpenCode (opencode.ai - 4s fast guard)
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4000 },
 
-        // 7. Prioritas #7: Model Cadangan Lainnya dari OpenCode Pool
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 4000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 4000 },
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 4000 },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 4000 }
+        // 7. Prioritas #7: Nemotron 3 Ultra dari Ollama Cloud Hub (ollama.com - 6s)
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
+
+        // 8. Prioritas #8: Model Cadangan Lainnya dari OpenCode Pool
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 3000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 3000 },
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 3000 }
       ];
     }
 
