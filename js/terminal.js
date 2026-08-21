@@ -1041,11 +1041,13 @@ export function initTerminal() {
 
       const placeholder = `§§TABLE_BLOCK_${tableBlocks.length}§§`;
       const formatCell = (c) => {
-        const escaped = c
+        let cellText = c.replace(/<br\s*\/?>/gi, '§§BR§§');
+        const escaped = cellText
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
         return escaped
+          .replace(/§§BR§§/g, '<br>')
           .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
           .replace(/`([^`]+)`/g, '<code style="background:var(--badge-bg);color:var(--accent-emerald);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:0.85em;">$1</code>');
       };
