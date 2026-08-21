@@ -377,90 +377,7 @@ ${certsOverview}
     }
   }
 
-  /**
-   * Real-Time GitHub Live Repository Document Fetcher (Client-side)
-   * Fetches authentic README.md / documentation from GitHub raw endpoints dynamically.
-   */
-  async fetchLiveRepoContext(query = '') {
-    if (!query || typeof query !== 'string') return '';
-    const q = query.toLowerCase();
 
-    const repoTargets = [];
-    if (/\b(spam|email|klasifikasi email|cnb|complement|xgboost|concept drift|domain adaptation|skripsi|akurasi|confusion matrix)\b/i.test(q)) {
-      repoTargets.push({
-        name: 'Spam-Email-Classifier',
-        urls: [
-          'https://raw.githubusercontent.com/Raflyf/Spam-Email/main/docs/DOKUMENTASI_MODEL.md',
-          'https://raw.githubusercontent.com/Raflyf/Spam-Email/main/README.md'
-        ]
-      });
-    }
-    if (/\b(openplagiarism|plagiarism|plagiat|sbert|n-gram|cektesis|shingling)\b/i.test(q)) {
-      repoTargets.push({
-        name: 'OpenPlagiarismChecker',
-        urls: [
-          'https://raw.githubusercontent.com/Raflyf/OpenPlagiarismChecker/main/README.md'
-        ]
-      });
-    }
-    if (/\b(laser|pointer|ppt|powerpoint|gyroscope|remotepresenter)\b/i.test(q)) {
-      repoTargets.push({
-        name: 'laser_pointer_PPT',
-        urls: [
-          'https://raw.githubusercontent.com/Raflyf/laser_pointer_PPT/main/README.md'
-        ]
-      });
-    }
-    if (/\b(fotokita|fotokitablur|blur|face|v-sign|peace sign|privasi wajah)\b/i.test(q)) {
-      repoTargets.push({
-        name: 'FotoKitaBlur',
-        urls: [
-          'https://raw.githubusercontent.com/Raflyf/FotoKitaBlur/main/README.md'
-        ]
-      });
-    }
-    if (/\b(web-portofolio|porto|website ini|web ini|terminal)\b/i.test(q)) {
-      repoTargets.push({
-        name: 'web-portofolio',
-        urls: [
-          'https://raw.githubusercontent.com/Raflyf/web-portofolio/main/README.md'
-        ]
-      });
-    }
-
-    if (repoTargets.length === 0) return '';
-
-    try {
-      const fetchPromises = repoTargets.flatMap(target => 
-        target.urls.map(async (url) => {
-          try {
-            const ctrl = new AbortController();
-            const timer = setTimeout(() => ctrl.abort(), 2500);
-            const res = await fetch(url, { signal: ctrl.signal });
-            clearTimeout(timer);
-            if (res.ok) {
-              const text = await res.text();
-              if (text && text.length > 50) {
-                return `--- DOKUMEN REPOSITORI RESMI (${target.name} | ${url}) ---\n${text.substring(0, 4000)}`;
-              }
-            }
-          } catch (_) {}
-          return null;
-        })
-      );
-
-      const results = await Promise.allSettled(fetchPromises);
-      const validDocs = results
-        .filter(r => r.status === 'fulfilled' && Boolean(r.value))
-        .map(r => r.value);
-
-      if (validDocs.length > 0) {
-        return `\n\n[DOKUMENTASI REPOSITORI GITHUB LIVE (GROUND TRUTH TERVERIFIKASI)]:\n${validDocs.join('\n\n')}\n(PENTING: Seluruh informasi, arsitektur, dan angka metrik di atas diambil langsung secara live dari repositori GitHub resmi Rafly Firmansyah. Gunakan data autentik di atas sebagai sumber kebenaran tertinggi dan DILARANG KERAS berasumsi/berhalusinasi.)\n`;
-      }
-    } catch (_) {}
-
-    return '';
-  }
 
   /**
    * Crawl4AI & Firecrawl Inspired Fit-Markdown & Semantic Content Extractor
@@ -536,11 +453,11 @@ ${certsOverview}
 
     html = html.replace(/<[^>]+>/g, ' ');
 
-    const entityMap = {
-      '&quot;': '"', '&#39;': "'", '&amp;': '&', '&lt;': '<', '&gt;': '>',
-      '&nbsp;': ' ', '&mdash;': '—', '&ndash;': '–', '&bull;': '•', '&hellip;': '...'
-    };
-    html = html.replace(/&(?:quot|#39|amp|lt|gt|nbsp|mdash|ndash|bull|hellip);/g, m => entityMap[m] || ' ');
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      html = doc.body.textContent || html;
+    } catch (_) {}
 
     const lines = html.split('\n')
       .map(line => line.replace(/\s+/g, ' ').trim())
@@ -570,28 +487,26 @@ ${certsOverview}
 
     const currentLang = this.detectOrUpdateLanguage(cleanQuery);
 
-    // 0. Primary Direct Route on Client (OmniRoute / OpenCode / Nvidia / OpenRouter)
-    if (typeof window !== 'undefined' && !this.customKey) {
+    // 0. User Custom Key (if explicitly set via terminal `setkey` command)
+    if (this.customApiKey) {
       try {
-        const directRes = await this.directClientFailover(cleanQuery, currentLang, attachments);
+        const customRes = await this.directClientCustomKey(cleanQuery, currentLang, attachments);
         if (this.isAborted) return { isAborted: true };
-
-        if (directRes && directRes.length > 0) {
-          // Record conversation turn for dynamic 128k context memory
+        if (customRes && customRes.length > 0) {
           this.conversationHistory.push({ role: 'user', content: cleanQuery });
-          this.conversationHistory.push({ role: 'assistant', content: directRes.join('\n') });
-          if (this.conversationHistory.length > 500) {
-            this.conversationHistory = this.conversationHistory.slice(-500);
+          this.conversationHistory.push({ role: 'assistant', content: customRes.join('\n') });
+          if (this.conversationHistory.length > 20) {
+            this.conversationHistory = this.conversationHistory.slice(-20);
           }
           this.saveHistoryToSession();
-          return directRes;
+          return customRes;
         }
       } catch (_) {
         if (this.isAborted) return { isAborted: true };
       }
     }
 
-    // 1. Fallback: Vercel Serverless Multi-API Cloud Gateway (/api/chat)
+    // 1. Primary Route: High-Speed Vercel Serverless Multi-API Cloud Gateway (/api/chat)
     try {
       const memoryContext = await this.fetchAIMemories();
       const controller = this.currentAbortController || new AbortController();
@@ -734,378 +649,58 @@ ${certsOverview}
     ];
   }
 
-  async directClientFailover(cleanQuery, currentLang, attachments = []) {
-    const cleanOutput = (text) => {
-      let cleaned = String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  /**
+   * Direct Client-Side Execution for Custom API Keys (provided via `setkey` command)
+   */
+  async directClientCustomKey(cleanQuery, currentLang, attachments = []) {
+    if (!this.customApiKey) return null;
 
-      // 1. Check for explicit output markers like Thus: "..." or Response:
-      const markerMatch = cleaned.match(/(?:Thus|Therefore|Response|Answer|Jawaban|In Indonesian|Output):\s*["']?([\s\S]+?)["']?$/i);
-      if (markerMatch && markerMatch[1] && markerMatch[1].trim().length > 10) {
-        return markerMatch[1].trim().replace(/^["']|["']$/g, '').trim();
-      }
+    const userKey = this.customApiKey;
+    const userProvider = (this.customApiProvider || 'openrouter').toLowerCase();
 
-      // 2. Check for English reasoning monologue start
-      const reasoningKeywords = /^(?:Okay|First|Let me|I should|I need to|The user|Looking back|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Let's|Checking|So the user|The system message)\b/i;
-      if (reasoningKeywords.test(cleaned)) {
-        // Look for Indonesian transition or Markdown
-        const indonesianMarker = /(?:(?:\n|\A)(?:Terima kasih|Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|Pada|[#|]|\d+\.)\s)/i;
-        const match = cleaned.search(indonesianMarker);
-        if (match !== -1 && match > 0) {
-          cleaned = cleaned.slice(match).trim();
-        } else {
-          // Filter out lines that look like English reasoning
-          const lines = cleaned.split('\n');
-          const filtered = lines.filter(l => !/^(?:Okay|First|Let me|I should|I need to|The user|Looking|Wait|Checking|So the user|Therefore|Thus|The system message|In their message|Given that|However|Alternatively|So, my response)\b/i.test(l.trim()));
-          if (filtered.length > 0) {
-            cleaned = filtered.join('\n').trim();
-          }
-        }
-      }
-
-      return cleaned.replace(/^["']|["']$/g, '').trim();
-    };
-
-    const now = new Date();
-    const dynamicDateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    const dynamicTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    const currentYear = now.getFullYear();
-
-    const SYSTEM_PROMPT_2026 = `Status Bahasa: BAHASA INDONESIA. Waktu Sistem: ${dynamicDateStr}, ${dynamicTimeStr} WIB.
-Anda adalah AI Assistant canggih pada Terminal Developer Lab portofolio resmi Rafly Firmansyah (@Raflyf).
-
-[ATURAN BAKU PERSONA, KATA GANTI & AKSES INFORMASI REAL-TIME]:
-1. KATA GANTI WAJIB:
-   - WAJIB MUTLAK menggunakan kata ganti orang pertama "saya".
-   - DILARANG KERAS menggunakan kata "gue", "gua", "gw", atau slang sejenis.
-   - Untuk menyapa pengguna, gunakan kata "Anda" atau "kamu" secara sopan, profesional, dan bersahabat.
-2. KAPABILITAS AKSES INFORMASI & PENGETAHUAN TERKINI 2026:
-   - Anda memiliki wawasan teknologi mutakhir, data tren komputasi, model AI, dan perkembangan industri hingga 2026.
-   - DILARANG KERAS mengeluarkan tag fiktif seperti [ACTION:WEB_SEARCH:...], [ACTION:SEARCH:...], atau tool call serupa.
-   - DILARANG KERAS menunda respon dengan sekadar berkata "Saya akan mencari..." lalu berhenti.
-   - Jika pengguna menanyakan berita teknologi hari ini, rilis model AI mutakhir, atau topik terkini, Anda WAJIB LANGSUNG MENULISKAN DAFTAR BERITA & INOVASI TEKNOLOGI SECARA LENGKAP, DETAIL, DAN BERBOBOT dalam format poin/tabel yang rapi pada respon ini juga secara tuntas.
-   - HANYA tag [ACTION:DOWNLOAD_FILE:nama_file.md] yang diperbolehkan ketika pengguna secara spesifik meminta unduh file.
-3. KONTINUITAS SESI & MULTI-MODEL HANDOVER:
-   - Seluruh riwayat percakapan sesi aktif disertakan secara lengkap (128k context window).
-   - Sekalipun pengguna berganti model AI di tengah sesi (misal dari Nemotron ke Codex atau Antigravity), Anda sebagai model yang saat ini aktif WAJIB memahami 100% seluruh percakapan sebelumnya dan melanjutkan pembahasan, riset, atau kode secara mulus tanpa mengulang dari nol.
-4. NOL EMOJI & TUNTAS:
-   - Dilarang keras menyisipkan emoji dalam bentuk apa pun.
-   - Pastikan jawaban selesai tuntas dan tidak terpotong.
-5. ATURAN MUTLAK KEMANDIRIAN JAWABAN & LARANGAN MENOLAK/MERUJUK KE ATAS:
-   - Anda WAJIB SELALU MENJAWAB SELURUH PERTANYAAN PENGGUNA SECARA LENGKAP, MANDIRI, BERSTRUKTUR DETAIL, DAN DARI AWAL.
-   - DILARANG KERAS menolak menjawab, memotong jawaban, atau mengeluarkan kalimat pengelakan seperti:
-     * "Barusan saya jawab pertanyaan itu sama persis di atas..."
-     * "Seperti yang sudah saya jelaskan sebelumnya..."
-     * "Sudah saya sebutkan di atas..."
-   - Sekalipun pertanyaan pengguna mirip atau sama persis dengan pertanyaan sebelumnya atau terdapat dalam catatan memori, Anda TETAP WAJIB MENYAJIKAN JAWABAN UTUH DAN KOMPREHENSIF SECARA SEGAR (FRESH & COMPREHENSIVE).
-
-[PANDUAN GAYA KOMUNIKASI & PERSONA PERCAKAPAN ALAMI (HELPFUL & CONVERSATIONAL)]:
-1. BAHASA PERCAKAPAN NATURAL, RAMAH & MENGALIR:
-   - Gunakan gaya bahasa percakapan sehari-hari yang luwes, hidup, ramah, dan sangat membantu (helpful & engaging) layaknya berdiskusi santai dengan rekan software engineer yang berwawasan luas.
-   - DILARANG KERAS membuang silabus/format resume kaku secara mentah (seperti langsung menulis header 'Tech Stack Inti', 'Alur Kerja Singkat', 'Proyek ini merupakan bukti kompentensi...').
-   - Saat menjelaskan proyek atau topik teknis:
-     a. Mulai dengan penjelasan yang ramah dan menarik mengenai masalah nyata yang diselesaikan dan apa keunikannya.
-     b. Ceritakan alur kerja dan teknologi yang digunakan secara mengalir, naratif, dan mudah dipahami oleh pembaca.
-     c. Sorot fitur dan keunggulan utamanya (seperti privasi lokal, performa, atau kemudahan pakai) secara jujur dan objektif.
-     d. Tutup dengan kalimat ramah atau penawaran bantuan jika pengunjung ingin berdiskusi lebih jauh atau mencoba proyek tersebut.
-2. KONTROL PANJANG & KELENGKAPAN TUNTAS (SMART PACING - ZERO TRUNCATION):
-   - Rangkum penjelasan dalam alur yang proporsional, padat, dan nyaman dibaca (target 300–600 kata).
-   - LARANGAN CODE-DUMP: Dilarang keras menulis blok kode/skrip/SQL panjang dalam obrolan umum kecuali pengguna secara eksplisit memintanya ("tuliskan kodenya").
-   - PASTIKAN seluruh penjelasan selesai tuntas hingga kalimat penutup tanpa terputus.
-3. MENJAWAB SESUAI CAKUPAN PERTANYAAN (UMUM VS SPESIFIK):
-   - Pertanyaan UMUM (contoh: cara membuat API, konsep RAG, machine learning): Jelaskan konsep secara umum yang aplikatif dan mudah dimengerti.
-   - Pertanyaan SPESIFIK tentang Rafly Firmansyah / proyek resmi di web ini: Jawab berdasarkan data autentik portofolio secara presisi dengan gaya bercerita yang menarik.
-4. PENANGANAN PERMINTAAN FILE (DOWNLOAD / FORMAT .MD / .TXT / .PDF):
-   - Jika pengguna meminta "berikan dalam bentuk file .md", "buatkan file .md", atau "ingin download file":
-     1. Sertakan tag aksi: [ACTION:DOWNLOAD_FILE:nama_file.md] di baris pertama jawaban Anda untuk memunculkan tombol unduh interaktif.
-     2. Berikan pesan konfirmasi singkat dan ramah bahwa berkas telah disiapkan dan pengunjung dapat mengunduhnya.
-     3. DILARANG KERAS mengulang atau menyalin kembali seluruh teks panjang dokumen sebelumnya secara mentah agar hemat token.
-
-[DATA REPOSITORI RESMI RAFLY FIRMANSYAH & HASIL EMPIRIS RISET]:
-1. Spam-Email-Classifier (Riset Skripsi ML - https://github.com/Raflyf/Spam-Email):
-   - Judul Riset: "Analisis Performa Complement Naive Bayes dan XGBoost dalam Mengatasi Concept Drift pada Klasifikasi Spam Email Menggunakan Pendekatan Domain Adaptation"
-   - Masalah Utama: Fenomena Concept Drift / Covariate Shift akibat perbedaan era data training (email historis Kaggle era 2000-an, 5.728 data) dengan data uji (email pribadi modern 2026, 2.500 data).
-   - Hasil Evaluasi Empiris Metode 1 (Murni tanpa Domain Adaptation):
-     * Complement Naive Bayes (CNB): Akurasi 51.50%, Presisi 53.58%, Recall 51.50%, F1-Score 43.26%
-     * XGBoost: Akurasi 48.00%, Presisi 47.87%, Recall 48.00%, F1-Score 47.19%
-     (Performa anjlok karena domain gap antara data email masa lalu vs email kontemporer).
-   - Hasil Evaluasi Empiris Metode 2 (Dengan Domain Adaptation 30% instance weighting 8x):
-     * Complement Naive Bayes (CNB): Akurasi 77.00%, Presisi 81.40%, Recall 77.00%, F1-Score 76.17%
-     * XGBoost: Akurasi 93.00%, Presisi 93.08%, Recall 93.00%, F1-Score 93.00%
-     (Peningkatan lonjakan +44.00% pada XGBoost dan naiknya CNB ke 77% membuktikan keampuhan Domain Adaptation dalam mengatasi Concept Drift).
-   - Confusion Matrix XGBoost Metode 2: TN=333 (Non-Spam tepat), FP=17 (False Positive), FN=32 (Spam lolos), TP=318 (Spam terdeteksi tepat) dari 700 email uji.
-   - ATURAN MUTLAK METRIK AKURASI: DILARANG KERAS mengarang metrik tebakan fiktif (seperti 96.2% atau 97.8%). Wajib gunakan angka empiris autentik di atas (CNB 77%, XGBoost 93%) jika ditanya hasil akurasi/metrik.
-
-2. OpenPlagiarismChecker (https://github.com/Raflyf/OpenPlagiarismChecker):
-   - Deteksi plagiarisme naskah akademik 100% offline lokal tanpa pengiriman data ke server luar (Zero Data Egress).
-   - Dual Engine: 5-Word N-Gram Shingling (Exact Match) + Multilingual Sentence Transformers (SBERT paraphrase-multilingual-MiniLM-L12-v2, 384-dimensional vector embedding, Cosine Similarity untuk parafrasa).
-   - Terintegrasi dengan 15+ basis data jurnal akademik publik (GARUDA, Indonesian Open Search / IOS, BASE, Semantic Scholar, Crossref, DOAJ).
-
-3. laser_pointer_PPT (https://github.com/Raflyf/laser_pointer_PPT):
-   - Pengendali presentasi PowerPoint nirsentuh berbasis sensor gyroscope dan accelerometer smartphone.
-   - Transmisi real-time ultra-low latency (<15 ms) via WebSocket (Flask-SocketIO) + PyAutoGUI virtual cursor mapper di PC presenter.
-
-4. FotoKitaBlur (https://github.com/FotoKitaBlur):
-   - Edge Computer Vision privasi wajah otomatis 100% lokal berbasis deteksi gestur Peace Sign / V-Sign menggunakan MediaPipe Pose & Face Mesh (30+ FPS di CPU) + OpenCV Gaussian Blur.
-
-5. web-portofolio (https://github.com/Raflyf/web-portofolio):
-   - Portfolio Landing Page Modular Vanilla JS (<50 KB) + Supabase Continuous Learning RAG (pgvector) + Multi-Session Floating Terminal dengan Dynamic 128k Token Context Window.
-
-- Kredensial: Rafly Firmansyah, S1 Informatika UBSI, BNSP Analis Program (TIK 037 00481 2026), MikroTik MTCNA Latvia (2410NA3062), Cisco PCAP. Kontak: WA 08991333323 (https://wa.me/628991333323), Email raflyfirmansyah02@gmail.com, GitHub https://github.com/Raflyf.
-- Registri Model 2026: OpenAI (GPT-5.6, GPT-5.5, GPT-5, GPT-4o), Anthropic (Claude Opus 5, Claude Mythos 5, Claude Sonnet 5), Google (Gemini 3.7 Flash, Gemini 3.6 Flash), DeepSeek (DeepSeek-V4 Flash, DeepSeek-V3), Nvidia (Nemotron 3 Ultra 550B, Nemotron 3 Super 120B, Nemotron Laguna).
-- Dilarang monolog internal bahasa Inggris. Nol emoji.`;
-
-    const q = (cleanQuery || '').toLowerCase();
-    const len = q.length;
-
-    // Detect if image attachment exists
-    const hasImages = Array.isArray(attachments) && attachments.some(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50));
-
-    // Construct Multimodal Payload
-    const userMessageContent = hasImages ? [
-      { type: 'text', text: cleanQuery || 'Analisis dan jelaskan isi gambar/dokumen ini secara mendalam.' },
-      ...attachments.filter(a => a.isImage || a.type?.startsWith('image') || (a.base64 && a.base64.length > 50)).map(img => ({
-        type: 'image_url',
-        image_url: { url: img.base64.startsWith('data:') ? img.base64 : `data:${img.type || 'image/jpeg'};base64,${img.base64}` }
-      }))
-    ] : cleanQuery;
-
-    // Intelligent Intent Detection & Automatic Effort Resolution
-    const isCasualOrShort = !hasImages && (
-      (len < 50 && /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|who are you|siapa kamu|kamu siapa|kamu model apa|model apa ini|kamu ai apa|bisa apa|apa kemampuanmu|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah|good|nice|paham|mengerti)\b/i.test(q)) ||
-      (len <= 25 && !/[{}();=><\[\]]/.test(q) && !/\b(kode|script|koding|coding|bikin|buatkan|debug|error)\b/i.test(q))
-    );
-    const isFileExportQuery = !hasImages && /\b(dalam file|bentuk \.md|bentuk file|jadikan file|download file|unduh file|kirim file|simpan file|save file|bikin file|buat file|jadikan \.md|jadikan \.txt|jadikan \.pdf|format \.md|format file|file \.md)\b/i.test(q);
-    const isDeepAnalysis = !hasImages && /\b(jelaskan dan analisi|jelaskan dan analisis|analisis|analisa|bedahkan|bedah|evaluasi mendalam|secara mendalam|lebih dalam|komprehensif|arsitektur sistem|bandingkan|perbandingan|detail|rinci|lengkap|github)\b/i.test(q) && len > 35;
-    const isRigorousMathThinking = !hasImages && /\b(turunkan rumus|matematis|bukti matematis|pembuktian matematis|formula matematis|chain of thought|step by step reasoning|penalaran mendalam|bedah logika mendalam|analisis statistik mendalam|evaluasi empiris skripsi|perhitungan matriks|probabilitas bayesian)\b/i.test(q);
-    const isHeavyCodingFull = !hasImages && (/\b(buatkan full script|buatkan full kode|arsitektur microservice|implementasikan sistem|buatkan backend lengkap|full stack implementasi|buatkan boilerplate|sistem auth lengkap|pipeline dataform|dbt pipeline|docker compose full|kubernetes manifest)\b/i.test(q) || (attachments.length > 0 && len > 150));
-
-    // Resolve Effort: Priority to UI Dropdown Selection if not 'auto'
-    const explicitEffort = (this.reasoningEffort && this.reasoningEffort !== 'auto') ? this.reasoningEffort.toUpperCase() : null;
-    let targetEffort = explicitEffort || (hasImages ? 'HIGH' : (isCasualOrShort || isFileExportQuery ? 'LOW' : (isDeepAnalysis || isHeavyCodingFull ? 'HIGH' : (isRigorousMathThinking ? 'THINKING' : 'MEDIUM'))));
-
-    // Real-Time Client-Side Universal Web Search Crawler
-    let searchContext = '';
-    try {
-      const snippets = [];
-
-      // 1. Direct Web Page Scraper for any URL in the query (Crawl4AI / Firecrawl Fit-Markdown)
-      const urlMatches = cleanQuery.match(/https?:\/\/[^\s"'<>]+/gi) || [];
-      if (urlMatches.length > 0) {
-        const urlPromises = urlMatches.slice(0, 2).map(async (u) => {
-          try {
-            const ctrl = new AbortController();
-            const tm = setTimeout(() => ctrl.abort(), 3500);
-            const res = await fetch(u, { signal: ctrl.signal });
-            clearTimeout(tm);
-            if (res.ok) {
-              const text = await res.text();
-              const fitMd = this.extractFitMarkdownContent(text, u);
-              if (fitMd && fitMd.length > 50) {
-                snippets.push(`[Live Webpage Content (${u})]:\n${fitMd}`);
-              }
-            }
-          } catch (_) {}
-        });
-        await Promise.allSettled(urlPromises);
-      }
-
-      // 2. 100% Unrestricted Open Web Search Matrix (Wikipedia, OpenAlex, ArXiv, Hugging Face)
-      const stopWords = /^(saya|aku|kamu|anda|ingin|tolong|coba|bisa|minta|mohon|mau|apakah|apa|kenapa|mengapa|bagaimana|gimana|kapan|dimana|adalah|untuk|pada|di|ke|dari|dengan|kalo|jika|buat|buatkan|tampilkan|jelaskan|uraikan|proyek|project|tentang|soal|yg|yang|ada|ini|itu|dan|atau|web|porto|portofolio|github|nya)\b/gi;
-      const searchKeywords = cleanQuery.replace(stopWords, '').replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
-      const shortProbe = searchKeywords.split(' ').slice(0, 8).join(' ');
-      
-      if (shortProbe.length >= 2) {
-        const searchCtrl = new AbortController();
-        const searchTimer = setTimeout(() => searchCtrl.abort(), 3000);
-        const firstTerm = shortProbe.split(' ')[0];
-        const searchPromises = [
-          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, { signal: searchCtrl.signal }),
-          fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(shortProbe)}&format=json&origin=*`, { signal: searchCtrl.signal }),
-          fetch(`https://api.openalex.org/works?filter=fulltext.search:${encodeURIComponent(shortProbe)}&per_page=3`, { signal: searchCtrl.signal }),
-          fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(firstTerm)}&limit=3`, { signal: searchCtrl.signal })
-        ];
-
-        const [wikiRes, wikiIdRes, openAlexRes, hfRes] = await Promise.allSettled(searchPromises);
-        clearTimeout(searchTimer);
-
-        for (const wRes of [wikiRes, wikiIdRes]) {
-          if (wRes.status === 'fulfilled' && wRes.value.ok) {
-            const wikiData = await wRes.value.json().catch(() => null);
-            const hits = wikiData?.query?.search || [];
-            if (hits.length > 0) {
-              const s = hits[0].snippet.replace(/<[^>]+>/g, '').trim();
-              if (s.length > 10) snippets.push(`[Wikipedia (${hits[0].title})]: ${s}`);
-            }
-          }
-        }
-
-        if (openAlexRes.status === 'fulfilled' && openAlexRes.value.ok) {
-          const oaData = await openAlexRes.value.json().catch(() => null);
-          const works = oaData?.results || [];
-          works.slice(0, 2).forEach((w) => {
-            const title = w.title || '';
-            if (title) snippets.push(`[Open Web/Research Index (${title})]`);
-          });
-        }
-
-        if (hfRes.status === 'fulfilled' && hfRes.value.ok) {
-          const hfData = await hfRes.value.json().catch(() => null);
-          if (Array.isArray(hfData) && hfData.length > 0) {
-            const names = hfData.slice(0, 3).map(m => m.id).join(', ');
-            snippets.push(`[Hugging Face Hub]: ${names}`);
-          }
-        }
-      }
-
-      if (snippets.length > 0) {
-        searchContext = `\n\n[HASIL PENCARIAN & JELAJAH INTERNET TERBUKA REAL-TIME 2026 (UNRESTRICTED OPEN WEB GROUND TRUTH)]:\n${snippets.join('\n')}`;
-        snippets.forEach(s => {
-          if (s && s.length > 15) {
-            this.saveAIMemory(s);
-          }
-        });
-      }
-    } catch (_) {}
-
-    let longTermMemory = '';
-    try {
-      longTermMemory = await this.fetchAIMemories();
-    } catch (_) {}
-
-    let liveRepoContext = '';
-    try {
-      liveRepoContext = await this.fetchLiveRepoContext(cleanQuery);
-    } catch (_) {}
-
-    let livePageContext = '';
-    try {
-      livePageContext = this.buildLivePageInspectionContext(cleanQuery);
-    } catch (_) {}
-
-    const fullSystemPrompt = `${SYSTEM_PROMPT_2026}${liveRepoContext}${livePageContext}${searchContext}${longTermMemory}
-
-[INSTRUKSI MEMORI JANGKA PANJANG (ANTI DATA POISONING)]
-Jika pengguna memberikan fakta baru yang valid dan penting (seperti spesifikasi baru, koreksi data, atau informasi relevan), sertakan tag berikut di baris paling bawah:
-\`[SAVE_MEMORY: tuliskan fakta singkat yang tervalidasi di sini]\``;
-
-    const effortTokensMap = {
-      'LOW': 8192,
-      'MEDIUM': 16384,
-      'HIGH': 16384,
-      'THINKING': 16384
-    };
-    const calculatedMaxTokens = effortTokensMap[targetEffort] || 16384;
-
-    // Helper: Safe JSON or SSE stream extractor
-    const extractContentFromResponseText = (rawText) => {
-      if (!rawText) return '';
-      const trimmed = rawText.trim();
-      if (trimmed.includes('data:')) {
-        let assembled = '';
-        const lines = trimmed.split('\n');
-        for (const line of lines) {
-          const l = line.trim();
-          if (l.startsWith('data:') && !l.includes('[DONE]')) {
-            try {
-              const jsonStr = l.replace(/^data:\s*/, '');
-              const json = JSON.parse(jsonStr);
-              const delta = json.choices?.[0]?.delta?.content || json.choices?.[0]?.message?.content || json.choices?.[0]?.text || '';
-              assembled += delta;
-            } catch (_) {}
-          }
-        }
-        if (assembled.trim().length > 0) return assembled;
-      }
+    if (userProvider === 'openrouter' || userProvider === 'auto' || !this.customApiProvider) {
       try {
-        const json = JSON.parse(trimmed);
-        return json.choices?.[0]?.message?.content || json.choices?.[0]?.delta?.content || json.choices?.[0]?.text || '';
-      } catch (_) {
-        return '';
-      }
-    };
+        const customCtrl = new AbortController();
+        const customTimer = setTimeout(() => customCtrl.abort(), 20000);
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + userKey,
+            'HTTP-Referer': (typeof window !== 'undefined' ? window.location.href : 'https://raflyf.github.io/web-portofolio/'),
+            'X-Title': 'Rafly Portfolio Lab'
+          },
+          body: JSON.stringify({
+            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-3-nano-30b-a3b:free',
+            messages: [
+              { role: 'system', content: 'Kamu adalah asisten AI teknis profesional. Jawab selalu dalam Bahasa Indonesia.' },
+              ...this.conversationHistory.slice(-10),
+              { role: 'user', content: cleanQuery }
+            ],
+            max_tokens: 4096,
+            temperature: 0.25
+          }),
+          signal: customCtrl.signal
+        });
+        clearTimeout(customTimer);
 
-    const dispatchSuccess = (rawContent, modelName, providerName) => {
-      let finalContent = cleanOutput(rawContent);
-      if (!finalContent || finalContent.length <= 5) return null;
-
-      // Extract and Save Memory to Supabase Continuous RAG
-      const memoryMatch = finalContent.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
-      if (memoryMatch && memoryMatch[1]) {
-        const newFact = memoryMatch[1].trim();
-        this.saveAIMemory(newFact);
-        finalContent = finalContent.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
-      }
-
-      this.lastExecutionInfo = {
-        isAuto: !this.currentModel || this.currentModel === 'auto',
-        resolvedModel: modelName,
-        requestedModel: this.currentModel,
-        isFailover: providerName !== 'OmniRoute Dedicated Gateway',
-        provider: providerName,
-        effort: targetEffort,
-        category: isProjectExplaining ? 'project_architecture' : (isDeepReasoning ? 'deep_reasoning' : 'general')
-      };
-
-      if (telemetry) {
-        const target = (!this.currentModel || this.currentModel === 'auto') ? `auto:${modelName}` : (this.currentModel || modelName);
-        const label = `[${providerName} ➔ ${modelName}] ${cleanQuery.substring(0, 60)}`;
-        telemetry.logEvent('ai_query_resolved', target, label);
-      }
-
-      return finalContent.split('\n');
-    };
-
-    // Direct client-side execution is strictly reserved for users providing their own custom key via `setkey`
-    // All public traffic without custom keys is securely handled by the Vercel serverless gateway (/api/chat) via process.env
-    if (!this.customApiKey) {
-      return null;
-    }
-
-    // 4. Custom User Key (if provided via `setkey`)
-    if (this.customApiKey) {
-      const userKey = this.customApiKey;
-      const userProvider = (this.customApiProvider || 'openrouter').toLowerCase();
-
-      if (userProvider === 'openrouter' || userProvider === 'auto' || !this.customApiProvider) {
-        try {
-          const customCtrl = new AbortController();
-          const customTimer = setTimeout(() => customCtrl.abort(), 15000);
-          const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + userKey,
-              'HTTP-Referer': (typeof window !== 'undefined' ? window.location.href : 'https://raflyf.github.io/web-portofolio/'),
-              'X-Title': 'Rafly Portfolio Lab'
-            },
-            body: JSON.stringify({
-              model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-nano-9b',
-              messages: fullMessagesPayload,
-              max_tokens: calculatedMaxTokens,
-              temperature: 0.25
-            }),
-            signal: customCtrl.signal
-          });
-          clearTimeout(customTimer);
-
-          if (res.ok) {
-            const rawText = await res.text();
-            const content = cleanOutput(extractContentFromResponseText(rawText));
-            if (content && content.length > 5) {
-              this.lastExecutionInfo = {
-                isAuto: false,
-                resolvedModel: this.currentModel || 'Custom OpenRouter Model',
-                requestedModel: this.currentModel,
-                isFailover: false,
-                provider: 'User Custom OpenRouter Key',
-                effort: targetEffort,
-                category: 'custom'
-              };
-              return content.split('\n');
-            }
+        if (res.ok) {
+          const json = await res.json().catch(() => null);
+          const content = json?.choices?.[0]?.message?.content;
+          if (content && content.trim().length > 5) {
+            this.lastExecutionInfo = {
+              isAuto: false,
+              resolvedModel: this.currentModel || 'Custom OpenRouter Model',
+              requestedModel: this.currentModel,
+              isFailover: false,
+              provider: 'User Custom OpenRouter Key',
+              effort: this.reasoningEffort || 'AUTO',
+              category: 'custom'
+            };
+            return content.trim().split('\n');
           }
-        } catch (_) {}
-      }
+        }
+      } catch (_) {}
     }
 
     return null;
