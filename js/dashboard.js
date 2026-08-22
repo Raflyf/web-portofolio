@@ -183,9 +183,10 @@ class DashboardApp {
     if (customTunnel) {
       try {
         const cleanTunnel = customTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-        const probeUrl = cleanTunnel.includes('/models') ? cleanTunnel : (cleanTunnel.includes('/v1') ? `${cleanTunnel}/models` : `${cleanTunnel}/v1/models`);
+        const isHf = cleanTunnel.includes('hf.space') || cleanTunnel.includes('huggingface');
+        const probeUrl = isHf ? `${cleanTunnel.replace(/\/v1.*$/, '')}/gradio_api/info` : (cleanTunnel.includes('/models') ? cleanTunnel : (cleanTunnel.includes('/v1') ? `${cleanTunnel}/models` : `${cleanTunnel}/v1/models`));
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1200);
+        const timer = setTimeout(() => controller.abort(), 1500);
         const t0 = performance.now();
         const res = await fetch(probeUrl, {
           method: 'GET',
@@ -198,12 +199,11 @@ class DashboardApp {
         clearTimeout(timer);
         if (res.ok || res.status === 200 || res.status === 401) {
           const data = await res.json().catch(() => null);
-          if (data && (Array.isArray(data.data) || data.object === 'list' || res.status === 401)) {
+          if (data && (Array.isArray(data.data) || data.object === 'list' || data.named_endpoints || res.status === 401)) {
             isOnline = true;
             const t1 = Math.round(performance.now() - t0);
             latencyText = `${t1}ms`;
             const isNgrok = cleanTunnel.includes('ngrok');
-            const isHf = cleanTunnel.includes('hf.space');
             const typeLabel = isNgrok ? 'NGROK TUNNEL' : (isHf ? 'CLOUD HF' : 'TUNNEL');
             statusLabel = `HOST STATUS: ${typeLabel} ACTIVE (${latencyText})`;
             headerStatusLabel = `OMNIROUTE: ${typeLabel} (${latencyText})`;
@@ -736,21 +736,19 @@ class DashboardApp {
     const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
     const tag = isAuto ? 'Auto: ' : '';
 
-    if (combined.includes('nemotron-3.5-lightning') || combined.includes('lightning')) return `${tag}Nvidia Nemotron 3.5 Lightning (1M Context)`;
+    if (combined.includes('gemma4') || combined.includes('gemma-4') || combined.includes('gemma')) return `${tag}Google Gemma 4 (31B Dense)`;
     if (combined.includes('nemotron-3-super') || combined.includes('nemotron super') || combined.includes('120b')) return `${tag}Nvidia Nemotron 3 Super (120B)`;
-    if (combined.includes('nemotron-3-nano-omni') || combined.includes('nano-omni') || combined.includes('nano-12b-v2-vl')) return `${tag}Nemotron Omni / VL Vision Multimodal`;
-    if (combined.includes('nemotron-3-nano') || combined.includes('nemotron nano') || combined.includes('nano:30b') || combined.includes('30b')) return `${tag}Nvidia Nemotron 3 Nano (30B)`;
+    if (combined.includes('nemotron-3-nano') || combined.includes('nemotron nano') || combined.includes('nano:30b') || combined.includes('nano-30b') || combined.includes('30b')) return `${tag}Nvidia Nemotron 3 Nano (30B)`;
     if (combined.includes('nemotron-3-ultra') || combined.includes('nemotron ultra') || combined.includes('550b') || combined.includes('ultra-free') || combined.includes('nemotron')) return `${tag}Nvidia Nemotron 3 Ultra (550B MoE)`;
-    if (combined.includes('gemma-4') || combined.includes('gemma')) return `${tag}Google Gemma 4 Vision Multimodal`;
-    if (combined.includes('laguna') || combined.includes('laguna-s')) return `${tag}Nemotron Laguna S (Jan 2026)`;
-    if (combined.includes('x-preview')) return `${tag}OpenCode X-Preview Frontier (Feb 2026)`;
+    if (combined.includes('liquid') || combined.includes('lfm')) return `${tag}LiquidAI LFM 2.5 (2.6B)`;
+    if (combined.includes('laguna') || combined.includes('laguna-s')) return `${tag}Nemotron Laguna S (Frontier MoE)`;
     if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo') || combined.includes('minimax')) return `${tag}MiniMax-M3 Vision Multimodal`;
     if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
     if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash`;
     if (combined.includes('codex') || combined.includes('gpt-5') || combined.includes('koding') || combined.includes('coding')) return `${tag}Codex (GPT-5.6 Terra)`;
     if (combined.includes('antigravity') || combined.includes('opus') || combined.includes('claude')) return `${tag}Antigravity (Claude Opus 4.6)`;
     if (combined.includes('openrouter/free') || combined.includes('universal free')) return `${tag}OpenRouter Universal Free Auto Router`;
-    if (combined.includes('local_semantic') || combined.includes('semantic engine')) return 'Auto: Local Semantic Fallback';
+    if (combined.includes('local_semantic') || combined.includes('semantic engine') || combined.includes('offline_rag')) return 'Auto: Local Semantic Fallback';
 
     if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
     if (combined.includes('skripsi') || combined.includes('nlp')) return 'Tanya: Riset NLP & Skripsi';
@@ -924,7 +922,8 @@ class DashboardApp {
     const isOpenCode = (s) => /\b(opencode|api\.opencode\.ai|opencode\.ai)\b/i.test(s);
     const isOllama = (s) => /\b(ollama|ollama\.com)\b/i.test(s);
     const isOmniRoute = (s) => /\b(omniroute|trycloudflare)\b/i.test(s);
-    const isOpenRouter = (s) => /\b(openrouter|open-router)\b/i.test(s) || (!isOpenCode(s) && !isOllama(s) && !isOmniRoute(s) && !/\b(minimax|local_semantic)\b/i.test(s));
+    const isMiniMaxDirect = (s) => /\b(api\.minimax\.io|minimax direct)\b/i.test(s);
+    const isOpenRouter = (s) => /\b(openrouter|open-router)\b/i.test(s) || (!isOpenCode(s) && !isOllama(s) && !isOmniRoute(s) && !isMiniMaxDirect(s) && !/\b(local_semantic|offline_rag)\b/i.test(s));
 
     const MODELS_CATALOG = [
       // 0. Auto Gateway Router Overview
@@ -948,50 +947,50 @@ class DashboardApp {
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOllama(s) && /\b(nano|30b)\b/i.test(s);
+          return isOllama(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s);
         }
       },
       {
         id: 'nemotron-super-ollama',
         name: 'Nemotron 3 Super (120B)',
         category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-super (CoT Reasoning)',
+        tag: 'ollama.com · nemotron-3-super (120B CoT Reasoning)',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOllama(s) && /\b(super|120b)\b/i.test(s);
+          return isOllama(s) && /\b(super|120b|nemotron-3-super)\b/i.test(s);
         }
       },
       {
-        id: 'nemotron-lightning-ollama',
-        name: 'Nemotron 3.5 Lightning',
+        id: 'gemma4-ollama',
+        name: 'Google Gemma 4 (31B)',
         category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3.5-lightning (1M Context SOTA)',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-emerald)',
+        tag: 'ollama.com · gemma4:31b (Dense Multimodal SOTA)',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOllama(s) && /\b(lightning|3\.5-lightning)\b/i.test(s);
+          return isOllama(s) && /\b(gemma|gemma4|31b)\b/i.test(s);
         }
       },
       {
         id: 'nemotron-ultra-ollama',
         name: 'Nemotron 3 Ultra (550B)',
         category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-ultra (550B MoE)',
+        tag: 'ollama.com · nemotron-3-ultra (550B MoE Frontier)',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOllama(s) && /\b(ultra|550b)\b/i.test(s);
+          return isOllama(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
         }
       },
       {
         id: 'minimax-m3-ollama',
         name: 'MiniMax-M3 Multimodal',
         category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · minimax-m3 (Vision Multimodal)',
+        tag: 'ollama.com · minimax-m3 (1M MSA Context Vision)',
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
@@ -1076,6 +1075,18 @@ class DashboardApp {
         }
       },
       {
+        id: 'nemotron-3-super-openrouter',
+        name: 'Nvidia Nemotron 3 Super (120B)',
+        category: 'OpenRouter Cloud Pool',
+        tag: '120B CoT Reasoning · Deep Analytical Engine',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenRouter(s) && /\b(super|120b|nemotron-3-super)\b/i.test(s);
+        }
+      },
+      {
         id: 'nemotron-3-nano-openrouter',
         name: 'Nvidia Nemotron 3 Nano (30B)',
         category: 'OpenRouter Cloud Pool',
@@ -1088,30 +1099,6 @@ class DashboardApp {
         }
       },
       {
-        id: 'nemotron-vision-openrouter',
-        name: 'Nemotron Omni / VL Vision',
-        category: 'OpenRouter Cloud Pool',
-        tag: 'Multimodal Vision · Image Perception & OCR',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(omni|vl|vision-instruct|pixtral|gemma-4)\b/i.test(s);
-        }
-      },
-      {
-        id: 'nemotron-35-lightning-openrouter',
-        name: 'Nvidia Nemotron 3.5 Lightning',
-        category: 'OpenRouter Cloud Pool',
-        tag: '1M Context · High-Speed Lightning Inference',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(lightning|3\.5-lightning)\b/i.test(s);
-        }
-      },
-      {
         id: 'liquid-lfm-openrouter',
         name: 'LiquidAI LFM 2.5 (2.6B)',
         category: 'OpenRouter Cloud Pool',
@@ -1120,7 +1107,7 @@ class DashboardApp {
         color: 'var(--accent-amber)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(liquid|lfm|2\.6b)\b/i.test(s);
+          return isOpenRouter(s) && /\b(liquid|lfm|2\.6b|2\.5)\b/i.test(s);
         }
       },
       {
@@ -1141,12 +1128,48 @@ class DashboardApp {
         id: 'nemotron-ultra-opencode',
         name: 'Nemotron 3 Ultra (550B)',
         category: 'OpenCode Cloud Pool',
-        tag: 'Model ID: opencode/nemotron-3-ultra-free',
+        tag: 'opencode/nemotron-3-ultra-free · Frontier MoE',
         icon: SVG_ICONS.flagship,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
           return isOpenCode(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
+        }
+      },
+      {
+        id: 'deepseek-v4-opencode',
+        name: 'DeepSeek V4 Flash',
+        category: 'OpenCode Cloud Pool',
+        tag: 'opencode/deepseek-v4-flash-free · Fast Interaction',
+        icon: SVG_ICONS.fast,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(deepseek|v4-flash|flash-free)\b/i.test(s);
+        }
+      },
+      {
+        id: 'mimo-opencode',
+        name: 'Mimo V2.5 Multimodal',
+        category: 'OpenCode Cloud Pool',
+        tag: 'opencode/mimo-v2.5-free · Vision & OCR',
+        icon: SVG_ICONS.vision,
+        color: 'var(--accent-cyan)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(mimo|v2\.5|mimo-v2\.5-free)\b/i.test(s);
+        }
+      },
+      {
+        id: 'laguna-s-opencode',
+        name: 'Nemotron Laguna S',
+        category: 'OpenCode Cloud Pool',
+        tag: 'opencode/laguna-s-2.1-free · Frontier MoE',
+        icon: SVG_ICONS.flagship,
+        color: 'var(--accent-emerald)',
+        match: (t, l) => {
+          const s = `${t} ${l}`;
+          return isOpenCode(s) && /\b(laguna|laguna-s|laguna-s-2\.1-free)\b/i.test(s);
         }
       },
 
@@ -1155,12 +1178,12 @@ class DashboardApp {
         id: 'minimax-m3-direct',
         name: 'MiniMax-M3 Frontier Vision',
         category: 'MiniMax Frontier API',
-        tag: 'api.minimax.io · MiniMax-M3',
+        tag: 'api.minimax.io · MiniMax-M3 (1M MSA Vision)',
         icon: SVG_ICONS.vision,
         color: 'var(--accent-cyan)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return !isOllama(s) && !isOmniRoute(s) && /\b(minimax|mimo|api\.minimax\.io)\b/i.test(s);
+          return !isOllama(s) && !isOmniRoute(s) && !isOpenCode(s) && !isOpenRouter(s) && /\b(minimax|mimo|api\.minimax\.io|direct)\b/i.test(s);
         }
       },
 
@@ -1169,12 +1192,12 @@ class DashboardApp {
         id: 'local-semantic',
         name: 'Local Semantic Engine',
         category: 'In-Browser Engine',
-        tag: 'In-Browser Sub-15ms Pattern Matcher + Supabase RAG',
+        tag: 'In-Browser Sub-15ms Pattern Matcher + Supabase Continuous RAG',
         icon: SVG_ICONS.offline,
         color: 'var(--text-muted)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return /\b(local_semantic|semantic pattern|local semantic)\b/i.test(s);
+          return /\b(local_semantic|semantic pattern|local semantic|semantic knowledge|offline_rag)\b/i.test(s);
         }
       }
     ];
@@ -1247,18 +1270,32 @@ class DashboardApp {
           if ((!fallbackName || fallbackName === 'auto') && l.includes('[Auto ➔')) {
             fallbackName = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
           }
-          if (fallbackName.includes('llama-3.3-70b') || fallbackName.includes('meta-llama')) {
-            fallbackName = 'Meta Llama 3.3 (70B) · Legacy Cloud Fallback';
-          } else if (fallbackName.includes('nemotron-3-nano') || fallbackName.includes('nano-30b')) {
-            fallbackName = 'Nvidia Nemotron 3 Nano (30B) · OpenRouter Cloud Pool';
-          } else if (fallbackName.includes('nemotron-3-ultra') || fallbackName.includes('ultra-550b')) {
-            fallbackName = 'Nvidia Nemotron 3 Ultra (550B) · OpenRouter Cloud Pool';
-          } else if (fallbackName.includes('lightning')) {
-            fallbackName = 'Nvidia Nemotron 3.5 Lightning · OpenRouter Cloud Pool';
+          if (fallbackName.includes('nemotron-3-nano') || fallbackName.includes('nano-30b') || fallbackName.includes('nano')) {
+            fallbackName = 'Nvidia Nemotron 3 Nano (30B)';
+          } else if (fallbackName.includes('nemotron-3-super') || fallbackName.includes('super-120b') || fallbackName.includes('super')) {
+            fallbackName = 'Nvidia Nemotron 3 Super (120B)';
+          } else if (fallbackName.includes('nemotron-3-ultra') || fallbackName.includes('ultra-550b') || fallbackName.includes('ultra')) {
+            fallbackName = 'Nvidia Nemotron 3 Ultra (550B)';
+          } else if (fallbackName.includes('gemma') || fallbackName.includes('gemma4')) {
+            fallbackName = 'Google Gemma 4 (31B)';
+          } else if (fallbackName.includes('minimax') || fallbackName.includes('m3') || fallbackName.includes('mimo')) {
+            fallbackName = 'MiniMax-M3 Multimodal (1M MSA)';
+          } else if (fallbackName.includes('deepseek') || fallbackName.includes('v4-flash')) {
+            fallbackName = 'DeepSeek V4 Flash';
+          } else if (fallbackName.includes('laguna')) {
+            fallbackName = 'Nemotron Laguna S';
+          } else if (fallbackName.includes('codex') || fallbackName.includes('terra')) {
+            fallbackName = 'Codex (gpt-5.6-terra)';
+          } else if (fallbackName.includes('antigravity') || fallbackName.includes('claude-opus') || fallbackName.includes('opus')) {
+            fallbackName = 'Antigravity (claude-opus-4-6)';
           } else if (fallbackName.includes('liquid') || fallbackName.includes('lfm')) {
-            fallbackName = 'LiquidAI LFM 2.5 (2.6B) · OpenRouter Cloud Pool';
+            fallbackName = 'LiquidAI LFM 2.5 (2.6B)';
+          } else if (fallbackName.includes('llama-3.3-70b') || fallbackName.includes('meta-llama')) {
+            fallbackName = 'Meta Llama 3.3 (70B)';
+          } else if (fallbackName.includes('local_semantic') || fallbackName.includes('offline_rag') || fallbackName.includes('semantic knowledge')) {
+            fallbackName = 'Local Semantic Engine (Browser RAG)';
           } else if (!fallbackName || fallbackName === 'auto') {
-            fallbackName = 'Nvidia Nemotron 3 Nano (30B) · OpenRouter Cloud Pool';
+            fallbackName = 'Nvidia Nemotron 3 Nano (30B)';
           }
           autoResolvedBreakdown[fallbackName] = (autoResolvedBreakdown[fallbackName] || 0) + 1;
         }
