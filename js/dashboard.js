@@ -214,46 +214,45 @@ class DashboardApp {
       }
     }
 
-    // 2. Direct In-Browser Localhost Fallback Probe (Secondary Fallback)
-    const localEndpoint = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_local_endpoint') : null) || 'http://localhost:20128/v1';
-    if (!isOnline && typeof window !== 'undefined') {
-      const cleanLocal = localEndpoint.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-      const localTargets = [
-        cleanLocal.includes('/models') ? cleanLocal : (cleanLocal.includes('/v1') ? `${cleanLocal}/models` : `${cleanLocal}/v1/models`),
-        'http://localhost:20128/v1/models',
-        'http://127.0.0.1:20128/v1/models'
-      ];
-      for (const targetUrl of localTargets) {
-        try {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 800);
-          const t0 = performance.now();
-          const localRes = await fetch(targetUrl, {
-            method: 'GET',
-            mode: 'cors',
-            signal: controller.signal
-          });
-          clearTimeout(timer);
-          if (localRes.ok || localRes.status === 200 || localRes.status === 401) {
-            const data = await localRes.json().catch(() => null);
-            if (data && (Array.isArray(data.data) || data.object === 'list' || localRes.status === 401)) {
-              isOnline = true;
-              const t1 = Math.round(performance.now() - t0);
-              latencyText = `${t1}ms`;
-              statusLabel = `HOST STATUS: LOCAL FALLBACK ACTIVE (:20128 - ${latencyText})`;
-              headerStatusLabel = `OMNIROUTE: LOCAL (${latencyText})`;
-              break;
-            }
+    // 2. Direct In-Browser Secondary Endpoint Probe (Fallback if Primary is down)
+    const secondaryEndpoint = (typeof window !== 'undefined' ? (localStorage.getItem('omniroute_secondary_endpoint') || localStorage.getItem('omniroute_local_endpoint')) : null) || '';
+    if (!isOnline && secondaryEndpoint && typeof window !== 'undefined') {
+      const cleanSec = secondaryEndpoint.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+      const isHfSec = cleanSec.includes('hf.space') || cleanSec.includes('huggingface');
+      const probeUrl = isHfSec ? `${cleanSec.replace(/\/v1.*$/, '')}/gradio_api/info` : (cleanSec.includes('/models') ? cleanSec : (cleanSec.includes('/v1') ? `${cleanSec}/models` : `${cleanSec}/v1/models`));
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 1500);
+        const t0 = performance.now();
+        const res = await fetch(probeUrl, {
+          method: 'GET',
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'Accept': 'application/json'
+          },
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (res.ok || res.status === 200 || res.status === 401) {
+          const data = await res.json().catch(() => null);
+          if (data && (Array.isArray(data.data) || data.object === 'list' || data.named_endpoints || res.status === 401)) {
+            isOnline = true;
+            const t1 = Math.round(performance.now() - t0);
+            latencyText = `${t1}ms`;
+            const isNgrokSec = cleanSec.includes('ngrok');
+            const secLabel = isNgrokSec ? 'NGROK FALLBACK' : (isHfSec ? 'CLOUD HF FALLBACK' : 'FALLBACK');
+            statusLabel = `HOST STATUS: ${secLabel} ACTIVE (${latencyText})`;
+            headerStatusLabel = `OMNIROUTE: ${secLabel} (${latencyText})`;
           }
-        } catch (_) {}
-      }
+        }
+      } catch (_) {}
     }
 
     // 3. Fallback: Query Vercel Gateway Health Probe (/api/chat)
     if (!isOnline) {
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1800);
+        const timer = setTimeout(() => controller.abort(), 2000);
         const t0 = performance.now();
         const res = await fetch('/api/chat', {
           method: 'GET',
@@ -267,9 +266,12 @@ class DashboardApp {
             isOnline = true;
             const lat = data.omniroute.latencyMs || Math.round(performance.now() - t0);
             latencyText = `${lat}ms`;
-            const isCloud = data.omniroute.url?.includes('hf.space');
-            statusLabel = isCloud ? `HOST STATUS: CLOUD ACTIVE (${latencyText})` : `HOST STATUS: ACTIVE (${latencyText})`;
-            headerStatusLabel = isCloud ? `OMNIROUTE: CLOUD (${latencyText})` : `OMNIROUTE: ONLINE (${latencyText})`;
+            const isHf = data.omniroute.url?.includes('hf.space') || data.omniroute.url?.includes('huggingface');
+            const isFallback = data.omniroute.activeType === 'secondary_fallback';
+            const baseType = isHf ? 'CLOUD HF' : (data.omniroute.url?.includes('ngrok') ? 'NGROK' : 'GATEWAY');
+            const typeLabel = isFallback ? `${baseType} FALLBACK` : baseType;
+            statusLabel = `HOST STATUS: ${typeLabel} ACTIVE (${latencyText})`;
+            headerStatusLabel = `OMNIROUTE: ${typeLabel} (${latencyText})`;
           }
         }
       } catch (_) {}
