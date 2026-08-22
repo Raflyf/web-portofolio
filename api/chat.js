@@ -865,11 +865,15 @@ async function fetchDynamicOmniRouteUrl() {
     }, 1800);
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       const text = res.data[0].fact_text || '';
-      const match = text.match(/\[OMNIROUTE_TUNNEL:\s*([^\|\]]+)(?:\|\s*LOCAL_FALLBACK:\s*([^\]]+))?\]/i);
-      if (match && match[1]) {
+      // Format: [OMNIROUTE_TUNNEL: <cloudUrl> | NGROK_FALLBACK: <ngrokUrl> | LOCAL_FALLBACK: <localUrl>]
+      const tunnelMatch = text.match(/\[OMNIROUTE_TUNNEL:\s*([^|\]]+)/i);
+      const ngrokMatch  = text.match(/NGROK_FALLBACK:\s*([^|\]]+)/i);
+      const localMatch  = text.match(/LOCAL_FALLBACK:\s*([^\]]+)/i);
+      if (tunnelMatch && tunnelMatch[1]) {
         return {
-          cloudUrl: match[1].trim(),
-          localUrl: match[2] ? match[2].trim() : null
+          cloudUrl:  tunnelMatch[1].trim(),
+          ngrokUrl:  ngrokMatch  ? ngrokMatch[1].trim()  : null,
+          localUrl:  localMatch  ? localMatch[1].trim()  : null
         };
       }
     }
@@ -1041,9 +1045,8 @@ export default async function handler(req, res) {
     const cleanCustomKey = typeof customKey === 'string' ? customKey.replace(/[\r\n]/g, '').trim().slice(0, 256) : '';
     const cleanCustomProvider = typeof customProvider === 'string' ? customProvider.replace(/[^a-zA-Z0-9_-]/g, '').trim().slice(0, 32) : '';
 
-    let rawOmniUrl = (cleanCustomKey && cleanCustomProvider === 'omniroute') 
-      ? (process.env.OMNIROUTE_URL || '')
-      : (process.env.OMNIROUTE_URL || '');
+    let rawOmniUrl  = (process.env.OMNIROUTE_URL || '');
+    let ngrokOmniUrl = (process.env.OMNIROUTE_NGROK_URL || '');
     let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1');
     
     // Always check Dynamic Tunnel from Supabase first if available
@@ -1053,6 +1056,9 @@ export default async function handler(req, res) {
     } else if (typeof dynamicTunnel === 'string' && dynamicTunnel.trim()) {
       rawOmniUrl = dynamicTunnel.trim();
     }
+    if (dynamicTunnel?.ngrokUrl) {
+      ngrokOmniUrl = dynamicTunnel.ngrokUrl;
+    }
     if (dynamicTunnel?.localUrl) {
       localOmniUrl = dynamicTunnel.localUrl;
     }
@@ -1061,14 +1067,11 @@ export default async function handler(req, res) {
       rawOmniUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
     }
 
-    if (rawOmniUrl && !rawOmniUrl.includes('/chat/completions')) {
-      rawOmniUrl = rawOmniUrl.replace(/\/+$/, '') + '/chat/completions';
-    }
-    if (localOmniUrl && !localOmniUrl.includes('/chat/completions')) {
-      localOmniUrl = localOmniUrl.replace(/\/+$/, '') + '/chat/completions';
-    }
-    const OMNIROUTE_URL = rawOmniUrl;
-    const OMNIROUTE_LOCAL_URL = localOmniUrl;
+    // Normalize all URLs to /chat/completions
+    const normUrl = u => u ? u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '') + '/chat/completions' : u;
+    const OMNIROUTE_URL       = normUrl(rawOmniUrl);
+    const OMNIROUTE_NGROK_URL = ngrokOmniUrl ? normUrl(ngrokOmniUrl) : null;
+    const OMNIROUTE_LOCAL_URL = normUrl(localOmniUrl);
 
     const OMNIROUTE_KEY = (cleanCustomKey && cleanCustomProvider === 'omniroute')
       ? cleanCustomKey
@@ -1319,12 +1322,21 @@ Langkah yang WAJIB Anda lakukan:
       if (isOmniOffline) return null;
 
       const endpointsToTry = [];
+
+      // [0] Primary: Cloud HF Space (or whatever is set as main tunnel)
       if (OMNIROUTE_URL) {
-        endpointsToTry.push({ url: OMNIROUTE_URL, label: 'Cloud HF Gateway', isCloud: true });
+        const isHfPrimary = OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface');
+        endpointsToTry.push({ url: OMNIROUTE_URL, label: isHfPrimary ? 'Cloud HF Space' : 'Primary Tunnel', isCloud: true });
       }
-      if (OMNIROUTE_LOCAL_URL && OMNIROUTE_LOCAL_URL !== OMNIROUTE_URL) {
-        // Ngrok/Cloudflare tunnel IS reachable from Vercel (public URL)
-        // Only pure localhost/127.0.0.1 is NOT reachable from Vercel serverless
+
+      // [1] Secondary: Ngrok public tunnel → OmniRoute daemon on laptop
+      //     Always reachable from Vercel because it's a public URL
+      if (OMNIROUTE_NGROK_URL && OMNIROUTE_NGROK_URL !== OMNIROUTE_URL) {
+        endpointsToTry.push({ url: OMNIROUTE_NGROK_URL, label: 'Ngrok Local Tunnel', isCloud: false });
+      }
+
+      // [2] Tertiary: Pure localhost — only reachable when running locally (not from Vercel)
+      if (OMNIROUTE_LOCAL_URL && OMNIROUTE_LOCAL_URL !== OMNIROUTE_URL && OMNIROUTE_LOCAL_URL !== OMNIROUTE_NGROK_URL) {
         const isLocalOnly = OMNIROUTE_LOCAL_URL.includes('127.0.0.1') || OMNIROUTE_LOCAL_URL.includes('localhost');
         if (!process.env.VERCEL || !isLocalOnly) {
           endpointsToTry.push({ url: OMNIROUTE_LOCAL_URL, label: 'Localhost :20128', isCloud: false });
