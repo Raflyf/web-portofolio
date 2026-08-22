@@ -899,15 +899,18 @@ export default async function handler(req, res) {
     if (rawOmniUrl && !(process.env.VERCEL && (rawOmniUrl.includes('127.0.0.1') || rawOmniUrl.includes('localhost')))) {
       const pingStart = Date.now();
       try {
-        const pingUrl = rawOmniUrl.includes('/models') ? rawOmniUrl : `${rawOmniUrl}/models`;
+        const baseUrl = rawOmniUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+        const pingUrl = rawOmniUrl.includes('hf.space') ? `${baseUrl}/gradio_api/info` : (rawOmniUrl.includes('/models') ? rawOmniUrl : `${rawOmniUrl}/models`);
+        const headers = {
+          'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
+          'ngrok-skip-browser-warning': 'true',
+          'Accept': 'application/json'
+        };
         const pingRes = await fetchJsonWithTimeout(pingUrl, {
           method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
-            'ngrok-skip-browser-warning': 'true'
-          }
-        }, 1800);
-        if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || pingRes.status === 404) {
+          headers
+        }, 3000);
+        if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || (pingRes.data && (Array.isArray(pingRes.data?.data) || pingRes.data?.named_endpoints))) {
           isOmniAlive = true;
           omniLatency = Date.now() - pingStart;
         }
@@ -923,15 +926,18 @@ export default async function handler(req, res) {
         const cleanDyn = dynamicTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
         const pingStart = Date.now();
         try {
-          const pingUrl = cleanDyn.includes('/models') ? cleanDyn : `${cleanDyn}/models`;
+          const baseUrl = cleanDyn.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+          const pingUrl = cleanDyn.includes('hf.space') ? `${baseUrl}/gradio_api/info` : (cleanDyn.includes('/models') ? cleanDyn : `${cleanDyn}/models`);
+          const headers = {
+            'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
+            'ngrok-skip-browser-warning': 'true',
+            'Accept': 'application/json'
+          };
           const pingRes = await fetchJsonWithTimeout(pingUrl, {
             method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
-              'ngrok-skip-browser-warning': 'true'
-            }
-          }, 1800);
-          if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || pingRes.status === 404) {
+            headers
+          }, 3000);
+          if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || (pingRes.data && (Array.isArray(pingRes.data?.data) || pingRes.data?.named_endpoints))) {
             isOmniAlive = true;
             omniLatency = Date.now() - pingStart;
             rawOmniUrl = cleanDyn;
@@ -1389,10 +1395,11 @@ Langkah yang WAJIB Anda lakukan:
           providerErrors.push(`OmniRoute ${mName} Gradio: ${err.message}`);
         }
       }
-
-      isOmniOffline = true;
-      return null;
     }
+
+    isOmniOffline = true;
+    return null;
+  }
 
     async function callOpenRouter(mName, tOut = 10000) {
       if (OPENROUTER_KEYS.length === 0) return null;

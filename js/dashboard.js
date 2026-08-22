@@ -178,23 +178,45 @@ class DashboardApp {
     let statusLabel = '';
     let headerStatusLabel = '';
 
-    // 1. Check Cloud Serverless Gateway Status (/api/chat)
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.omniroute?.isOnline) {
-          isOnline = true;
-          const lat = data.omniroute.latencyMs;
-          latencyText = lat ? `${lat}ms` : '<40ms';
-          statusLabel = `HOST STATUS: ACTIVE (${latencyText})`;
-          headerStatusLabel = `OMNIROUTE: ONLINE (${latencyText})`;
+    // 1. Check Cloud Serverless Gateway Status & Direct HF Space Probing
+    const endpointsToProbe = [
+      '/api/chat',
+      'https://raflyfirmansyah-portofolio.vercel.app/api/chat',
+      'https://rflyyyf-omniroute-gateway.hf.space/v1/models'
+    ];
+
+    for (const ep of endpointsToProbe) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2500);
+        const t0 = performance.now();
+        const res = await fetch(ep, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (res.ok || res.status === 200 || res.status === 401) {
+          const data = await res.json().catch(() => null);
+          const t1 = Math.round(performance.now() - t0);
+          if (data?.omniroute?.isOnline) {
+            isOnline = true;
+            const lat = data.omniroute.latencyMs || t1;
+            latencyText = `${lat}ms`;
+            const isCloud = data.omniroute.url?.includes('hf.space');
+            statusLabel = isCloud ? `HOST STATUS: CLOUD ACTIVE (${latencyText})` : `HOST STATUS: ACTIVE (${latencyText})`;
+            headerStatusLabel = isCloud ? `OMNIROUTE: CLOUD (${latencyText})` : `OMNIROUTE: ONLINE (${latencyText})`;
+            break;
+          } else if (ep.includes('hf.space') && (res.ok || (data && Array.isArray(data?.data)))) {
+            isOnline = true;
+            latencyText = `${t1}ms`;
+            statusLabel = `HOST STATUS: CLOUD ACTIVE (${latencyText})`;
+            headerStatusLabel = `OMNIROUTE: CLOUD (${latencyText})`;
+            break;
+          }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
 
     // 2. Direct In-Browser Localhost Probe (For Local Server at 127.0.0.1:20128 / localhost:20128)
     if (!isOnline && typeof window !== 'undefined') {

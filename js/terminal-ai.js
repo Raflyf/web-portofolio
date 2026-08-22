@@ -16,6 +16,13 @@ import { telemetry } from './telemetry.js?v=10.100.0';
 // ============================================================================
 const SEMANTIC_PATTERNS = [
   {
+    keywords: ['model apa', 'kamu model apa', 'model kamu apa', 'siapa kamu', 'asisten apa', 'ai apa', 'who are you', 'what model', 'kamu siapa', 'kamu ai apa', 'ini ai apa', 'modelnya apa'],
+    respond: () => [
+      "Saya adalah asisten AI interaktif di website portofolio Rafly Firmansyah.",
+      "Saya siap membantu Anda mengeksplorasi proyek riset Machine Learning, NLP, IoT, dan repositori kode Rafly. Ada yang ingin Anda diskusikan?"
+    ]
+  },
+  {
     keywords: ['github', 'repo', 'repositori', 'source code', 'link github', 'git', 'web-portofolio', 'raflyf'],
     respond: () => [
       "Repositori resmi GitHub untuk portofolio dan riset Rafly Firmansyah:",
@@ -399,7 +406,8 @@ class TerminalAIEngine {
         'apakah', 'gimana', 'bagaimana', 'kenapa', 'mengapa', 'kalo', 'kalau', 'jika', 'ada',
         'bisa', 'saya', 'kamu', 'anda', 'the', 'is', 'are', 'was', 'were', 'for', 'with',
         'not', 'and', 'or', 'what', 'how', 'why', 'who', 'cek', 'sini', 'tips', 'contoh',
-        'bocoran', 'drama', 'sih', 'dong', 'ya', 'kan', 'nih'
+        'bocoran', 'drama', 'sih', 'dong', 'ya', 'kan', 'nih', 'model', 'siapa', 'asisten',
+        'nama', 'namamu', 'halo', 'hai', 'pagi', 'siang', 'sore', 'malam', 'tes', 'test'
       ]);
       const qWords = (query || '').toLowerCase().split(/[\s,?.!]+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
       if (qWords.length === 0) return [];
@@ -745,6 +753,9 @@ ${certsOverview}
 
       if (semanticMatch) {
         responseLines.push(...semanticMatch);
+      } else if (dynamicMemories && dynamicMemories.length > 0) {
+        responseLines.push("[INFORMASI TERVERIFIKASI BASIS DATA PORTOFOLIO]:");
+        dynamicMemories.forEach(m => responseLines.push(`• ${m}`));
       }
 
       if (attachments && attachments.length > 0 && semanticMatch) {
@@ -752,13 +763,6 @@ ${certsOverview}
           "",
           "ℹ️ *[Catatan]*: Lampiran file/gambar Anda telah terunggah. Karena koneksi vision cloud sedang padat, asisten menampilkan informasi terverifikasi langsung dari basis data portofolio."
         );
-      }
-
-      if (dynamicMemories && dynamicMemories.length > 0) {
-        if (semanticMatch) {
-          responseLines.push("", "--- FAKTA TERKAIT DARI SUPABASE RAG ---");
-        }
-        dynamicMemories.forEach(m => responseLines.push(`• ${m}`));
       }
 
       return responseLines;
