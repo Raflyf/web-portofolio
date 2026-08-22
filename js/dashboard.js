@@ -305,39 +305,20 @@ class DashboardApp {
     }
   }
 
-  async promptSyncOmniRouteTunnel() {
-    const defaultUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
-    const currentSaved = localStorage.getItem('omniroute_custom_tunnel') || defaultUrl;
-    const inputUrl = window.prompt(
-      'SINKRONISASI OMNIROUTE 24/7 CLOUD / STATIC TUNNEL:\n\nMasukkan / perbarui URL Endpoint aktif Anda (misal Hugging Face / Ngrok / Cloudflare):\nContoh: https://rflyyyf-omniroute-gateway.hf.space/v1',
-      currentSaved
-    );
+  promptSyncOmniRouteTunnel() {
+    const omnirouteModal = document.getElementById('omniroute-modal');
+    if (omnirouteModal) {
+      const defaultUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+      const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
+      const currentSavedUrl = localStorage.getItem('omniroute_custom_tunnel') || defaultUrl;
+      const currentSavedKey = localStorage.getItem('omniroute_custom_key') || defaultKey;
 
-    if (inputUrl && inputUrl.trim().startsWith('http')) {
-      const cleanUrl = inputUrl.trim().replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-      localStorage.setItem('omniroute_custom_tunnel', cleanUrl);
+      const urlInput = document.getElementById('omniroute-url-input');
+      const keyInput = document.getElementById('omniroute-key-input');
+      if (urlInput) urlInput.value = currentSavedUrl;
+      if (keyInput) keyInput.value = currentSavedKey;
 
-      // Push to Supabase Continuous Memory so Vercel Serverless instantly routes to it
-      const config = this.getSupabaseConfig();
-      if (config && config.url && config.anonKey) {
-        try {
-          await fetch(`${config.url}/rest/v1/ai_memories`, {
-            method: 'POST',
-            headers: {
-              'apikey': config.anonKey,
-              'Authorization': `Bearer ${config.anonKey}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              fact_text: `[OMNIROUTE_TUNNEL: ${cleanUrl}]`,
-              session_id: 'admin_dashboard_sync'
-            })
-          });
-        } catch (_) {}
-      }
-
-      alert(`Endpoint OmniRoute berhasil disinkronkan ke Cloud:\n${cleanUrl}\n\nGateway akan memverifikasi status host sekarang.`);
-      await this.checkOmniRouteRealtimeStatus();
+      omnirouteModal.classList.add('is-open');
     }
   }
 
@@ -2027,6 +2008,19 @@ class DashboardApp {
       });
     }
 
+    // Supabase Status Pill Click (Opens Supabase Config Modal)
+    const supabasePill = document.getElementById('dash-supabase-pill');
+    if (supabasePill && configModal) {
+      supabasePill.addEventListener('click', () => {
+        const config = this.getSupabaseConfig();
+        const urlInput = document.getElementById('supabase-url-input');
+        const keyInput = document.getElementById('supabase-key-input');
+        if (urlInput) urlInput.value = this.cleanKey(config.url) || '';
+        if (keyInput) keyInput.value = this.cleanKey(config.anonKey) || '';
+        configModal.classList.add('is-open');
+      });
+    }
+
     if (configForm) {
       configForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -2052,6 +2046,74 @@ class DashboardApp {
         const syncStatusEl = document.getElementById('sync-status');
         if (syncStatusEl) syncStatusEl.textContent = 'Menyambungkan ke Cloud...';
         await this.loadDashboardData();
+      });
+    }
+
+    // OmniRoute Config Modal
+    const omniBtn = document.getElementById('dash-omni-btn');
+    const omniModal = document.getElementById('omniroute-modal');
+    const omniCloseBtn = document.getElementById('omniroute-close-btn');
+    const omniForm = document.getElementById('omniroute-form');
+
+    if (omniBtn && omniModal) {
+      omniBtn.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
+    }
+
+    if (omniCloseBtn && omniModal) {
+      omniCloseBtn.addEventListener('click', () => omniModal.classList.remove('is-open'));
+    }
+
+    if (omniModal) {
+      omniModal.addEventListener('click', (e) => {
+        if (e.target === omniModal) omniModal.classList.remove('is-open');
+      });
+    }
+
+    if (omniForm) {
+      omniForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const urlInput = document.getElementById('omniroute-url-input');
+        const keyInput = document.getElementById('omniroute-key-input');
+        const rawUrl = this.cleanKey(urlInput?.value);
+        const rawKey = this.cleanKey(keyInput?.value);
+
+        if (!rawUrl) {
+          alert('Harap masukkan Endpoint URL OmniRoute yang valid.');
+          return;
+        }
+
+        const cleanUrl = rawUrl.startsWith('http') 
+          ? rawUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')
+          : `https://${rawUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')}`;
+        
+        localStorage.setItem('omniroute_custom_tunnel', cleanUrl);
+        if (rawKey) {
+          localStorage.setItem('omniroute_custom_key', rawKey);
+        }
+
+        // Push to Supabase Continuous Memory so Vercel Serverless instantly routes to it
+        const config = this.getSupabaseConfig();
+        if (config && config.url && config.anonKey) {
+          try {
+            await fetch(`${config.url}/rest/v1/ai_memories`, {
+              method: 'POST',
+              headers: {
+                'apikey': config.anonKey,
+                'Authorization': `Bearer ${config.anonKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                fact_text: `[OMNIROUTE_TUNNEL: ${cleanUrl}]`,
+                session_id: 'admin_dashboard_sync'
+              })
+            });
+          } catch (_) {}
+        }
+
+        omniModal.classList.remove('is-open');
+        const headerTextEl = document.getElementById('header-omniroute-text');
+        if (headerTextEl) headerTextEl.textContent = 'OMNIROUTE: MEMERIKSA...';
+        await this.checkOmniRouteRealtimeStatus();
       });
     }
   }

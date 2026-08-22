@@ -267,7 +267,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .dash-brand {
@@ -275,6 +275,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .dash-brand-icon {
@@ -294,6 +295,7 @@ body {
   align-items: center;
   gap: 0.4rem;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .dash-brand-title span {
@@ -304,13 +306,21 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.2rem 0.55rem;
+  padding: 0.25rem 0.6rem;
   background-color: var(--accent-emerald-dim);
   border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 9999px;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: var(--accent-emerald);
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.dash-status-pill:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
 }
 
 .dash-status-dot {
@@ -330,8 +340,16 @@ body {
 .dash-actions-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dash-actions-group::-webkit-scrollbar {
+  display: none;
 }
 
 .dash-select {
@@ -1337,5 +1355,16 @@ body {
 .omniroute-header-pill.is-online {
   border-color: rgba(16, 185, 129, 0.4);
   background: rgba(16, 185, 129, 0.1);
+}
+
+@media (max-width: 992px) {
+  .dash-header-wrap {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .dash-actions-group {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
