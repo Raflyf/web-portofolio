@@ -61,18 +61,19 @@
           </span>
           Rafly <span>Firmansyah</span> / Telemetry
         </a>
-        <div class="dash-status-pill" title="Status sinkronisasi data Supabase">
+      </div>
+
+      <!-- Controls, Status Indicators & Quick Actions (Aligned to Right) -->
+      <div class="dash-actions-group">
+        <div class="dash-status-pill" id="dash-supabase-pill" title="Status sinkronisasi data Supabase (Klik untuk konfigurasi)" style="cursor: pointer;">
           <span class="dash-status-dot" aria-hidden="true"></span>
           <span id="sync-status">Memuat status...</span>
         </div>
-        <div class="dash-status-pill omniroute-header-pill" id="header-omniroute-pill" title="Status Host OmniRoute Gateway (Klik untuk sinkronisasi)" style="cursor: pointer;">
+        <div class="dash-status-pill omniroute-header-pill" id="header-omniroute-pill" title="Status Host OmniRoute Gateway (Klik untuk konfigurasi & sinkronisasi)" style="cursor: pointer;">
           <span class="dash-status-dot" id="header-omniroute-dot" style="background-color: var(--accent-amber);" aria-hidden="true"></span>
           <span id="header-omniroute-text">OMNIROUTE: MEMERIKSA...</span>
         </div>
-      </div>
 
-      <!-- Controls & Quick Actions -->
-      <div class="dash-actions-group">
         <select id="dash-time-range" class="dash-select" aria-label="Rentang Waktu Analitik">
           <option value="today">Hari Ini (24 Jam)</option>
           <option value="7d" selected>7 Hari Terakhir</option>
@@ -88,6 +89,11 @@
         <button type="button" id="dash-changepin-btn" class="dash-btn" title="Ubah Master PIN Keamanan">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
           <span>Ganti PIN</span>
+        </button>
+
+        <button type="button" id="dash-omni-btn" class="dash-btn" title="Konfigurasi OmniRoute Cloud & Tunnel">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>OmniRoute</span>
         </button>
 
         <button type="button" id="dash-config-btn" class="dash-btn" title="Konfigurasi Cloud Supabase">
@@ -477,6 +483,38 @@
         <div>
           <label for="supabase-key-input" class="modal-label">Supabase Anon Public API Key</label>
           <input type="text" id="supabase-key-input" class="pin-input text-left" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU" placeholder="eyJhbGciOiJIUzI1NiIsInR5..." required>
+        </div>
+
+        <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
+          <span>Simpan & Sambungkan Cloud</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       6. OMNIROUTE CLOUD & TUNNEL CONFIG MODAL
+       ========================================================================= -->
+  <div class="dash-modal" id="omniroute-modal">
+    <div class="dash-modal-card" role="dialog" aria-labelledby="omniroute-title">
+      <div class="modal-header-row">
+        <h3 id="omniroute-title" class="modal-title">Konfigurasi OmniRoute Cloud</h3>
+        <button type="button" id="omniroute-close-btn" class="dash-modal-close" aria-label="Tutup modal">&times;</button>
+      </div>
+
+      <p class="modal-desc">
+        Sinkronkan endpoint OmniRoute (Hugging Face Spaces, Ngrok, atau Cloudflare Tunnel) untuk gateway AI mandiri secara terpusat.
+      </p>
+
+      <form id="omniroute-form" class="modal-form">
+        <div>
+          <label for="omniroute-url-input" class="modal-label">OmniRoute Endpoint URL</label>
+          <input type="url" id="omniroute-url-input" class="pin-input text-left" value="https://rflyyyf-omniroute-gateway.hf.space/v1" placeholder="https://rflyyyf-omniroute-gateway.hf.space/v1" required>
+        </div>
+
+        <div>
+          <label for="omniroute-key-input" class="modal-label">OmniRoute Secret API Key (Opsional / Default: sk-omniroute)</label>
+          <input type="text" id="omniroute-key-input" class="pin-input text-left" value="sk-7a9b51a264768e32-b3f9b7-6e1cdacd" placeholder="sk-7a9b51a264768e32-b3f9b7-6e1cdacd">
         </div>
 
         <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
