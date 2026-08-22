@@ -1343,18 +1343,28 @@ Langkah yang WAJIB Anda lakukan:
         const endpoints = ['predict_zerogpu', 'predict'];
         const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
 
+        const hfHeaders = { 'Content-Type': 'application/json' };
+        if (process.env.HF_TOKEN) {
+          hfHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
+        }
+
         for (const ep of endpoints) {
           try {
             const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: hfHeaders,
               body: JSON.stringify({ data: [promptText] })
             }, 8000);
 
             if (postRes.ok && postRes.data?.event_id) {
               const eventId = postRes.data.event_id;
+              const sseHeaders = {};
+              if (process.env.HF_TOKEN) {
+                sseHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
+              }
               const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, {
-                method: 'GET'
+                method: 'GET',
+                headers: sseHeaders
               }, tOut);
 
             if (sseRes.ok || sseRes.text) {
