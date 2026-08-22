@@ -65,20 +65,20 @@
 
       <!-- Controls, Status Indicators & Quick Actions (Aligned to Right) -->
       <div class="dash-actions-group">
-        <div class="dash-status-pill" id="dash-supabase-pill" title="Status sinkronisasi data Supabase (Klik untuk konfigurasi)" style="cursor: pointer;">
+        <div class="dash-status-pill" id="dash-supabase-pill" title="Status Cloud Supabase (Klik untuk konfigurasi)" style="cursor: pointer;">
           <span class="dash-status-dot" aria-hidden="true"></span>
-          <span id="sync-status">Memuat status...</span>
+          <span id="sync-status">Supabase Live</span>
         </div>
-        <div class="dash-status-pill omniroute-header-pill" id="header-omniroute-pill" title="Status Host OmniRoute Gateway (Klik untuk konfigurasi & sinkronisasi)" style="cursor: pointer;">
+        <div class="dash-status-pill omniroute-header-pill" id="header-omniroute-pill" title="Status Host OmniRoute Gateway (Klik untuk konfigurasi)" style="cursor: pointer;">
           <span class="dash-status-dot" id="header-omniroute-dot" style="background-color: var(--accent-amber);" aria-hidden="true"></span>
-          <span id="header-omniroute-text">OMNIROUTE: MEMERIKSA...</span>
+          <span id="header-omniroute-text">OMNIROUTE: STANDBY</span>
         </div>
 
         <select id="dash-time-range" class="dash-select" aria-label="Rentang Waktu Analitik">
-          <option value="today">Hari Ini (24 Jam)</option>
-          <option value="7d" selected>7 Hari Terakhir</option>
-          <option value="30d">30 Hari Terakhir</option>
-          <option value="all">Semua Data</option>
+          <option value="today">Hari Ini</option>
+          <option value="7d" selected>7 Hari</option>
+          <option value="30d">30 Hari</option>
+          <option value="all">Semua</option>
         </select>
 
         <button type="button" id="dash-ping-btn" class="dash-btn" title="Kirim Sinyal Telemetri Uji Coba">
@@ -88,17 +88,7 @@
 
         <button type="button" id="dash-changepin-btn" class="dash-btn" title="Ubah Master PIN Keamanan">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <span>Ganti PIN</span>
-        </button>
-
-        <button type="button" id="dash-omni-btn" class="dash-btn" title="Konfigurasi OmniRoute Cloud & Tunnel">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          <span>OmniRoute</span>
-        </button>
-
-        <button type="button" id="dash-config-btn" class="dash-btn" title="Konfigurasi Cloud Supabase">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-          <span>Cloud Sync</span>
+          <span>PIN</span>
         </button>
 
         <button type="button" id="dash-logout-btn" class="dash-btn dash-btn-danger" title="Kunci Dashboard">
