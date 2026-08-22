@@ -205,6 +205,54 @@ async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
 }
 
 /**
+ * High-Speed SSE Stream Reader with Early Return for Gradio 5 Event Streams
+ * Consumes streaming chunks incrementally and resolves immediately upon seeing 'data: [...]' payload,
+ * eliminating the 8-18s hang caused by res.text() waiting for SSE connection termination.
+ */
+async function fetchSseWithEarlyReturn(url, headers = {}, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error(`Timeout of ${timeoutMs}ms exceeded`)), timeoutMs);
+  try {
+    const res = await fetch(url, { method: 'GET', headers, signal: controller.signal });
+    if (!res.ok) {
+      clearTimeout(timer);
+      return { ok: false, status: res.status, text: '' };
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let accumulated = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      accumulated += decoder.decode(value, { stream: true });
+      if (accumulated.includes('data:')) {
+        const lines = accumulated.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            const p = line.replace(/^data:\s*/, '').trim();
+            if (p && p !== 'null') {
+              try {
+                const arr = JSON.parse(p);
+                if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string') {
+                  clearTimeout(timer);
+                  try { reader.cancel(); } catch (_) {}
+                  return { ok: true, status: 200, text: accumulated, data: arr };
+                }
+              } catch (_) {}
+            }
+          }
+        }
+      }
+    }
+    clearTimeout(timer);
+    return { ok: true, status: 200, text: accumulated };
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
+/**
  * Universal Intelligent Multi-Query Generator for Any Domain & Topic
  * Dynamically extracts the substantive subject matter from any user prompt and conversation history
  * to formulate parallel high-precision search queries across breaking news, live releases, and factual updates.
@@ -1363,7 +1411,7 @@ Langkah yang WAJIB Anda lakukan:
 
       for (const target of endpointsToTry) {
         const isHf = target.isHf;
-        const timeoutPerAttempt = isHf ? tOut : Math.min(tOut, 10000);
+        const timeoutPerAttempt = isHf ? Math.min(tOut, 8000) : Math.min(tOut, 8000);
 
         // 1. Direct OpenAI JSON POST attempt
         try {
@@ -1399,7 +1447,7 @@ Langkah yang WAJIB Anda lakukan:
 
         // 2. Gradio 5 API protocol attempt (ALWAYS execute for Hugging Face Space whether primary or secondary)
         if (isHf) {
-          const endpoints = ['predict_zerogpu', 'predict'];
+          const endpoints = ['predict'];
           const baseUrl = target.rawUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
           const hfHeaders = { 'Content-Type': 'application/json' };
           if (process.env.HF_TOKEN) {
@@ -1424,17 +1472,17 @@ Langkah yang WAJIB Anda lakukan:
               if (postRes.ok && postRes.data?.event_id) {
                 const eventId = postRes.data.event_id;
                 const sseHeaders = {};
-                if (process.env.HF_TOKEN) {
-                  sseHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
-                }
-                const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, {
-                  method: 'GET',
-                  headers: sseHeaders
-                }, timeoutPerAttempt);
+                const sseRes = await fetchSseWithEarlyReturn(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, sseHeaders, 12000);
 
-                if (sseRes.ok || sseRes.text) {
-                  const rawText = sseRes.text || '';
-                  const lines = rawText.split('\n');
+                if (sseRes.data && Array.isArray(sseRes.data) && sseRes.data[0] && typeof sseRes.data[0] === 'string') {
+                  const txt = sseRes.data[0].trim();
+                  if (txt.length > 0 && !isOmniErrorResponse(txt)) {
+                    return sendSuccess(txt, mName, `OmniRoute Dedicated Gateway (${target.label})`);
+                  } else if (txt.length > 0) {
+                    providerErrors.push(`OmniRoute ${target.label} (${mName}) Gradio: upstream error — ${txt.slice(0, 120)}`);
+                  }
+                } else if (sseRes.text) {
+                  const lines = sseRes.text.split('\n');
                   for (const line of lines) {
                     if (line.startsWith('data:')) {
                       const p = line.replace(/^data:\s*/, '').trim();
@@ -1444,10 +1492,8 @@ Langkah yang WAJIB Anda lakukan:
                           if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string') {
                             const txt = arr[0].trim();
                             if (txt.length > 0 && !isOmniErrorResponse(txt)) {
-                              // Valid answer — return to user
                               return sendSuccess(txt, mName, `OmniRoute Dedicated Gateway (${target.label})`);
                             } else if (txt.length > 0) {
-                              // Error string from OmniRoute — log and fall through to next endpoint
                               providerErrors.push(`OmniRoute ${target.label} (${mName}) Gradio: upstream error — ${txt.slice(0, 120)}`);
                             }
                           }
@@ -1761,9 +1807,9 @@ Langkah yang WAJIB Anda lakukan:
       if (isComplexReasoning) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway
-          { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
-          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 },
-          { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+          { provider: 'omniroute', model: 'Codex', timeout: 12000 },
+          { provider: 'omniroute', model: 'Antigravity', timeout: 14000 },
+          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 10000 },
 
           // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: nemotron-3-ultra 550B MoE -> minimax-m3 -> nemotron-3-super di akhir)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 35000 },
