@@ -1570,125 +1570,194 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     // ========================================================================
-    // BUILD MULTI-TIER EXECUTION PIPELINE
+    // BUILD MULTI-TIER EXECUTION PIPELINE (STRICT USER PRIORITY HIERARCHY)
+    // Tier 1: OmniRoute Dedicated Gateway
+    // Tier 2: Ollama Cloud SOTA Hub
+    // Tier 3: OpenRouter Cloud Pool
+    // Tier 4: OpenCode Zen Pool
+    // Tier 5: MiniMax Direct API
+    // Tier 6: Local Semantic Engine (Fallback)
     // ========================================================================
     function buildExecutionPipeline() {
-      // 0. MULTIMODAL & VISION PIPELINE (Prioritas Mutlak MiniMax-M3 & Model Vision Resmi)
+      // 0. MULTIMODAL & VISION PIPELINE (Prioritas Mutlak MiniMax-M3 & Vision Suite)
       if (hasImages || (model && model.toLowerCase().includes('vision'))) {
         return [
-          // 1. OmniRoute Dedicated Vision SOTA Model (Prioritas #1 jika OmniRoute aktif)
+          // Tier 1: OmniRoute Dedicated Vision
           { provider: 'omniroute', model: 'Vision-model', timeout: 18000 },
-          // 2. Ollama Cloud MiniMax-M3 Multimodal (Prioritas #2 Vision SOTA)
+          // Tier 2: Ollama Cloud MiniMax-M3 Multimodal (Prioritas #2)
           { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
-          // 3. MiniMax Direct Production API
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
-          // 4. OpenRouter Multimodal Vision SOTA Suite
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 4000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-nano-12b-v2-vl:free', timeout: 4000 },
-          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 4000 },
-          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 4000 },
-          { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 4000 },
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 4000 }
+          // Tier 3: OpenRouter Multimodal Vision Suite (Prioritas #3)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-nano-12b-v2-vl:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 6000 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 6000 },
+          // Tier 4: OpenCode Multimodal Vision (Prioritas #4)
+          { provider: 'opencode', model: 'opencode/mimo-v2.5-free', timeout: 8000 },
+          // Tier 5: MiniMax Direct Production API (Prioritas #5)
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 }
         ];
       }
 
+      // Explicit Model Selection from User
       if (model && model !== 'auto') {
         const t = model.toLowerCase();
         if (t.includes('ultra')) {
           return [
+            // Tier 1: OmniRoute
             { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 16000 },
-            { provider: 'ollama', model: 'minimax-m3', timeout: 18000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 16000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 14000 }
-          ];
-        }
-        if (t.includes('nano')) {
-          return [
-            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 15000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 15000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
-            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 6000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 }
-          ];
-        }
-        if (t.includes('codex') || t.includes('gpt-5') || t.includes('antigravity') || t.includes('opus')) {
-          return [
-            { provider: 'omniroute', model: t.includes('antigravity') || t.includes('opus') ? 'Antigravity' : 'Codex', timeout: 20000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
+            // Tier 2: Ollama (nemotron-3-ultra -> nemotron-3-super di akhir)
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 35000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 20000 },
+            // Tier 3: OpenRouter
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 14000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 14000 },
+            // Tier 4: OpenCode
+            { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 14000 },
+            // Tier 5: MiniMax
+            { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 }
+          ];
+        }
+        if (t.includes('nano') || t.includes('fast') || t.includes('flash') || t.includes('gemma')) {
+          return [
+            // Tier 1: OmniRoute
+            { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 15000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 15000 },
+            // Tier 2: Ollama (nemotron-3-nano:30b -> gemma4:31b -> nemotron-3-super di akhir)
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 16000 },
+            { provider: 'ollama', model: 'gemma4:31b', timeout: 16000 },
             { provider: 'ollama', model: 'nemotron-3-super', timeout: 14000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 }
+            // Tier 3: OpenRouter
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
+            { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 6000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
+            // Tier 4: OpenCode
+            { provider: 'opencode', model: 'opencode/deepseek-v4-flash-free', timeout: 8000 },
+            // Tier 5: MiniMax
+            { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 }
+          ];
+        }
+        if (t.includes('minimax') || t.includes('m3')) {
+          return [
+            // Tier 1: OmniRoute
+            { provider: 'omniroute', model: 'Vision-model', timeout: 18000 },
+            // Tier 2: Ollama (minimax-m3 -> nemotron-3-super di akhir)
+            { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 20000 },
+            // Tier 3: OpenRouter
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
+            // Tier 4: OpenCode
+            { provider: 'opencode', model: 'opencode/mimo-v2.5-free', timeout: 10000 },
+            // Tier 5: MiniMax
+            { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 }
+          ];
+        }
+        if (t.includes('codex') || t.includes('antigravity') || t.includes('super')) {
+          return [
+            // Tier 1: OmniRoute
+            { provider: 'omniroute', model: t.includes('antigravity') ? 'Antigravity' : 'Codex', timeout: 18000 },
+            // Tier 2: Ollama (nemotron-3-ultra -> minimax-m3 -> nemotron-3-super)
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 35000 },
+            { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 20000 },
+            // Tier 3: OpenRouter
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 14000 },
+            // Tier 4: OpenCode
+            { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 12000 },
+            // Tier 5: MiniMax
+            { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 }
           ];
         }
       }
 
-      const omniModel = 'Codex';
-      const isAnalysisOrComparison = queryIntent.isAnalysisOrComparison 
+      const isCodingOrBigFile = queryIntent.category === 'heavy_coding' || docAttachments.length > 0;
+      const isComplexReasoning = queryIntent.isAnalysisOrComparison 
         || queryIntent.category === 'project_architecture' 
-        || queryIntent.category === 'deep_reasoning' 
-        || queryIntent.category === 'heavy_coding'
+        || queryIntent.category === 'deep_reasoning'
         || effectiveEffort === 'high'
         || effectiveEffort === 'thinking';
 
-      if (isAnalysisOrComparison) {
-        // [ANALISIS, JELASKAN, PERBANDINGAN, ARSITEKTUR] -> OMNIROUTE CODEX/ANTIGRAVITY PRIORITAS #1
+      // 1. CODING, ANALISIS FILE BESAR & REPOSITORI
+      if (isCodingOrBigFile) {
         return [
-          // 1. OmniRoute Dedicated Gateway (Prioritas #1 Mutlak)
-          { provider: 'omniroute', model: omniModel, timeout: 18000 },
+          // Tier 1: OmniRoute Dedicated Gateway
+          { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+          { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
 
-          // 2. Prioritas #2: Nemotron 3 Ultra 550B MoE (OpenRouter Cloud Pool - Flagship Penalaran Mendalam)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
-
-          // 3. Prioritas #3: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 14000 },
-
-          // 4. Prioritas #4: Nemotron 3 Super dari Ollama Cloud Hub (Kluster Failover)
+          // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: minimax-m3 MSA 1M context -> nemotron-3-ultra -> nemotron-3-super di akhir)
+          { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 35000 },
           { provider: 'ollama', model: 'nemotron-3-super', timeout: 20000 },
 
-          // 5. Prioritas #5: Nemotron 3 Nano 30B dari Ollama Cloud Hub (Alokasi 36s Realistis)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 36000 },
-
-          // 6. Prioritas #6: Nemotron 3.5 Lightning dari Ollama Cloud Hub (1M Context SOTA)
-          { provider: 'ollama', model: 'nemotron-3.5-lightning', timeout: 20000 },
-
-          // 7. Prioritas #7: Nemotron 3.5 Lightning (OpenRouter 1M Context SOTA)
+          // Tier 3: OpenRouter Cloud Pool
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 },
 
-          // 8. Prioritas #8: OpenRouter Universal Free Auto-Router
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 }
+          // Tier 4: OpenCode Zen Pool
+          { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 12000 },
+          { provider: 'opencode', model: 'opencode/deepseek-v4-flash-free', timeout: 10000 },
+
+          // Tier 5: MiniMax Direct Production API
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 }
         ];
       }
 
-      // [PERCAKAPAN RECEH & OBROLAN KASUAL] -> OMNIROUTE PRIORITAS #1 MUTLAK
+      // 2. PENALARAN KOMPLEKS, LOGIKA, RISET ILMIAH & ANALISIS RUMIT
+      if (isComplexReasoning) {
+        return [
+          // Tier 1: OmniRoute Dedicated Gateway
+          { provider: 'omniroute', model: 'Antigravity', timeout: 18000 },
+          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 18000 },
+          { provider: 'omniroute', model: 'Codex', timeout: 18000 },
+
+          // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: nemotron-3-ultra 550B MoE -> minimax-m3 -> nemotron-3-super di akhir)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 35000 },
+          { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
+          { provider: 'ollama', model: 'nemotron-3-super', timeout: 20000 },
+
+          // Tier 3: OpenRouter Cloud Pool
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 },
+
+          // Tier 4: OpenCode Zen Pool
+          { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 12000 },
+          { provider: 'opencode', model: 'opencode/laguna-s-2.1-free', timeout: 10000 },
+
+          // Tier 5: MiniMax Direct Production API
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 }
+        ];
+      }
+
+      // 3. KECEPATAN / TUGAS RINGAN HARIAN / CASUAL CHAT / PERTANYAAN UMUM
       return [
-        // 1. OmniRoute Dedicated Gateway (Prioritas #1 Mutlak)
-        { provider: 'omniroute', model: omniModel, timeout: 18000 },
+        // Tier 1: OmniRoute Dedicated Gateway
+        { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 15000 },
+        { provider: 'omniroute', model: 'Codex', timeout: 15000 },
 
-        // 2. Prioritas #2: Nemotron 3 Ultra 550B MoE (OpenRouter Cloud Pool - Flagship SOTA)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
-
-        // 3. Prioritas #3: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
-
-        // 4. Prioritas #4: Nemotron 3 Super dari Ollama Cloud Hub (Fast Cluster Failover)
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
-
-        // 5. Prioritas #5: Nemotron 3.5 Lightning dari Ollama Cloud Hub (Fast 1M Context Failover)
-        { provider: 'ollama', model: 'nemotron-3.5-lightning', timeout: 12000 },
-
-        // 6. Prioritas #6: Nemotron 3 Nano dari Ollama Cloud Hub (22s realistis, throughput ~100 tok/s)
+        // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: nemotron-3-nano:30b -> gemma4:31b -> nemotron-3-super di akhir)
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 16000 },
+        { provider: 'ollama', model: 'gemma4:31b', timeout: 16000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 14000 },
 
-        // 7. Prioritas #7: LiquidAI LFM 2.5 dari OpenRouter (Sub-2s Instant)
+        // Tier 3: OpenRouter Cloud Pool
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
         { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 6000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
 
-        // 8. Prioritas #8: OpenRouter Universal Free Auto-Router
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 }
+        // Tier 4: OpenCode Zen Pool
+        { provider: 'opencode', model: 'opencode/deepseek-v4-flash-free', timeout: 8000 },
+
+        // Tier 5: MiniMax Direct Production API
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 }
       ];
     }
 
