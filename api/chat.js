@@ -900,7 +900,8 @@ export default async function handler(req, res) {
       const pingStart = Date.now();
       try {
         const baseUrl = rawOmniUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-        const pingUrl = rawOmniUrl.includes('hf.space') ? `${baseUrl}/gradio_api/info` : (rawOmniUrl.includes('/models') ? rawOmniUrl : `${rawOmniUrl}/models`);
+        const isHf = rawOmniUrl.includes('hf.space');
+        const pingUrl = isHf ? `${baseUrl}/gradio_api/info` : (rawOmniUrl.includes('/models') ? rawOmniUrl : `${rawOmniUrl}/models`);
         const headers = {
           'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
           'ngrok-skip-browser-warning': 'true',
@@ -909,10 +910,17 @@ export default async function handler(req, res) {
         const pingRes = await fetchJsonWithTimeout(pingUrl, {
           method: 'GET',
           headers
-        }, 3000);
-        if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || (pingRes.data && (Array.isArray(pingRes.data?.data) || pingRes.data?.named_endpoints))) {
-          isOmniAlive = true;
-          omniLatency = Date.now() - pingStart;
+        }, 2500);
+        if (isHf) {
+          if (pingRes.ok && pingRes.data?.named_endpoints) {
+            isOmniAlive = true;
+            omniLatency = Date.now() - pingStart;
+          }
+        } else {
+          if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
+            isOmniAlive = true;
+            omniLatency = Date.now() - pingStart;
+          }
         }
       } catch (_) {
         isOmniAlive = false;
@@ -927,7 +935,8 @@ export default async function handler(req, res) {
         const pingStart = Date.now();
         try {
           const baseUrl = cleanDyn.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-          const pingUrl = cleanDyn.includes('hf.space') ? `${baseUrl}/gradio_api/info` : (cleanDyn.includes('/models') ? cleanDyn : `${cleanDyn}/models`);
+          const isHf = cleanDyn.includes('hf.space');
+          const pingUrl = isHf ? `${baseUrl}/gradio_api/info` : (cleanDyn.includes('/models') ? cleanDyn : `${cleanDyn}/models`);
           const headers = {
             'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
             'ngrok-skip-browser-warning': 'true',
@@ -936,11 +945,19 @@ export default async function handler(req, res) {
           const pingRes = await fetchJsonWithTimeout(pingUrl, {
             method: 'GET',
             headers
-          }, 3000);
-          if (pingRes.ok || pingRes.status === 200 || pingRes.status === 401 || (pingRes.data && (Array.isArray(pingRes.data?.data) || pingRes.data?.named_endpoints))) {
-            isOmniAlive = true;
-            omniLatency = Date.now() - pingStart;
-            rawOmniUrl = cleanDyn;
+          }, 2500);
+          if (isHf) {
+            if (pingRes.ok && pingRes.data?.named_endpoints) {
+              isOmniAlive = true;
+              omniLatency = Date.now() - pingStart;
+              rawOmniUrl = cleanDyn;
+            }
+          } else {
+            if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
+              isOmniAlive = true;
+              omniLatency = Date.now() - pingStart;
+              rawOmniUrl = cleanDyn;
+            }
           }
         } catch (_) {}
       }
@@ -1601,10 +1618,11 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('codex') || t.includes('gpt-5') || t.includes('antigravity') || t.includes('opus')) {
           return [
             { provider: 'omniroute', model: t.includes('antigravity') || t.includes('opus') ? 'Antigravity' : 'Codex', timeout: 20000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 16000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 14000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 14000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 14000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 }
           ];
         }
       }
@@ -1626,20 +1644,20 @@ Langkah yang WAJIB Anda lakukan:
           // 2. Prioritas #2: Nemotron 3 Ultra 550B MoE (OpenRouter Cloud Pool - Flagship Penalaran Mendalam)
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
 
-          // 3. Prioritas #3: Nemotron 3 Nano 30B dari Ollama Cloud Hub (Alokasi 36s Realistis untuk Analisis 12k+ Karakter)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 36000 },
+          // 3. Prioritas #3: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 14000 },
 
           // 4. Prioritas #4: Nemotron 3 Super dari Ollama Cloud Hub (Kluster Failover)
           { provider: 'ollama', model: 'nemotron-3-super', timeout: 20000 },
 
-          // 5. Prioritas #5: Nemotron 3.5 Lightning dari Ollama Cloud Hub (1M Context SOTA)
+          // 5. Prioritas #5: Nemotron 3 Nano 30B dari Ollama Cloud Hub (Alokasi 36s Realistis)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 36000 },
+
+          // 6. Prioritas #6: Nemotron 3.5 Lightning dari Ollama Cloud Hub (1M Context SOTA)
           { provider: 'ollama', model: 'nemotron-3.5-lightning', timeout: 20000 },
 
-          // 6. Prioritas #6: Nemotron 3.5 Lightning (OpenRouter 1M Context SOTA)
+          // 7. Prioritas #7: Nemotron 3.5 Lightning (OpenRouter 1M Context SOTA)
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
-
-          // 7. Prioritas #7: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
 
           // 8. Prioritas #8: OpenRouter Universal Free Auto-Router
           { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 }
@@ -1651,22 +1669,25 @@ Langkah yang WAJIB Anda lakukan:
         // 1. OmniRoute Dedicated Gateway (Prioritas #1 Mutlak)
         { provider: 'omniroute', model: omniModel, timeout: 18000 },
 
-        // 2. Prioritas #2: Nemotron 3 Nano dari Ollama Cloud Hub (22s realistis, throughput ~100 tok/s)
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 22000 },
+        // 2. Prioritas #2: Nemotron 3 Ultra 550B MoE (OpenRouter Cloud Pool - Flagship SOTA)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
 
-        // 3. Prioritas #3: Nemotron 3 Super dari Ollama Cloud Hub (Fast Cluster Failover)
+        // 3. Prioritas #3: Nemotron 3 Super 120B MoE (OpenRouter Cloud Pool)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
+
+        // 4. Prioritas #4: Nemotron 3 Super dari Ollama Cloud Hub (Fast Cluster Failover)
         { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
 
-        // 4. Prioritas #4: Nemotron 3.5 Lightning dari Ollama Cloud Hub (Fast 1M Context Failover)
+        // 5. Prioritas #5: Nemotron 3.5 Lightning dari Ollama Cloud Hub (Fast 1M Context Failover)
         { provider: 'ollama', model: 'nemotron-3.5-lightning', timeout: 12000 },
 
-        // 5. Prioritas #5: Nemotron 3 Nano 30B dari OpenRouter (Fast Fallback)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
+        // 6. Prioritas #6: Nemotron 3 Nano dari Ollama Cloud Hub (22s realistis, throughput ~100 tok/s)
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 16000 },
 
-        // 6. Prioritas #6: LiquidAI LFM 2.5 dari OpenRouter (Sub-2s Instant)
+        // 7. Prioritas #7: LiquidAI LFM 2.5 dari OpenRouter (Sub-2s Instant)
         { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 6000 },
 
-        // 7. Prioritas #7: OpenRouter Universal Free Auto-Router
+        // 8. Prioritas #8: OpenRouter Universal Free Auto-Router
         { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 }
       ];
     }
