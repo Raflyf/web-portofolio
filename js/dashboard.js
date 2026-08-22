@@ -346,19 +346,25 @@ class DashboardApp {
   }
 
   async switchOmniRouteHost(targetType) {
-    const hfUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
-    const ngrokUrl = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+    const hfUrl    = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+    const ngrokUrl = localStorage.getItem('omniroute_last_ngrok_url') || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
     const localUrl = 'http://localhost:20128/v1';
     const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
 
-    let newPrimary = hfUrl;
+    // When Cloud HF is primary → ngrok is fallback
+    // When Ngrok is primary   → HF is fallback (or no ngrok fallback field needed)
+    let primaryUrl  = hfUrl;
+    let ngrokFallback = ngrokUrl;
+
     if (targetType === 'ngrok') {
-      newPrimary = localStorage.getItem('omniroute_last_ngrok_url') || ngrokUrl;
+      primaryUrl    = ngrokUrl;
+      ngrokFallback = null; // ngrok IS primary, no secondary ngrok needed
     } else {
-      newPrimary = hfUrl;
+      primaryUrl    = hfUrl;
+      ngrokFallback = ngrokUrl; // HF is primary, ngrok is secondary OmniRoute fallback
     }
 
-    localStorage.setItem('omniroute_custom_tunnel', newPrimary);
+    localStorage.setItem('omniroute_custom_tunnel', primaryUrl);
     localStorage.setItem('omniroute_local_endpoint', localUrl);
     if (!localStorage.getItem('omniroute_custom_key')) {
       localStorage.setItem('omniroute_custom_key', defaultKey);
@@ -369,7 +375,10 @@ class DashboardApp {
     if (switchHfBtn) switchHfBtn.classList.toggle('is-active', targetType === 'hf');
     if (switchNgrokBtn) switchNgrokBtn.classList.toggle('is-active', targetType === 'ngrok');
 
-    // Sync to Supabase Memory so Serverless immediately routes to selected host
+    // Format: [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <ngrok> | LOCAL_FALLBACK: <local>]
+    const ngrokPart = ngrokFallback ? ` | NGROK_FALLBACK: ${ngrokFallback}` : '';
+    const factText = `[OMNIROUTE_TUNNEL: ${primaryUrl}${ngrokPart} | LOCAL_FALLBACK: ${localUrl}]`;
+
     const config = this.getSupabaseConfig();
     if (config && config.url && config.anonKey) {
       try {
@@ -381,7 +390,7 @@ class DashboardApp {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            fact_text: `[OMNIROUTE_TUNNEL: ${newPrimary} | LOCAL_FALLBACK: ${localUrl}]`,
+            fact_text: factText,
             session_id: 'admin_dashboard_switch'
           })
         });
@@ -2262,14 +2271,24 @@ class DashboardApp {
 
         localStorage.setItem('omniroute_custom_tunnel', cleanUrl);
         localStorage.setItem('omniroute_local_endpoint', cleanLocalUrl);
-        if (cleanUrl.includes('ngrok') || cleanUrl.includes('localhost') || cleanUrl.includes('127.0.0.1')) {
+        // Save ngrok/tunnel URL separately for use as NGROK_FALLBACK
+        if (cleanUrl.includes('ngrok') || cleanUrl.includes('trycloudflare') || cleanUrl.includes('cloudflare')) {
           localStorage.setItem('omniroute_last_ngrok_url', cleanUrl);
         }
         if (rawKey) {
           localStorage.setItem('omniroute_custom_key', rawKey);
         }
 
-        // Push to Supabase Continuous Memory so Vercel Serverless instantly routes to it
+        // Build Supabase fact_text with the 3-field format:
+        // [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <ngrok> | LOCAL_FALLBACK: <local>]
+        const savedNgrokUrl = localStorage.getItem('omniroute_last_ngrok_url') || '';
+        const isCleanUrlHf = cleanUrl.includes('hf.space') || cleanUrl.includes('huggingface');
+        let ngrokFallbackPart = '';
+        if (isCleanUrlHf && savedNgrokUrl && savedNgrokUrl !== cleanUrl) {
+          ngrokFallbackPart = ` | NGROK_FALLBACK: ${savedNgrokUrl}`;
+        }
+        const factText = `[OMNIROUTE_TUNNEL: ${cleanUrl}${ngrokFallbackPart} | LOCAL_FALLBACK: ${cleanLocalUrl}]`;
+
         const config = this.getSupabaseConfig();
         if (config && config.url && config.anonKey) {
           try {
@@ -2281,12 +2300,13 @@ class DashboardApp {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                fact_text: `[OMNIROUTE_TUNNEL: ${cleanUrl} | LOCAL_FALLBACK: ${cleanLocalUrl}]`,
+                fact_text: factText,
                 session_id: 'admin_dashboard_sync'
               })
             });
           } catch (_) {}
         }
+
 
         omniModal.classList.remove('is-open');
         const headerTextEl = document.getElementById('header-omniroute-text');
