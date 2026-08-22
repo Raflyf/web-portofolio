@@ -326,6 +326,14 @@ class DashboardApp {
       }
     }
 
+    // 5. Update OmniRoute Switch Toggle Button States
+    const switchHfBtn = document.getElementById('btn-switch-hf');
+    const switchNgrokBtn = document.getElementById('btn-switch-ngrok');
+    const activeTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+    const isHfActive = activeTunnel.includes('hf.space') || activeTunnel.includes('huggingface');
+    if (switchHfBtn) switchHfBtn.classList.toggle('is-active', isHfActive);
+    if (switchNgrokBtn) switchNgrokBtn.classList.toggle('is-active', !isHfActive);
+
     // Attach click-to-sync handler once to card pill and header pill
     if (pillEl && !pillEl.dataset.hasTunnelHandler) {
       pillEl.dataset.hasTunnelHandler = 'true';
@@ -335,6 +343,54 @@ class DashboardApp {
       headerPillEl.dataset.hasTunnelHandler = 'true';
       headerPillEl.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
     }
+  }
+
+  async switchOmniRouteHost(targetType) {
+    const hfUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+    const ngrokUrl = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+    const localUrl = 'http://localhost:20128/v1';
+    const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
+
+    let newPrimary = hfUrl;
+    if (targetType === 'ngrok') {
+      newPrimary = localStorage.getItem('omniroute_last_ngrok_url') || ngrokUrl;
+    } else {
+      newPrimary = hfUrl;
+    }
+
+    localStorage.setItem('omniroute_custom_tunnel', newPrimary);
+    localStorage.setItem('omniroute_local_endpoint', localUrl);
+    if (!localStorage.getItem('omniroute_custom_key')) {
+      localStorage.setItem('omniroute_custom_key', defaultKey);
+    }
+
+    const switchHfBtn = document.getElementById('btn-switch-hf');
+    const switchNgrokBtn = document.getElementById('btn-switch-ngrok');
+    if (switchHfBtn) switchHfBtn.classList.toggle('is-active', targetType === 'hf');
+    if (switchNgrokBtn) switchNgrokBtn.classList.toggle('is-active', targetType === 'ngrok');
+
+    // Sync to Supabase Memory so Serverless immediately routes to selected host
+    const config = this.getSupabaseConfig();
+    if (config && config.url && config.anonKey) {
+      try {
+        await fetch(`${config.url}/rest/v1/ai_memories`, {
+          method: 'POST',
+          headers: {
+            'apikey': config.anonKey,
+            'Authorization': `Bearer ${config.anonKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            fact_text: `[OMNIROUTE_TUNNEL: ${newPrimary} | LOCAL_FALLBACK: ${localUrl}]`,
+            session_id: 'admin_dashboard_switch'
+          })
+        });
+      } catch (_) {}
+    }
+
+    const headerTextEl = document.getElementById('header-omniroute-text');
+    if (headerTextEl) headerTextEl.textContent = 'OMNIROUTE: MEMERIKSA...';
+    await this.checkOmniRouteRealtimeStatus();
   }
 
   promptSyncOmniRouteTunnel() {
@@ -2124,6 +2180,43 @@ class DashboardApp {
       });
     }
 
+    // OmniRoute Switch Toggle Buttons on Card
+    const btnSwitchHf = document.getElementById('btn-switch-hf');
+    const btnSwitchNgrok = document.getElementById('btn-switch-ngrok');
+    if (btnSwitchHf) {
+      btnSwitchHf.addEventListener('click', () => this.switchOmniRouteHost('hf'));
+    }
+    if (btnSwitchNgrok) {
+      btnSwitchNgrok.addEventListener('click', () => this.switchOmniRouteHost('ngrok'));
+    }
+
+    // OmniRoute Modal Preset Buttons
+    const presetBtnHf = document.getElementById('preset-btn-hf');
+    const presetBtnNgrok = document.getElementById('preset-btn-ngrok');
+    const presetBtnLocal = document.getElementById('preset-btn-local');
+
+    if (presetBtnHf) {
+      presetBtnHf.addEventListener('click', () => {
+        const urlInput = document.getElementById('omniroute-url-input');
+        if (urlInput) urlInput.value = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+      });
+    }
+
+    if (presetBtnNgrok) {
+      presetBtnNgrok.addEventListener('click', () => {
+        const urlInput = document.getElementById('omniroute-url-input');
+        const lastNgrok = localStorage.getItem('omniroute_last_ngrok_url') || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+        if (urlInput) urlInput.value = lastNgrok;
+      });
+    }
+
+    if (presetBtnLocal) {
+      presetBtnLocal.addEventListener('click', () => {
+        const localInput = document.getElementById('omniroute-local-url-input');
+        if (localInput) localInput.value = 'http://localhost:20128/v1';
+      });
+    }
+
     // OmniRoute Config Modal
     const omniBtn = document.getElementById('dash-omni-btn');
     const omniModal = document.getElementById('omniroute-modal');
@@ -2169,6 +2262,9 @@ class DashboardApp {
 
         localStorage.setItem('omniroute_custom_tunnel', cleanUrl);
         localStorage.setItem('omniroute_local_endpoint', cleanLocalUrl);
+        if (cleanUrl.includes('ngrok') || cleanUrl.includes('localhost') || cleanUrl.includes('127.0.0.1')) {
+          localStorage.setItem('omniroute_last_ngrok_url', cleanUrl);
+        }
         if (rawKey) {
           localStorage.setItem('omniroute_custom_key', rawKey);
         }
