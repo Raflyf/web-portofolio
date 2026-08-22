@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * VERCEL SERVERLESS FUNCTION: /api/chat (v5.2.0)
  * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
@@ -1340,8 +1340,6 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     async function callOmniRoute(mName, tOut = 18000) {
-      if (isOmniOffline) return null;
-
       const endpointsToTry = [];
 
       // [0] Primary: Cloud HF Space (or whatever is set as main tunnel)
@@ -1374,7 +1372,7 @@ Langkah yang WAJIB Anda lakukan:
       for (const target of endpointsToTry) {
         const targetUrl = target.url;
         const isHf = target.isCloud && (targetUrl.includes('hf.space') || targetUrl.includes('huggingface'));
-        const timeoutPerAttempt = isHf ? tOut : Math.min(tOut, 8000);
+        const timeoutPerAttempt = isHf ? tOut : Math.min(tOut, 10000);
 
         // 1. Direct OpenAI JSON POST attempt
         try {
@@ -1476,7 +1474,6 @@ Langkah yang WAJIB Anda lakukan:
         }
       }
 
-      isOmniOffline = true;
       return null;
     }
 
@@ -1801,8 +1798,9 @@ Langkah yang WAJIB Anda lakukan:
       // 3. KECEPATAN / TUGAS RINGAN HARIAN / CASUAL CHAT / PERTANYAAN UMUM
       return [
         // Tier 1: OmniRoute Dedicated Gateway
-        { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 15000 },
-        { provider: 'omniroute', model: 'Codex', timeout: 15000 },
+        { provider: 'omniroute', model: 'Codex', timeout: 12000 },
+        { provider: 'omniroute', model: 'Antigravity', timeout: 14000 },
+        { provider: 'omniroute', model: 'Deepseek-V4-Flash-Free', timeout: 8000 },
 
         // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: nemotron-3-nano:30b -> gemma4:31b -> nemotron-3-super di akhir)
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 16000 },
