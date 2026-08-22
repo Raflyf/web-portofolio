@@ -1037,20 +1037,31 @@ export default async function handler(req, res) {
     let rawOmniUrl = (cleanCustomKey && cleanCustomProvider === 'omniroute') 
       ? (process.env.OMNIROUTE_URL || '')
       : (process.env.OMNIROUTE_URL || '');
+    let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1');
     
     // Always check Dynamic Tunnel from Supabase first if available
     const dynamicTunnel = await fetchDynamicOmniRouteUrl();
-    if (dynamicTunnel) {
-      rawOmniUrl = dynamicTunnel;
-    } else if (!rawOmniUrl || rawOmniUrl.includes('ngrok-free.dev') || rawOmniUrl.includes('trycloudflare.com')) {
-      // Direct Hugging Face 24/7 Cloud Gateway fallback
+    if (dynamicTunnel?.cloudUrl) {
+      rawOmniUrl = dynamicTunnel.cloudUrl;
+    } else if (typeof dynamicTunnel === 'string' && dynamicTunnel.trim()) {
+      rawOmniUrl = dynamicTunnel.trim();
+    }
+    if (dynamicTunnel?.localUrl) {
+      localOmniUrl = dynamicTunnel.localUrl;
+    }
+
+    if (!rawOmniUrl) {
       rawOmniUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
     }
 
     if (rawOmniUrl && !rawOmniUrl.includes('/chat/completions')) {
       rawOmniUrl = rawOmniUrl.replace(/\/+$/, '') + '/chat/completions';
     }
+    if (localOmniUrl && !localOmniUrl.includes('/chat/completions')) {
+      localOmniUrl = localOmniUrl.replace(/\/+$/, '') + '/chat/completions';
+    }
     const OMNIROUTE_URL = rawOmniUrl;
+    const OMNIROUTE_LOCAL_URL = localOmniUrl;
 
     const OMNIROUTE_KEY = (cleanCustomKey && cleanCustomProvider === 'omniroute')
       ? cleanCustomKey
