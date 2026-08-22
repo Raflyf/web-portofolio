@@ -489,18 +489,23 @@
   <div class="dash-modal" id="omniroute-modal">
     <div class="dash-modal-card" role="dialog" aria-labelledby="omniroute-title">
       <div class="modal-header-row">
-        <h3 id="omniroute-title" class="modal-title">Konfigurasi OmniRoute Cloud</h3>
+        <h3 id="omniroute-title" class="modal-title">Konfigurasi OmniRoute Dual-Endpoint</h3>
         <button type="button" id="omniroute-close-btn" class="dash-modal-close" aria-label="Tutup modal">&times;</button>
       </div>
 
       <p class="modal-desc">
-        Sinkronkan endpoint OmniRoute (Hugging Face Spaces, Ngrok, atau Cloudflare Tunnel) untuk gateway AI mandiri secara terpusat.
+        Konfigurasikan failover 2-tier OmniRoute: Prioritas #1 Cloud (Hugging Face / Cloudflare Tunnel) dan Prioritas #2 Localhost. Jika Cloud offline, sistem otomatis beralih ke Localhost sebelum tier berikutnya.
       </p>
 
       <form id="omniroute-form" class="modal-form">
         <div>
-          <label for="omniroute-url-input" class="modal-label">OmniRoute Endpoint URL</label>
+          <label for="omniroute-url-input" class="modal-label">Endpoint 1: Primary Cloud (Hugging Face / Tunnel)</label>
           <input type="url" id="omniroute-url-input" class="pin-input text-left" value="https://rflyyyf-omniroute-gateway.hf.space/v1" placeholder="https://rflyyyf-omniroute-gateway.hf.space/v1" required>
+        </div>
+
+        <div>
+          <label for="omniroute-local-url-input" class="modal-label">Endpoint 2: Secondary Localhost Fallback</label>
+          <input type="url" id="omniroute-local-url-input" class="pin-input text-left" value="http://localhost:20128/v1" placeholder="http://localhost:20128/v1" required>
         </div>
 
         <div>
@@ -509,7 +514,7 @@
         </div>
 
         <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
-          <span>Simpan & Sambungkan Cloud</span>
+          <span>Simpan & Sambungkan Gateway</span>
         </button>
       </form>
     </div>
