@@ -815,6 +815,7 @@ class DashboardApp {
     if (combined.includes('liquid') || combined.includes('lfm')) return `${tag}LiquidAI LFM 2.5 (2.6B)`;
     if (combined.includes('laguna') || combined.includes('laguna-s')) return `${tag}Nemotron Laguna S (Frontier MoE)`;
     if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo') || combined.includes('minimax')) return `${tag}MiniMax-M3 Vision Multimodal`;
+    if (combined.includes('x-preview') || combined.includes('preview-f-free')) return `${tag}x-preview-f-free (OpenCode)`;
     if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
     if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash`;
     if (combined.includes('codex') || combined.includes('gpt-5') || combined.includes('koding') || combined.includes('coding')) return `${tag}Codex (GPT-5.6 Terra)`;
@@ -1097,15 +1098,15 @@ class DashboardApp {
         }
       },
       {
-        id: 'omniroute-deepseek-v4',
-        name: 'Deepseek-V4-Flash-Free',
+        id: 'omniroute-x-preview',
+        name: 'x-preview-f-free',
         category: 'OmniRoute Dedicated',
-        tag: 'opencode/deepseek-v4-flash-free · Fast Interaction',
-        icon: SVG_ICONS.fast,
+        tag: 'opencode/x-preview-f-free · SOTA Coding & Fast Reasoning',
+        icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return /\b(deepseek-v4|v4-flash|flash-free)\b/i.test(s) || (isOmniRoute(s) && /\bdeepseek\b/i.test(s));
+          return /\b(x-preview|x-preview-f-free)\b/i.test(s) || (isOmniRoute(s) && /\bx-preview\b/i.test(s));
         }
       },
       {
@@ -1209,15 +1210,15 @@ class DashboardApp {
         }
       },
       {
-        id: 'deepseek-v4-opencode',
-        name: 'DeepSeek V4 Flash',
+        id: 'x-preview-opencode',
+        name: 'x-preview-f-free',
         category: 'OpenCode Cloud Pool',
-        tag: 'opencode/deepseek-v4-flash-free · Fast Interaction',
-        icon: SVG_ICONS.fast,
+        tag: 'opencode/x-preview-f-free · SOTA Coding & Fast Reasoning',
+        icon: SVG_ICONS.code,
         color: 'var(--accent-emerald)',
         match: (t, l) => {
           const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(deepseek|v4-flash|flash-free)\b/i.test(s);
+          return isOpenCode(s) && /\b(x-preview|x-preview-f-free)\b/i.test(s);
         }
       },
       {
@@ -1352,6 +1353,8 @@ class DashboardApp {
             fallbackName = 'Google Gemma 4 (31B)';
           } else if (fallbackName.includes('minimax') || fallbackName.includes('m3') || fallbackName.includes('mimo')) {
             fallbackName = 'MiniMax-M3 Multimodal (1M MSA)';
+          } else if (fallbackName.includes('x-preview') || fallbackName.includes('preview-f-free')) {
+            fallbackName = 'x-preview-f-free';
           } else if (fallbackName.includes('deepseek') || fallbackName.includes('v4-flash')) {
             fallbackName = 'DeepSeek V4 Flash';
           } else if (fallbackName.includes('laguna')) {
