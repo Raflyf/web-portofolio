@@ -351,18 +351,11 @@ class DashboardApp {
     const localUrl = 'http://localhost:20128/v1';
     const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
 
-    // When Cloud HF is primary → ngrok is fallback
-    // When Ngrok is primary   → HF is fallback (or no ngrok fallback field needed)
-    let primaryUrl  = hfUrl;
-    let ngrokFallback = ngrokUrl;
-
-    if (targetType === 'ngrok') {
-      primaryUrl    = ngrokUrl;
-      ngrokFallback = null; // ngrok IS primary, no secondary ngrok needed
-    } else {
-      primaryUrl    = hfUrl;
-      ngrokFallback = ngrokUrl; // HF is primary, ngrok is secondary OmniRoute fallback
-    }
+    // Swap logic: toggle primary <-> secondary
+    // [Cloud HF] → Primary=HF,    Secondary=Ngrok
+    // [Ngrok]    → Primary=Ngrok, Secondary=HF
+    const primaryUrl   = targetType === 'ngrok' ? ngrokUrl : hfUrl;
+    const secondaryUrl = targetType === 'ngrok' ? hfUrl    : ngrokUrl;
 
     localStorage.setItem('omniroute_custom_tunnel', primaryUrl);
     localStorage.setItem('omniroute_local_endpoint', localUrl);
@@ -370,14 +363,14 @@ class DashboardApp {
       localStorage.setItem('omniroute_custom_key', defaultKey);
     }
 
-    const switchHfBtn = document.getElementById('btn-switch-hf');
+    const switchHfBtn    = document.getElementById('btn-switch-hf');
     const switchNgrokBtn = document.getElementById('btn-switch-ngrok');
-    if (switchHfBtn) switchHfBtn.classList.toggle('is-active', targetType === 'hf');
+    if (switchHfBtn)    switchHfBtn.classList.toggle('is-active', targetType === 'hf');
     if (switchNgrokBtn) switchNgrokBtn.classList.toggle('is-active', targetType === 'ngrok');
 
-    // Format: [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <ngrok> | LOCAL_FALLBACK: <local>]
-    const ngrokPart = ngrokFallback ? ` | NGROK_FALLBACK: ${ngrokFallback}` : '';
-    const factText = `[OMNIROUTE_TUNNEL: ${primaryUrl}${ngrokPart} | LOCAL_FALLBACK: ${localUrl}]`;
+    // Format: [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <secondary> | LOCAL_FALLBACK: <local>]
+    // Server reads: endpointsToTry = [primary, secondary, localhost(if local)]
+    const factText = `[OMNIROUTE_TUNNEL: ${primaryUrl} | NGROK_FALLBACK: ${secondaryUrl} | LOCAL_FALLBACK: ${localUrl}]`;
 
     const config = this.getSupabaseConfig();
     if (config && config.url && config.anonKey) {
