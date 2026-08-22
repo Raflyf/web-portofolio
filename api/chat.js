@@ -1442,7 +1442,7 @@ Langkah yang WAJIB Anda lakukan:
         // 1. Direct OpenAI JSON POST attempt (Only for non-HF endpoints such as Ngrok tunnels or Localhost)
         if (!isHf) {
           try {
-            const directTimeout = Math.min(tOut, 2500);
+            const directTimeout = Math.min(tOut, 12000);
             const res = await fetchJsonWithTimeout(target.directUrl, {
               method: 'POST',
               headers: {
@@ -1468,11 +1468,15 @@ Langkah yang WAJIB Anda lakukan:
               }
             } else if (res.status >= 400) {
               providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: HTTP ${res.status}`);
-              deadOmniEndpoints.add(target.normUrl);
+              if (res.status === 502 || res.status === 504) {
+                deadOmniEndpoints.add(target.normUrl);
+              }
             }
           } catch (err) {
             providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
-            deadOmniEndpoints.add(target.normUrl);
+            if (err.message?.includes('ECONNREFUSED') || err.message?.includes('ENOTFOUND') || err.message?.includes('fetch failed')) {
+              deadOmniEndpoints.add(target.normUrl);
+            }
           }
         }
 
