@@ -909,7 +909,8 @@ export default async function handler(req, res) {
       localOmniUrl = dynConfig.localUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
     }
 
-    if (!rawOmniUrl || rawOmniUrl.includes('ngrok-free.dev') || rawOmniUrl.includes('trycloudflare.com')) {
+    // Only fallback to HF if no URL at all — never override a valid ngrok/cloudflare URL
+    if (!rawOmniUrl) {
       rawOmniUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
     }
 
@@ -947,19 +948,25 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. If Cloud is down and not running in Vercel serverless, probe Localhost
-    if (!isOmniAlive && !process.env.VERCEL && localOmniUrl) {
+    // 3. If Cloud is down, probe local/ngrok fallback
+    // NOTE: pure localhost/127.0.0.1 cannot be reached from Vercel serverless,
+    //       but ngrok/cloudflare public URLs CAN be — so only skip pure local.
+    const localIsReachableFromVercel = localOmniUrl && !localOmniUrl.includes('127.0.0.1') && !localOmniUrl.includes('localhost');
+    if (!isOmniAlive && localOmniUrl && (!process.env.VERCEL || localIsReachableFromVercel)) {
       const pingStart = Date.now();
       try {
         const pingUrl = localOmniUrl.includes('/models') ? localOmniUrl : `${localOmniUrl}/models`;
         const pingRes = await fetchJsonWithTimeout(pingUrl, {
           method: 'GET',
-          headers: { 'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}` }
-        }, 1200);
+          headers: {
+            'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
+            'ngrok-skip-browser-warning': 'true'
+          }
+        }, 2500);
         if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
           isOmniAlive = true;
           omniLatency = Date.now() - pingStart;
-          activeEndpointType = 'localhost_fallback';
+          activeEndpointType = 'ngrok_fallback';
           rawOmniUrl = localOmniUrl;
         }
       } catch (_) {}
@@ -1316,7 +1323,10 @@ Langkah yang WAJIB Anda lakukan:
         endpointsToTry.push({ url: OMNIROUTE_URL, label: 'Cloud HF Gateway', isCloud: true });
       }
       if (OMNIROUTE_LOCAL_URL && OMNIROUTE_LOCAL_URL !== OMNIROUTE_URL) {
-        if (!process.env.VERCEL) {
+        // Ngrok/Cloudflare tunnel IS reachable from Vercel (public URL)
+        // Only pure localhost/127.0.0.1 is NOT reachable from Vercel serverless
+        const isLocalOnly = OMNIROUTE_LOCAL_URL.includes('127.0.0.1') || OMNIROUTE_LOCAL_URL.includes('localhost');
+        if (!process.env.VERCEL || !isLocalOnly) {
           endpointsToTry.push({ url: OMNIROUTE_LOCAL_URL, label: 'Localhost :20128', isCloud: false });
         }
       }
