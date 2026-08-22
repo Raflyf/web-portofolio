@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ============================================================================
  * VERCEL SERVERLESS FUNCTION: /api/chat (v5.2.0)
  * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
@@ -866,8 +866,8 @@ async function fetchDynamicOmniRouteUrl() {
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       const text = res.data[0].fact_text || '';
       // Format: [OMNIROUTE_TUNNEL: <cloudUrl> | NGROK_FALLBACK: <ngrokUrl> | LOCAL_FALLBACK: <localUrl>]
-      const tunnelMatch = text.match(/\[OMNIROUTE_TUNNEL:\s*([^|\]]+)/i);
-      const ngrokMatch  = text.match(/NGROK_FALLBACK:\s*([^|\]]+)/i);
+      const tunnelMatch = text.match(/\[OMNIROUTE_TUNNEL:\s*([^|]+)/i);
+      const ngrokMatch  = text.match(/NGROK_FALLBACK:\s*([^|]+)/i);
       const localMatch  = text.match(/LOCAL_FALLBACK:\s*([^\]]+)/i);
       if (tunnelMatch && tunnelMatch[1]) {
         return {
