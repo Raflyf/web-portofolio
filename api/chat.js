@@ -898,80 +898,55 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     loadLocalEnv();
-    let rawOmniUrl = (process.env.OMNIROUTE_URL || '').replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-    let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1').replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
     let isOmniAlive = false;
     let omniLatency = null;
-    let activeEndpointType = 'cloud';
+    let activeEndpointType = 'offline';
+    let activeUrl = null;
 
     // 1. Check Dynamic Tunnel from Supabase
     const dynConfig = await fetchDynamicOmniRouteUrl();
-    if (dynConfig?.cloudUrl) {
-      rawOmniUrl = dynConfig.cloudUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-    }
-    if (dynConfig?.localUrl) {
-      localOmniUrl = dynConfig.localUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-    }
+    const rawPrimary   = (dynConfig?.cloudUrl || process.env.OMNIROUTE_URL || 'https://rflyyyf-omniroute-gateway.hf.space/v1').trim();
+    const rawSecondary = (dynConfig?.ngrokUrl || process.env.OMNIROUTE_NGROK_URL || '').trim();
+    const rawLocal     = (dynConfig?.localUrl || process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1').trim();
 
-    // Only fallback to HF if no URL at all — never override a valid ngrok/cloudflare URL
-    if (!rawOmniUrl) {
-      rawOmniUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
-    }
+    const candidatesToProbe = [
+      { url: rawPrimary,   type: 'primary' },
+      { url: rawSecondary, type: 'secondary_fallback' },
+      { url: rawLocal,     type: 'local_fallback' }
+    ].filter(c => c.url && c.url.length > 0);
 
-    // 2. Probe Cloud Gateway (Hugging Face / Tunnel)
-    if (rawOmniUrl && !(process.env.VERCEL && (rawOmniUrl.includes('127.0.0.1') || rawOmniUrl.includes('localhost')))) {
+    for (const cand of candidatesToProbe) {
+      const u = cand.url.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+      const isPureLocal = u.includes('127.0.0.1') || u.includes('localhost');
+      if (process.env.VERCEL && isPureLocal) continue;
+
+      const isHf = u.includes('hf.space') || u.includes('huggingface');
       const pingStart = Date.now();
       try {
-        const baseUrl = rawOmniUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-        const isHf = rawOmniUrl.includes('hf.space') || rawOmniUrl.includes('huggingface');
-        const pingUrl = isHf ? `${baseUrl}/gradio_api/info` : (rawOmniUrl.includes('/models') ? rawOmniUrl : `${rawOmniUrl}/models`);
+        const baseUrl = u.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+        const pingUrl = isHf ? `${baseUrl}/gradio_api/info` : (u.includes('/models') ? u : `${u}/models`);
         const headers = {
           'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
           'ngrok-skip-browser-warning': 'true',
           'Accept': 'application/json'
         };
-        const pingRes = await fetchJsonWithTimeout(pingUrl, {
-          method: 'GET',
-          headers
-        }, 2000);
+        const pingRes = await fetchJsonWithTimeout(pingUrl, { method: 'GET', headers }, 2500);
         if (isHf) {
           if (pingRes.ok && (pingRes.data?.named_endpoints || pingRes.status === 200)) {
             isOmniAlive = true;
             omniLatency = Date.now() - pingStart;
-            activeEndpointType = 'cloud_hf';
+            activeEndpointType = cand.type;
+            activeUrl = u;
+            break;
           }
         } else {
           if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
             isOmniAlive = true;
             omniLatency = Date.now() - pingStart;
-            activeEndpointType = 'cloud_tunnel';
+            activeEndpointType = cand.type;
+            activeUrl = u;
+            break;
           }
-        }
-      } catch (_) {
-        isOmniAlive = false;
-      }
-    }
-
-    // 3. If Cloud is down, probe local/ngrok fallback
-    // NOTE: pure localhost/127.0.0.1 cannot be reached from Vercel serverless,
-    //       but ngrok/cloudflare public URLs CAN be — so only skip pure local.
-    const localIsReachableFromVercel = localOmniUrl && !localOmniUrl.includes('127.0.0.1') && !localOmniUrl.includes('localhost');
-    if (!isOmniAlive && localOmniUrl && (!process.env.VERCEL || localIsReachableFromVercel)) {
-      const pingStart = Date.now();
-      try {
-        const pingUrl = localOmniUrl.includes('/models') ? localOmniUrl : `${localOmniUrl}/models`;
-        const pingRes = await fetchJsonWithTimeout(pingUrl, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
-            'ngrok-skip-browser-warning': 'true'
-          }
-        }, 2500);
-        if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
-          isOmniAlive = true;
-          omniLatency = Date.now() - pingStart;
-          activeEndpointType = 'ngrok_fallback';
-          rawOmniUrl = localOmniUrl;
         }
       } catch (_) {}
     }
@@ -980,13 +955,14 @@ export default async function handler(req, res) {
     const hasOpenCode = Boolean(process.env.OPENCODE_API_KEY || process.env.OPENCODE_API_KEYS);
     const hasOllama = Boolean(process.env.OLLAMA_API_KEY);
     return res.status(200).json({ 
-      version: 'v10.156.0', 
+      version: 'v10.170.1', 
       status: 'online', 
       omniroute: {
-        configured: Boolean(rawOmniUrl),
+        configured: Boolean(rawPrimary || rawSecondary),
         isOnline: isOmniAlive,
         latencyMs: omniLatency,
-        url: rawOmniUrl ? rawOmniUrl.replace(/:[^\/@]+@/, ':***@') : null
+        activeType: activeEndpointType,
+        url: activeUrl ? activeUrl.replace(/:[^\/@]+@/, ':***@') : (rawPrimary ? rawPrimary.replace(/:[^\/@]+@/, ':***@') : null)
       },
       keys: { hasOmni: isOmniAlive, hasOpenRouter, hasOpenCode, hasOllama },
       timestamp: Date.now() 
@@ -1342,25 +1318,41 @@ Langkah yang WAJIB Anda lakukan:
     async function callOmniRoute(mName, tOut = 18000) {
       const endpointsToTry = [];
 
-      // [0] Primary: Cloud HF Space (or whatever is set as main tunnel)
-      if (OMNIROUTE_URL) {
-        const isHfPrimary = OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface');
-        endpointsToTry.push({ url: OMNIROUTE_URL, label: isHfPrimary ? 'Cloud HF Space' : 'Primary Tunnel', isCloud: true });
+      function addEndpoint(rawUrl, defaultLabel) {
+        if (!rawUrl || typeof rawUrl !== 'string') return;
+        const u = rawUrl.trim();
+        if (!u) return;
+        const isHf = u.includes('hf.space') || u.includes('huggingface');
+        const isNgrok = u.includes('ngrok') || u.includes('trycloudflare') || u.includes('cloudflare');
+        const isLocal = u.includes('localhost') || u.includes('127.0.0.1');
+
+        if (process.env.VERCEL && isLocal) return; // Vercel serverless cannot reach pure localhost
+
+        const normUrl = u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+        if (endpointsToTry.some(e => e.normUrl === normUrl)) return;
+
+        let label = defaultLabel;
+        if (isHf) label = 'Cloud HF Space';
+        else if (isNgrok) label = 'Ngrok Local Tunnel';
+        else if (isLocal) label = 'Localhost :20128';
+
+        endpointsToTry.push({
+          rawUrl: u,
+          normUrl,
+          directUrl: `${normUrl}/chat/completions`,
+          label,
+          isHf,
+          isNgrok,
+          isLocal
+        });
       }
 
-      // [1] Secondary: Ngrok public tunnel → OmniRoute daemon on laptop
-      //     Always reachable from Vercel because it's a public URL
-      if (OMNIROUTE_NGROK_URL && OMNIROUTE_NGROK_URL !== OMNIROUTE_URL) {
-        endpointsToTry.push({ url: OMNIROUTE_NGROK_URL, label: 'Ngrok Local Tunnel', isCloud: false });
-      }
-
-      // [2] Tertiary: Pure localhost — only reachable when running locally (not from Vercel)
-      if (OMNIROUTE_LOCAL_URL && OMNIROUTE_LOCAL_URL !== OMNIROUTE_URL && OMNIROUTE_LOCAL_URL !== OMNIROUTE_NGROK_URL) {
-        const isLocalOnly = OMNIROUTE_LOCAL_URL.includes('127.0.0.1') || OMNIROUTE_LOCAL_URL.includes('localhost');
-        if (!process.env.VERCEL || !isLocalOnly) {
-          endpointsToTry.push({ url: OMNIROUTE_LOCAL_URL, label: 'Localhost :20128', isCloud: false });
-        }
-      }
+      // Priority 1: Primary (could be HF Space or Ngrok)
+      addEndpoint(OMNIROUTE_URL, 'Primary Gateway');
+      // Priority 2: Secondary Fallback (could be Ngrok or HF Space)
+      addEndpoint(OMNIROUTE_NGROK_URL, 'Secondary Fallback');
+      // Priority 3: Localhost (only in non-Vercel local dev)
+      addEndpoint(OMNIROUTE_LOCAL_URL, 'Localhost Fallback');
 
       if (endpointsToTry.length === 0) return null;
 
@@ -1370,14 +1362,12 @@ Langkah yang WAJIB Anda lakukan:
       const promptText = typeof lastUserMsg === 'string' ? lastUserMsg : JSON.stringify(lastUserMsg);
 
       for (const target of endpointsToTry) {
-        const targetUrl = target.url;
-        const isHf = target.isCloud && (targetUrl.includes('hf.space') || targetUrl.includes('huggingface'));
+        const isHf = target.isHf;
         const timeoutPerAttempt = isHf ? tOut : Math.min(tOut, 10000);
 
         // 1. Direct OpenAI JSON POST attempt
         try {
-          const directUrl = targetUrl.includes('/chat/completions') ? targetUrl : `${targetUrl.replace(/\/+$/, '')}/chat/completions`;
-          const res = await fetchJsonWithTimeout(directUrl, {
+          const res = await fetchJsonWithTimeout(target.directUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1407,10 +1397,10 @@ Langkah yang WAJIB Anda lakukan:
           providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
         }
 
-        // 2. Gradio 5 API protocol attempt (if HF Space)
+        // 2. Gradio 5 API protocol attempt (ALWAYS execute for Hugging Face Space whether primary or secondary)
         if (isHf) {
           const endpoints = ['predict_zerogpu', 'predict'];
-          const baseUrl = targetUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+          const baseUrl = target.rawUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
           const hfHeaders = { 'Content-Type': 'application/json' };
           if (process.env.HF_TOKEN) {
             hfHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
