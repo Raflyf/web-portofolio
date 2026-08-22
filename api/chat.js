@@ -1318,6 +1318,27 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
     let isOmniOffline = false;
 
+    // Detect error strings returned by OmniRoute / Gradio as the "answer" text.
+    // Returns true if the string looks like an upstream error, not a real response.
+    function isOmniErrorResponse(text) {
+      if (!text) return false;
+      const t = text.trim();
+      // HTTP status error lines: "HTTP 4xx", "HTTP 5xx"
+      if (/^HTTP\s+[45]\d{2}/i.test(t)) return true;
+      // JSON error object returned as string
+      if (t.startsWith('{') || t.startsWith('[')) {
+        try {
+          const obj = JSON.parse(t);
+          if (obj?.error || obj?.detail || obj?.message) return true;
+        } catch (_) {}
+      }
+      // Common upstream error patterns
+      if (/maximum\s+combo\s+retry\s+limit/i.test(t)) return true;
+      if (/service_unavailable|server_error|rate_limit/i.test(t)) return true;
+      if (/{"error":/i.test(t)) return true;
+      return false;
+    }
+
     async function callOmniRoute(mName, tOut = 18000) {
       if (isOmniOffline) return null;
 
@@ -1376,9 +1397,13 @@ Langkah yang WAJIB Anda lakukan:
 
           if (res.ok) {
             const content = res.data?.choices?.[0]?.message?.content || (typeof res.data === 'string' ? res.data : null);
-            if (content && content.trim().length > 0) {
+            if (content && content.trim().length > 0 && !isOmniErrorResponse(content)) {
               return sendSuccess(content.trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
+            } else if (content && isOmniErrorResponse(content)) {
+              providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: upstream error — ${content.slice(0, 120)}`);
             }
+          } else if (res.status >= 400) {
+            providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: HTTP ${res.status}`);
           }
         } catch (err) {
           providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
@@ -1428,8 +1453,15 @@ Langkah yang WAJIB Anda lakukan:
                       if (p && p !== 'null') {
                         try {
                           const arr = JSON.parse(p);
-                          if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string' && arr[0].trim().length > 0) {
-                            return sendSuccess(arr[0].trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
+                          if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string') {
+                            const txt = arr[0].trim();
+                            if (txt.length > 0 && !isOmniErrorResponse(txt)) {
+                              // Valid answer — return to user
+                              return sendSuccess(txt, mName, `OmniRoute Dedicated Gateway (${target.label})`);
+                            } else if (txt.length > 0) {
+                              // Error string from OmniRoute — log and fall through to next endpoint
+                              providerErrors.push(`OmniRoute ${target.label} (${mName}) Gradio: upstream error — ${txt.slice(0, 120)}`);
+                            }
                           }
                         } catch (_) {}
                       }
