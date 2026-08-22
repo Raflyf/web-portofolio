@@ -1371,12 +1371,19 @@ Langkah yang WAJIB Anda lakukan:
             hfHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
           }
 
+          const fullPayloadJson = JSON.stringify({
+            messages: openRouterMessages,
+            model: mName,
+            max_tokens: maxTokensConfig,
+            temperature: tempConfig
+          });
+
           for (const ep of endpoints) {
             try {
               const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}`, {
                 method: 'POST',
                 headers: hfHeaders,
-                body: JSON.stringify({ data: [promptText] })
+                body: JSON.stringify({ data: [promptText, mName, fullPayloadJson] })
               }, 8000);
 
               if (postRes.ok && postRes.data?.event_id) {
