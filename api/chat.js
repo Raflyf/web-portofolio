@@ -1386,8 +1386,6 @@ Langkah yang WAJIB Anda lakukan:
       return false;
     }
 
-    const deadOmniEndpoints = new Set();
-
     async function callOmniRoute(mName, tOut = 10000) {
       const endpointsToTry = [];
 
@@ -1435,14 +1433,12 @@ Langkah yang WAJIB Anda lakukan:
       const promptText = typeof lastUserMsg === 'string' ? lastUserMsg : JSON.stringify(lastUserMsg);
 
       for (const target of endpointsToTry) {
-        if (deadOmniEndpoints.has(target.normUrl)) continue;
-
         const isHf = target.isHf;
 
         // 1. Direct OpenAI JSON POST attempt (Only for non-HF endpoints such as Ngrok tunnels or Localhost)
         if (!isHf) {
           try {
-            const directTimeout = Math.min(tOut, 12000);
+            const directTimeout = Math.min(tOut, 10000);
             const res = await fetchJsonWithTimeout(target.directUrl, {
               method: 'POST',
               headers: {
@@ -1460,7 +1456,24 @@ Langkah yang WAJIB Anda lakukan:
             }, directTimeout);
 
             if (res.ok) {
-              const content = res.data?.choices?.[0]?.message?.content || (typeof res.data === 'string' ? res.data : null);
+              let content = res.data?.choices?.[0]?.message?.content || (typeof res.data === 'string' ? res.data : null);
+              
+              // Handle SSE chunk formatted stream payload if returned
+              if (!content && typeof res.text === 'string' && res.text.includes('data:')) {
+                const chunks = [];
+                for (const l of res.text.split('\n')) {
+                  const tr = l.trim();
+                  if (tr.startsWith('data:') && !tr.startsWith('data: [DONE]') && tr !== 'data: null') {
+                    try {
+                      const obj = JSON.parse(tr.slice(5).trim());
+                      const c = obj.choices?.[0]?.delta?.content || obj.choices?.[0]?.delta?.reasoning_content || obj.choices?.[0]?.message?.content;
+                      if (c) chunks.push(c);
+                    } catch (_) {}
+                  }
+                }
+                if (chunks.length > 0) content = chunks.join('');
+              }
+
               if (content && content.trim().length > 0 && !isOmniErrorResponse(content)) {
                 return sendSuccess(content.trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
               } else if (content && isOmniErrorResponse(content)) {
@@ -1468,15 +1481,9 @@ Langkah yang WAJIB Anda lakukan:
               }
             } else if (res.status >= 400) {
               providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: HTTP ${res.status}`);
-              if (res.status === 502 || res.status === 504) {
-                deadOmniEndpoints.add(target.normUrl);
-              }
             }
           } catch (err) {
             providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
-            if (err.message?.includes('ECONNREFUSED') || err.message?.includes('ENOTFOUND') || err.message?.includes('fetch failed')) {
-              deadOmniEndpoints.add(target.normUrl);
-            }
           }
         }
 
@@ -1502,12 +1509,12 @@ Langkah yang WAJIB Anda lakukan:
                 method: 'POST',
                 headers: hfHeaders,
                 body: JSON.stringify({ data: [promptText, mName, fullPayloadJson] })
-              }, 4000);
+              }, 3500);
 
               if (postRes.ok && postRes.data?.event_id) {
                 const eventId = postRes.data.event_id;
                 const sseHeaders = {};
-                const sseTimeout = Math.max(3000, Math.min(tOut, 10000));
+                const sseTimeout = Math.max(3000, Math.min(tOut, 8000));
                 const sseRes = await fetchSseWithEarlyReturn(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, sseHeaders, sseTimeout);
 
                 if (sseRes.data && Array.isArray(sseRes.data) && sseRes.data[0] && typeof sseRes.data[0] === 'string') {
@@ -1538,17 +1545,13 @@ Langkah yang WAJIB Anda lakukan:
                     }
                   }
                 }
-              } else {
-                deadOmniEndpoints.add(target.normUrl);
               }
             } catch (err) {
               providerErrors.push(`OmniRoute ${target.label} (${mName}) Gradio: ${err.message}`);
-              deadOmniEndpoints.add(target.normUrl);
             }
           }
         }
       }
-
       return null;
     }
 
@@ -1873,10 +1876,12 @@ Langkah yang WAJIB Anda lakukan:
 
       // 3. KECEPATAN / TUGAS RINGAN HARIAN / CASUAL CHAT / PERTANYAAN BIASA & RECEH
       return [
-        // Tier 1: OmniRoute Dedicated Gateway (x-preview-f-free pool 40 akun gratis, hemat kuota Codex)
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 7000 },
-        { provider: 'omniroute', model: 'nemotron-laguna', timeout: 6000 },
-        { provider: 'omniroute', model: 'Vision-model', timeout: 6000 },
+        // Tier 1: OmniRoute Dedicated Gateway (x-preview-f-free -> nemotron-laguna -> Codex -> Antigravity)
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3500 },
+        { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
+        { provider: 'omniroute', model: 'Codex', timeout: 7000 },
+        { provider: 'omniroute', model: 'Antigravity', timeout: 7000 },
+        { provider: 'omniroute', model: 'Vision-model', timeout: 5000 },
 
         // Tier 2: Ollama Cloud SOTA Hub (nemotron-3-nano:30b -> gemma4:31b -> nemotron-3-super)
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
