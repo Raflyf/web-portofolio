@@ -848,7 +848,7 @@ function isRateLimited(clientIp) {
   return record.count > MAX_REQUESTS_PER_WINDOW;
 }
 
-// Dynamic OmniRoute Tunnel Resolver from Supabase (Zero-Redeploy Cloudflare Tunnel Sync)
+// Dynamic OmniRoute Tunnel Resolver from Supabase (Zero-Redeploy Cloudflare & Localhost Sync)
 async function fetchDynamicOmniRouteUrl() {
   try {
     const sUrl = process.env.SUPABASE_URL || 'https://rphyzcqwpkxtzllvymss.supabase.co';
@@ -865,9 +865,12 @@ async function fetchDynamicOmniRouteUrl() {
     }, 1800);
     if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
       const text = res.data[0].fact_text || '';
-      const match = text.match(/\[OMNIROUTE_TUNNEL:\s*([^\]]+)\]/i);
+      const match = text.match(/\[OMNIROUTE_TUNNEL:\s*([^\|\]]+)(?:\|\s*LOCAL_FALLBACK:\s*([^\]]+))?\]/i);
       if (match && match[1]) {
-        return match[1].trim();
+        return {
+          cloudUrl: match[1].trim(),
+          localUrl: match[2] ? match[2].trim() : null
+        };
       }
     }
   } catch (_) {}
@@ -892,15 +895,30 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     loadLocalEnv();
     let rawOmniUrl = (process.env.OMNIROUTE_URL || '').replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+    let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1').replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
     let isOmniAlive = false;
     let omniLatency = null;
+    let activeEndpointType = 'cloud';
 
-    // 1. Try environment configured URL first
+    // 1. Check Dynamic Tunnel from Supabase
+    const dynConfig = await fetchDynamicOmniRouteUrl();
+    if (dynConfig?.cloudUrl) {
+      rawOmniUrl = dynConfig.cloudUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+    }
+    if (dynConfig?.localUrl) {
+      localOmniUrl = dynConfig.localUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+    }
+
+    if (!rawOmniUrl || rawOmniUrl.includes('ngrok-free.dev') || rawOmniUrl.includes('trycloudflare.com')) {
+      rawOmniUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+    }
+
+    // 2. Probe Cloud Gateway (Hugging Face / Tunnel)
     if (rawOmniUrl && !(process.env.VERCEL && (rawOmniUrl.includes('127.0.0.1') || rawOmniUrl.includes('localhost')))) {
       const pingStart = Date.now();
       try {
         const baseUrl = rawOmniUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-        const isHf = rawOmniUrl.includes('hf.space');
+        const isHf = rawOmniUrl.includes('hf.space') || rawOmniUrl.includes('huggingface');
         const pingUrl = isHf ? `${baseUrl}/gradio_api/info` : (rawOmniUrl.includes('/models') ? rawOmniUrl : `${rawOmniUrl}/models`);
         const headers = {
           'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
@@ -910,16 +928,18 @@ export default async function handler(req, res) {
         const pingRes = await fetchJsonWithTimeout(pingUrl, {
           method: 'GET',
           headers
-        }, 2500);
+        }, 2000);
         if (isHf) {
-          if (pingRes.ok && pingRes.data?.named_endpoints) {
+          if (pingRes.ok && (pingRes.data?.named_endpoints || pingRes.status === 200)) {
             isOmniAlive = true;
             omniLatency = Date.now() - pingStart;
+            activeEndpointType = 'cloud_hf';
           }
         } else {
           if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
             isOmniAlive = true;
             omniLatency = Date.now() - pingStart;
+            activeEndpointType = 'cloud_tunnel';
           }
         }
       } catch (_) {
@@ -927,40 +947,22 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. If env URL is dead or unset, check dynamic Supabase synced tunnel URL
-    if (!isOmniAlive) {
-      const dynamicTunnel = await fetchDynamicOmniRouteUrl();
-      if (dynamicTunnel && dynamicTunnel !== rawOmniUrl) {
-        const cleanDyn = dynamicTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-        const pingStart = Date.now();
-        try {
-          const baseUrl = cleanDyn.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-          const isHf = cleanDyn.includes('hf.space');
-          const pingUrl = isHf ? `${baseUrl}/gradio_api/info` : (cleanDyn.includes('/models') ? cleanDyn : `${cleanDyn}/models`);
-          const headers = {
-            'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
-            'ngrok-skip-browser-warning': 'true',
-            'Accept': 'application/json'
-          };
-          const pingRes = await fetchJsonWithTimeout(pingUrl, {
-            method: 'GET',
-            headers
-          }, 2500);
-          if (isHf) {
-            if (pingRes.ok && pingRes.data?.named_endpoints) {
-              isOmniAlive = true;
-              omniLatency = Date.now() - pingStart;
-              rawOmniUrl = cleanDyn;
-            }
-          } else {
-            if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
-              isOmniAlive = true;
-              omniLatency = Date.now() - pingStart;
-              rawOmniUrl = cleanDyn;
-            }
-          }
-        } catch (_) {}
-      }
+    // 3. If Cloud is down and not running in Vercel serverless, probe Localhost
+    if (!isOmniAlive && !process.env.VERCEL && localOmniUrl) {
+      const pingStart = Date.now();
+      try {
+        const pingUrl = localOmniUrl.includes('/models') ? localOmniUrl : `${localOmniUrl}/models`;
+        const pingRes = await fetchJsonWithTimeout(pingUrl, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}` }
+        }, 1200);
+        if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
+          isOmniAlive = true;
+          omniLatency = Date.now() - pingStart;
+          activeEndpointType = 'localhost_fallback';
+          rawOmniUrl = localOmniUrl;
+        }
+      } catch (_) {}
     }
 
     const hasOpenRouter = Boolean(process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEYS);
@@ -1296,127 +1298,115 @@ Langkah yang WAJIB Anda lakukan:
     let isOmniOffline = false;
 
     async function callOmniRoute(mName, tOut = 18000) {
-      if (!OMNIROUTE_URL || isOmniOffline) return null;
-      if (process.env.VERCEL && (OMNIROUTE_URL.includes('127.0.0.1') || OMNIROUTE_URL.includes('localhost'))) {
-        return null;
+      if (isOmniOffline) return null;
+
+      const endpointsToTry = [];
+      if (OMNIROUTE_URL) {
+        endpointsToTry.push({ url: OMNIROUTE_URL, label: 'Cloud HF Gateway', isCloud: true });
       }
+      if (OMNIROUTE_LOCAL_URL && OMNIROUTE_LOCAL_URL !== OMNIROUTE_URL) {
+        if (!process.env.VERCEL) {
+          endpointsToTry.push({ url: OMNIROUTE_LOCAL_URL, label: 'Localhost :20128', isCloud: false });
+        }
+      }
+
+      if (endpointsToTry.length === 0) return null;
 
       const lastUserMsg = (openRouterMessages && openRouterMessages.length > 0)
         ? (openRouterMessages[openRouterMessages.length - 1]?.content || query)
         : query;
       const promptText = typeof lastUserMsg === 'string' ? lastUserMsg : JSON.stringify(lastUserMsg);
 
-      // 1. Direct Hugging Face /api/omniroute FASTAPI endpoint (Ultra-fast direct path)
-      if (OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface')) {
+      for (const target of endpointsToTry) {
+        const targetUrl = target.url;
+        const isHf = target.isCloud && (targetUrl.includes('hf.space') || targetUrl.includes('huggingface'));
+        const timeoutPerAttempt = isHf ? tOut : Math.min(tOut, 8000);
+
+        // 1. Direct OpenAI JSON POST attempt
         try {
-          const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-          const res = await fetchJsonWithTimeout(`${baseUrl}/api/omniroute`, {
+          const directUrl = targetUrl.includes('/chat/completions') ? targetUrl : `${targetUrl.replace(/\/+$/, '')}/chat/completions`;
+          const res = await fetchJsonWithTimeout(directUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OMNIROUTE_KEY || 'sk-omniroute'}`,
+              'ngrok-skip-browser-warning': 'true'
+            },
             body: JSON.stringify({
-              prompt: promptText,
               model: mName,
               messages: openRouterMessages,
               max_tokens: maxTokensConfig,
-              temperature: tempConfig
+              temperature: tempConfig,
+              stream: false
             })
-          }, tOut);
+          }, timeoutPerAttempt);
 
           if (res.ok) {
             const content = res.data?.choices?.[0]?.message?.content || (typeof res.data === 'string' ? res.data : null);
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'OmniRoute Dedicated Gateway');
+              return sendSuccess(content.trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
             }
           }
         } catch (err) {
-          providerErrors.push(`OmniRoute ${mName} Direct FastAPI: ${err.message}`);
+          providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
         }
-      }
 
-      // 2. Direct OpenAI JSON format attempt
-      try {
-        const res = await fetchJsonWithTimeout(OMNIROUTE_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OMNIROUTE_KEY || 'sk-omniroute'}`,
-            'ngrok-skip-browser-warning': 'true'
-          },
-          body: JSON.stringify({
-            model: mName,
-            messages: openRouterMessages,
-            max_tokens: maxTokensConfig,
-            temperature: tempConfig,
-            stream: false
-          })
-        }, tOut);
-
-        if (res.ok) {
-          const content = res.data?.choices?.[0]?.message?.content;
-          if (content && content.trim().length > 0) {
-            return sendSuccess(content.trim(), mName, 'OmniRoute Dedicated Gateway');
+        // 2. Gradio 5 API protocol attempt (if HF Space)
+        if (isHf) {
+          const endpoints = ['predict_zerogpu', 'predict'];
+          const baseUrl = targetUrl.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+          const hfHeaders = { 'Content-Type': 'application/json' };
+          if (process.env.HF_TOKEN) {
+            hfHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
           }
-        }
-      } catch (err) {
-        providerErrors.push(`OmniRoute ${mName} Direct: ${err.message}`);
-      }
 
-      // 2. Gradio 5 API protocol attempt (if hosted on Hugging Face Spaces)
-      if (OMNIROUTE_URL.includes('hf.space') || OMNIROUTE_URL.includes('huggingface')) {
-        const endpoints = ['predict_zerogpu', 'predict'];
-        const baseUrl = OMNIROUTE_URL.replace(/\/v1.*$/, '').replace(/\/+$/, '');
+          for (const ep of endpoints) {
+            try {
+              const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}`, {
+                method: 'POST',
+                headers: hfHeaders,
+                body: JSON.stringify({ data: [promptText] })
+              }, 8000);
 
-        const hfHeaders = { 'Content-Type': 'application/json' };
-        if (process.env.HF_TOKEN) {
-          hfHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
-        }
+              if (postRes.ok && postRes.data?.event_id) {
+                const eventId = postRes.data.event_id;
+                const sseHeaders = {};
+                if (process.env.HF_TOKEN) {
+                  sseHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
+                }
+                const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, {
+                  method: 'GET',
+                  headers: sseHeaders
+                }, timeoutPerAttempt);
 
-        for (const ep of endpoints) {
-          try {
-            const postRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}`, {
-              method: 'POST',
-              headers: hfHeaders,
-              body: JSON.stringify({ data: [promptText] })
-            }, 8000);
-
-            if (postRes.ok && postRes.data?.event_id) {
-              const eventId = postRes.data.event_id;
-              const sseHeaders = {};
-              if (process.env.HF_TOKEN) {
-                sseHeaders['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
-              }
-              const sseRes = await fetchJsonWithTimeout(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, {
-                method: 'GET',
-                headers: sseHeaders
-              }, tOut);
-
-            if (sseRes.ok || sseRes.text) {
-              const rawText = sseRes.text || '';
-              const lines = rawText.split('\n');
-              for (const line of lines) {
-                if (line.startsWith('data:')) {
-                  const p = line.replace(/^data:\s*/, '').trim();
-                  if (p && p !== 'null') {
-                    try {
-                      const arr = JSON.parse(p);
-                      if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string' && arr[0].trim().length > 0) {
-                        return sendSuccess(arr[0].trim(), mName, 'OmniRoute Dedicated Gateway');
+                if (sseRes.ok || sseRes.text) {
+                  const rawText = sseRes.text || '';
+                  const lines = rawText.split('\n');
+                  for (const line of lines) {
+                    if (line.startsWith('data:')) {
+                      const p = line.replace(/^data:\s*/, '').trim();
+                      if (p && p !== 'null') {
+                        try {
+                          const arr = JSON.parse(p);
+                          if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string' && arr[0].trim().length > 0) {
+                            return sendSuccess(arr[0].trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
+                          }
+                        } catch (_) {}
                       }
-                    } catch (_) {}
+                    }
                   }
                 }
               }
+            } catch (err) {
+              providerErrors.push(`OmniRoute ${target.label} (${mName}) Gradio: ${err.message}`);
             }
           }
-        } catch (err) {
-          providerErrors.push(`OmniRoute ${mName} Gradio: ${err.message}`);
         }
       }
-    }
 
-    isOmniOffline = true;
-    return null;
-  }
+      isOmniOffline = true;
+      return null;
+    }
 
     async function callOpenRouter(mName, tOut = 10000) {
       if (OPENROUTER_KEYS.length === 0) return null;

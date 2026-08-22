@@ -178,8 +178,8 @@ class DashboardApp {
     let statusLabel = '';
     let headerStatusLabel = '';
 
-    // 1. Direct Probe Configured Custom Tunnel (Ngrok / Cloudflare Tunnel / Hugging Face)
-    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
+    // 1. Direct Probe Primary Endpoint (Hugging Face Spaces / Custom Tunnel)
+    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || 'https://rflyyyf-omniroute-gateway.hf.space/v1';
     if (customTunnel) {
       try {
         const cleanTunnel = customTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
@@ -210,17 +210,23 @@ class DashboardApp {
           }
         }
       } catch (_) {
-        // Custom tunnel failed or is offline (e.g. ngrok stopped)
+        // Primary cloud probe offline / timeout
       }
     }
 
-    // 2. Direct In-Browser Localhost Probe (For Local Server at 127.0.0.1:20128 / localhost:20128)
+    // 2. Direct In-Browser Localhost Fallback Probe (Secondary Fallback)
+    const localEndpoint = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_local_endpoint') : null) || 'http://localhost:20128/v1';
     if (!isOnline && typeof window !== 'undefined') {
-      const localTargets = ['http://localhost:20128/v1/models', 'http://127.0.0.1:20128/v1/models'];
+      const cleanLocal = localEndpoint.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+      const localTargets = [
+        cleanLocal.includes('/models') ? cleanLocal : (cleanLocal.includes('/v1') ? `${cleanLocal}/models` : `${cleanLocal}/v1/models`),
+        'http://localhost:20128/v1/models',
+        'http://127.0.0.1:20128/v1/models'
+      ];
       for (const targetUrl of localTargets) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 600);
+          const timer = setTimeout(() => controller.abort(), 800);
           const t0 = performance.now();
           const localRes = await fetch(targetUrl, {
             method: 'GET',
@@ -234,7 +240,7 @@ class DashboardApp {
               isOnline = true;
               const t1 = Math.round(performance.now() - t0);
               latencyText = `${t1}ms`;
-              statusLabel = `HOST STATUS: LOCAL ACTIVE (:20128 - ${latencyText})`;
+              statusLabel = `HOST STATUS: LOCAL FALLBACK ACTIVE (:20128 - ${latencyText})`;
               headerStatusLabel = `OMNIROUTE: LOCAL (${latencyText})`;
               break;
             }
@@ -334,14 +340,20 @@ class DashboardApp {
   promptSyncOmniRouteTunnel() {
     const omnirouteModal = document.getElementById('omniroute-modal');
     if (omnirouteModal) {
-      const defaultUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+      const defaultCloudUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+      const defaultLocalUrl = 'http://localhost:20128/v1';
       const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
-      const currentSavedUrl = localStorage.getItem('omniroute_custom_tunnel') || defaultUrl;
+
+      const currentSavedCloud = localStorage.getItem('omniroute_custom_tunnel') || defaultCloudUrl;
+      const currentSavedLocal = localStorage.getItem('omniroute_local_endpoint') || defaultLocalUrl;
       const currentSavedKey = localStorage.getItem('omniroute_custom_key') || defaultKey;
 
       const urlInput = document.getElementById('omniroute-url-input');
+      const localInput = document.getElementById('omniroute-local-url-input');
       const keyInput = document.getElementById('omniroute-key-input');
-      if (urlInput) urlInput.value = currentSavedUrl;
+
+      if (urlInput) urlInput.value = currentSavedCloud;
+      if (localInput) localInput.value = currentSavedLocal;
       if (keyInput) keyInput.value = currentSavedKey;
 
       omnirouteModal.classList.add('is-open');
@@ -2136,12 +2148,14 @@ class DashboardApp {
       omniForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const urlInput = document.getElementById('omniroute-url-input');
+        const localInput = document.getElementById('omniroute-local-url-input');
         const keyInput = document.getElementById('omniroute-key-input');
         const rawUrl = this.cleanKey(urlInput?.value);
+        const rawLocal = this.cleanKey(localInput?.value);
         const rawKey = this.cleanKey(keyInput?.value);
 
         if (!rawUrl) {
-          alert('Harap masukkan Endpoint URL OmniRoute yang valid.');
+          alert('Harap masukkan Primary Endpoint URL OmniRoute (Cloud / Hugging Face).');
           return;
         }
 
@@ -2149,7 +2163,12 @@ class DashboardApp {
           ? rawUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')
           : `https://${rawUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')}`;
         
+        const cleanLocalUrl = rawLocal
+          ? (rawLocal.startsWith('http') ? rawLocal.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '') : `http://${rawLocal.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')}`)
+          : 'http://localhost:20128/v1';
+
         localStorage.setItem('omniroute_custom_tunnel', cleanUrl);
+        localStorage.setItem('omniroute_local_endpoint', cleanLocalUrl);
         if (rawKey) {
           localStorage.setItem('omniroute_custom_key', rawKey);
         }
@@ -2166,7 +2185,7 @@ class DashboardApp {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                fact_text: `[OMNIROUTE_TUNNEL: ${cleanUrl}]`,
+                fact_text: `[OMNIROUTE_TUNNEL: ${cleanUrl} | LOCAL_FALLBACK: ${cleanLocalUrl}]`,
                 session_id: 'admin_dashboard_sync'
               })
             });
