@@ -1367,6 +1367,9 @@ Langkah yang WAJIB Anda lakukan:
     function isOmniErrorResponse(text) {
       if (!text) return false;
       const t = text.trim();
+      // Initialization / daemon booting messages from HF Space
+      if (/OmniRoute\s+(?:daemon\s+sedang\s+menginisialisasi|Worker\s+Active|Node\.js\s+LTS)/i.test(t)) return true;
+      if (/Provisioning\s+official\s+Node\.js|Downloading\s+Node\.js|Extracting\s+Node\.js/i.test(t)) return true;
       // HTTP status error lines: "HTTP 4xx", "HTTP 5xx"
       if (/^HTTP\s+[45]\d{2}/i.test(t)) return true;
       // JSON error object returned as string
@@ -1383,7 +1386,9 @@ Langkah yang WAJIB Anda lakukan:
       return false;
     }
 
-    async function callOmniRoute(mName, tOut = 18000) {
+    const deadOmniEndpoints = new Set();
+
+    async function callOmniRoute(mName, tOut = 10000) {
       const endpointsToTry = [];
 
       function addEndpoint(rawUrl, defaultLabel) {
@@ -1430,11 +1435,14 @@ Langkah yang WAJIB Anda lakukan:
       const promptText = typeof lastUserMsg === 'string' ? lastUserMsg : JSON.stringify(lastUserMsg);
 
       for (const target of endpointsToTry) {
+        if (deadOmniEndpoints.has(target.normUrl)) continue;
+
         const isHf = target.isHf;
 
         // 1. Direct OpenAI JSON POST attempt (Only for non-HF endpoints such as Ngrok tunnels or Localhost)
         if (!isHf) {
           try {
+            const directTimeout = Math.min(tOut, 2500);
             const res = await fetchJsonWithTimeout(target.directUrl, {
               method: 'POST',
               headers: {
@@ -1449,7 +1457,7 @@ Langkah yang WAJIB Anda lakukan:
                 temperature: 0.3,
                 stream: false
               })
-            }, 2500);
+            }, directTimeout);
 
             if (res.ok) {
               const content = res.data?.choices?.[0]?.message?.content || (typeof res.data === 'string' ? res.data : null);
@@ -1460,9 +1468,11 @@ Langkah yang WAJIB Anda lakukan:
               }
             } else if (res.status >= 400) {
               providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: HTTP ${res.status}`);
+              deadOmniEndpoints.add(target.normUrl);
             }
           } catch (err) {
             providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
+            deadOmniEndpoints.add(target.normUrl);
           }
         }
 
@@ -1488,12 +1498,13 @@ Langkah yang WAJIB Anda lakukan:
                 method: 'POST',
                 headers: hfHeaders,
                 body: JSON.stringify({ data: [promptText, mName, fullPayloadJson] })
-              }, 5000);
+              }, 4000);
 
               if (postRes.ok && postRes.data?.event_id) {
                 const eventId = postRes.data.event_id;
                 const sseHeaders = {};
-                const sseRes = await fetchSseWithEarlyReturn(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, sseHeaders, Math.min(Math.max(tOut, 18000), 26000));
+                const sseTimeout = Math.max(3000, Math.min(tOut, 10000));
+                const sseRes = await fetchSseWithEarlyReturn(`${baseUrl}/gradio_api/call/${ep}/${eventId}`, sseHeaders, sseTimeout);
 
                 if (sseRes.data && Array.isArray(sseRes.data) && sseRes.data[0] && typeof sseRes.data[0] === 'string') {
                   const txt = sseRes.data[0].trim();
@@ -1523,9 +1534,12 @@ Langkah yang WAJIB Anda lakukan:
                     }
                   }
                 }
+              } else {
+                deadOmniEndpoints.add(target.normUrl);
               }
             } catch (err) {
               providerErrors.push(`OmniRoute ${target.label} (${mName}) Gradio: ${err.message}`);
+              deadOmniEndpoints.add(target.normUrl);
             }
           }
         }
@@ -1801,79 +1815,81 @@ Langkah yang WAJIB Anda lakukan:
       // 1. CODING SPESIFIK & DOKUMEN / FILE BESAR
       if (isCodingOrBigFile) {
         return [
-          // Tier 1: OmniRoute Dedicated Gateway (Codex -> x-preview-f-free -> Antigravity fast failover)
+          // Tier 1: OmniRoute Dedicated Gateway (x-preview-f-free -> Codex -> Antigravity)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 8000 },
           { provider: 'omniroute', model: 'Codex', timeout: 10000 },
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 12000 },
-          { provider: 'omniroute', model: 'Antigravity', timeout: 12000 },
+          { provider: 'omniroute', model: 'Antigravity', timeout: 10000 },
 
-          // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: nemotron-3-ultra 550B MoE -> minimax-m3 -> nemotron-3-super di akhir)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 20000 },
-          { provider: 'ollama', model: 'minimax-m3', timeout: 16000 },
-          { provider: 'ollama', model: 'nemotron-3-super', timeout: 14000 },
+          // Tier 2: Ollama Cloud SOTA Hub (nemotron-3-ultra 550B MoE -> minimax-m3 -> nemotron-3-super)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+          { provider: 'ollama', model: 'minimax-m3', timeout: 10000 },
+          { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
 
           // Tier 3: OpenRouter Cloud Pool
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 6000 },
 
           // Tier 4: OpenCode Zen Pool
-          { provider: 'opencode', model: 'opencode/x-preview-f-free', timeout: 10000 },
-          { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 10000 },
+          { provider: 'opencode', model: 'opencode/x-preview-f-free', timeout: 8000 },
+          { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 8000 },
 
           // Tier 5: MiniMax Direct Production API
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 }
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 8000 }
         ];
       }
 
       // 2. PENALARAN KOMPLEKS, LOGIKA, RISET ILMIAH & ANALISIS RUMIT
       if (isComplexReasoning) {
         return [
-          // Tier 1: OmniRoute Dedicated Gateway (Codex -> x-preview-f-free -> Antigravity fast failover)
+          // Tier 1: OmniRoute Dedicated Gateway (x-preview-f-free -> Codex -> Antigravity -> nemotron-laguna)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 8000 },
           { provider: 'omniroute', model: 'Codex', timeout: 10000 },
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 12000 },
-          { provider: 'omniroute', model: 'Antigravity', timeout: 12000 },
+          { provider: 'omniroute', model: 'Antigravity', timeout: 10000 },
+          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 8000 },
 
-          // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: nemotron-3-ultra 550B MoE -> minimax-m3 -> nemotron-3-super di akhir)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 20000 },
-          { provider: 'ollama', model: 'minimax-m3', timeout: 16000 },
-          { provider: 'ollama', model: 'nemotron-3-super', timeout: 14000 },
+          // Tier 2: Ollama Cloud SOTA Hub (nemotron-3-ultra 550B MoE -> minimax-m3 -> nemotron-3-super)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+          { provider: 'ollama', model: 'minimax-m3', timeout: 10000 },
+          { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
 
           // Tier 3: OpenRouter Cloud Pool
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 6000 },
 
           // Tier 4: OpenCode Zen Pool
-          { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 10000 },
-          { provider: 'opencode', model: 'opencode/x-preview-f-free', timeout: 10000 },
+          { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 8000 },
+          { provider: 'opencode', model: 'opencode/x-preview-f-free', timeout: 8000 },
 
           // Tier 5: MiniMax Direct Production API
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 }
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 8000 }
         ];
       }
 
-      // 3. KECEPATAN / TUGAS RINGAN HARIAN / CASUAL CHAT / PERTANYAAN UMUM
+      // 3. KECEPATAN / TUGAS RINGAN HARIAN / CASUAL CHAT / PERTANYAAN BIASA & RECEH
       return [
-        // Tier 1: OmniRoute Dedicated Gateway
-        { provider: 'omniroute', model: 'Codex', timeout: 10000 },
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 10000 },
-        { provider: 'omniroute', model: 'Antigravity', timeout: 10000 },
+        // Tier 1: OmniRoute Dedicated Gateway (x-preview-f-free pool 40 akun gratis, hemat kuota Codex)
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 7000 },
+        { provider: 'omniroute', model: 'nemotron-laguna', timeout: 6000 },
+        { provider: 'omniroute', model: 'Vision-model', timeout: 6000 },
 
-        // Tier 2: Ollama Cloud SOTA Hub (Prioritas #1: nemotron-3-nano:30b -> gemma4:31b -> nemotron-3-super di akhir)
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 14000 },
-        { provider: 'ollama', model: 'gemma4:31b', timeout: 14000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
+        // Tier 2: Ollama Cloud SOTA Hub (nemotron-3-nano:30b -> gemma4:31b -> nemotron-3-super)
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+        { provider: 'ollama', model: 'gemma4:31b', timeout: 8000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
 
         // Tier 3: OpenRouter Cloud Pool
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
         { provider: 'openrouter', model: 'liquid/lfm-2.5-2.6b:free', timeout: 6000 },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 6000 },
 
         // Tier 4: OpenCode Zen Pool
-        { provider: 'opencode', model: 'opencode/deepseek-v4-flash-free', timeout: 8000 },
+        { provider: 'opencode', model: 'opencode/x-preview-f-free', timeout: 6000 },
+        { provider: 'opencode', model: 'opencode/nemotron-3-ultra-free', timeout: 6000 },
 
         // Tier 5: MiniMax Direct Production API
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 }
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 }
       ];
     }
 
