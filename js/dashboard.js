@@ -357,8 +357,8 @@ class DashboardApp {
     const primaryUrl   = targetType === 'ngrok' ? ngrokUrl : hfUrl;
     const secondaryUrl = targetType === 'ngrok' ? hfUrl    : ngrokUrl;
 
-    localStorage.setItem('omniroute_custom_tunnel', primaryUrl);
-    localStorage.setItem('omniroute_local_endpoint', localUrl);
+    localStorage.setItem('omniroute_custom_tunnel',      primaryUrl);
+    localStorage.setItem('omniroute_secondary_endpoint', secondaryUrl);
     if (!localStorage.getItem('omniroute_custom_key')) {
       localStorage.setItem('omniroute_custom_key', defaultKey);
     }
@@ -398,21 +398,21 @@ class DashboardApp {
   promptSyncOmniRouteTunnel() {
     const omnirouteModal = document.getElementById('omniroute-modal');
     if (omnirouteModal) {
-      const defaultCloudUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
-      const defaultLocalUrl = 'http://localhost:20128/v1';
+      const defaultPrimaryUrl   = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
+      const defaultSecondaryUrl = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
       const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
 
-      const currentSavedCloud = localStorage.getItem('omniroute_custom_tunnel') || defaultCloudUrl;
-      const currentSavedLocal = localStorage.getItem('omniroute_local_endpoint') || defaultLocalUrl;
-      const currentSavedKey = localStorage.getItem('omniroute_custom_key') || defaultKey;
+      const currentPrimary   = localStorage.getItem('omniroute_custom_tunnel')    || defaultPrimaryUrl;
+      const currentSecondary = localStorage.getItem('omniroute_secondary_endpoint') || localStorage.getItem('omniroute_last_ngrok_url') || defaultSecondaryUrl;
+      const currentKey       = localStorage.getItem('omniroute_custom_key')       || defaultKey;
 
-      const urlInput = document.getElementById('omniroute-url-input');
+      const urlInput   = document.getElementById('omniroute-url-input');
       const localInput = document.getElementById('omniroute-local-url-input');
-      const keyInput = document.getElementById('omniroute-key-input');
+      const keyInput   = document.getElementById('omniroute-key-input');
 
-      if (urlInput) urlInput.value = currentSavedCloud;
-      if (localInput) localInput.value = currentSavedLocal;
-      if (keyInput) keyInput.value = currentSavedKey;
+      if (urlInput)   urlInput.value   = currentPrimary;
+      if (localInput) localInput.value = currentSecondary;
+      if (keyInput)   keyInput.value   = currentKey;
 
       omnirouteModal.classList.add('is-open');
     }
@@ -2193,10 +2193,11 @@ class DashboardApp {
     }
 
     // OmniRoute Modal Preset Buttons
-    const presetBtnHf = document.getElementById('preset-btn-hf');
+    const presetBtnHf   = document.getElementById('preset-btn-hf');
     const presetBtnNgrok = document.getElementById('preset-btn-ngrok');
-    const presetBtnLocal = document.getElementById('preset-btn-local');
+    const presetBtnSwap  = document.getElementById('preset-btn-swap');
 
+    // "HF Space → Endpoint 1": fill Endpoint 1 with HF URL
     if (presetBtnHf) {
       presetBtnHf.addEventListener('click', () => {
         const urlInput = document.getElementById('omniroute-url-input');
@@ -2204,26 +2205,33 @@ class DashboardApp {
       });
     }
 
+    // "Ngrok → Endpoint 2": fill Endpoint 2 with saved ngrok URL
     if (presetBtnNgrok) {
       presetBtnNgrok.addEventListener('click', () => {
-        const urlInput = document.getElementById('omniroute-url-input');
-        const lastNgrok = localStorage.getItem('omniroute_last_ngrok_url') || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
-        if (urlInput) urlInput.value = lastNgrok;
+        const localInput = document.getElementById('omniroute-local-url-input');
+        const lastNgrok  = localStorage.getItem('omniroute_last_ngrok_url') || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+        if (localInput) localInput.value = lastNgrok;
       });
     }
 
-    if (presetBtnLocal) {
-      presetBtnLocal.addEventListener('click', () => {
+    // "Swap 1 ↔ 2": swap the values of both inputs
+    if (presetBtnSwap) {
+      presetBtnSwap.addEventListener('click', () => {
+        const urlInput   = document.getElementById('omniroute-url-input');
         const localInput = document.getElementById('omniroute-local-url-input');
-        if (localInput) localInput.value = 'http://localhost:20128/v1';
+        if (urlInput && localInput) {
+          const tmp = urlInput.value;
+          urlInput.value   = localInput.value;
+          localInput.value = tmp;
+        }
       });
     }
 
     // OmniRoute Config Modal
-    const omniBtn = document.getElementById('dash-omni-btn');
-    const omniModal = document.getElementById('omniroute-modal');
+    const omniBtn      = document.getElementById('dash-omni-btn');
+    const omniModal    = document.getElementById('omniroute-modal');
     const omniCloseBtn = document.getElementById('omniroute-close-btn');
-    const omniForm = document.getElementById('omniroute-form');
+    const omniForm     = document.getElementById('omniroute-form');
 
     if (omniBtn && omniModal) {
       omniBtn.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
@@ -2242,45 +2250,45 @@ class DashboardApp {
     if (omniForm) {
       omniForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const urlInput = document.getElementById('omniroute-url-input');
+        const urlInput   = document.getElementById('omniroute-url-input');
         const localInput = document.getElementById('omniroute-local-url-input');
-        const keyInput = document.getElementById('omniroute-key-input');
-        const rawUrl = this.cleanKey(urlInput?.value);
-        const rawLocal = this.cleanKey(localInput?.value);
-        const rawKey = this.cleanKey(keyInput?.value);
+        const keyInput   = document.getElementById('omniroute-key-input');
+        const rawUrl      = this.cleanKey(urlInput?.value);
+        const rawSecondary = this.cleanKey(localInput?.value);
+        const rawKey      = this.cleanKey(keyInput?.value);
 
         if (!rawUrl) {
-          alert('Harap masukkan Primary Endpoint URL OmniRoute (Cloud / Hugging Face).');
+          alert('Harap masukkan Endpoint 1 (Primary) OmniRoute.');
           return;
         }
 
-        const cleanUrl = rawUrl.startsWith('http') 
-          ? rawUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')
-          : `https://${rawUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')}`;
-        
-        const cleanLocalUrl = rawLocal
-          ? (rawLocal.startsWith('http') ? rawLocal.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '') : `http://${rawLocal.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '')}`)
-          : 'http://localhost:20128/v1';
+        const normalize = s => {
+          if (!s) return '';
+          const u = s.startsWith('http') ? s : `https://${s}`;
+          return u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+        };
 
-        localStorage.setItem('omniroute_custom_tunnel', cleanUrl);
-        localStorage.setItem('omniroute_local_endpoint', cleanLocalUrl);
-        // Save ngrok/tunnel URL separately for use as NGROK_FALLBACK
-        if (cleanUrl.includes('ngrok') || cleanUrl.includes('trycloudflare') || cleanUrl.includes('cloudflare')) {
-          localStorage.setItem('omniroute_last_ngrok_url', cleanUrl);
+        const cleanPrimary   = normalize(rawUrl);
+        const cleanSecondary = rawSecondary ? normalize(rawSecondary) : '';
+
+        // Persist to localStorage
+        localStorage.setItem('omniroute_custom_tunnel',      cleanPrimary);
+        localStorage.setItem('omniroute_secondary_endpoint', cleanSecondary);
+        // Also track last-known ngrok for quick re-use
+        if (cleanSecondary && (cleanSecondary.includes('ngrok') || cleanSecondary.includes('trycloudflare') || cleanSecondary.includes('cloudflare'))) {
+          localStorage.setItem('omniroute_last_ngrok_url', cleanSecondary);
+        }
+        if (cleanPrimary && (cleanPrimary.includes('ngrok') || cleanPrimary.includes('trycloudflare') || cleanPrimary.includes('cloudflare'))) {
+          localStorage.setItem('omniroute_last_ngrok_url', cleanPrimary);
         }
         if (rawKey) {
           localStorage.setItem('omniroute_custom_key', rawKey);
         }
 
-        // Build Supabase fact_text with the 3-field format:
-        // [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <ngrok> | LOCAL_FALLBACK: <local>]
-        const savedNgrokUrl = localStorage.getItem('omniroute_last_ngrok_url') || '';
-        const isCleanUrlHf = cleanUrl.includes('hf.space') || cleanUrl.includes('huggingface');
-        let ngrokFallbackPart = '';
-        if (isCleanUrlHf && savedNgrokUrl && savedNgrokUrl !== cleanUrl) {
-          ngrokFallbackPart = ` | NGROK_FALLBACK: ${savedNgrokUrl}`;
-        }
-        const factText = `[OMNIROUTE_TUNNEL: ${cleanUrl}${ngrokFallbackPart} | LOCAL_FALLBACK: ${cleanLocalUrl}]`;
+        // Build Supabase fact_text:
+        // [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <secondary> | LOCAL_FALLBACK: localhost]
+        const ngrokPart = cleanSecondary ? ` | NGROK_FALLBACK: ${cleanSecondary}` : '';
+        const factText = `[OMNIROUTE_TUNNEL: ${cleanPrimary}${ngrokPart} | LOCAL_FALLBACK: http://localhost:20128/v1]`;
 
         const config = this.getSupabaseConfig();
         if (config && config.url && config.anonKey) {
@@ -2299,7 +2307,6 @@ class DashboardApp {
             });
           } catch (_) {}
         }
-
 
         omniModal.classList.remove('is-open');
         const headerTextEl = document.getElementById('header-omniroute-text');

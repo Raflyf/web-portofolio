@@ -506,36 +506,36 @@
       </div>
 
       <p class="modal-desc">
-        Konfigurasikan failover 2-tier OmniRoute: Prioritas #1 Cloud (Hugging Face / Cloudflare Tunnel) dan Prioritas #2 Localhost. Jika Cloud offline, sistem otomatis beralih ke Localhost sebelum tier berikutnya.
+        Konfigurasikan 2 endpoint publik OmniRoute. Keduanya selalu aktif dalam rantai failover. Tombol toggle di dashboard hanya membalik urutan prioritas: siapa yang dicoba pertama (Primary) dan siapa yang menjadi fallback (Secondary).
       </p>
 
       <div class="omniroute-preset-box">
-        <span class="modal-label" style="margin-bottom:0.35rem;">Pilih Cepat Host Utama:</span>
+        <span class="modal-label" style="margin-bottom:0.35rem;">Isi Cepat Endpoint:</span>
         <div class="omniroute-preset-btns">
           <button type="button" class="preset-choice-btn" id="preset-btn-hf">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span>Cloud Hugging Face</span>
+            <span>HF Space &rarr; Endpoint 1</span>
           </button>
           <button type="button" class="preset-choice-btn" id="preset-btn-ngrok">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-            <span>Ngrok Static Tunnel</span>
+            <span>Ngrok &rarr; Endpoint 2</span>
           </button>
-          <button type="button" class="preset-choice-btn" id="preset-btn-local">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span>Localhost (:20128)</span>
+          <button type="button" class="preset-choice-btn" id="preset-btn-swap">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 014-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 01-4 4H3"></path></svg>
+            <span>Swap 1 &harr; 2</span>
           </button>
         </div>
       </div>
 
       <form id="omniroute-form" class="modal-form">
         <div>
-          <label for="omniroute-url-input" class="modal-label">Endpoint 1: Primary Cloud (Hugging Face / Tunnel)</label>
+          <label for="omniroute-url-input" class="modal-label">Endpoint 1 &mdash; Primary (dicoba pertama)</label>
           <input type="url" id="omniroute-url-input" class="pin-input text-left" value="https://rflyyyf-omniroute-gateway.hf.space/v1" placeholder="https://rflyyyf-omniroute-gateway.hf.space/v1" required>
         </div>
 
         <div>
-          <label for="omniroute-local-url-input" class="modal-label">Endpoint 2: Secondary Localhost Fallback</label>
-          <input type="url" id="omniroute-local-url-input" class="pin-input text-left" value="http://localhost:20128/v1" placeholder="http://localhost:20128/v1" required>
+          <label for="omniroute-local-url-input" class="modal-label">Endpoint 2 &mdash; Secondary Fallback (Ngrok / HF / Cloudflare)</label>
+          <input type="url" id="omniroute-local-url-input" class="pin-input text-left" value="https://gullible-cytoplast-mardi.ngrok-free.dev/v1" placeholder="https://gullible-cytoplast-mardi.ngrok-free.dev/v1" required>
         </div>
 
         <div>
@@ -544,7 +544,7 @@
         </div>
 
         <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
-          <span>Simpan & Sambungkan Gateway</span>
+          <span>Simpan &amp; Sambungkan Gateway</span>
         </button>
       </form>
     </div>
