@@ -640,11 +640,16 @@ function renderProjects(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
+    observeElementForScrollReveal(card);
 
     requestAnimationFrame(() => {
       card.classList.add('is-revealed');
     });
   });
+
+  if (spotlightCard) {
+    observeElementForScrollReveal(spotlightCard);
+  }
 }
 
 /* ==========================================================================
@@ -765,6 +770,7 @@ function renderCertificates(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
+    observeElementForScrollReveal(card);
 
     requestAnimationFrame(() => {
       card.classList.add('is-revealed');
@@ -1261,6 +1267,7 @@ function initScrollProgressBar() {
   }, { passive: true });
 }
 
+let globalScrollObserver = null;
 let lastScrollY = window.scrollY;
 let scrollDirection = 'down';
 
@@ -1270,14 +1277,30 @@ window.addEventListener('scroll', () => {
   lastScrollY = currentScrollY;
 }, { passive: true });
 
-function initScrollReveal() {
+function observeElementForScrollReveal(el) {
+  if (!el || !globalScrollObserver) return;
+  el.classList.add('reveal-item');
+  globalScrollObserver.observe(el);
+}
+
+function refreshScrollReveal() {
+  if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
     '.section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-spotlight-card, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
   );
 
-  if (revealElements.length === 0) return;
+  revealElements.forEach(el => {
+    el.classList.add('reveal-item');
+    globalScrollObserver.observe(el);
+  });
+}
 
-  const observer = new IntersectionObserver((entries) => {
+function initScrollReveal() {
+  if (globalScrollObserver) {
+    globalScrollObserver.disconnect();
+  }
+
+  globalScrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         if (scrollDirection === 'up') {
@@ -1297,10 +1320,7 @@ function initScrollReveal() {
     threshold: 0.04
   });
 
-  revealElements.forEach(el => {
-    el.classList.add('reveal-item');
-    observer.observe(el);
-  });
+  refreshScrollReveal();
 }
 
 function initScrollSpy() {
