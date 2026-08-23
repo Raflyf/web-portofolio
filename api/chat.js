@@ -1188,7 +1188,7 @@ export default async function handler(req, res) {
     }
 
     const isSingleWordGreeting = /^(halo|hai|hey|tes|test|ping|oke|ok|sip|makasih|terima kasih)$/i.test(query.trim());
-    const isInternalPortfolioQuery = /\b(spam|plagiarism|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly)\b/i.test(query.trim());
+    const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(query.trim());
     const isSkipSearch = isSingleWordGreeting || isInternalPortfolioQuery;
 
     const [searchResult, liveRepoContext] = await Promise.all([
