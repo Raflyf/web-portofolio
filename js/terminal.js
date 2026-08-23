@@ -72,17 +72,66 @@ export function initTerminal() {
   // Pure Intelligent Auto-Routing as permanent default
   terminalAI.setModel('auto');
 
+  // Custom Glass Effort Dropdown Controller (Eliminates Native Mobile OS Popup)
+  const customEffortBtn = document.getElementById('custom-effort-btn');
+  const customEffortMenu = document.getElementById('custom-effort-menu');
+  const customEffortLabel = document.getElementById('custom-effort-label');
+
+  function syncCustomEffortUI(val) {
+    if (customEffortMenu) {
+      customEffortMenu.querySelectorAll('li').forEach(li => {
+        const isMatch = li.getAttribute('data-value') === val;
+        li.classList.toggle('active', isMatch);
+        if (isMatch && customEffortLabel) {
+          customEffortLabel.textContent = li.textContent.trim();
+        }
+      });
+    }
+  }
+
+  if (customEffortBtn && customEffortMenu) {
+    customEffortBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = customEffortMenu.style.display !== 'none';
+      customEffortMenu.style.display = isVisible ? 'none' : 'flex';
+      customEffortBtn.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+    });
+
+    customEffortMenu.querySelectorAll('li').forEach(li => {
+      li.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const chosenVal = li.getAttribute('data-value');
+        if (effortSelect) {
+          effortSelect.value = chosenVal;
+          effortSelect.dispatchEvent(new Event('change'));
+        }
+        syncCustomEffortUI(chosenVal);
+        customEffortMenu.style.display = 'none';
+        customEffortBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (customEffortMenu.style.display !== 'none' && !customEffortBtn.contains(e.target) && !customEffortMenu.contains(e.target)) {
+        customEffortMenu.style.display = 'none';
+        customEffortBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
   // Restore saved effort & thinking mode selection
   if (effortSelect) {
     const savedEffort = localStorage.getItem('ai_selected_effort') || 'auto';
     effortSelect.value = savedEffort;
     terminalAI.setEffort(savedEffort);
+    syncCustomEffortUI(savedEffort);
 
     effortSelect.addEventListener('change', () => {
       const chosen = effortSelect.value;
       const effortText = effortSelect.options[effortSelect.selectedIndex]?.text || chosen;
       terminalAI.setEffort(chosen);
       localStorage.setItem('ai_selected_effort', chosen);
+      syncCustomEffortUI(chosen);
       appendLine(`[Mode AI] Effort diatur ke: ${effortText}`);
       appendLine("");
     });

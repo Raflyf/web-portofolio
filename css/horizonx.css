@@ -889,6 +889,127 @@ body {
   flex-shrink: 0 !important;
 }
 
+/* Custom In-Page Effort Glass Dropdown (No Native Mobile OS Popup) */
+.custom-dropdown-wrap {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.custom-dropdown-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: var(--hx-text-primary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px !important;
+  padding: 0.22rem 0.55rem !important;
+  font-family: inherit !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  white-space: nowrap !important;
+}
+
+.custom-dropdown-btn:hover,
+.custom-dropdown-btn:focus,
+.custom-dropdown-btn[aria-expanded="true"] {
+  border-color: var(--hx-accent-emerald) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3) !important;
+}
+
+.custom-dropdown-btn svg {
+  transition: transform 0.2s ease !important;
+}
+
+.custom-dropdown-btn[aria-expanded="true"] svg {
+  transform: rotate(180deg) !important;
+}
+
+.custom-dropdown-menu {
+  position: absolute !important;
+  top: calc(100% + 6px) !important;
+  right: 0 !important;
+  min-width: 175px !important;
+  background: rgba(14, 20, 29, 0.98) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  padding: 6px !important;
+  list-style: none !important;
+  margin: 0 !important;
+  z-index: 1000 !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  animation: customDropSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.custom-dropdown-menu li {
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: var(--hx-text-secondary) !important;
+  padding: 7px 10px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.15s ease !important;
+}
+
+.custom-dropdown-menu li:hover {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: var(--hx-accent-emerald) !important;
+}
+
+.custom-dropdown-menu li.active {
+  background: var(--hx-accent-emerald) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .custom-dropdown-btn {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+[data-theme="light"] .custom-dropdown-menu {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .custom-dropdown-menu li {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .custom-dropdown-menu li:hover {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+}
+
+[data-theme="light"] .custom-dropdown-menu li.active {
+  background: #059669 !important;
+  color: #ffffff !important;
+}
+
+@keyframes customDropSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Universal 3D Translucent Glassmorphism (Anti-Solid Design) */
 .project-card,
 .project-spotlight-card,
