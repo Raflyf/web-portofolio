@@ -56,7 +56,7 @@ function initHeroClock() {
 }
 
 /* ==========================================================================
-   1B. DYNAMIC HERO SHOWCASE ROTATING DECK & CAROUSEL ENGINE
+   1B. DYNAMIC HERO SHOWCASE ROTATING DECK & HORIZONTAL SLIDER ENGINE
    ========================================================================== */
 const HERO_SHOWCASE_PROJECTS = [
   {
@@ -96,105 +96,135 @@ const HERO_SHOWCASE_PROJECTS = [
   }
 ];
 
-let showcaseCurrentIndex = 0;
-let showcaseAutoTimer = null;
-
-function renderHeroShowcaseCards(startIndex, animate = true) {
-  const container = document.getElementById('showcase-card-grid');
-  const indicator = document.getElementById('showcase-index-indicator');
-  if (!container) return;
-
-  const total = HERO_SHOWCASE_PROJECTS.length;
-  const isMobile = window.innerWidth <= 600;
-  const isTablet = window.innerWidth <= 900 && window.innerWidth > 600;
-  const countToShow = isMobile ? 1 : (isTablet ? 2 : 3);
-
-  const applyRender = () => {
-    container.innerHTML = '';
-    for (let i = 0; i < countToShow; i++) {
-      const idx = (startIndex + i) % total;
-      const proj = HERO_SHOWCASE_PROJECTS[idx];
-
-      const card = document.createElement('a');
-      card.href = '#projects';
-      card.className = 'showcase-card';
-      card.setAttribute('data-project-id', proj.id);
-      card.innerHTML = `
-        <span class="showcase-card-tag">${proj.tag}</span>
-        <h2 class="showcase-card-title">${proj.title}</h2>
-        <p class="showcase-card-desc">${proj.desc}</p>
-        <div class="showcase-card-footer">
-          <span>${proj.spec}</span>
-          <span style="display:inline-flex;align-items:center;gap:4px;">Detail &rarr;</span>
-        </div>
-      `;
-
-      card.addEventListener('click', (e) => {
-        const fullProj = PROJECTS_DATA.find(p => p.id === proj.id);
-        if (fullProj) {
-          e.preventDefault();
-          openProjectModal(fullProj);
-        }
-      });
-
-      card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-      });
-
-      container.appendChild(card);
-    }
-
-    if (indicator) {
-      const startNum = (startIndex % total) + 1;
-      const endIdx = ((startIndex + countToShow - 1) % total) + 1;
-      indicator.textContent = countToShow > 1 ? `Proyek ${startNum}–${endIdx} / ${total}` : `Proyek ${startNum} / ${total}`;
-    }
-
-    if (animate) {
-      requestAnimationFrame(() => {
-        container.classList.remove('is-morphing');
-      });
-    }
-  };
-
-  if (animate) {
-    container.classList.add('is-morphing');
-    setTimeout(applyRender, 140);
-  } else {
-    applyRender();
-  }
-}
-
 function initHeroShowcaseCarousel() {
   const deck = document.getElementById('hero-showcase-deck');
+  const track = document.getElementById('showcase-slider-track');
+  const indicator = document.getElementById('showcase-index-indicator');
   const prevBtn = document.getElementById('showcase-prev-btn');
   const nextBtn = document.getElementById('showcase-next-btn');
 
-  if (!deck) return;
+  if (!deck || !track) return;
 
   const total = HERO_SHOWCASE_PROJECTS.length;
+  let currentIndex = 0;
+  let autoTimer = null;
+  let isTransitioning = false;
+
+  // Build the duplicated sliding cards array (10 cards for infinite seamless sliding)
+  const fullCardsList = [...HERO_SHOWCASE_PROJECTS, ...HERO_SHOWCASE_PROJECTS];
+
+  track.innerHTML = '';
+  fullCardsList.forEach((proj) => {
+    const card = document.createElement('a');
+    card.href = '#projects';
+    card.className = 'showcase-card';
+    card.setAttribute('data-project-id', proj.id);
+    card.innerHTML = `
+      <span class="showcase-card-tag">${proj.tag}</span>
+      <h2 class="showcase-card-title">${proj.title}</h2>
+      <p class="showcase-card-desc">${proj.desc}</p>
+      <div class="showcase-card-footer">
+        <span>${proj.spec}</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;">Detail &rarr;</span>
+      </div>
+    `;
+
+    card.addEventListener('click', (e) => {
+      const fullProj = PROJECTS_DATA.find(p => p.id === proj.id);
+      if (fullProj) {
+        e.preventDefault();
+        openProjectModal(fullProj);
+      }
+    });
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    });
+
+    track.appendChild(card);
+  });
+
+  function getStepWidth() {
+    const firstCard = track.querySelector('.showcase-card');
+    if (!firstCard) return 360;
+    const style = window.getComputedStyle(track);
+    const gap = parseFloat(style.gap) || 20;
+    return firstCard.offsetWidth + gap;
+  }
+
+  function updateSlide(animate = true) {
+    if (!animate) {
+      track.classList.add('no-transition');
+    } else {
+      track.classList.remove('no-transition');
+    }
+
+    const step = getStepWidth();
+    track.style.transform = `translate3d(-${currentIndex * step}px, 0, 0)`;
+
+    if (indicator) {
+      const activeProjNum = (currentIndex % total) + 1;
+      indicator.textContent = `Proyek ${activeProjNum} / ${total}`;
+    }
+
+    if (!animate) {
+      // Force layout repaint
+      track.offsetHeight;
+      track.classList.remove('no-transition');
+    }
+  }
 
   function nextSlide() {
-    showcaseCurrentIndex = (showcaseCurrentIndex + 1) % total;
-    renderHeroShowcaseCards(showcaseCurrentIndex, true);
+    if (isTransitioning) return;
+    isTransitioning = true;
+    currentIndex++;
+    updateSlide(true);
+
+    setTimeout(() => {
+      if (currentIndex >= total) {
+        currentIndex = 0;
+        updateSlide(false);
+      }
+      isTransitioning = false;
+    }, 650);
   }
 
   function prevSlide() {
-    showcaseCurrentIndex = (showcaseCurrentIndex - 1 + total) % total;
-    renderHeroShowcaseCards(showcaseCurrentIndex, true);
+    if (isTransitioning) return;
+    isTransitioning = true;
+
+    if (currentIndex <= 0) {
+      currentIndex = total;
+      updateSlide(false);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          currentIndex = total - 1;
+          updateSlide(true);
+          setTimeout(() => {
+            isTransitioning = false;
+          }, 650);
+        });
+      });
+    } else {
+      currentIndex--;
+      updateSlide(true);
+      setTimeout(() => {
+        isTransitioning = false;
+      }, 650);
+    }
   }
 
   function startTimer() {
     stopTimer();
-    showcaseAutoTimer = setInterval(nextSlide, 4500);
+    autoTimer = setInterval(nextSlide, 2000);
   }
 
   function stopTimer() {
-    if (showcaseAutoTimer) {
-      clearInterval(showcaseAutoTimer);
-      showcaseAutoTimer = null;
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
     }
   }
 
@@ -214,11 +244,9 @@ function initHeroShowcaseCarousel() {
     });
   }
 
-  // Pause on hover so user can read or click
   deck.addEventListener('mouseenter', stopTimer);
   deck.addEventListener('mouseleave', startTimer);
 
-  // Touch Swipe Gesture Support
   let touchStartX = 0;
   deck.addEventListener('touchstart', (e) => {
     touchStartX = e.changedTouches[0].screenX;
@@ -236,14 +264,12 @@ function initHeroShowcaseCarousel() {
     startTimer();
   }, { passive: true });
 
-  // Initial render
-  renderHeroShowcaseCards(showcaseCurrentIndex, false);
-  startTimer();
-
-  // Handle responsive resizing
   window.addEventListener('resize', () => {
-    renderHeroShowcaseCards(showcaseCurrentIndex, false);
+    updateSlide(false);
   }, { passive: true });
+
+  updateSlide(false);
+  startTimer();
 }
 
 /* ==========================================================================
