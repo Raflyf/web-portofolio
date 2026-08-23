@@ -529,10 +529,14 @@
   opacity: 0 !important;
   transform: perspective(1000px) translateY(45px) scale(0.95) !important;
   filter: blur(8px) !important;
-  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: opacity, transform, filter;
+}
+
+.reveal-item.reveal-from-top {
+  transform: perspective(1000px) translateY(-45px) scale(0.95) !important;
 }
 
 .reveal-item.is-revealed {
