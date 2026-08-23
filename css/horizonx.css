@@ -701,6 +701,21 @@ body {
   filter: none !important;
 }
 
+/* Terminal Card Dedicated Smooth Kinetic Tuning */
+.terminal-card.reveal-item {
+  transform: translateY(28px) !important;
+  filter: blur(4px) !important;
+}
+
+.terminal-card.reveal-item.reveal-from-top {
+  transform: translateY(-28px) !important;
+}
+
+.terminal-card.reveal-item.is-revealed {
+  transform: translateY(0) !important;
+  filter: blur(0px) !important;
+}
+
 /* ==========================================================================
    5. 3D MORPHING ACCESSIBLE MODAL DIALOGS (PPT MORPH & 3D PERSPECTIVE)
    ========================================================================== */

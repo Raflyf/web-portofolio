@@ -1837,8 +1837,10 @@ export function initTerminal() {
   if (heroOpenTerminalBtn) {
     heroOpenTerminalBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      e.stopPropagation();
-      openTerminalModal();
+      const labSection = document.getElementById('lab');
+      if (labSection) {
+        labSection.scrollIntoView({ behavior: 'smooth' });
+      }
     });
   }
 
