@@ -557,10 +557,21 @@ function initTimelineSection() {
 }
 
 /* ==========================================================================
-   9. MODAL DIALOGS
+   9. MODAL DIALOGS (Fluid 3D Morph & PPT Expansion Engine)
    ========================================================================== */
 let activeProjectModal = null;
 let activeCertModal = null;
+
+function smoothCloseModal(dialog) {
+  if (!dialog || !dialog.open || dialog.classList.contains('is-closing')) return;
+  dialog.classList.add('is-closing');
+  setTimeout(() => {
+    dialog.close();
+    dialog.classList.remove('is-closing');
+    document.body.classList.remove('modal-open');
+    document.documentElement.classList.remove('modal-open');
+  }, 220);
+}
 
 function initModals() {
   activeProjectModal = document.getElementById('project-modal');
@@ -569,7 +580,7 @@ function initModals() {
   document.querySelectorAll('.modal-close-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const dialog = btn.closest('dialog');
-      if (dialog) dialog.close();
+      if (dialog) smoothCloseModal(dialog);
     });
   });
 
@@ -588,7 +599,7 @@ function initModals() {
         rect.left <= e.clientX && e.clientX <= rect.left + rect.width
       );
       if (!isInDialog) {
-        dialog.close();
+        smoothCloseModal(dialog);
       }
     });
   });
