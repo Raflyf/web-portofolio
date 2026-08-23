@@ -575,11 +575,10 @@ function renderProjects(category) {
     return;
   }
 
-  projectsToRender.forEach((project, idx) => {
+  projectsToRender.forEach((project) => {
     const card = document.createElement('article');
     card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
-    card.style.transitionDelay = `${idx * 30}ms`;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'project-card__top';
@@ -1290,7 +1289,7 @@ function observeElementForScrollReveal(el) {
 function refreshScrollReveal() {
   if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
-    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-item, #terminal-inpage-slot, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
+    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-item, .terminal-card, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
   );
 
   revealElements.forEach(el => {
