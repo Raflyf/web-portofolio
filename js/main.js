@@ -1082,7 +1082,7 @@ function initHorizonXEffects() {
 
   // 2. Parallax Drift on Ambient Background Blobs on Mouse Movement
   const blobs = document.querySelectorAll('.ambient-blob');
-  if (blobs.length > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (blobs.length > 0) {
     window.addEventListener('mousemove', (e) => {
       const mouseX = (e.clientX / window.innerWidth - 0.5) * 35;
       const mouseY = (e.clientY / window.innerHeight - 0.5) * 35;
