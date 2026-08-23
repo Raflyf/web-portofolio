@@ -915,7 +915,7 @@ export default async function handler(req, res) {
 
     // 1. Check Dynamic Tunnel from Supabase
     const dynConfig = await fetchDynamicOmniRouteUrl();
-    const rawPrimary   = (dynConfig?.cloudUrl || process.env.OMNIROUTE_URL || 'https://rflyyyf-omniroute-gateway.hf.space/v1').trim();
+    const rawPrimary   = (dynConfig?.cloudUrl || process.env.OMNIROUTE_URL || '').trim();
     const rawSecondary = (dynConfig?.ngrokUrl || process.env.OMNIROUTE_NGROK_URL || '').trim();
     const rawLocal     = (dynConfig?.localUrl || process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1').trim();
 
@@ -1037,13 +1037,9 @@ export default async function handler(req, res) {
       localOmniUrl = dynamicTunnel.localUrl;
     }
 
-    if (!rawOmniUrl) {
-      rawOmniUrl = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
-    }
-
     // Normalize all URLs to /chat/completions
-    const normUrl = u => u ? u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '') + '/chat/completions' : u;
-    const OMNIROUTE_URL       = normUrl(rawOmniUrl);
+    const normUrl = u => u ? u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '') + '/chat/completions' : null;
+    const OMNIROUTE_URL       = rawOmniUrl ? normUrl(rawOmniUrl) : null;
     const OMNIROUTE_NGROK_URL = ngrokOmniUrl ? normUrl(ngrokOmniUrl) : null;
     const OMNIROUTE_LOCAL_URL = normUrl(localOmniUrl);
 
@@ -1327,7 +1323,6 @@ Langkah yang WAJIB Anda lakukan:
         if (!rawUrl || typeof rawUrl !== 'string') return;
         const u = rawUrl.trim();
         if (!u) return;
-        const isHf = u.includes('hf.space') || u.includes('huggingface');
         const isNgrok = u.includes('ngrok') || u.includes('trycloudflare') || u.includes('cloudflare');
         const isLocal = u.includes('localhost') || u.includes('127.0.0.1');
 
@@ -1337,8 +1332,7 @@ Langkah yang WAJIB Anda lakukan:
         if (endpointsToTry.some(e => e.normUrl === normUrl)) return;
 
         let label = defaultLabel;
-        if (isHf) label = 'Cloud HF Space';
-        else if (isNgrok) label = 'Ngrok Local Tunnel';
+        if (isNgrok) label = 'Ngrok Local Tunnel';
         else if (isLocal) label = 'Localhost :20128';
 
         endpointsToTry.push({
@@ -1346,7 +1340,6 @@ Langkah yang WAJIB Anda lakukan:
           normUrl,
           directUrl: `${normUrl}/chat/completions`,
           label,
-          isHf,
           isNgrok,
           isLocal
         });
