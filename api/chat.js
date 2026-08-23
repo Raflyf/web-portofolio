@@ -1871,19 +1871,19 @@ Langkah yang WAJIB Anda lakukan:
       if (isTrivialCasual) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway (Fast Probe)
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 800 },
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1500 },
           // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 2500 },
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 10000 },
           // Tier 3: OpenCode Zen x-preview
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 2500 },
+          { provider: 'opencode', model: 'x-preview-f-free', timeout: 8000 },
           // Tier 4: Nemotron Ultra Pool (Utamakan Ollama -> OpenCode -> OpenRouter)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 3500 },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 2200 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 2200 },
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
           // Tier 5: MiniMax
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 2200 },
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 },
           // Tier 6: OpenRouter Fast Buffer
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 2000 }
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 }
         ];
       }
 
@@ -1891,46 +1891,46 @@ Langkah yang WAJIB Anda lakukan:
       if (isComplexReasoning) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway (Codex)
-          { provider: 'omniroute', model: 'Codex', timeout: 800 },
+          { provider: 'omniroute', model: 'Codex', timeout: 2000 },
           // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 2800 },
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 14000 },
           // Tier 3: OpenCode Zen x-preview
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 2500 },
+          { provider: 'opencode', model: 'x-preview-f-free', timeout: 10000 },
           // Tier 4: Nemotron Ultra Pool (Utamakan Ollama -> OpenCode -> OpenRouter)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 3500 },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 2200 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 2200 },
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 16000 },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 },
           // Tier 5: MiniMax Multimodal
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 2200 },
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
           // Tier 6: OpenRouter Fast Buffer
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 2000 }
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 }
         ];
       }
 
       // 4. UNIVERSAL AUTO DEFAULT
       return [
         // Tier 1: OmniRoute Dedicated Gateway
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 800 },
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1500 },
         // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 2500 },
+        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 12000 },
         // Tier 3: OpenCode Zen x-preview
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 2500 },
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 8000 },
         // Tier 4: Nemotron Ultra Pool (Utamakan Ollama -> OpenCode -> OpenRouter)
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 3500 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 2200 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 2200 },
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 14000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
         // Tier 5: MiniMax Multimodal
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 2200 },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 },
         // Tier 6: OpenRouter Fast Buffer
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 2000 }
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 }
       ];
     }
 
 
     // ========================================================================
-    // EXECUTE PIPELINE: SINGLE-ACTIVE TOKEN-PRESERVING FAST FAILOVER
+    // EXECUTE PIPELINE: SINGLE-ACTIVE TOKEN-PRESERVING STRICT FAILOVER
     // Evaluates 1 provider at a time in strict priority order.
-    // Preserves 100% token quota (zero wasted parallel calls) and guarantees sub-5s response.
+    // Preserves 100% token quota (zero wasted parallel calls) and guarantees full execution under 52s budget.
     // ========================================================================
     async function executeStep(step, timeout) {
       if (!step) return null;
@@ -1955,10 +1955,10 @@ Langkah yang WAJIB Anda lakukan:
 
       for (const step of pipeline) {
         const elapsed = Date.now() - requestStartTime;
-        const remainingMs = 12000 - elapsed;
-        if (remainingMs <= 800) break;
+        const remainingMs = 52000 - elapsed;
+        if (remainingMs <= 2500) break;
 
-        const stepTimeout = Math.min(step.timeout || 2800, Math.max(1000, remainingMs - 300));
+        const stepTimeout = Math.min(step.timeout || 12000, Math.max(2500, remainingMs - 1000));
         try {
           const result = await executeStep(step, stepTimeout);
           if (result) return result; // Succeeded! Returns immediately with 1x token consumption!
