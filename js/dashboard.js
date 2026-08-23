@@ -808,6 +808,7 @@ class DashboardApp {
     const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
     const tag = isAuto ? 'Auto: ' : '';
 
+    if (combined.includes('ox-alpha') || combined.includes('0x-alpha') || combined.includes('stealth/ox-alpha')) return `${tag}Ox-Alpha (1M Frontier Reasoning)`;
     if (combined.includes('gemma4') || combined.includes('gemma-4') || combined.includes('gemma')) return `${tag}Google Gemma 4 (31B Dense)`;
     if (combined.includes('nemotron-3-super') || combined.includes('nemotron super') || combined.includes('120b')) return `${tag}Nvidia Nemotron 3 Super (120B)`;
     if (combined.includes('nemotron-3-nano') || combined.includes('nemotron nano') || combined.includes('nano:30b') || combined.includes('nano-30b') || combined.includes('30b')) return `${tag}Nvidia Nemotron 3 Nano (30B)`;
