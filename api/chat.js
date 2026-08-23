@@ -1439,7 +1439,7 @@ Langkah yang WAJIB Anda lakukan:
 
         // Direct OpenAI JSON POST attempt for Ngrok Tunnel or Localhost
         try {
-          const directTimeout = Math.min(tOut, 4000);
+          const directTimeout = Math.min(tOut, 1500);
           const res = await fetchJsonWithTimeout(target.directUrl, {
             method: 'POST',
             headers: {
@@ -1508,9 +1508,25 @@ Langkah yang WAJIB Anda lakukan:
 
     async function callOpenRouter(mName, tOut = 10000) {
       if (OPENROUTER_KEYS.length === 0) return null;
-      const perKeyTimeout = Math.min(tOut, 8500);
+      const perKeyTimeout = Math.min(tOut, 4500);
+      const keysToTry = OPENROUTER_KEYS.slice(0, 3);
 
-      for (const orKey of OPENROUTER_KEYS) {
+      // Model-specific payload normalization (stealth/ox-alpha requires user-encapsulated instructions for sub-2s responses)
+      const formattedMessages = (mName === 'stealth/ox-alpha')
+        ? (function() {
+            const sys = openRouterMessages.find(m => m.role === 'system');
+            const nonSys = openRouterMessages.filter(m => m.role !== 'system');
+            if (sys && nonSys.length > 0) {
+              const uIdx = nonSys.findIndex(m => m.role === 'user');
+              if (uIdx !== -1) {
+                return nonSys.map((m, i) => i === uIdx ? { ...m, content: `[Instruksi: ${sys.content}]\n\n${m.content}` } : m);
+              }
+            }
+            return openRouterMessages.filter(m => m.role !== 'system');
+          })()
+        : openRouterMessages;
+
+      for (const orKey of keysToTry) {
         try {
           const res = await fetchJsonWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
@@ -1522,7 +1538,7 @@ Langkah yang WAJIB Anda lakukan:
             },
             body: JSON.stringify({
               model: mName,
-              messages: openRouterMessages,
+              messages: formattedMessages,
               max_tokens: maxTokensConfig,
               temperature: 0.3
             })
@@ -1558,9 +1574,10 @@ Langkah yang WAJIB Anda lakukan:
     async function callOpenCode(mName, tOut = 6000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
-      const perKeyTimeout = Math.min(tOut, 8000);
+      const perKeyTimeout = Math.min(tOut, 4500);
+      const keysToTry = OPENCODE_KEYS.slice(0, 3);
 
-      for (const ocKey of OPENCODE_KEYS) {
+      for (const ocKey of keysToTry) {
         try {
           const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
@@ -1920,12 +1937,13 @@ Langkah yang WAJIB Anda lakukan:
       if (!cloudSteps || cloudSteps.length === 0) return null;
 
       // 2. Multi-Candidate Concurrent Cloud Race (Sub-5s Instant Response):
-      // Launch top cloud candidates across distinct providers concurrently
+      // Launch top priority candidates across distinct providers concurrently
       const primaryCloudCandidates = [
-        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('ox-alpha')) || cloudSteps[0],
-        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('nano-30b')),
+        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('ox-alpha')),
+        cloudSteps.find(s => s.provider === 'opencode' && s.model.includes('x-preview')),
+        cloudSteps.find(s => s.provider === 'ollama' && s.model.includes('nemotron-3-ultra')),
         cloudSteps.find(s => s.provider === 'opencode' && s.model.includes('nemotron-3-ultra')),
-        cloudSteps.find(s => s.provider === 'ollama' && s.model.includes('nemotron-3-ultra'))
+        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('nano-30b'))
       ].filter(Boolean);
 
       const cloudPromises = primaryCloudCandidates.map(s => executeStep(s, s.timeout || 8500).then(res => {
