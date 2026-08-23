@@ -768,15 +768,15 @@
 
 .modal-dialog::backdrop,
 .terminal-modal-dialog::backdrop {
-  background: rgba(9, 13, 18, 0.78) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  background: rgba(4, 7, 12, 0.55) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
   animation: backdropFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 [data-theme="light"] .modal-dialog::backdrop,
 [data-theme="light"] .terminal-modal-dialog::backdrop {
-  background: rgba(15, 23, 42, 0.45) !important;
+  background: rgba(15, 23, 42, 0.35) !important;
 }
 
 .modal-dialog.is-closing::backdrop,
