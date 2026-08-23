@@ -1758,47 +1758,39 @@ Langkah yang WAJIB Anda lakukan:
         }
       }
 
-      // 2. CASUAL / TRIVIAL QUERIES
+      // 2. CASUAL / TRIVIAL QUERIES (Dedicated Nemotron Nano Pool for absolute token preservation)
       if (isTrivialCasual) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway (Fast Probe)
           { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1000 },
-          // Tier 2: OpenRouter Fast SOTA Buffer (0.8s ultra-fast)
+          // Tier 2: Ollama Cloud Nemotron-3-Nano (Sangat hemat token, sub-1s)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
+          // Tier 3: OpenRouter Nemotron-3-Nano (0.8s ultra-fast free)
           { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 5000 },
-          // Tier 3: Ollama Cloud MiniMax-M3 (2.4s fast)
-          { provider: 'ollama', model: 'minimax-m3', timeout: 6000 },
-          // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free (3.2s fast)
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
-          // Tier 5: OpenRouter ox-alpha
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
-          // Tier 6: Ollama Cloud Nemotron-3-Ultra
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
-          // Tier 7: OpenCode Zen x-preview
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 9000 },
-          // Tier 8: OpenRouter Nemotron 550B
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 }
+          // Tier 4: OpenCode Zen Fast Buffer
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
+          // Tier 5: Ollama Cloud MiniMax-M3
+          { provider: 'ollama', model: 'minimax-m3', timeout: 6000 }
         ];
       }
 
-      // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI
+      // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Dedicated SOTA Ultra Reasoning Pool)
       if (isComplexReasoning) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway (Codex)
           { provider: 'omniroute', model: 'Codex', timeout: 1500 },
-          // Tier 2: OpenRouter Fast SOTA Buffer (Sub-5s accurate reasoning)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
-          // Tier 3: Ollama Cloud MiniMax-M3 (2.4s SOTA multimodal/reasoning)
-          { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
-          // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free (3.2s SOTA 550B reasoning)
+          // Tier 2: Ollama Cloud Nemotron-3-Ultra (SOTA 550B MoE)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 14000 },
+          // Tier 3: OpenCode Zen Nemotron-3-Ultra-Free (SOTA 550B Reasoning)
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
+          // Tier 4: OpenRouter Nemotron-3-Ultra-550B
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
           // Tier 5: OpenRouter ox-alpha
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 10000 },
-          // Tier 6: Ollama Cloud Nemotron-3-Ultra
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
-          // Tier 7: OpenCode Zen x-preview
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 10000 },
-          // Tier 8: OpenRouter Nemotron 550B
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 }
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
+          // Tier 6: Ollama Cloud MiniMax-M3
+          { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
+          // Tier 7: OpenRouter Nemotron-3-Nano (Jaminan Safety Net Sub-5s)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 }
         ];
       }
 
@@ -1806,19 +1798,17 @@ Langkah yang WAJIB Anda lakukan:
       return [
         // Tier 1: OmniRoute Dedicated Gateway
         { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1000 },
-        // Tier 2: OpenRouter Fast SOTA Buffer (Sub-5s accurate)
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
-        // Tier 3: Ollama Cloud MiniMax-M3 (2.4s fast)
-        { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
-        // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free (3.2s SOTA 550B)
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
-        // Tier 5: OpenRouter ox-alpha
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
-        // Tier 6: Ollama Cloud Nemotron-3-Ultra
+        // Tier 2: Ollama Cloud Nemotron-3-Ultra
         { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
-        // Tier 7: OpenCode Zen x-preview
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 9000 },
-        // Tier 8: OpenRouter Nemotron 550B
+        // Tier 3: OpenCode Zen Nemotron-3-Ultra-Free
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
+        // Tier 4: OpenRouter Nemotron-3-Nano-30B
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 },
+        // Tier 5: OpenRouter ox-alpha
+        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
+        // Tier 6: Ollama Cloud MiniMax-M3
+        { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
+        // Tier 7: OpenRouter Nemotron-3-Ultra-550B
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 }
       ];
     }

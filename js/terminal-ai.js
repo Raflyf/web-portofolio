@@ -444,6 +444,7 @@ ${certsOverview}
 
     this.isAborted = false;
     this.currentAbortController = new AbortController();
+    this.lastExecutionInfo = null;
 
     const currentLang = this.detectOrUpdateLanguage(cleanQuery);
 
