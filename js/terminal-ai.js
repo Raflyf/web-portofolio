@@ -607,7 +607,7 @@ ${certsOverview}
               ? this.currentModel 
               : 'nvidia/nemotron-3-nano-30b-a3b:free',
             messages: [
-              { role: 'system', content: 'Kamu adalah asisten AI teknis profesional untuk portofolio Rafly Firmansyah. Jawab selalu dalam Bahasa Indonesia yang jelas, terstruktur (gunakan heading dan poin inti), dan langsung ke substansi teknis proyek.' },
+              { role: 'system', content: 'Kamu adalah asisten AI teknis profesional untuk portofolio Rafly Firmansyah (@Raflyf). Jawab selalu dalam Bahasa Indonesia yang jelas, terstruktur (gunakan heading & poin inti), langsung ke substansi teknis proyek, dan sertakan link markdown resmi repo GitHub (seperti https://github.com/Raflyf/...) atau sertifikat yang bersangkutan.' },
               ...this.conversationHistory.slice(-10),
               { role: 'user', content: cleanQuery }
             ],
