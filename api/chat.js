@@ -1293,7 +1293,7 @@ Langkah yang WAJIB Anda lakukan:
 
     async function callOmniRoute(mName, tOut = 1500) {
       if (isOmniOffline) return null;
-      const stepDeadline = Date.now() + Math.min(tOut, 1500);
+      const stepDeadline = Date.now() + tOut;
 
       const endpointsToTry = [];
 
