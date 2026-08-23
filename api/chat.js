@@ -905,16 +905,27 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
 
   const allTokens = [
     ...unifiedRaw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean),
+    ...(process.env.OPENROUTER_KEYS ? process.env.OPENROUTER_KEYS.split(',').map(s => s.trim()) : []),
     ...(process.env.OPENROUTER_API_KEYS ? process.env.OPENROUTER_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.OPENROUTER_KEY,
     process.env.OPENROUTER_API_KEY,
+    ...(process.env.OPENCODE_KEYS ? process.env.OPENCODE_KEYS.split(',').map(s => s.trim()) : []),
     ...(process.env.OPENCODE_API_KEYS ? process.env.OPENCODE_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.OPENCODE_KEY,
     process.env.OPENCODE_API_KEY,
+    ...(process.env.OLLAMA_KEYS ? process.env.OLLAMA_KEYS.split(',').map(s => s.trim()) : []),
     ...(process.env.OLLAMA_CLOUD_API_KEYS ? process.env.OLLAMA_CLOUD_API_KEYS.split(',').map(s => s.trim()) : []),
+    ...(process.env.OLLAMA_API_KEYS ? process.env.OLLAMA_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.OLLAMA_KEY,
     process.env.OLLAMA_CLOUD_API_KEY,
     process.env.OLLAMA_API_KEY,
+    ...(process.env.MINIMAX_KEYS ? process.env.MINIMAX_KEYS.split(',').map(s => s.trim()) : []),
     ...(process.env.MINIMAX_API_KEYS ? process.env.MINIMAX_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.MINIMAX_KEY,
     process.env.MINIMAX_API_KEY,
+    ...(process.env.NVIDIA_KEYS ? process.env.NVIDIA_KEYS.split(',').map(s => s.trim()) : []),
     ...(process.env.NVIDIA_API_KEYS ? process.env.NVIDIA_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.NVIDIA_KEY,
     process.env.NVIDIA_API_KEY
   ].filter(Boolean);
 
