@@ -1079,6 +1079,10 @@ export default async function handler(req, res) {
   try {
     loadLocalEnv();
     const requestStartTime = Date.now();
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch (_) { body = {}; }
+    }
     const { 
       query = '', 
       model = 'auto', 
@@ -1089,7 +1093,7 @@ export default async function handler(req, res) {
       history = [],
       reasoningEffort = 'auto',
       longTermMemory = ''
-    } = req.body || {};
+    } = body || {};
 
     // 1. Strict Payload Boundary Checks (Prevent memory exhaustion and DOS)
     if (typeof query === 'string' && query.length > 50000) {
@@ -1946,7 +1950,7 @@ Langkah yang WAJIB Anda lakukan:
         cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('nano-30b'))
       ].filter(Boolean);
 
-      const cloudPromises = primaryCloudCandidates.map(s => executeStep(s, s.timeout || 8500).then(res => {
+      const cloudPromises = primaryCloudCandidates.map(s => executeStep(s, Math.min(s.timeout || 7500, 7500)).then(res => {
         if (res) return res;
         throw new Error('Candidate returned null');
       }));
@@ -1956,14 +1960,14 @@ Langkah yang WAJIB Anda lakukan:
         if (winner) return winner;
       } catch (_) {}
 
-      // 3. Sequential Fallback for remaining SOTA candidates if top 3 were unavailable:
+      // 3. Sequential Fallback for remaining SOTA candidates if top race candidates were unavailable:
       const remainingSteps = cloudSteps.slice(3);
       for (const step of remainingSteps) {
         const elapsed = Date.now() - requestStartTime;
-        const remainingMs = 52000 - elapsed;
-        if (remainingMs <= 3000) break;
+        const remainingMs = 12000 - elapsed;
+        if (remainingMs <= 2000) break;
 
-        const stepTimeout = Math.min(step.timeout || 6000, Math.max(2500, remainingMs - 1000));
+        const stepTimeout = Math.min(step.timeout || 3500, Math.max(1500, remainingMs - 500));
         const result = await executeStep(step, stepTimeout);
         if (result) return result;
       }
