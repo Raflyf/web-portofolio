@@ -1793,14 +1793,17 @@ export function initTerminal() {
     setTimeout(() => {
       try {
         if (terminalCard.parentNode !== terminalInpageSlot) {
+          terminalCard.classList.remove('reveal-item', 'is-revealed', 'reveal-from-top', 'terminal-landing');
           terminalInpageSlot.appendChild(terminalCard);
-          terminalCard.classList.add('is-revealed');
-          terminalCard.classList.remove('terminal-landing');
           void terminalCard.offsetWidth;
           terminalCard.classList.add('terminal-landing');
           setTimeout(() => {
             terminalCard.classList.remove('terminal-landing');
-          }, 600);
+            terminalCard.classList.add('reveal-item', 'is-revealed');
+            if (typeof observeElementForScrollReveal === 'function') {
+              observeElementForScrollReveal(terminalCard);
+            }
+          }, 650);
         }
         // Ensure convo-history-modal stays inside terminalCard
         if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {

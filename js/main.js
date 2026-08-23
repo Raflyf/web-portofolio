@@ -584,7 +584,7 @@ function renderProjects(category) {
 
   projectsToRender.forEach((project) => {
     const card = document.createElement('article');
-    card.className = 'project-card';
+    card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
 
     const topWrap = document.createElement('div');
@@ -601,8 +601,9 @@ function renderProjects(category) {
       ghLink.href = project.githubUrl;
       ghLink.target = '_blank';
       ghLink.rel = 'noopener noreferrer';
-      ghLink.className = 'btn-copy';
-      ghLink.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg> <span>GitHub</span>`;
+      ghLink.className = 'icon-link';
+      ghLink.setAttribute('aria-label', `Lihat repository GitHub untuk ${project.title}`);
+      ghLink.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>`;
       topWrap.appendChild(ghLink);
     }
 
@@ -639,6 +640,7 @@ function renderProjects(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
+    observeElementForScrollReveal(card);
   });
 }
 
@@ -684,7 +686,7 @@ function renderCertificates(category) {
 
   filtered.forEach((cert) => {
     const card = document.createElement('article');
-    card.className = 'certificate-card';
+    card.className = 'certificate-card reveal-item';
 
     const topWrap = document.createElement('div');
     topWrap.className = 'cert-card__top';
@@ -760,6 +762,7 @@ function renderCertificates(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
+    observeElementForScrollReveal(card);
   });
 }
 
@@ -780,7 +783,7 @@ function initTimelineSection() {
     nodeEl.className = 'timeline-node';
 
     const contentEl = document.createElement('div');
-    contentEl.className = 'timeline-content';
+    contentEl.className = 'timeline-content reveal-item';
 
     const dateEl = document.createElement('div');
     dateEl.className = 'timeline-date';
@@ -807,6 +810,7 @@ function initTimelineSection() {
     itemEl.appendChild(contentEl);
 
     timelineEl.appendChild(itemEl);
+    observeElementForScrollReveal(contentEl);
   });
 }
 
@@ -1288,7 +1292,7 @@ function observeElementForScrollReveal(el) {
 function refreshScrollReveal() {
   if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
-    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .hero-showcase-canvas, .section-header, .about-bio, .about-pillars, .marquee-container, .skills-bento-grid, .filter-bar, #projects-grid, #certificates-grid, #experience-timeline, .terminal-card, .contact-info-col, .contact-form, .site-footer, .stats-strip'
+    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .hero-showcase-canvas, .section-header, .about-bio, .pillar-card, .marquee-container, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-content, .terminal-card, .contact-method-card, .contact-form, .site-footer, .stats-strip'
   );
 
   revealElements.forEach(el => {
