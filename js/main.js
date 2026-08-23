@@ -513,7 +513,7 @@ function initMobileNavigation() {
 }
 
 /* ==========================================================================
-   6. SPOTLIGHT & SECONDARY PROJECTS SHOWCASE
+   6. PROJECTS SHOWCASE (Unified Dynamic Grid with Fluid Cascade Transitions)
    ========================================================================== */
 function initProjectsSection() {
   const gridEl = document.getElementById('projects-grid');
@@ -538,15 +538,12 @@ function initProjectsSection() {
       const category = tab.getAttribute('data-filter-project');
       
       const gridEl = document.getElementById('projects-grid');
-      const spotlightCard = document.getElementById('spotlight-project-card');
       if (gridEl) gridEl.classList.add('is-tab-fading-out');
-      if (spotlightCard) spotlightCard.classList.add('is-tab-fading-out');
 
       setTimeout(() => {
         renderProjects(category);
         if (gridEl) gridEl.classList.remove('is-tab-fading-out');
-        if (spotlightCard) spotlightCard.classList.remove('is-tab-fading-out');
-      }, 160);
+      }, 150);
     });
   });
 }
@@ -558,30 +555,19 @@ function renderProjects(category) {
 
   gridEl.innerHTML = '';
 
+  // Permanently hide the oversized spotlight card so all projects render uniformly in grid
   if (spotlightCard) {
-    if (category === 'all') {
-      spotlightCard.style.display = '';
-      spotlightCard.classList.remove('is-hidden');
-      spotlightCard.classList.remove('is-revealed');
-      spotlightCard.classList.add('reveal-item');
-      observeElementForScrollReveal(spotlightCard);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          spotlightCard.classList.add('is-revealed');
-        });
-      });
-    } else {
-      spotlightCard.classList.remove('is-revealed');
-      spotlightCard.classList.add('is-hidden');
-      spotlightCard.style.display = 'none';
-    }
+    spotlightCard.classList.remove('is-revealed');
+    spotlightCard.classList.add('is-hidden');
+    spotlightCard.style.display = 'none';
   }
 
+  // Render ALL projects (including OpenPlagiarismChecker) in the clean uniform multi-column grid
   const projectsToRender = category === 'all'
-    ? PROJECTS_DATA.slice(1)
+    ? PROJECTS_DATA
     : PROJECTS_DATA.filter(p => p.category === category);
 
-  if (projectsToRender.length === 0 && (!spotlightCard || spotlightCard.style.display === 'none')) {
+  if (projectsToRender.length === 0) {
     const emptyEl = document.createElement('div');
     emptyEl.className = 'empty-state reveal-item is-revealed';
     emptyEl.textContent = 'Belum ada proyek dalam kategori ini.';
@@ -593,7 +579,7 @@ function renderProjects(category) {
     const card = document.createElement('article');
     card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
-    card.style.transitionDelay = `${idx * 45}ms`;
+    card.style.transitionDelay = `${idx * 55}ms`;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'project-card__top';
@@ -650,14 +636,13 @@ function renderProjects(category) {
     observeElementForScrollReveal(card);
 
     requestAnimationFrame(() => {
-      card.classList.add('is-revealed');
+      requestAnimationFrame(() => {
+        card.classList.add('is-revealed');
+      });
     });
   });
-
-  if (spotlightCard) {
-    observeElementForScrollReveal(spotlightCard);
-  }
 }
+
 
 /* ==========================================================================
    7. MODULAR CERTIFICATES SECTION (Preview in Browser Tab)
