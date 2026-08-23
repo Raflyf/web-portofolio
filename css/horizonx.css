@@ -931,6 +931,7 @@ body {
 }
 
 .custom-dropdown-menu {
+  display: none !important;
   position: absolute !important;
   top: calc(100% + 6px) !important;
   right: 0 !important;
@@ -945,9 +946,12 @@ body {
   margin: 0 !important;
   z-index: 1000 !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75) !important;
-  display: flex !important;
   flex-direction: column !important;
   gap: 3px !important;
+}
+
+.custom-dropdown-menu.is-open {
+  display: flex !important;
   animation: customDropSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
