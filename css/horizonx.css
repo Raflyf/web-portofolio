@@ -523,6 +523,46 @@
 }
 
 /* ==========================================================================
+   5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE
+   ========================================================================== */
+.reveal-item {
+  opacity: 0 !important;
+  transform: perspective(1000px) translateY(45px) scale(0.95) !important;
+  filter: blur(8px) !important;
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform, filter;
+}
+
+.reveal-item.is-revealed {
+  opacity: 1 !important;
+  transform: perspective(1000px) translateY(0) scale(1) !important;
+  filter: blur(0px) !important;
+}
+
+/* Staggered Children Delays for Fluid Cascade */
+.bento-grid .reveal-item:nth-child(1) { transition-delay: 0.04s !important; }
+.bento-grid .reveal-item:nth-child(2) { transition-delay: 0.10s !important; }
+.bento-grid .reveal-item:nth-child(3) { transition-delay: 0.16s !important; }
+.bento-grid .reveal-item:nth-child(4) { transition-delay: 0.22s !important; }
+.bento-grid .reveal-item:nth-child(5) { transition-delay: 0.28s !important; }
+.bento-grid .reveal-item:nth-child(6) { transition-delay: 0.34s !important; }
+
+.projects-grid .reveal-item:nth-child(1) { transition-delay: 0.04s !important; }
+.projects-grid .reveal-item:nth-child(2) { transition-delay: 0.12s !important; }
+.projects-grid .reveal-item:nth-child(3) { transition-delay: 0.20s !important; }
+.projects-grid .reveal-item:nth-child(4) { transition-delay: 0.28s !important; }
+
+.cert-grid .reveal-item:nth-child(1) { transition-delay: 0.04s !important; }
+.cert-grid .reveal-item:nth-child(2) { transition-delay: 0.10s !important; }
+.cert-grid .reveal-item:nth-child(3) { transition-delay: 0.16s !important; }
+.cert-grid .reveal-item:nth-child(4) { transition-delay: 0.22s !important; }
+
+.about-pillars .reveal-item:nth-child(1) { transition-delay: 0.06s !important; }
+.about-pillars .reveal-item:nth-child(2) { transition-delay: 0.14s !important; }
+
+/* ==========================================================================
    5. 3D MORPHING ACCESSIBLE MODAL DIALOGS (PPT MORPH & 3D PERSPECTIVE)
    ========================================================================== */
 .modal-dialog,
