@@ -998,6 +998,15 @@ function initScrollProgressBar() {
   }, { passive: true });
 }
 
+let lastScrollY = window.scrollY;
+let scrollDirection = 'down';
+
+window.addEventListener('scroll', () => {
+  const currentScrollY = window.scrollY;
+  scrollDirection = currentScrollY >= lastScrollY ? 'down' : 'up';
+  lastScrollY = currentScrollY;
+}, { passive: true });
+
 function initScrollReveal() {
   const revealElements = document.querySelectorAll(
     '.section-header, .about-bio, .pillar-card, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-window, .contact-card, .stats-strip, .hero-showcase-canvas'
@@ -1008,18 +1017,21 @@ function initScrollReveal() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
+        if (scrollDirection === 'up') {
+          entry.target.classList.add('reveal-from-top');
+        } else {
+          entry.target.classList.remove('reveal-from-top');
+        }
         entry.target.classList.add('is-revealed');
       } else {
-        // Reset when scrolled out of view for bidirectional animation
-        const rect = entry.boundingClientRect;
-        if (rect.top > 0) {
-          entry.target.classList.remove('is-revealed');
-        }
+        // Reset in both directions so elements re-animate when scrolling up and down
+        entry.target.classList.remove('is-revealed');
+        entry.target.classList.remove('reveal-from-top');
       }
     });
   }, {
-    rootMargin: '0px 0px -40px 0px',
-    threshold: 0.08
+    rootMargin: '-30px 0px -30px 0px',
+    threshold: 0.06
   });
 
   revealElements.forEach(el => {
