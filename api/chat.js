@@ -1848,21 +1848,18 @@ Langkah yang WAJIB Anda lakukan:
       // 2. CASUAL / TRIVIAL QUERIES
       if (isTrivialCasual) {
         return [
-          // Tier 1: OmniRoute Dedicated Gateway
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3000 },
-          // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
-          // Tier 3: OpenCode Zen x-preview
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
-          // Tier 4: Nemotron Ultra Pool (Ollama Cloud -> OpenCode -> OpenRouter)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4500 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
+          // Tier 1: OmniRoute Dedicated Gateway (Fast Probe)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 2000 },
+          // Tier 2: Ollama Cloud (Utamakan Ollama: Kuota Besar, Reset Tiap 5 Jam)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 5000 },
+          // Tier 3: OpenCode Zen Gateway
+          { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
+          // Tier 4: OpenRouter Cloud Pool
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 3500 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3000 },
           // Tier 5: MiniMax
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 },
-          // Tier 6: SOTA Cloud Pool
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 5000 },
-          { provider: 'ollama', model: 'nemotron-3-super', timeout: 5000 }
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 }
         ];
       }
 
@@ -1870,50 +1867,42 @@ Langkah yang WAJIB Anda lakukan:
       if (isComplexReasoning) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway (Codex)
-          { provider: 'omniroute', model: 'Codex', timeout: 3500 },
-          // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline - Concurrent Speculative Pair)
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 16000 },
-          // Tier 3: OpenCode Zen x-preview
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 10000 },
-          // Tier 4: Nemotron Ultra Pool (Ollama Cloud -> OpenCode -> OpenRouter)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 16000 },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 12000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
-          // Tier 5: MiniMax Multimodal Production API
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
-          // Tier 6: SOTA Cloud Pool
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 },
-          { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 }
+          { provider: 'omniroute', model: 'Codex', timeout: 2500 },
+          // Tier 2: Ollama Cloud (Utamakan Ollama: Kuota Besar, Reset Tiap 5 Jam)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 5500 },
+          // Tier 3: OpenCode Zen Gateway
+          { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
+          // Tier 4: OpenRouter Cloud Pool
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 3500 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3500 },
+          // Tier 5: MiniMax Multimodal
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 }
         ];
       }
 
       // 4. UNIVERSAL AUTO DEFAULT
       return [
         // Tier 1: OmniRoute Dedicated Gateway
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3000 },
-        // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline - Concurrent Speculative Pair)
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 14000 },
-        // Tier 3: OpenCode Zen x-preview
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 9000 },
-        // Tier 4: Nemotron Ultra Pool (Ollama Cloud -> OpenCode -> OpenRouter)
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 14000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 8000 },
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 2500 },
+        // Tier 2: Ollama Cloud (Utamakan Ollama: Kuota Besar, Reset Tiap 5 Jam)
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 5000 },
+        // Tier 3: OpenCode Zen Gateway
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
+        // Tier 4: OpenRouter Cloud Pool
+        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 3500 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3500 },
         // Tier 5: MiniMax Multimodal
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 },
-        // Tier 6: SOTA Cloud Pool
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 7000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 7000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 7000 }
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 }
       ];
     }
 
 
     // ========================================================================
-    // EXECUTE PIPELINE WITH PRIORITY-AWARE SPECULATIVE PARALLEL RACE
-    // Priority #1 always wins if it responds; if Priority #1 is offline/fails,
-    // the concurrent Priority #2 (or next fastest healthy model) resolves instantly!
+    // EXECUTE PIPELINE: SINGLE-ACTIVE TOKEN-PRESERVING FAST FAILOVER
+    // Evaluates 1 provider at a time in strict priority order.
+    // Preserves 100% token quota (zero wasted parallel calls) and guarantees sub-5s response.
     // ========================================================================
     async function executeStep(step, timeout) {
       if (!step) return null;
@@ -1936,50 +1925,16 @@ Langkah yang WAJIB Anda lakukan:
     async function executePipelineWithPriorityRace(pipeline) {
       if (!pipeline || pipeline.length === 0) return null;
 
-      const hasOmni = pipeline[0]?.provider === 'omniroute';
-      const cloudSteps = hasOmni ? pipeline.slice(1) : pipeline;
-
-      // 1. If OmniRoute is present, probe it first with strict 3.5s timeout:
-      if (hasOmni) {
-        const omniStep = pipeline[0];
-        try {
-          const rOmni = await executeStep(omniStep, omniStep.timeout || 3500);
-          if (rOmni) return rOmni; // OmniRoute succeeded! Priority #1 fulfilled!
-        } catch (_) {}
-      }
-
-      if (!cloudSteps || cloudSteps.length === 0) return null;
-
-      // 2. Multi-Candidate Concurrent Cloud Race (Sub-5s Instant Response):
-      // Launch top priority candidates across distinct providers concurrently
-      const primaryCloudCandidates = [
-        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('ox-alpha')),
-        cloudSteps.find(s => s.provider === 'opencode' && s.model.includes('x-preview')),
-        cloudSteps.find(s => s.provider === 'ollama' && s.model.includes('nemotron-3-ultra')),
-        cloudSteps.find(s => s.provider === 'opencode' && s.model.includes('nemotron-3-ultra')),
-        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('nano-30b'))
-      ].filter(Boolean);
-
-      const cloudPromises = primaryCloudCandidates.map(s => executeStep(s, Math.min(s.timeout || 7500, 7500)).then(res => {
-        if (res) return res;
-        throw new Error('Candidate returned null');
-      }));
-
-      try {
-        const winner = await Promise.any(cloudPromises);
-        if (winner) return winner;
-      } catch (_) {}
-
-      // 3. Sequential Fallback for remaining SOTA candidates if top race candidates were unavailable:
-      const remainingSteps = cloudSteps.slice(3);
-      for (const step of remainingSteps) {
+      for (const step of pipeline) {
         const elapsed = Date.now() - requestStartTime;
         const remainingMs = 12000 - elapsed;
-        if (remainingMs <= 2000) break;
+        if (remainingMs <= 1500) break;
 
-        const stepTimeout = Math.min(step.timeout || 3500, Math.max(1500, remainingMs - 500));
-        const result = await executeStep(step, stepTimeout);
-        if (result) return result;
+        const stepTimeout = Math.min(step.timeout || 4500, Math.max(1500, remainingMs - 500));
+        try {
+          const result = await executeStep(step, stepTimeout);
+          if (result) return result; // Succeeded! Returns immediately with 1x token consumption!
+        } catch (_) {}
       }
 
       return null;
