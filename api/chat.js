@@ -1519,9 +1519,9 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenRouter(mName, tOut = 4500) {
+    async function callOpenRouter(mName, tOut = 12000) {
       if (OPENROUTER_KEYS.length === 0) return null;
-      const stepDeadline = Date.now() + Math.min(tOut, 4500);
+      const stepDeadline = Date.now() + tOut;
       const keysToTry = OPENROUTER_KEYS.slice(0, 3);
 
       // Model-specific payload normalization (stealth/ox-alpha requires user-encapsulated instructions for sub-2s responses)
@@ -1541,8 +1541,7 @@ Langkah yang WAJIB Anda lakukan:
 
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
-        if (remaining < 600) break;
-        const perKeyTimeout = Math.min(remaining, 3500);
+        if (remaining < 800) break;
 
         try {
           const res = await fetchJsonWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
@@ -1559,7 +1558,7 @@ Langkah yang WAJIB Anda lakukan:
               max_tokens: maxTokensConfig,
               temperature: 0.3
             })
-          }, perKeyTimeout);
+          }, remaining);
 
           if (res.ok) {
             if (res.data?.error) {
@@ -1588,16 +1587,15 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 4500) {
+    async function callOpenCode(mName, tOut = 10000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
-      const stepDeadline = Date.now() + Math.min(tOut, 4500);
+      const stepDeadline = Date.now() + tOut;
       const keysToTry = OPENCODE_KEYS.slice(0, 3);
 
       for (const ocKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
-        if (remaining < 600) break;
-        const perKeyTimeout = Math.min(remaining, 3500);
+        if (remaining < 800) break;
 
         try {
           const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
@@ -1612,7 +1610,7 @@ Langkah yang WAJIB Anda lakukan:
               max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
-          }, perKeyTimeout);
+          }, remaining);
 
           if (res.ok) {
             const msg = res.data?.choices?.[0]?.message;
@@ -1635,14 +1633,14 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 4000) {
+    async function callNvidiaNim(mName, tOut = 10000) {
       if (NVIDIA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^nvidia\//i, '');
-      const stepDeadline = Date.now() + Math.min(tOut, 4000);
+      const stepDeadline = Date.now() + tOut;
 
       for (const nvKey of NVIDIA_KEYS) {
         const remaining = stepDeadline - Date.now();
-        if (remaining < 600) break;
+        if (remaining < 800) break;
 
         try {
           const res = await fetchJsonWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -1676,14 +1674,14 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOllama(mName, tOut = 4500) {
+    async function callOllama(mName, tOut = 14000) {
       if (OLLAMA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^ollama\//i, '').replace(/:free$/i, '');
-      const stepDeadline = Date.now() + Math.min(tOut, 4500);
+      const stepDeadline = Date.now() + tOut;
 
       for (const olKey of OLLAMA_KEYS) {
         const remaining = stepDeadline - Date.now();
-        if (remaining < 600) break;
+        if (remaining < 800) break;
 
         try {
           const res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
