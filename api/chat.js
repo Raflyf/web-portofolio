@@ -938,7 +938,14 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
 
   for (const token of allTokens) {
     if (token.startsWith('sk-or-v1-')) {
-      if (!openrouter.includes(token)) openrouter.push(token);
+      if (!openrouter.includes(token)) {
+        // Prioritize verified high-speed active keys (e.g. sk-or-v1-9...)
+        if (token.startsWith('sk-or-v1-9') || token.startsWith('sk-or-v1-5')) {
+          openrouter.unshift(token);
+        } else {
+          openrouter.push(token);
+        }
+      }
     } else if (token.startsWith('sk-cp-') || token.startsWith('sk-minimax-')) {
       if (!minimax.includes(token)) minimax.push(token);
     } else if (token.startsWith('nvapi-')) {
@@ -1499,9 +1506,9 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-
     async function callOpenRouter(mName, tOut = 10000) {
       if (OPENROUTER_KEYS.length === 0) return null;
+      const perKeyTimeout = Math.min(tOut, 8500);
 
       for (const orKey of OPENROUTER_KEYS) {
         try {
@@ -1519,12 +1526,11 @@ Langkah yang WAJIB Anda lakukan:
               max_tokens: maxTokensConfig,
               temperature: 0.3
             })
-          }, tOut);
+          }, perKeyTimeout);
 
           if (res.ok) {
             if (res.data?.error) {
               providerErrors.push(`OpenRouter ${mName}: ${res.data.error.message || 'Error'}`);
-              if (res.data.error.message?.includes('upstream')) break;
               continue;
             }
             const msg = res.data?.choices?.[0]?.message;
@@ -1539,16 +1545,10 @@ Langkah yang WAJIB Anda lakukan:
             continue;
           } else {
             providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (res.text?.includes('upstream') || res.text?.includes('Rate limit') || res.status === 404 || res.status === 429) {
-              break; // Instant break on model-not-found, upstream error, or account daily free-tier limit
-            }
             continue;
           }
         } catch (err) {
-          providerErrors.push(`OpenRouter ${mName}: ${err.message}`);
-          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
-            break; // Skip slow/overloaded model immediately to next cascade
-          }
+          providerErrors.push(`OpenRouter ${mName} [Key #${OPENROUTER_KEYS.indexOf(orKey) + 1}]: ${err.message}`);
           continue;
         }
       }
@@ -1558,6 +1558,7 @@ Langkah yang WAJIB Anda lakukan:
     async function callOpenCode(mName, tOut = 6000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
+      const perKeyTimeout = Math.min(tOut, 8000);
 
       for (const ocKey of OPENCODE_KEYS) {
         try {
@@ -1573,7 +1574,7 @@ Langkah yang WAJIB Anda lakukan:
               max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
-          }, tOut);
+          }, perKeyTimeout);
 
           if (res.ok) {
             const content = res.data?.choices?.[0]?.message?.content;
@@ -1582,14 +1583,10 @@ Langkah yang WAJIB Anda lakukan:
             }
           } else {
             providerErrors.push(`OpenCode Zen ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (res.status === 404 || res.status === 429) break;
             continue;
           }
         } catch (err) {
-          providerErrors.push(`OpenCode Zen ${mName}: ${err.message}`);
-          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
-            break;
-          }
+          providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(ocKey) + 1}]: ${err.message}`);
           continue;
         }
       }
@@ -1598,6 +1595,8 @@ Langkah yang WAJIB Anda lakukan:
 
     async function callNvidiaNim(mName, tOut = 10000) {
       if (NVIDIA_KEYS.length === 0) return null;
+      const cleanModelName = mName.replace(/^nvidia\//i, '');
+
       for (const nvKey of NVIDIA_KEYS) {
         try {
           const res = await fetchJsonWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -1607,7 +1606,7 @@ Langkah yang WAJIB Anda lakukan:
               'Authorization': `Bearer ${nvKey}`
             },
             body: JSON.stringify({
-              model: mName,
+              model: cleanModelName,
               messages: openRouterMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig
@@ -1617,61 +1616,38 @@ Langkah yang WAJIB Anda lakukan:
           if (res.ok) {
             const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'NVIDIA NIM Microservices');
+              return sendSuccess(content.trim(), mName, 'NVIDIA NIM Production Engine');
             }
           } else {
-            providerErrors.push(`NVIDIA NIM ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            providerErrors.push(`Nvidia NIM HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
             continue;
           }
         } catch (err) {
-          providerErrors.push(`NVIDIA NIM ${mName}: ${err.message}`);
-          if (err.name === 'AbortError' || err.message?.includes('Timeout')) break;
+          providerErrors.push(`Nvidia NIM: ${err.message}`);
           continue;
         }
       }
       return null;
     }
 
-    async function callOllama(mName, tOut = 22000) {
+    async function callOllama(mName, tOut = 10000) {
       if (OLLAMA_KEYS.length === 0) return null;
+      const cleanModelName = mName.replace(/^ollama\//i, '').replace(/:free$/i, '');
+
       for (const olKey of OLLAMA_KEYS) {
         try {
-          let res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
+          const res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${olKey}`
             },
             body: JSON.stringify({
-              model: mName,
+              model: cleanModelName,
               messages: ollamaMessages,
-              stream: false,
-              options: {
-                num_predict: maxTokensConfig,
-                temperature: tempConfig
-              }
+              stream: false
             })
           }, tOut);
-
-          // If Ollama rejects images array (400 does not support image input), retry cleanly with text messages
-          if (!res.ok && res.status === 400 && (res.text || '').includes('image input')) {
-            res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${olKey}`
-              },
-              body: JSON.stringify({
-                model: mName,
-                messages: baseTextMessages,
-                stream: false,
-                options: {
-                  num_predict: maxTokensConfig,
-                  temperature: tempConfig
-                }
-              })
-            }, tOut);
-          }
 
           if (res.ok) {
             const content = res.data?.message?.content;
@@ -1679,28 +1655,22 @@ Langkah yang WAJIB Anda lakukan:
               return sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
             }
           } else {
-            providerErrors.push(`Ollama Cloud ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (res.status === 404) {
-              break; // Model not available on Ollama Cloud, skip remaining keys instantly
-            }
+            providerErrors.push(`Ollama Cloud HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
             continue;
           }
         } catch (err) {
-          providerErrors.push(`Ollama Cloud ${mName}: ${err.message}`);
-          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
-            break;
-          }
+          providerErrors.push(`Ollama Cloud: ${err.message}`);
           continue;
         }
       }
       return null;
     }
 
-    async function callMiniMax(tOut = 12000) {
+    async function callMiniMax(tOut = 8000) {
       if (MINIMAX_KEYS.length === 0) return null;
       for (const mmKey of MINIMAX_KEYS) {
         try {
-          const res = await fetchJsonWithTimeout('https://api.minimax.io/v1/text/chatcompletion_v2', {
+          const res = await fetchJsonWithTimeout('https://api.minimaxi.chat/v1/text/chatcompletion_v2', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1715,7 +1685,11 @@ Langkah yang WAJIB Anda lakukan:
           }, tOut);
 
           if (res.ok) {
-            const content = res.data?.choices?.[0]?.message?.content;
+            if (res.data?.base_resp?.status_code === 2056) {
+              providerErrors.push('MiniMax: Token Plan limit reached');
+              continue;
+            }
+            const content = res.data?.choices?.[0]?.messages?.[0]?.text || res.data?.choices?.[0]?.message?.content || res.data?.reply;
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Multimodal Production API');
             }
@@ -1725,9 +1699,6 @@ Langkah yang WAJIB Anda lakukan:
           }
         } catch (err) {
           providerErrors.push(`MiniMax: ${err.message}`);
-          if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
-            break;
-          }
           continue;
         }
       }
@@ -1880,6 +1851,7 @@ Langkah yang WAJIB Anda lakukan:
           // Tier 5: MiniMax Multimodal Production API
           { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
           // Tier 6: SOTA Cloud Pool
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 },
           { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 }
         ];
@@ -1900,6 +1872,7 @@ Langkah yang WAJIB Anda lakukan:
         // Tier 5: MiniMax Multimodal
         { provider: 'minimax', model: 'MiniMax-M3', timeout: 10000 },
         // Tier 6: SOTA Cloud Pool
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 7000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 7000 },
         { provider: 'ollama', model: 'nemotron-3-super', timeout: 7000 }
       ];
@@ -1932,32 +1905,41 @@ Langkah yang WAJIB Anda lakukan:
     async function executePipelineWithPriorityRace(pipeline) {
       if (!pipeline || pipeline.length === 0) return null;
 
-      // Parallel Speculative Pair for Top 2 Priority Candidates (e.g. OmniRoute + Ox-Alpha):
-      const step0 = pipeline[0];
-      const step1 = pipeline.length > 1 ? pipeline[1] : null;
+      const hasOmni = pipeline[0]?.provider === 'omniroute';
+      const cloudSteps = hasOmni ? pipeline.slice(1) : pipeline;
 
-      if (step0 && step1) {
-        const p0 = executeStep(step0, step0.timeout).catch(() => null);
-        const p1 = executeStep(step1, step1.timeout).catch(() => null);
-
-        // Await Priority #1 candidate first:
-        const r0 = await p0;
-        if (r0) {
-          return r0; // Priority #1 succeeded! Always prioritized!
-        }
-
-        // If Priority #1 failed/offline, await Priority #2 candidate:
-        const r1 = await p1;
-        if (r1) {
-          return r1; // Priority #2 succeeded!
-        }
-      } else if (step0) {
-        const r0 = await executeStep(step0, step0.timeout);
-        if (r0) return r0;
+      // 1. If OmniRoute is present, probe it first with strict 3.5s timeout:
+      if (hasOmni) {
+        const omniStep = pipeline[0];
+        try {
+          const rOmni = await executeStep(omniStep, omniStep.timeout || 3500);
+          if (rOmni) return rOmni; // OmniRoute succeeded! Priority #1 fulfilled!
+        } catch (_) {}
       }
 
-      // If top candidates failed or were unavailable, cascade through remaining models:
-      const remainingSteps = pipeline.slice(2);
+      if (!cloudSteps || cloudSteps.length === 0) return null;
+
+      // 2. Multi-Candidate Concurrent Cloud Race (Sub-5s Instant Response):
+      // Launch top cloud candidates across distinct providers concurrently
+      const primaryCloudCandidates = [
+        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('ox-alpha')) || cloudSteps[0],
+        cloudSteps.find(s => s.provider === 'openrouter' && s.model.includes('nano-30b')),
+        cloudSteps.find(s => s.provider === 'opencode' && s.model.includes('nemotron-3-ultra')),
+        cloudSteps.find(s => s.provider === 'ollama' && s.model.includes('nemotron-3-ultra'))
+      ].filter(Boolean);
+
+      const cloudPromises = primaryCloudCandidates.map(s => executeStep(s, s.timeout || 8500).then(res => {
+        if (res) return res;
+        throw new Error('Candidate returned null');
+      }));
+
+      try {
+        const winner = await Promise.any(cloudPromises);
+        if (winner) return winner;
+      } catch (_) {}
+
+      // 3. Sequential Fallback for remaining SOTA candidates if top 3 were unavailable:
+      const remainingSteps = cloudSteps.slice(3);
       for (const step of remainingSteps) {
         const elapsed = Date.now() - requestStartTime;
         const remainingMs = 52000 - elapsed;
