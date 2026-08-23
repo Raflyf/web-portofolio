@@ -1768,18 +1768,20 @@ Langkah yang WAJIB Anda lakukan:
       // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Dedicated SOTA Ultra Reasoning Pool)
       if (isComplexReasoning) {
         return [
-          // Tier 1a: OmniRoute Antigravity (claude-opus-4.6-thinking — best for deep analysis)
-          { provider: 'omniroute', model: 'Antigravity', timeout: 8000 },
-          // Tier 1b: OmniRoute nemotron-laguna (SOTA 550B fallback)
+          // Tier 1a: OmniRoute Codex (gpt-5.6-terra — primary for deep analysis)
+          { provider: 'omniroute', model: 'Codex', timeout: 8000 },
+          // Tier 1b: OmniRoute nemotron-laguna (550B fallback)
           { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
+          // Tier 1c: OmniRoute Antigravity (claude-opus — last resort, cepat limit)
+          { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
           // Tier 2: Ollama Cloud Nemotron-3-Ultra
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
           // Tier 3: OpenRouter Nemotron-3-Ultra-550B (capped at 30s for budget)
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 30000 },
           // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
-          // Tier 5: OpenRouter Nemotron-3-Nano (Safety Net - fast fallback)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 }
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
+          // Tier 5: OpenRouter Nemotron-3-Nano (Safety Net)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 }
         ];
       }
 
