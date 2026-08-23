@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initThemeToggle();
   initMobileNavigation();
   initHeroClock();
+  initHeroShowcaseCarousel();
   initProjectsSection();
   initCertificatesSection();
   initTimelineSection();
@@ -52,6 +53,197 @@ function initHeroClock() {
 
   updateClock();
   setInterval(updateClock, 1000);
+}
+
+/* ==========================================================================
+   1B. DYNAMIC HERO SHOWCASE ROTATING DECK & CAROUSEL ENGINE
+   ========================================================================== */
+const HERO_SHOWCASE_PROJECTS = [
+  {
+    id: "open-plagiarism-checker",
+    tag: "NLP · Skripsi S1",
+    title: "OpenPlagiarismChecker",
+    desc: "Mesin riset pemeriksa dokumen akademik lokal berbasis N-Gram Shingling dan Sentence Transformers.",
+    spec: "IndoBERT & N-Gram"
+  },
+  {
+    id: "spam-email-classifier",
+    tag: "Machine Learning · Riset",
+    title: "Spam-Email Detection System",
+    desc: "Evaluasi komparatif Complement Naive Bayes (CNB) vs XGBoost dengan mitigasi Concept Drift.",
+    spec: "CNB vs XGBoost"
+  },
+  {
+    id: "laser-pointer-ppt",
+    tag: "Computer Vision / IoT",
+    title: "laser_pointer_PPT",
+    desc: "Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan WebSocket.",
+    spec: "Gyroscope & WebSockets"
+  },
+  {
+    id: "fotokita-blur",
+    tag: "Edge AI / Vision",
+    title: "FotoKitaBlur",
+    desc: "Deteksi gestur tangan realtime berbasis browser menggunakan MediaPipe Tasks Vision dan OpenCV.",
+    spec: "MediaPipe & OpenCV"
+  },
+  {
+    id: "web-portofolio",
+    tag: "Frontend & Systems",
+    title: "Web Portofolio & AI Platform",
+    desc: "Arsitektur antarmuka web modern Vanilla JS/CSS, observabilitas telemetri, dan integrasi AI.",
+    spec: "Vanilla Architecture"
+  }
+];
+
+let showcaseCurrentIndex = 0;
+let showcaseAutoTimer = null;
+
+function renderHeroShowcaseCards(startIndex, animate = true) {
+  const container = document.getElementById('showcase-card-grid');
+  const indicator = document.getElementById('showcase-index-indicator');
+  if (!container) return;
+
+  const total = HERO_SHOWCASE_PROJECTS.length;
+  const isMobile = window.innerWidth <= 600;
+  const isTablet = window.innerWidth <= 900 && window.innerWidth > 600;
+  const countToShow = isMobile ? 1 : (isTablet ? 2 : 3);
+
+  const applyRender = () => {
+    container.innerHTML = '';
+    for (let i = 0; i < countToShow; i++) {
+      const idx = (startIndex + i) % total;
+      const proj = HERO_SHOWCASE_PROJECTS[idx];
+
+      const card = document.createElement('a');
+      card.href = '#projects';
+      card.className = 'showcase-card';
+      card.setAttribute('data-project-id', proj.id);
+      card.innerHTML = `
+        <span class="showcase-card-tag">${proj.tag}</span>
+        <h2 class="showcase-card-title">${proj.title}</h2>
+        <p class="showcase-card-desc">${proj.desc}</p>
+        <div class="showcase-card-footer">
+          <span>${proj.spec}</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;">Detail &rarr;</span>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        const fullProj = PROJECTS_DATA.find(p => p.id === proj.id);
+        if (fullProj) {
+          e.preventDefault();
+          openProjectModal(fullProj);
+        }
+      });
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+      });
+
+      container.appendChild(card);
+    }
+
+    if (indicator) {
+      const startNum = (startIndex % total) + 1;
+      const endIdx = ((startIndex + countToShow - 1) % total) + 1;
+      indicator.textContent = countToShow > 1 ? `Proyek ${startNum}–${endIdx} / ${total}` : `Proyek ${startNum} / ${total}`;
+    }
+
+    if (animate) {
+      requestAnimationFrame(() => {
+        container.classList.remove('is-morphing');
+      });
+    }
+  };
+
+  if (animate) {
+    container.classList.add('is-morphing');
+    setTimeout(applyRender, 140);
+  } else {
+    applyRender();
+  }
+}
+
+function initHeroShowcaseCarousel() {
+  const deck = document.getElementById('hero-showcase-deck');
+  const prevBtn = document.getElementById('showcase-prev-btn');
+  const nextBtn = document.getElementById('showcase-next-btn');
+
+  if (!deck) return;
+
+  const total = HERO_SHOWCASE_PROJECTS.length;
+
+  function nextSlide() {
+    showcaseCurrentIndex = (showcaseCurrentIndex + 1) % total;
+    renderHeroShowcaseCards(showcaseCurrentIndex, true);
+  }
+
+  function prevSlide() {
+    showcaseCurrentIndex = (showcaseCurrentIndex - 1 + total) % total;
+    renderHeroShowcaseCards(showcaseCurrentIndex, true);
+  }
+
+  function startTimer() {
+    stopTimer();
+    showcaseAutoTimer = setInterval(nextSlide, 4500);
+  }
+
+  function stopTimer() {
+    if (showcaseAutoTimer) {
+      clearInterval(showcaseAutoTimer);
+      showcaseAutoTimer = null;
+    }
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      nextSlide();
+      startTimer();
+    });
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      prevSlide();
+      startTimer();
+    });
+  }
+
+  // Pause on hover so user can read or click
+  deck.addEventListener('mouseenter', stopTimer);
+  deck.addEventListener('mouseleave', startTimer);
+
+  // Touch Swipe Gesture Support
+  let touchStartX = 0;
+  deck.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    stopTimer();
+  }, { passive: true });
+
+  deck.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    const diff = touchEndX - touchStartX;
+    if (diff > 45) {
+      prevSlide();
+    } else if (diff < -45) {
+      nextSlide();
+    }
+    startTimer();
+  }, { passive: true });
+
+  // Initial render
+  renderHeroShowcaseCards(showcaseCurrentIndex, false);
+  startTimer();
+
+  // Handle responsive resizing
+  window.addEventListener('resize', () => {
+    renderHeroShowcaseCards(showcaseCurrentIndex, false);
+  }, { passive: true });
 }
 
 /* ==========================================================================

@@ -285,9 +285,71 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 1.25rem;
-  margin-bottom: 1.25rem;
+  padding: 0.85rem 1.25rem;
   border-bottom: 1px solid var(--hx-border-card);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.showcase-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.showcase-header-title {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--hx-accent-emerald);
+  font-weight: 600;
+}
+
+.showcase-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.showcase-index-pill {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  background: var(--hx-surface-card);
+  border: 1px solid var(--hx-border-card);
+  color: var(--hx-text-muted);
+  font-weight: 600;
+}
+
+.showcase-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.showcase-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--hx-surface-card);
+  border: 1px solid var(--hx-border-card);
+  color: var(--hx-text-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.showcase-nav-btn:hover {
+  background: var(--hx-accent-emerald);
+  border-color: var(--hx-accent-emerald);
+  color: #05130e;
+  transform: scale(1.08);
+}
+
+.showcase-nav-btn:active {
+  transform: scale(0.92);
 }
 
 .showcase-dots {
@@ -306,15 +368,31 @@
 .showcase-dots span:nth-child(2) { background: #f59e0b; }
 .showcase-dots span:nth-child(3) { background: #10b981; }
 
+.showcase-carousel-viewport {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
 .showcase-grid-preview {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.showcase-grid-preview.is-morphing {
+  opacity: 0.25;
+  transform: scale(0.97) translateY(6px);
 }
 
 @media (max-width: 900px) {
   .showcase-grid-preview {
     grid-template-columns: 1fr;
+  }
+  .showcase-window-header {
+    justify-content: center;
   }
 }
 
