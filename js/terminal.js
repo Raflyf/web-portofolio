@@ -376,6 +376,16 @@ export function initTerminal() {
 
   function openConvoHistoryModal() {
     if (!convoModal) return;
+
+    // If terminal is in popup modal mode, teleport convoModal to document.body
+    // to escape the <dialog>'s filter-induced stacking context (filter:blur breaks position:fixed)
+    const inPopupMode = terminalModal && terminalModal.open;
+    if (inPopupMode && convoModal.parentNode !== document.body) {
+      convoModal._originalParent = convoModal.parentNode;
+      document.body.appendChild(convoModal);
+      convoModal.classList.add('convo-modal--teleported');
+    }
+
     convoModal.style.display = 'flex';
     convoModal.setAttribute('aria-hidden', 'false');
     renderConvoList();
@@ -389,6 +399,14 @@ export function initTerminal() {
     if (!convoModal) return;
     convoModal.style.display = 'none';
     convoModal.setAttribute('aria-hidden', 'true');
+
+    // Return convoModal to its original parent after teleport
+    if (convoModal.classList.contains('convo-modal--teleported') && convoModal._originalParent) {
+      convoModal._originalParent.appendChild(convoModal);
+      convoModal.classList.remove('convo-modal--teleported');
+      convoModal._originalParent = null;
+    }
+
     if (!isMobileDevice() && terminalInput) {
       terminalInput.focus();
     }
@@ -1716,6 +1734,7 @@ export function initTerminal() {
   const terminalModal = document.getElementById('terminal-modal');
   const terminalModalSlot = document.getElementById('terminal-modal-slot');
   const terminalInpageSlot = document.getElementById('terminal-inpage-slot');
+  const convoHistoryModal = document.getElementById('convo-history-modal');
   const floatingTerminalBtn = document.getElementById('floating-terminal-btn');
   const terminalPopBtn = document.getElementById('terminal-pop-btn');
   const terminalModalClose = document.getElementById('terminal-modal-close');
@@ -1725,6 +1744,10 @@ export function initTerminal() {
     try {
       if (terminalCard.parentNode !== terminalModalSlot) {
         terminalModalSlot.appendChild(terminalCard);
+      }
+      // Also move convo-history-modal into modal slot so it's accessible from popup
+      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalModalSlot) {
+        terminalModalSlot.appendChild(convoHistoryModal);
       }
       if (!terminalModal.open) {
         if (typeof terminalModal.showModal === 'function') {
@@ -1767,6 +1790,10 @@ export function initTerminal() {
     try {
       if (terminalCard.parentNode !== terminalInpageSlot) {
         terminalInpageSlot.appendChild(terminalCard);
+      }
+      // Return convo-history-modal back to inpage slot
+      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalInpageSlot) {
+        terminalInpageSlot.appendChild(convoHistoryModal);
       }
       if (terminalModal.open) {
         if (typeof terminalModal.close === 'function') {
