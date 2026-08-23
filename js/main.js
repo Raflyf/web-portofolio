@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScrollEngine();
   initInertiaSmoothWheel();
   initBackToTopButtons();
+  initHorizonXEffects();
   initTerminal();
 });
 
@@ -1028,6 +1029,44 @@ function initScrollSpy() {
   }, { threshold: 0.3 });
 
   sections.forEach(sec => observer.observe(sec));
+}
+
+/* ==========================================================================
+   HORIZONX INTERACTION & MOTION SPOTLIGHT ENGINE
+   ========================================================================== */
+function initHorizonXEffects() {
+  // 1. Mouse Coordinate Tracking for Ambient Spotlight Glow
+  const cards = document.querySelectorAll('.hx-card, .bento-tile, .project-card-link, .certificate-card, .fan-card, .pillar-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  });
+
+  // 2. Parallax Drift on Ambient Background Blobs on Mouse Movement
+  const blobs = document.querySelectorAll('.ambient-blob');
+  if (blobs.length > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    window.addEventListener('mousemove', (e) => {
+      const mouseX = (e.clientX / window.innerWidth - 0.5) * 35;
+      const mouseY = (e.clientY / window.innerHeight - 0.5) * 35;
+      blobs.forEach((blob, index) => {
+        const factor = (index + 1) * 0.45;
+        blob.style.transform = `translate(${mouseX * factor}px, ${mouseY * factor}px)`;
+      });
+    }, { passive: true });
+  }
+
+  // 3. Mobile Touch Support for Fan Cards Stack
+  const fanCards = document.querySelectorAll('.fan-card');
+  fanCards.forEach(card => {
+    card.addEventListener('touchstart', () => {
+      fanCards.forEach(c => c.style.zIndex = c === card ? '60' : '10');
+    }, { passive: true });
+  });
 }
 
 
