@@ -835,7 +835,7 @@ function smoothCloseModal(dialog) {
     dialog.classList.remove('is-closing');
     document.body.classList.remove('modal-open');
     document.documentElement.classList.remove('modal-open');
-  }, 220);
+  }, 300);
 }
 
 function initModals() {

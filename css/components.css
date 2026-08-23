@@ -1312,17 +1312,17 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .convo-history-modal.is-closing {
-  animation: convoFadeOut 0.18s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  animation: convoFadeOut 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
   pointer-events: none !important;
 }
 
 @keyframes convoFadeOut {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+  to { opacity: 0; transform: translateY(-16px) scale(0.94); filter: blur(4px); }
 }
 
 .convo-history-modal.is-closing .convo-history-backdrop {
-  animation: backdropFadeOut 0.18s ease forwards !important;
+  animation: backdropFadeOut 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) ease forwards !important;
 }
 
 .convo-history-backdrop {

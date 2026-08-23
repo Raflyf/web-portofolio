@@ -749,7 +749,7 @@
 .modal-dialog[open].is-closing,
 .terminal-modal-dialog.is-closing,
 .terminal-modal-dialog[open].is-closing {
-  animation: modalMorphOut 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: modalMorphOut 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
   pointer-events: none !important;
 }
 
@@ -757,10 +757,12 @@
   0% {
     opacity: 1;
     transform: perspective(1200px) rotateX(0deg) scale(1) translateY(0);
+    filter: blur(0px);
   }
   100% {
     opacity: 0;
-    transform: perspective(1200px) rotateX(12deg) scale(0.9) translateY(30px);
+    transform: perspective(1200px) rotateX(-8deg) scale(0.88) translateY(32px);
+    filter: blur(8px);
   }
 }
 
@@ -781,7 +783,7 @@
 .modal-dialog[open].is-closing::backdrop,
 .terminal-modal-dialog.is-closing::backdrop,
 .terminal-modal-dialog[open].is-closing::backdrop {
-  animation: backdropFadeOut 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: backdropFadeOut 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
 }
 
 @keyframes backdropFade {
