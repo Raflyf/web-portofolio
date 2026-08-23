@@ -1,0 +1,548 @@
+/**
+ * ============================================================================
+ * HORIZONX UI & DESIGN SYSTEM ENGINE (horizonx.so official spec)
+ * - Glassmorphism Capsule Navigation with Inner Light Reflection
+ * - 3D Perspective Interactive Fan-Cards Stack Engine with Spring Easing
+ * - Ambient Morphing Mesh & Kinetic Flying Particles Background
+ * - Multi-Point Radial Gradient Card Glow with Mouse Coordinate Tracking
+ * - Staggered Character Rise & Word Rise Entrance Physics
+ * - Infinite Dual-Track Continuous Marquee with Gradient Edge Masks
+ * ============================================================================
+ */
+
+:root {
+  /* HorizonX Design Tokens */
+  --hx-brand-ink: #0e1218;
+  --hx-brand-ink-soft: #171d26;
+  --hx-brand-navy: #0d1117;
+  --hx-surface-glass: rgba(14, 18, 24, 0.72);
+  --hx-surface-glass-card: rgba(22, 27, 34, 0.75);
+  --hx-surface-glass-opaque: rgba(18, 23, 31, 0.92);
+  --hx-border-glass: rgba(255, 255, 255, 0.09);
+  --hx-border-glass-hover: rgba(16, 185, 129, 0.35);
+  --hx-glow-emerald: #10b981;
+  --hx-glow-cyan: #06b6d4;
+  --hx-glow-purple: #8b5cf6;
+  --hx-glow-amber: #f59e0b;
+
+  /* HorizonX Spring Motion Tokens */
+  --hx-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --hx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --hx-ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --hx-duration-fast: 0.18s;
+  --hx-duration-base: 0.28s;
+  --hx-duration-slow: 0.45s;
+  --hx-duration-spring: 0.55s;
+
+  /* Radii */
+  --hx-radius-full: 9999px;
+  --hx-radius-3xl: 26px;
+  --hx-radius-2xl: 18px;
+  --hx-radius-xl: 14px;
+}
+
+[data-theme="light"] {
+  --hx-brand-ink: #ffffff;
+  --hx-brand-ink-soft: #f4f6f8;
+  --hx-brand-navy: #0f172a;
+  --hx-surface-glass: rgba(255, 255, 255, 0.82);
+  --hx-surface-glass-card: rgba(255, 255, 255, 0.88);
+  --hx-surface-glass-opaque: rgba(255, 255, 255, 0.96);
+  --hx-border-glass: rgba(15, 23, 42, 0.08);
+  --hx-border-glass-hover: rgba(16, 185, 129, 0.45);
+}
+
+/* ==========================================================================
+   1. AMBIENT MORPHING MESH & KINETIC PARTICLES
+   ========================================================================== */
+.ambient-glow-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.22;
+  will-change: transform;
+  animation: floatMorph 18s ease-in-out infinite alternate;
+}
+
+.ambient-blob--1 {
+  top: -10%;
+  left: 15%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, rgba(6, 182, 212, 0) 70%);
+  animation-duration: 22s;
+}
+
+.ambient-blob--2 {
+  top: 35%;
+  right: -5%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(16, 185, 129, 0) 70%);
+  animation-duration: 26s;
+  animation-delay: -5s;
+}
+
+.ambient-blob--3 {
+  bottom: 10%;
+  left: -5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, rgba(16, 185, 129, 0) 70%);
+  animation-duration: 20s;
+  animation-delay: -10s;
+}
+
+@keyframes floatMorph {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(40px, -60px) scale(1.12) rotate(45deg); }
+  66% { transform: translate(-30px, 40px) scale(0.92) rotate(-30deg); }
+  100% { transform: translate(20px, -20px) scale(1.05) rotate(15deg); }
+}
+
+/* ==========================================================================
+   2. HORIZONX FLOATING GLASS CAPSULE NAVBAR
+   ========================================================================== */
+.site-header {
+  position: fixed;
+  top: 1rem;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem;
+  pointer-events: none;
+}
+
+.nav-container {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 1180px;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--hx-radius-full);
+  background: var(--hx-surface-glass);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid var(--hx-border-glass);
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2),
+    0 16px 36px -10px rgba(0, 0, 0, 0.45);
+  transition: all var(--hx-duration-base) var(--hx-ease-out);
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.brand-logo__prefix {
+  color: var(--accent-emerald);
+}
+
+.brand-logo__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+  box-shadow: 0 0 10px var(--accent-emerald);
+  animation: pulseDot 2.2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--hx-radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--hx-radius-full);
+  transition: color var(--hx-duration-fast), background var(--hx-duration-fast), transform var(--hx-duration-fast);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  color: #ffffff;
+  background: var(--accent-emerald);
+  font-weight: 600;
+  box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.6);
+}
+
+[data-theme="light"] .nav-link.active {
+  color: #ffffff;
+  background: var(--accent-emerald);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ==========================================================================
+   3. HORIZONX 3D PERSPECTIVE FAN-CARDS STACK ENGINE
+   ========================================================================== */
+.hero-fan-container {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+  margin: 0 auto;
+}
+
+.fan-card {
+  position: absolute;
+  width: 250px;
+  height: 330px;
+  border-radius: var(--hx-radius-2xl);
+  background: var(--hx-surface-glass-card);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+  transform: translate(var(--tx, 0), var(--ty, 0)) rotate(var(--rot, 0deg));
+  transition: 
+    transform var(--hx-duration-spring) var(--hx-ease-spring),
+    box-shadow var(--hx-duration-slow) var(--hx-ease-out),
+    border-color var(--hx-duration-fast),
+    z-index 0.05s;
+  will-change: transform, box-shadow;
+  text-decoration: none;
+  color: inherit;
+}
+
+.fan-card:hover {
+  z-index: 60 !important;
+  transform: translate(var(--tx, 0), calc(var(--ty, 0) - 38px)) rotate(0deg) scale(1.08) !important;
+  box-shadow: 
+    0 32px 70px rgba(0, 0, 0, 0.6),
+    0 0 0 2px var(--accent-emerald),
+    0 0 35px rgba(16, 185, 129, 0.4) !important;
+  border-color: var(--accent-emerald);
+}
+
+.fan-card-media {
+  position: relative;
+  width: 100%;
+  height: 165px;
+  overflow: hidden;
+  background: #11161f;
+}
+
+.fan-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--hx-duration-slow) var(--hx-ease-out);
+}
+
+.fan-card:hover .fan-card-media img {
+  transform: scale(1.08);
+}
+
+.fan-card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--hx-radius-full);
+  background: rgba(14, 18, 24, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-emerald);
+  text-transform: uppercase;
+}
+
+.fan-card-body {
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  background: linear-gradient(180deg, rgba(22, 27, 34, 0.6) 0%, rgba(14, 18, 24, 0.95) 100%);
+}
+
+.fan-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fan-card-desc {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fan-card-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.fan-card-action {
+  color: var(--accent-emerald);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* ==========================================================================
+   4. STAGGERED CHARACTER & WORD ENTRANCE ANIMATION
+   ========================================================================== */
+.hero-h1-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.12em;
+}
+
+.hero-h1-char {
+  display: inline-block;
+  will-change: transform, opacity;
+  animation: heroCharRise 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(40ms + var(--ci, 0) * 22ms);
+}
+
+@keyframes heroCharRise {
+  0% {
+    opacity: 0;
+    transform: translateY(110%) rotate(4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+}
+
+.hero-fadescale {
+  will-change: transform, opacity;
+  animation: heroFadeScale 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: 0.45s;
+}
+
+@keyframes heroFadeScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   5. HORIZONX ASYMMETRIC BENTO GRID & MOUSE SPOTLIGHT
+   ========================================================================== */
+.hx-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.hx-card {
+  position: relative;
+  isolation: isolate;
+  background: var(--hx-surface-glass-card);
+  border: 1px solid var(--hx-border-glass);
+  border-radius: var(--hx-radius-3xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: 
+    transform var(--hx-duration-base) var(--hx-ease-out),
+    border-color var(--hx-duration-base) var(--hx-ease-out),
+    box-shadow var(--hx-duration-base) var(--hx-ease-out);
+}
+
+.hx-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--hx-border-glass-hover);
+  box-shadow: 0 24px 60px -15px rgba(0, 0, 0, 0.5), 0 0 25px -5px rgba(16, 185, 129, 0.25);
+}
+
+.card-glow-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(16, 185, 129, 0.15),
+    transparent 60%
+  );
+  z-index: 1;
+}
+
+.hx-card:hover .card-glow-mesh {
+  opacity: 1;
+}
+
+/* Bento Spans */
+.hx-col-7 { grid-column: span 7; }
+.hx-col-5 { grid-column: span 5; }
+.hx-col-4 { grid-column: span 4; }
+.hx-col-8 { grid-column: span 8; }
+.hx-col-6 { grid-column: span 6; }
+.hx-col-12 { grid-column: span 12; }
+
+@media (max-width: 1024px) {
+  .hx-col-7, .hx-col-5, .hx-col-4, .hx-col-8, .hx-col-6 {
+    grid-column: span 12;
+  }
+}
+
+/* ==========================================================================
+   6. DUAL-TRACK INFINITE MARQUEE
+   ========================================================================== */
+.marquee-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10% 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10% 90%, transparent);
+  padding: 0.75rem 0;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 1rem;
+  width: max-content;
+  will-change: transform;
+}
+
+.marquee-track--left {
+  animation: scrollLeft 40s linear infinite;
+}
+
+.marquee-track--right {
+  animation: scrollRight 40s linear infinite;
+}
+
+.marquee-container:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes scrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.marquee-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--hx-radius-full);
+  background: var(--hx-surface-glass-card);
+  border: 1px solid var(--hx-border-glass);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all var(--hx-duration-fast);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.marquee-badge:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent-emerald);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+}
+
+.marquee-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-emerald);
+}
+
+/* ==========================================================================
+   7. ACCESSIBILITY REDUCED MOTION SAFEGUARD
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .hero-h1-char,
+  .hero-fadescale,
+  .ambient-blob,
+  .marquee-track,
+  .fan-card {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
