@@ -965,6 +965,7 @@ function openProjectModal(project) {
 
   document.body.classList.add('modal-open');
   document.documentElement.classList.add('modal-open');
+  activeProjectModal.classList.remove('is-closing');
   activeProjectModal.showModal();
 }
 
@@ -1063,6 +1064,7 @@ function openCertModal(cert) {
 
   document.body.classList.add('modal-open');
   document.documentElement.classList.add('modal-open');
+  activeCertModal.classList.remove('is-closing');
   activeCertModal.showModal();
 }
 
