@@ -559,7 +559,7 @@ function renderProjects(category) {
   gridEl.innerHTML = '';
 
   if (spotlightCard) {
-    if (category === 'all' || category === 'ai-ml') {
+    if (category === 'all') {
       spotlightCard.style.display = '';
       spotlightCard.classList.remove('is-hidden');
       spotlightCard.classList.remove('is-revealed');
@@ -577,11 +577,11 @@ function renderProjects(category) {
     }
   }
 
-  const secondaryProjects = category === 'all'
+  const projectsToRender = category === 'all'
     ? PROJECTS_DATA.slice(1)
-    : PROJECTS_DATA.filter(p => p.category === category && p.id !== 'open-plagiarism-checker');
+    : PROJECTS_DATA.filter(p => p.category === category);
 
-  if (secondaryProjects.length === 0 && (!spotlightCard || spotlightCard.style.display === 'none')) {
+  if (projectsToRender.length === 0 && (!spotlightCard || spotlightCard.style.display === 'none')) {
     const emptyEl = document.createElement('div');
     emptyEl.className = 'empty-state reveal-item is-revealed';
     emptyEl.textContent = 'Belum ada proyek dalam kategori ini.';
@@ -589,7 +589,7 @@ function renderProjects(category) {
     return;
   }
 
-  secondaryProjects.forEach((project, idx) => {
+  projectsToRender.forEach((project, idx) => {
     const card = document.createElement('article');
     card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
