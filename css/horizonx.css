@@ -49,25 +49,29 @@
 }
 
 /* ==========================================================================
-   1. SEAMLESS TOP STICKY NAVBAR (NO DETACHED GAPS)
+   1. SEAMLESS TOP FIXED NAVBAR (IMMUNE TO MODAL SCROLL LOCKS)
    ========================================================================== */
 .site-header {
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  width: 100%;
-  background: rgba(9, 13, 18, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--hx-border-card);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  width: 100% !important;
+  background: rgba(9, 13, 18, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid var(--hx-border-card) !important;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 [data-theme="light"] .site-header {
-  background: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+body {
+  padding-top: 4.25rem !important;
 }
 
 .nav-container {
