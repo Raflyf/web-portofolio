@@ -403,7 +403,7 @@ export function initTerminal() {
       if (!isMobileDevice() && terminalInput) {
         terminalInput.focus();
       }
-    }, 180);
+    }, 260);
   }
 
 
@@ -1824,7 +1824,7 @@ export function initTerminal() {
       scrollToBottom();
       setTimeout(scrollToBottom, 50);
       setTimeout(scrollToBottom, 200);
-    }, 220);
+    }, 300);
   }
 
   if (floatingTerminalBtn) {
