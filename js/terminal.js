@@ -95,10 +95,9 @@ export function initTerminal() {
       e.stopPropagation();
     }
     if (!customEffortMenu) return;
-    const isVisible = customEffortMenu.style.display === 'flex' || customEffortMenu.style.display === 'block';
-    customEffortMenu.style.display = isVisible ? 'none' : 'flex';
+    const isOpen = customEffortMenu.classList.toggle('is-open');
     if (customEffortBtn) {
-      customEffortBtn.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+      customEffortBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     }
   }
 
@@ -113,7 +112,7 @@ export function initTerminal() {
     }
     syncCustomEffortUI(val);
     if (customEffortMenu) {
-      customEffortMenu.style.display = 'none';
+      customEffortMenu.classList.remove('is-open');
     }
     if (customEffortBtn) {
       customEffortBtn.setAttribute('aria-expanded', 'false');
@@ -129,9 +128,9 @@ export function initTerminal() {
     });
 
     document.addEventListener('click', (e) => {
-      if (customEffortMenu && customEffortMenu.style.display !== 'none') {
+      if (customEffortMenu && customEffortMenu.classList.contains('is-open')) {
         if (!customEffortBtn.contains(e.target) && !customEffortMenu.contains(e.target)) {
-          customEffortMenu.style.display = 'none';
+          customEffortMenu.classList.remove('is-open');
           if (customEffortBtn) customEffortBtn.setAttribute('aria-expanded', 'false');
         }
       }
