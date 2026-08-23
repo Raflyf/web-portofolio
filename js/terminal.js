@@ -377,13 +377,9 @@ export function initTerminal() {
   function openConvoHistoryModal() {
     if (!convoModal) return;
 
-    // If terminal is in popup modal mode, teleport convoModal to document.body
-    // to escape the <dialog>'s filter-induced stacking context (filter:blur breaks position:fixed)
-    const inPopupMode = terminalModal && terminalModal.open;
-    if (inPopupMode && convoModal.parentNode !== document.body) {
-      convoModal._originalParent = convoModal.parentNode;
-      document.body.appendChild(convoModal);
-      convoModal.classList.add('convo-modal--teleported');
+    // Ensure convoModal is inside terminalCard so it always renders inside the active container (inpage or top-layer dialog)
+    if (terminalCard && convoModal.parentNode !== terminalCard) {
+      terminalCard.appendChild(convoModal);
     }
 
     convoModal.style.display = 'flex';
@@ -400,17 +396,11 @@ export function initTerminal() {
     convoModal.style.display = 'none';
     convoModal.setAttribute('aria-hidden', 'true');
 
-    // Return convoModal to its original parent after teleport
-    if (convoModal.classList.contains('convo-modal--teleported') && convoModal._originalParent) {
-      convoModal._originalParent.appendChild(convoModal);
-      convoModal.classList.remove('convo-modal--teleported');
-      convoModal._originalParent = null;
-    }
-
     if (!isMobileDevice() && terminalInput) {
       terminalInput.focus();
     }
   }
+
 
   // Legacy single-session migration to multi-session convos
   try {
@@ -1745,9 +1735,9 @@ export function initTerminal() {
       if (terminalCard.parentNode !== terminalModalSlot) {
         terminalModalSlot.appendChild(terminalCard);
       }
-      // Also move convo-history-modal into modal slot so it's accessible from popup
-      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalModalSlot) {
-        terminalModalSlot.appendChild(convoHistoryModal);
+      // Ensure convo-history-modal stays inside terminalCard
+      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
+        terminalCard.appendChild(convoHistoryModal);
       }
       if (!terminalModal.open) {
         if (typeof terminalModal.showModal === 'function') {
@@ -1791,9 +1781,9 @@ export function initTerminal() {
       if (terminalCard.parentNode !== terminalInpageSlot) {
         terminalInpageSlot.appendChild(terminalCard);
       }
-      // Return convo-history-modal back to inpage slot
-      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalInpageSlot) {
-        terminalInpageSlot.appendChild(convoHistoryModal);
+      // Ensure convo-history-modal stays inside terminalCard
+      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
+        terminalCard.appendChild(convoHistoryModal);
       }
       if (terminalModal.open) {
         if (typeof terminalModal.close === 'function') {
@@ -1875,6 +1865,9 @@ export function initTerminal() {
       document.documentElement.classList.remove('modal-open');
       if (terminalInpageSlot && terminalCard && terminalCard.parentNode !== terminalInpageSlot) {
         terminalInpageSlot.appendChild(terminalCard);
+      }
+      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
+        terminalCard.appendChild(convoHistoryModal);
       }
       if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
     });
