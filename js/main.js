@@ -1009,7 +1009,7 @@ window.addEventListener('scroll', () => {
 
 function initScrollReveal() {
   const revealElements = document.querySelectorAll(
-    '.section-header, .about-bio, .pillar-card, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-card, .contact-form-card, .contact-info-card, .stats-strip, .hero-showcase-canvas'
+    '.section-header, .about-bio, .pillar-card, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-method-card, .contact-form, .stats-strip, .hero-showcase-canvas'
   );
 
   if (revealElements.length === 0) return;
@@ -1069,7 +1069,7 @@ function initScrollSpy() {
    ========================================================================== */
 function initHorizonXEffects() {
   // 1. Mouse Spotlight & Hover Physics for Showcase & Bento Cards
-  const cards = document.querySelectorAll('.showcase-card, .bento-tile, .project-card-link, .certificate-card, .pillar-card');
+  const cards = document.querySelectorAll('.showcase-card, .bento-tile, .project-card-link, .certificate-card, .pillar-card, .contact-method-card, .contact-form');
   cards.forEach(card => {
     card.addEventListener('mousemove', (e) => {
       const rect = card.getBoundingClientRect();
