@@ -520,13 +520,15 @@ ${certsOverview}
           });
         }
 
-        // Record conversation turn for dynamic context
-        this.conversationHistory.push({ role: 'user', content: cleanQuery });
-        this.conversationHistory.push({ role: 'assistant', content: finalResponse });
-        if (this.conversationHistory.length > 20) {
-          this.conversationHistory = this.conversationHistory.slice(-20);
+        // Record conversation turn for dynamic context (exclude error strings)
+        if (!finalResponse.includes('antrean seluruh provider AI sedang penuh') && !finalResponse.includes('kendala jaringan')) {
+          this.conversationHistory.push({ role: 'user', content: cleanQuery });
+          this.conversationHistory.push({ role: 'assistant', content: finalResponse });
+          if (this.conversationHistory.length > 20) {
+            this.conversationHistory = this.conversationHistory.slice(-20);
+          }
+          this.saveHistoryToSession();
         }
-        this.saveHistoryToSession();
 
         const isAuto = !this.currentModel || this.currentModel === 'auto';
         const resolvedModel = data.model || 'deepseek/deepseek-chat';
