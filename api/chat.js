@@ -1398,19 +1398,16 @@ Langkah yang WAJIB Anda lakukan:
             if (content && content.trim().length > 0 && !isOmniErrorResponse(content)) {
               return sendSuccess(content.trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
             } else if (content && isOmniErrorResponse(content)) {
-              providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: upstream error ΓÇö ${content.slice(0, 120)}`);
+              providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: upstream error — ${content.slice(0, 120)}`);
             }
           } else if (res.status >= 400) {
-            failedOmniEndpointsInRequest.add(target.normUrl);
             providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: HTTP ${res.status}`);
           }
         } catch (err) {
-          failedOmniEndpointsInRequest.add(target.normUrl);
           providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
         }
       }
 
-      isOmniOffline = true;
       return null;
     }
 
@@ -1749,58 +1746,46 @@ Langkah yang WAJIB Anda lakukan:
         }
       }
 
-      // 2. CASUAL / TRIVIAL QUERIES (Dedicated Nemotron Nano Pool for absolute token preservation)
+      // 2. CASUAL / TRIVIAL QUERIES (Dedicated OmniRoute / Nemotron Nano Pool)
       if (isTrivialCasual) {
         return [
-          // Tier 1: OmniRoute Dedicated Gateway (Fast Probe)
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1000 },
-          // Tier 2: Ollama Cloud Nemotron-3-Nano (Sangat hemat token, sub-1s)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
-          // Tier 3: OpenRouter Nemotron-3-Nano (0.8s ultra-fast free)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 5000 },
+          // Tier 1: OmniRoute Dedicated Gateway (x-preview-f-free)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 12000 },
+          // Tier 2: OmniRoute nemotron-laguna
+          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 10000 },
+          // Tier 3: OpenRouter Nemotron-3-Nano (Ultra-fast free fallback)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
           // Tier 4: OpenCode Zen Fast Buffer
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
-          // Tier 5: Ollama Cloud MiniMax-M3
-          { provider: 'ollama', model: 'minimax-m3', timeout: 6000 }
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 }
         ];
       }
 
-      // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Dedicated SOTA Ultra Reasoning Pool)
+      // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Dedicated SOTA Reasoning Pool)
       if (isComplexReasoning) {
         return [
-          // Tier 1a: OmniRoute Codex (gpt-5.6-terra — primary for deep analysis)
-          { provider: 'omniroute', model: 'Codex', timeout: 8000 },
-          // Tier 1b: OmniRoute nemotron-laguna (550B fallback)
-          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
-          // Tier 1c: OmniRoute x-preview-f-free
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 5000 },
-          // Tier 1d: OmniRoute Antigravity (claude-opus — last resort, cepat limit)
-          { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
-          // Tier 2: Ollama Cloud Nemotron-3-Ultra
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
-          // Tier 3: OpenRouter Nemotron-3-Ultra-550B (capped at 30s for budget)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 30000 },
-          // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
-          // Tier 5: OpenRouter Nemotron-3-Nano (Safety Net)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 }
+          // Tier 1a: OmniRoute Codex (gpt-5.6-terra — primary for deep analysis, 32s budget)
+          { provider: 'omniroute', model: 'Codex', timeout: 32000 },
+          // Tier 1b: OmniRoute x-preview-f-free (Fast reasoning fallback)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 28000 },
+          // Tier 1c: OmniRoute nemotron-laguna (550B fallback)
+          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 25000 },
+          // Tier 1d: OmniRoute Antigravity (claude-opus — last resort)
+          { provider: 'omniroute', model: 'Antigravity', timeout: 20000 },
+          // Tier 2: OpenRouter Nemotron-3-Nano (Safety Net)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 }
         ];
       }
 
       // 4. UNIVERSAL AUTO DEFAULT
       return [
-        // Tier 1a: OmniRoute nemotron-laguna (avoids Codex 404 on Ngrok)
-        { provider: 'omniroute', model: 'nemotron-laguna', timeout: 3000 },
-        // Tier 1b: OmniRoute x-preview fallback
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1500 },
-        // Tier 2: Ollama Cloud Nemotron-3-Ultra
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
-        // Tier 3: OpenRouter Nemotron-3-Ultra-550B
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 30000 },
-        // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
-        // Tier 5: OpenRouter Nemotron-3-Nano-30B
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 }
+        // Tier 1a: OmniRoute Codex
+        { provider: 'omniroute', model: 'Codex', timeout: 30000 },
+        // Tier 1b: OmniRoute x-preview-f-free
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 25000 },
+        // Tier 1c: OmniRoute nemotron-laguna
+        { provider: 'omniroute', model: 'nemotron-laguna', timeout: 20000 },
+        // Tier 2: OpenRouter Nemotron-3-Nano-30B
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 }
       ];
     }
 
