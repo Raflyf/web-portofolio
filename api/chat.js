@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================================
  * VERCEL SERVERLESS FUNCTION: /api/chat (v5.2.0)
  * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
@@ -1771,7 +1771,7 @@ Langkah yang WAJIB Anda lakukan:
           // Tier 2: Ollama Cloud Nemotron-3-Ultra (SOTA 550B MoE)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 22000 },
           // Tier 3: OpenRouter Nemotron-3-Ultra-550B
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 50000 },
           // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free (SOTA 550B Reasoning)
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
           // Tier 5: OpenRouter Nemotron-3-Nano (Jaminan Safety Net Sub-5s)
