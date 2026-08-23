@@ -1768,11 +1768,11 @@ Langkah yang WAJIB Anda lakukan:
       // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Dedicated SOTA Ultra Reasoning Pool)
       if (isComplexReasoning) {
         return [
-          // Tier 1a: OmniRoute nemotron-laguna (fastest probe, avoids Codex 404)
-          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 3500 },
-          // Tier 1b: OmniRoute Codex (fallback probe)
-          { provider: 'omniroute', model: 'Codex', timeout: 2000 },
-          // Tier 2: Ollama Cloud Nemotron-3-Ultra (SOTA 550B MoE)
+          // Tier 1a: OmniRoute Antigravity (claude-opus-4.6-thinking — best for deep analysis)
+          { provider: 'omniroute', model: 'Antigravity', timeout: 8000 },
+          // Tier 1b: OmniRoute nemotron-laguna (SOTA 550B fallback)
+          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
+          // Tier 2: Ollama Cloud Nemotron-3-Ultra
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
           // Tier 3: OpenRouter Nemotron-3-Ultra-550B (capped at 30s for budget)
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 30000 },
