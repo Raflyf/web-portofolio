@@ -1755,9 +1755,9 @@ Langkah yang WAJIB Anda lakukan:
           // Tier 1: OmniRoute Free Models (Preserve paid/rate-limited Codex)
           { provider: 'omniroute', model: 'x-preview-f-free', timeout: 7000 },
           { provider: 'omniroute', model: 'nemotron-laguna', timeout: 6000 },
-          // Tier 2: Nemotron Nano Super-Fast Free Cloud (Sub-second response)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
+          // Tier 2: Nemotron Nano Super-Fast Free Cloud (Ollama Primary -> OpenRouter Nano Fallback)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
           // Tier 3: Fast Buffer Free Pool
           { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 }
@@ -1771,12 +1771,12 @@ Langkah yang WAJIB Anda lakukan:
           { provider: 'omniroute', model: 'x-preview-f-free', timeout: 8000 },
           { provider: 'omniroute', model: 'Codex', timeout: 8000 },
           { provider: 'omniroute', model: 'nemotron-laguna', timeout: 6000 },
-          // Tier 2: Nemotron Nano Pool (Fast, Complete, Zero-Timeout Guarantee)
+          // Tier 2: Nemotron Nano Cloud Pool (Ollama Primary -> OpenRouter Nano -> Super-120B)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
-          // Tier 3: Fast Cloud Reasoning (ox-alpha & Ollama)
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 }
+          // Tier 3: Fast Cloud Reasoning
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 }
         ];
       }
 
@@ -1785,12 +1785,12 @@ Langkah yang WAJIB Anda lakukan:
         // Tier 1: OmniRoute Free Models (x-preview & nemotron-laguna)
         { provider: 'omniroute', model: 'x-preview-f-free', timeout: 7000 },
         { provider: 'omniroute', model: 'nemotron-laguna', timeout: 6000 },
-        // Tier 2: Nemotron Nano Super-Fast Pool
+        // Tier 2: Nemotron Nano Super-Fast Pool (Ollama Primary -> OpenRouter Nano)
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
         // Tier 3: Fast Buffer Pool
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 }
+        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 }
       ];
     }
 
