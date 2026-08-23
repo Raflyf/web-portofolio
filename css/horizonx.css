@@ -259,94 +259,139 @@
 }
 
 /* ==========================================================================
-   3. 3D INTERACTIVE PERSPECTIVE DECK & PPT MORPH TABS
+   3. VANTRO / HORIZONX 3-CARD SHOWCASE CANVAS
    ========================================================================== */
-.motif-deck-container {
+.hero-showcase-canvas {
   width: 100%;
-  max-width: 1080px;
+  max-width: 1100px;
   margin: 0 auto;
-  perspective: 1200px;
-}
-
-.motif-tabs-bar {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem;
-  border-radius: 9999px;
+  border-radius: 26px;
   background: var(--hx-surface-card);
   border: 1px solid var(--hx-border-card);
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 24px 70px -15px rgba(0, 0, 0, 0.45);
+  padding: 1.5rem 1.75rem 1.75rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.motif-tab-btn {
-  padding: 0.5rem 1.25rem;
-  border-radius: 9999px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--hx-text-secondary);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.25s var(--hx-ease-out);
-}
-
-.motif-tab-btn:hover {
-  color: var(--hx-text-primary);
-}
-
-.motif-tab-btn.active {
-  background: var(--hx-accent-emerald);
-  color: #ffffff;
-  box-shadow: 0 4px 14px var(--hx-accent-emerald-glow);
-}
-
-/* 3D Tilt Card */
-.motif-3d-card {
-  position: relative;
-  border-radius: 24px;
-  background: var(--hx-surface-card);
-  border: 1px solid var(--hx-border-card);
-  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.4);
-  padding: 2rem;
-  transform-style: preserve-3d;
-  transition: transform 0.2s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-  overflow: hidden;
-  text-align: left;
-}
-
-[data-theme="light"] .motif-3d-card {
+[data-theme="light"] .hero-showcase-canvas {
   background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.09);
   box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08);
 }
 
-.motif-3d-card:hover {
-  border-color: var(--hx-border-glow);
-  box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.5), 0 0 30px var(--hx-accent-emerald-glow);
-}
-
-.motif-card-header {
+.showcase-window-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
   border-bottom: 1px solid var(--hx-border-card);
-  margin-bottom: 1.5rem;
 }
 
-.motif-card-content {
+.showcase-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.showcase-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.showcase-dots span:nth-child(1) { background: #ef4444; }
+.showcase-dots span:nth-child(2) { background: #f59e0b; }
+.showcase-dots span:nth-child(3) { background: #10b981; }
+
+.showcase-grid-preview {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 2rem;
-  align-items: center;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
 }
 
-@media (max-width: 850px) {
-  .motif-card-content {
+@media (max-width: 900px) {
+  .showcase-grid-preview {
     grid-template-columns: 1fr;
   }
+}
+
+.showcase-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-radius: 18px;
+  background: var(--hx-surface-dark);
+  border: 1px solid var(--hx-border-card);
+  text-decoration: none;
+  text-align: left;
+  transition: all 0.28s var(--hx-ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="light"] .showcase-card {
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.showcase-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: var(--hx-border-glow);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.3), 0 0 20px var(--hx-accent-emerald-glow);
+}
+
+[data-theme="light"] .showcase-card:hover {
+  box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.12), 0 0 20px var(--hx-accent-emerald-glow);
+}
+
+.showcase-card-tag {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  background: var(--hx-accent-emerald-dim);
+  color: var(--hx-accent-emerald);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
+  width: fit-content;
+}
+
+.showcase-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--hx-text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
+}
+
+.showcase-card-desc {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--hx-text-secondary);
+  margin-bottom: 1.25rem;
+  flex-grow: 1;
+}
+
+.showcase-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--hx-text-muted);
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--hx-border-card);
+}
+
+.showcase-card:hover .showcase-card-footer span:last-child {
+  color: var(--hx-accent-emerald);
+  transform: translateX(3px);
 }
 
 .motif-content-badge {

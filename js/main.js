@@ -1043,109 +1043,33 @@ function initScrollSpy() {
 }
 
 /* ==========================================================================
-   HORIZONX MOTIF INTERACTION & 3D MORPH MOTION ENGINE
+   HORIZONX INTERACTION & MOTION SPOTLIGHT ENGINE
    ========================================================================== */
 function initHorizonXEffects() {
-  // 1. 3D Cursor Tilt Physics for Hero Showcase Card
-  const card3D = document.getElementById('motif-3d-card');
-  if (card3D && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    card3D.addEventListener('mousemove', (e) => {
-      const rect = card3D.getBoundingClientRect();
+  // 1. Mouse Spotlight & Hover Physics for Showcase & Bento Cards
+  const cards = document.querySelectorAll('.showcase-card, .bento-tile, .project-card-link, .certificate-card, .pillar-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -6;
-      const rotateY = ((x - centerX) / centerX) * 6;
-      card3D.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.01, 1.01, 1.01)`;
-    });
-
-    card3D.addEventListener('mouseleave', () => {
-      card3D.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
-    });
-  }
-
-  // 2. PowerPoint Morph-Style Project Tab Switcher
-  const MORPH_DATA = {
-    nlp: {
-      node: 'node-ubsi-s1:~/research/openplagiarism',
-      badge: 'NLP · Skripsi S1',
-      title: 'OpenPlagiarismChecker',
-      desc: 'Mesin pemeriksa dokumen akademik yang menggabungkan pencocokan eksak N-Gram Shingling dan embedding semantik Sentence Transformers (IndoBERT/RoBERTa) dengan metrik cosine similarity untuk deteksi parafrasa tingkat tinggi.',
-      stat1: '99.4%',
-      stat2: 'Sub-1.2s',
-      stat3: 'IEEE',
-      code: `&gt; model = SentenceTransformer('indobert-base-p1')<br>&gt; embeddings = model.encode(corpus_docs)<br>&gt; similarity_matrix = cosine_similarity(query_vec, embeddings)<br><span style="color:var(--hx-accent-emerald);">&gt; match_score = 0.9942 [HIGH SIMILARITY]</span>`,
-      link: '#projects'
-    },
-    gateway: {
-      node: 'node-ubsi-s1:~/gateway/omniroute-speculative',
-      badge: 'AI Gateway · SOTA Failover',
-      title: 'OmniRoute Speculative Engine',
-      desc: 'Arsitektur inferensi multi-provider cerdas dengan perlombaan paralel spekulatif (Ox-Alpha, Codex, Nemotron 3 Ultra, x-preview-f) yang memangkas latensi timeout menjadi sub-3 detik.',
-      stat1: 'Sub-3s',
-      stat2: '5 Models',
-      stat3: '99.9%',
-      code: `&gt; target = resolveFastestActiveNode()<br>&gt; spec_race = Promise.race([OmniRoute, OxAlphaCloud])<br>&gt; response = await spec_race.stream()<br><span style="color:var(--hx-accent-emerald);">&gt; status = 200 OK (248ms TTFT)</span>`,
-      link: '#lab'
-    },
-    vision: {
-      node: 'node-ubsi-s1:~/vision/laser-pointer-ppt',
-      badge: 'Computer Vision · 60 FPS',
-      title: 'MediaPipe & Edge Vision',
-      desc: 'Deteksi landmark tangan real-time untuk pengendali gestur presentasi PowerPoint dan estimasi ketajaman citra FotoKitaBlur menggunakan komputasi varians Laplacian OpenCV.',
-      stat1: '60 FPS',
-      stat2: '21 Nodes',
-      stat3: 'Zero Lag',
-      code: `&gt; hands = mp.solutions.hands.Hands(min_detection_confidence=0.8)<br>&gt; landmarks = hands.process(cv2.cvtColor(frame, COLOR_BGR2RGB))<br>&gt; cursor_pos = interpolate_bezier(landmarks[8])<br><span style="color:var(--hx-accent-emerald);">&gt; gesture = PRESENT_NEXT_SLIDE (16ms)</span>`,
-      link: '#projects'
-    }
-  };
-
-  const tabBtns = document.querySelectorAll('.motif-tab-btn');
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tabKey = btn.getAttribute('data-tab');
-      const data = MORPH_DATA[tabKey];
-      if (!data) return;
-
-      tabBtns.forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-selected', 'false');
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-selected', 'true');
-
-      if (card3D) {
-        card3D.style.opacity = '0.3';
-        card3D.style.transform = 'perspective(1000px) scale3d(0.98, 0.98, 0.98)';
-        setTimeout(() => {
-          const elNode = document.getElementById('motif-card-node');
-          const elBadge = document.getElementById('motif-card-badge');
-          const elTitle = document.getElementById('motif-card-title');
-          const elDesc = document.getElementById('motif-card-desc');
-          const elStat1 = document.getElementById('motif-stat-1');
-          const elStat2 = document.getElementById('motif-stat-2');
-          const elStat3 = document.getElementById('motif-stat-3');
-          const elCode = document.getElementById('motif-card-code');
-          const elCta = document.getElementById('motif-card-cta');
-
-          if (elNode) elNode.textContent = data.node;
-          if (elBadge) elBadge.textContent = data.badge;
-          if (elTitle) elTitle.textContent = data.title;
-          if (elDesc) elDesc.textContent = data.desc;
-          if (elStat1) elStat1.textContent = data.stat1;
-          if (elStat2) elStat2.textContent = data.stat2;
-          if (elStat3) elStat3.textContent = data.stat3;
-          if (elCode) elCode.innerHTML = data.code;
-          if (elCta) elCta.setAttribute('href', data.link);
-
-          card3D.style.opacity = '1';
-          card3D.style.transform = 'perspective(1000px) scale3d(1, 1, 1)';
-        }, 120);
-      }
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
     });
   });
+
+  // 2. Parallax Drift on Ambient Background Blobs on Mouse Movement
+  const blobs = document.querySelectorAll('.ambient-blob');
+  if (blobs.length > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    window.addEventListener('mousemove', (e) => {
+      const mouseX = (e.clientX / window.innerWidth - 0.5) * 35;
+      const mouseY = (e.clientY / window.innerHeight - 0.5) * 35;
+      blobs.forEach((blob, index) => {
+        const factor = (index + 1) * 0.45;
+        blob.style.transform = `translate(${mouseX * factor}px, ${mouseY * factor}px)`;
+      });
+    }, { passive: true });
+  }
 }
 
 
