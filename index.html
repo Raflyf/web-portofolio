@@ -267,53 +267,66 @@
           </a>
         </div>
 
-        <!-- Vantro / HorizonX Central 3-Card Showcase Canvas -->
-        <div class="hero-showcase-canvas" role="region" aria-label="Showcase Unggulan Platform">
+        <!-- Vantro / HorizonX Dynamic Project Showcase Deck & Carousel -->
+        <div class="hero-showcase-canvas" id="hero-showcase-deck" role="region" aria-label="Showcase Unggulan Platform">
           <div class="showcase-window-header">
-            <div class="showcase-dots" aria-hidden="true">
-              <span></span><span></span><span></span>
+            <div class="showcase-header-left">
+              <div class="showcase-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="showcase-header-title">
+                rafly@node-ubsi-s1: ~/research-deck (Live Gateway)
+              </div>
             </div>
-            <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--hx-accent-emerald);font-weight:600;">
-              rafly@node-ubsi-s1: ~/research-deck (Live Gateway)
-            </div>
-            <div style="font-size:0.75rem;color:var(--hx-text-muted);">
-              S1 Informatika UBSI
+            
+            <div class="showcase-header-controls">
+              <span id="showcase-index-indicator" class="showcase-index-pill">Proyek 1–3 / 5</span>
+              <div class="showcase-nav-btns">
+                <button type="button" id="showcase-prev-btn" class="showcase-nav-btn" title="Proyek Sebelumnya" aria-label="Proyek Sebelumnya">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <button type="button" id="showcase-next-btn" class="showcase-nav-btn" title="Proyek Berikutnya" aria-label="Proyek Berikutnya">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div class="showcase-grid-preview">
-            <!-- Showcase Card 1: NLP Research (OpenPlagiarismChecker) -->
-            <a href="#projects" class="showcase-card">
-              <span class="showcase-card-tag">NLP · Skripsi S1</span>
-              <h2 class="showcase-card-title">OpenPlagiarismChecker</h2>
-              <p class="showcase-card-desc">Mesin riset pemeriksa dokumen akademik lokal berbasis N-Gram Shingling dan Sentence Transformers.</p>
-              <div class="showcase-card-footer">
-                <span>IndoBERT &amp; N-Gram</span>
-                <span>Detail &rarr;</span>
-              </div>
-            </a>
+          <div class="showcase-carousel-viewport">
+            <div class="showcase-grid-preview" id="showcase-card-grid">
+              <!-- Showcase Card 1: NLP Research (OpenPlagiarismChecker) -->
+              <a href="#projects" class="showcase-card" data-project-id="open-plagiarism-checker">
+                <span class="showcase-card-tag">NLP · Skripsi S1</span>
+                <h2 class="showcase-card-title">OpenPlagiarismChecker</h2>
+                <p class="showcase-card-desc">Mesin riset pemeriksa dokumen akademik lokal berbasis N-Gram Shingling dan Sentence Transformers.</p>
+                <div class="showcase-card-footer">
+                  <span>IndoBERT &amp; N-Gram</span>
+                  <span>Detail &rarr;</span>
+                </div>
+              </a>
 
-            <!-- Showcase Card 2: ML & Spam Email Classifier -->
-            <a href="#projects" class="showcase-card">
-              <span class="showcase-card-tag">Machine Learning · Riset</span>
-              <h2 class="showcase-card-title">Spam-Email Detection System</h2>
-              <p class="showcase-card-desc">Evaluasi komparatif Complement Naive Bayes (CNB) vs XGBoost dengan mitigasi Concept Drift.</p>
-              <div class="showcase-card-footer">
-                <span>CNB vs XGBoost</span>
-                <span>Detail &rarr;</span>
-              </div>
-            </a>
+              <!-- Showcase Card 2: ML & Spam Email Classifier -->
+              <a href="#projects" class="showcase-card" data-project-id="spam-email-classifier">
+                <span class="showcase-card-tag">Machine Learning · Riset</span>
+                <h2 class="showcase-card-title">Spam-Email Detection System</h2>
+                <p class="showcase-card-desc">Evaluasi komparatif Complement Naive Bayes (CNB) vs XGBoost dengan mitigasi Concept Drift.</p>
+                <div class="showcase-card-footer">
+                  <span>CNB vs XGBoost</span>
+                  <span>Detail &rarr;</span>
+                </div>
+              </a>
 
-            <!-- Showcase Card 3: Web Portofolio Architecture -->
-            <a href="#projects" class="showcase-card">
-              <span class="showcase-card-tag">Frontend &amp; Systems</span>
-              <h2 class="showcase-card-title">Web Portofolio &amp; AI Platform</h2>
-              <p class="showcase-card-desc">Arsitektur antarmuka web modern Vanilla JS/CSS, observabilitas telemetri, dan integrasi AI.</p>
-              <div class="showcase-card-footer">
-                <span>Vanilla Architecture</span>
-                <span>Detail &rarr;</span>
-              </div>
-            </a>
+              <!-- Showcase Card 3: Web Portofolio Architecture -->
+              <a href="#projects" class="showcase-card" data-project-id="web-portofolio">
+                <span class="showcase-card-tag">Frontend &amp; Systems</span>
+                <h2 class="showcase-card-title">Web Portofolio &amp; AI Platform</h2>
+                <p class="showcase-card-desc">Arsitektur antarmuka web modern Vanilla JS/CSS, observabilitas telemetri, dan integrasi AI.</p>
+                <div class="showcase-card-footer">
+                  <span>Vanilla Architecture</span>
+                  <span>Detail &rarr;</span>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
 
