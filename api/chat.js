@@ -1870,37 +1870,73 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     // ========================================================================
-    // EXECUTE PIPELINE WITH GLOBAL 45s HARD BUDGET GUARD
+    // EXECUTE PIPELINE WITH PRIORITY-AWARE SPECULATIVE PARALLEL RACE
+    // Priority #1 always wins if it responds; if Priority #1 is offline/fails,
+    // the concurrent Priority #2 (or next fastest healthy model) resolves instantly!
     // ========================================================================
-    const executionPipeline = buildExecutionPipeline();
-
-    for (const step of executionPipeline) {
-      const elapsed = Date.now() - requestStartTime;
-      const remainingMs = 52000 - elapsed;
-      if (remainingMs <= 3000) {
-        // Stop before hitting Vercel's 60s hard timeout (FUNCTION_INVOCATION_TIMEOUT)
-        break;
-      }
-
-      const stepTimeout = Math.min(step.timeout || 15000, Math.max(2500, remainingMs - 1000));
-      let result = null;
-
+    async function executeStep(step, timeout) {
+      if (!step) return null;
       if (step.provider === 'omniroute') {
-        result = await callOmniRoute(step.model, stepTimeout);
+        return callOmniRoute(step.model, timeout);
       } else if (step.provider === 'nim') {
-        result = await callNvidiaNim(step.model, stepTimeout);
+        return callNvidiaNim(step.model, timeout);
       } else if (step.provider === 'opencode') {
-        result = await callOpenCode(step.model, stepTimeout);
+        return callOpenCode(step.model, timeout);
       } else if (step.provider === 'openrouter') {
-        result = await callOpenRouter(step.model, stepTimeout);
+        return callOpenRouter(step.model, timeout);
       } else if (step.provider === 'ollama') {
-        result = await callOllama(step.model, stepTimeout);
+        return callOllama(step.model, timeout);
       } else if (step.provider === 'minimax') {
-        result = await callMiniMax(stepTimeout);
+        return callMiniMax(timeout);
+      }
+      return null;
+    }
+
+    async function executePipelineWithPriorityRace(pipeline) {
+      if (!pipeline || pipeline.length === 0) return null;
+
+      // Parallel Speculative Pair for Top 2 Priority Candidates (e.g. OmniRoute + Ox-Alpha):
+      const step0 = pipeline[0];
+      const step1 = pipeline.length > 1 ? pipeline[1] : null;
+
+      if (step0 && step1) {
+        const p0 = executeStep(step0, step0.timeout).catch(() => null);
+        const p1 = executeStep(step1, step1.timeout).catch(() => null);
+
+        // Await Priority #1 candidate first:
+        const r0 = await p0;
+        if (r0) {
+          return r0; // Priority #1 succeeded! Always prioritized!
+        }
+
+        // If Priority #1 failed/offline, await Priority #2 candidate:
+        const r1 = await p1;
+        if (r1) {
+          return r1; // Priority #2 succeeded!
+        }
+      } else if (step0) {
+        const r0 = await executeStep(step0, step0.timeout);
+        if (r0) return r0;
       }
 
-      if (result) return result;
+      // If top candidates failed or were unavailable, cascade through remaining models:
+      const remainingSteps = pipeline.slice(2);
+      for (const step of remainingSteps) {
+        const elapsed = Date.now() - requestStartTime;
+        const remainingMs = 52000 - elapsed;
+        if (remainingMs <= 3000) break;
+
+        const stepTimeout = Math.min(step.timeout || 6000, Math.max(2500, remainingMs - 1000));
+        const result = await executeStep(step, stepTimeout);
+        if (result) return result;
+      }
+
+      return null;
     }
+
+    const executionPipeline = buildExecutionPipeline();
+    const finalResult = await executePipelineWithPriorityRace(executionPipeline);
+    if (finalResult) return finalResult;
 
     if (res.headersSent) return;
 
