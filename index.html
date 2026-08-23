@@ -267,65 +267,53 @@
           </a>
         </div>
 
-        <!-- Motif 3D Interactive Morph Showcase Deck -->
-        <div class="motif-deck-container" role="region" aria-label="3D Interactive Research Showcase Deck">
-          <!-- PPT Morph Interactive Tabs -->
-          <div class="motif-tabs-bar" role="tablist">
-            <button class="motif-tab-btn active" role="tab" aria-selected="true" data-tab="nlp">1. NLP Sentence Transformers</button>
-            <button class="motif-tab-btn" role="tab" aria-selected="false" data-tab="gateway">2. OmniRoute AI Gateway</button>
-            <button class="motif-tab-btn" role="tab" aria-selected="false" data-tab="vision">3. MediaPipe &amp; Edge Vision</button>
+        <!-- Vantro / HorizonX Central 3-Card Showcase Canvas -->
+        <div class="hero-showcase-canvas" role="region" aria-label="Showcase Unggulan Platform">
+          <div class="showcase-window-header">
+            <div class="showcase-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--hx-accent-emerald);font-weight:600;">
+              rafly@node-ubsi-s1: ~/research-deck (Live Gateway)
+            </div>
+            <div style="font-size:0.75rem;color:var(--hx-text-muted);">
+              S1 Informatika UBSI
+            </div>
           </div>
 
-          <!-- 3D Interactive Tilt Card -->
-          <div class="motif-3d-card" id="motif-3d-card">
-            <div class="motif-card-header">
-              <div style="display:flex;align-items:center;gap:0.5rem;">
-                <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
-                <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-                <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block;"></span>
-                <span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--hx-text-muted);margin-left:0.5rem;" id="motif-card-node">node-ubsi-s1:~/research/openplagiarism</span>
+          <div class="showcase-grid-preview">
+            <!-- Showcase Card 1: NLP Research -->
+            <a href="#projects" class="showcase-card">
+              <span class="showcase-card-tag">NLP · AI Research</span>
+              <h2 class="showcase-card-title">OpenPlagiarismChecker</h2>
+              <p class="showcase-card-desc">IndoBERT &amp; RoBERTa Cosine Similarity engine untuk deteksi parafrasa akademik IEEE format.</p>
+              <div class="showcase-card-footer">
+                <span>99.4% Cosine Precision</span>
+                <span>Detail &rarr;</span>
               </div>
-              <span class="motif-content-badge" id="motif-card-badge">NLP · Skripsi S1</span>
-            </div>
+            </a>
 
-            <div class="motif-card-content">
-              <div class="motif-card-text">
-                <h2 class="motif-content-title" id="motif-card-title">OpenPlagiarismChecker</h2>
-                <p class="motif-content-desc" id="motif-card-desc">
-                  Mesin pemeriksa dokumen akademik yang menggabungkan pencocokan eksak N-Gram Shingling dan embedding semantik Sentence Transformers (IndoBERT/RoBERTa) dengan metrik cosine similarity untuk deteksi parafrasa tingkat tinggi.
-                </p>
-                <div class="motif-content-stats">
-                  <div>
-                    <div class="motif-stat-val" id="motif-stat-1">99.4%</div>
-                    <div class="motif-stat-lbl">Cosine Precision</div>
-                  </div>
-                  <div>
-                    <div class="motif-stat-val" id="motif-stat-2">Sub-1.2s</div>
-                    <div class="motif-stat-lbl">Local Inference</div>
-                  </div>
-                  <div>
-                    <div class="motif-stat-val" id="motif-stat-3">IEEE</div>
-                    <div class="motif-stat-lbl">Paper Standard</div>
-                  </div>
-                </div>
+            <!-- Showcase Card 2: AI Terminal & SOTA Gateway -->
+            <a href="#lab" class="showcase-card">
+              <span class="showcase-card-tag">AI Terminal · SOTA</span>
+              <h2 class="showcase-card-title">OmniRoute AI Gateway</h2>
+              <p class="showcase-card-desc">Multi-provider speculative gateway (Ox-Alpha, Codex, Nemotron 3 Ultra, x-preview-f) sub-3s latency.</p>
+              <div class="showcase-card-footer">
+                <span>Sub-3s Failover</span>
+                <span>Buka Lab &rarr;</span>
               </div>
+            </a>
 
-              <div class="motif-visual-preview">
-                <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.75rem;color:var(--hx-text-muted);">
-                  <span>STATUS: ACTIVE RUNNER</span>
-                  <span style="color:var(--hx-accent-emerald);">● VERIFIED</span>
-                </div>
-                <div style="background:rgba(0,0,0,0.2);padding:1rem;border-radius:10px;font-family:var(--font-mono);font-size:0.8rem;line-height:1.6;color:var(--hx-text-secondary);" id="motif-card-code">
-                  &gt; model = SentenceTransformer('indobert-base-p1')<br>
-                  &gt; embeddings = model.encode(corpus_docs)<br>
-                  &gt; similarity_matrix = cosine_similarity(query_vec, embeddings)<br>
-                  <span style="color:var(--hx-accent-emerald);">&gt; match_score = 0.9942 [HIGH SIMILARITY]</span>
-                </div>
-                <a href="#projects" class="btn-motif-primary" style="justify-content:center;padding:0.6rem 1.2rem;font-size:0.88rem;" id="motif-card-cta">
-                  <span>Lihat Dokumentasi Lengkap &rarr;</span>
-                </a>
+            <!-- Showcase Card 3: Computer Vision & Edge AI -->
+            <a href="#projects" class="showcase-card">
+              <span class="showcase-card-tag">Computer Vision</span>
+              <h2 class="showcase-card-title">MediaPipe &amp; OpenCV</h2>
+              <p class="showcase-card-desc">Hand landmark tracker untuk kontrol gestur presentasi PPT dan deteksi blur varians Laplacian.</p>
+              <div class="showcase-card-footer">
+                <span>60 FPS Low Latency</span>
+                <span>Detail &rarr;</span>
               </div>
-            </div>
+            </a>
           </div>
         </div>
 
