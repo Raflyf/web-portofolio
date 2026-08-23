@@ -275,7 +275,7 @@ function initHeroShowcaseCarousel() {
 /* ==========================================================================
    2. CUSTOM CUBIC SMOOTH-SCROLL ENGINE
    ========================================================================== */
-export function smoothScrollTo(targetY, duration = 850) {
+export function smoothScrollTo(targetY, duration = 1100) {
   const startY = window.scrollY || window.pageYOffset;
   const distance = targetY - startY;
   
@@ -311,7 +311,7 @@ function initSmoothScrollEngine() {
       const targetId = this.getAttribute('href');
       if (!targetId || targetId === '#') {
         e.preventDefault();
-        smoothScrollTo(0, 800);
+        smoothScrollTo(0, 1050);
         return;
       }
 
@@ -322,7 +322,7 @@ function initSmoothScrollEngine() {
         const elementPosition = targetEl.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
-        smoothScrollTo(offsetPosition, 850);
+        smoothScrollTo(offsetPosition, 1050);
 
         document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
         if (this.classList.contains('nav-link')) {
@@ -342,7 +342,7 @@ function initBackToTopButtons() {
 
   const handleScrollToTop = (e) => {
     e.preventDefault();
-    smoothScrollTo(0, 900);
+    smoothScrollTo(0, 1150); // Calibrated gentle and smooth back to top
   };
 
   if (footerBtn) {
@@ -1227,7 +1227,7 @@ window.addEventListener('scroll', () => {
 
 function initScrollReveal() {
   const revealElements = document.querySelectorAll(
-    '.section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-method-card, .contact-form, .stats-strip, .hero-showcase-canvas'
+    '.section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-spotlight-card, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
   );
 
   if (revealElements.length === 0) return;
