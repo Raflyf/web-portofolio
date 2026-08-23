@@ -632,16 +632,13 @@ body {
 .project-spotlight-card,
 .projects-grid,
 .certificates-grid {
-  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform, filter;
+  transition: opacity 0.14s ease, transform 0.14s ease !important;
+  will-change: opacity, transform;
 }
 
 .is-tab-fading-out {
   opacity: 0 !important;
-  transform: perspective(1000px) translateY(14px) scale(0.98) !important;
-  filter: blur(4px) !important;
+  transform: translateY(6px) !important;
   pointer-events: none;
 }
 
@@ -653,23 +650,19 @@ body {
    5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE
    ========================================================================== */
 .reveal-item {
-  opacity: 0 !important;
-  transform: perspective(1000px) translateY(40px) scale(0.96) !important;
-  filter: blur(6px) !important;
-  transition: opacity 0.68s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.68s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.68s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: opacity, transform, filter;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal-item.reveal-from-top {
-  transform: perspective(1000px) translateY(-40px) scale(0.96) !important;
+  transform: translateY(-24px);
 }
 
 .reveal-item.is-revealed {
-  opacity: 1 !important;
-  transform: perspective(1000px) translateY(0) scale(1) !important;
-  filter: blur(0px) !important;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Terminal & Chat Isolation: Inner terminal content must never inherit page scroll blur/perspective */

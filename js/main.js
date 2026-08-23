@@ -543,7 +543,7 @@ function initProjectsSection() {
       setTimeout(() => {
         renderProjects(category);
         if (gridEl) gridEl.classList.remove('is-tab-fading-out');
-      }, 150);
+      }, 140);
     });
   });
 }
@@ -575,11 +575,10 @@ function renderProjects(category) {
     return;
   }
 
-  projectsToRender.forEach((project, idx) => {
+  projectsToRender.forEach((project) => {
     const card = document.createElement('article');
-    card.className = 'project-card reveal-item';
+    card.className = 'project-card reveal-item is-revealed';
     card.setAttribute('tabindex', '0');
-    card.style.transitionDelay = `${idx * 30}ms`;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'project-card__top';
@@ -633,13 +632,6 @@ function renderProjects(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
-    observeElementForScrollReveal(card);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        card.classList.add('is-revealed');
-      });
-    });
   });
 }
 
@@ -668,7 +660,7 @@ function initCertificatesSection() {
       setTimeout(() => {
         renderCertificates(category);
         if (gridEl) gridEl.classList.remove('is-tab-fading-out');
-      }, 160);
+      }, 140);
     });
   });
 }
@@ -683,10 +675,9 @@ function renderCertificates(category) {
     ? CERTIFICATES_DATA
     : CERTIFICATES_DATA.filter(c => c.category === category || (category === 'security' && c.category === 'network') || (category === 'network' && c.category === 'security'));
 
-  filtered.forEach((cert, idx) => {
+  filtered.forEach((cert) => {
     const card = document.createElement('article');
-    card.className = 'certificate-card reveal-item';
-    card.style.transitionDelay = `${idx * 35}ms`;
+    card.className = 'certificate-card reveal-item is-revealed';
 
     const topWrap = document.createElement('div');
     topWrap.className = 'cert-card__top';
