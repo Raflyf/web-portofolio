@@ -605,7 +605,7 @@ ${certsOverview}
           body: JSON.stringify({
             model: (this.currentModel && this.currentModel !== 'auto') 
               ? this.currentModel 
-              : (this.reasoningEffort === 'high' ? 'nvidia/nemotron-3-ultra-550b-a55b:free' : 'nvidia/nemotron-3-nano-30b-a3b:free'),
+              : 'nvidia/nemotron-3-nano-30b-a3b:free',
             messages: [
               { role: 'system', content: 'Kamu adalah asisten AI teknis profesional. Jawab selalu dalam Bahasa Indonesia.' },
               ...this.conversationHistory.slice(-10),
