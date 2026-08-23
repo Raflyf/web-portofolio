@@ -512,13 +512,13 @@
       <div class="omniroute-preset-box">
         <span class="modal-label" style="margin-bottom:0.35rem;">Isi Cepat Endpoint:</span>
         <div class="omniroute-preset-btns">
-          <button type="button" class="preset-choice-btn" id="preset-btn-hf">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span>HF Space &rarr; Endpoint 1</span>
-          </button>
           <button type="button" class="preset-choice-btn" id="preset-btn-ngrok">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span>Ngrok &rarr; Endpoint 1</span>
+          </button>
+          <button type="button" class="preset-choice-btn" id="preset-btn-local">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-            <span>Ngrok &rarr; Endpoint 2</span>
+            <span>Localhost (:20128) &rarr; Endpoint 2</span>
           </button>
           <button type="button" class="preset-choice-btn" id="preset-btn-swap">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 014-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 01-4 4H3"></path></svg>
@@ -529,13 +529,13 @@
 
       <form id="omniroute-form" class="modal-form">
         <div>
-          <label for="omniroute-url-input" class="modal-label">Endpoint 1 &mdash; Primary (dicoba pertama)</label>
-          <input type="url" id="omniroute-url-input" class="pin-input text-left" value="https://rflyyyf-omniroute-gateway.hf.space/v1" placeholder="https://rflyyyf-omniroute-gateway.hf.space/v1" required>
+          <label for="omniroute-url-input" class="modal-label">Endpoint 1 &mdash; Primary (Ngrok Tunnel)</label>
+          <input type="url" id="omniroute-url-input" class="pin-input text-left" value="https://gullible-cytoplast-mardi.ngrok-free.dev/v1" placeholder="https://gullible-cytoplast-mardi.ngrok-free.dev/v1" required>
         </div>
 
         <div>
-          <label for="omniroute-local-url-input" class="modal-label">Endpoint 2 &mdash; Secondary Fallback (Ngrok / HF / Cloudflare)</label>
-          <input type="url" id="omniroute-local-url-input" class="pin-input text-left" value="https://gullible-cytoplast-mardi.ngrok-free.dev/v1" placeholder="https://gullible-cytoplast-mardi.ngrok-free.dev/v1" required>
+          <label for="omniroute-local-url-input" class="modal-label">Endpoint 2 &mdash; Secondary Fallback (Localhost :20128)</label>
+          <input type="url" id="omniroute-local-url-input" class="pin-input text-left" value="http://localhost:20128/v1" placeholder="http://localhost:20128/v1" required>
         </div>
 
         <div>

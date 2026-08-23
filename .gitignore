@@ -12,6 +12,8 @@ npm-debug.log*
 !.env.example
 *.local
 *.log
+ngrok_auth.md
+*.auth*
 .system_generated/
 .agents/
 skills-lock.json
