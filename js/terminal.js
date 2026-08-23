@@ -1742,6 +1742,16 @@ export function initTerminal() {
     document.documentElement.classList.add('modal-open');
     if (terminalPopBtn) terminalPopBtn.style.display = 'none';
 
+    const scrollToBottom = () => {
+      if (terminalBody) {
+        terminalBody.scrollTop = terminalBody.scrollHeight;
+      }
+    };
+
+    scrollToBottom();
+    setTimeout(scrollToBottom, 60);
+    setTimeout(scrollToBottom, 250);
+
     setTimeout(() => {
       // On mobile devices, never auto-focus input to avoid triggering the on-screen keyboard
       if (!isMobileDevice() && terminalInput) {
@@ -1749,7 +1759,6 @@ export function initTerminal() {
       } else if (terminalInput) {
         terminalInput.blur();
       }
-      if (terminalBody) terminalBody.scrollTop = terminalBody.scrollHeight;
     }, 60);
   }
 
@@ -1774,9 +1783,15 @@ export function initTerminal() {
     document.documentElement.classList.remove('modal-open');
     if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
 
-    setTimeout(() => {
-      if (terminalBody) terminalBody.scrollTop = terminalBody.scrollHeight;
-    }, 40);
+    const scrollToBottom = () => {
+      if (terminalBody) {
+        terminalBody.scrollTop = terminalBody.scrollHeight;
+      }
+    };
+
+    scrollToBottom();
+    setTimeout(scrollToBottom, 50);
+    setTimeout(scrollToBottom, 200);
   }
 
   if (floatingTerminalBtn) {
