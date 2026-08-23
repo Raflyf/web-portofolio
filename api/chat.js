@@ -1253,10 +1253,11 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     // Maximum token limits: Calibrated for lightning-fast sub-5s response and deep exhaustive coverage
-    // LOW=600 (~2.4k chars), NORMAL=900 (~3.6k chars), THINKING/HIGH=1200 (~4.8k chars)
+    // LOW=800 (~3.2k chars), NORMAL=1500 (~6k chars), THINKING/HIGH=2500 (~10k chars)
+    // Note: HIGH is capped at 2500 to ensure the generation finishes before Vercel's 60-second hard limit.
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 600 
-      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 1200 : 900);
+      ? 800 
+      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 2500 : 1500);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
