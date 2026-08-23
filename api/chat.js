@@ -1392,8 +1392,9 @@ Langkah yang WAJIB Anda lakukan:
       return false;
     }
 
-    async function callOmniRoute(mName, tOut = 3500) {
+    async function callOmniRoute(mName, tOut = 1500) {
       if (isOmniOffline) return null;
+      const stepDeadline = Date.now() + Math.min(tOut, 1500);
 
       const endpointsToTry = [];
 
@@ -1441,12 +1442,13 @@ Langkah yang WAJIB Anda lakukan:
 
       for (const target of endpointsToTry) {
         if (failedOmniEndpointsInRequest.has(target.normUrl)) {
-          continue; // Skip host that previously timed out or failed in this request
+          continue;
         }
 
-        // Direct OpenAI JSON POST attempt for Ngrok Tunnel or Localhost
+        const remaining = stepDeadline - Date.now();
+        if (remaining < 400) break;
+
         try {
-          const directTimeout = Math.min(tOut, 1500);
           const res = await fetchJsonWithTimeout(target.directUrl, {
             method: 'POST',
             headers: {
@@ -1461,7 +1463,7 @@ Langkah yang WAJIB Anda lakukan:
               temperature: tempConfig,
               stream: false
             })
-          }, directTimeout);
+          }, remaining);
 
           if (res.ok) {
             let rawPayload = (typeof res.data === 'string') ? res.data : ((typeof res.text === 'string') ? res.text : '');
@@ -1513,9 +1515,9 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenRouter(mName, tOut = 10000) {
+    async function callOpenRouter(mName, tOut = 4500) {
       if (OPENROUTER_KEYS.length === 0) return null;
-      const perKeyTimeout = Math.min(tOut, 4500);
+      const stepDeadline = Date.now() + Math.min(tOut, 4500);
       const keysToTry = OPENROUTER_KEYS.slice(0, 3);
 
       // Model-specific payload normalization (stealth/ox-alpha requires user-encapsulated instructions for sub-2s responses)
@@ -1534,6 +1536,10 @@ Langkah yang WAJIB Anda lakukan:
         : openRouterMessages;
 
       for (const orKey of keysToTry) {
+        const remaining = stepDeadline - Date.now();
+        if (remaining < 600) break;
+        const perKeyTimeout = Math.min(remaining, 3500);
+
         try {
           const res = await fetchJsonWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
@@ -1578,13 +1584,17 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 6000) {
+    async function callOpenCode(mName, tOut = 4500) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
-      const perKeyTimeout = Math.min(tOut, 4500);
+      const stepDeadline = Date.now() + Math.min(tOut, 4500);
       const keysToTry = OPENCODE_KEYS.slice(0, 3);
 
       for (const ocKey of keysToTry) {
+        const remaining = stepDeadline - Date.now();
+        if (remaining < 600) break;
+        const perKeyTimeout = Math.min(remaining, 3500);
+
         try {
           const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
@@ -1621,11 +1631,15 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 10000) {
+    async function callNvidiaNim(mName, tOut = 4000) {
       if (NVIDIA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^nvidia\//i, '');
+      const stepDeadline = Date.now() + Math.min(tOut, 4000);
 
       for (const nvKey of NVIDIA_KEYS) {
+        const remaining = stepDeadline - Date.now();
+        if (remaining < 600) break;
+
         try {
           const res = await fetchJsonWithTimeout('https://integrate.api.nvidia.com/v1/chat/completions', {
             method: 'POST',
@@ -1639,7 +1653,7 @@ Langkah yang WAJIB Anda lakukan:
               max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
-          }, tOut);
+          }, remaining);
 
           if (res.ok) {
             const content = res.data?.choices?.[0]?.message?.content;
@@ -1658,11 +1672,15 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOllama(mName, tOut = 10000) {
+    async function callOllama(mName, tOut = 4500) {
       if (OLLAMA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^ollama\//i, '').replace(/:free$/i, '');
+      const stepDeadline = Date.now() + Math.min(tOut, 4500);
 
       for (const olKey of OLLAMA_KEYS) {
+        const remaining = stepDeadline - Date.now();
+        if (remaining < 600) break;
+
         try {
           const res = await fetchJsonWithTimeout('https://ollama.com/api/chat', {
             method: 'POST',
@@ -1675,7 +1693,7 @@ Langkah yang WAJIB Anda lakukan:
               messages: ollamaMessages,
               stream: false
             })
-          }, tOut);
+          }, remaining);
 
           if (res.ok) {
             let content = res.data?.message?.content;
@@ -1849,17 +1867,19 @@ Langkah yang WAJIB Anda lakukan:
       if (isTrivialCasual) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway (Fast Probe)
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 2000 },
-          // Tier 2: Ollama Cloud (Utamakan Ollama: Kuota Besar, Reset Tiap 5 Jam)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 5000 },
-          // Tier 3: OpenCode Zen Gateway
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
-          // Tier 4: OpenRouter Cloud Pool
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1500 },
+          // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
           { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 3500 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3000 },
+          // Tier 3: OpenCode Zen x-preview
+          { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
+          // Tier 4: Nemotron Ultra Pool (Utamakan Ollama -> OpenCode -> OpenRouter)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 4000 },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 3500 },
           // Tier 5: MiniMax
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 }
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 },
+          // Tier 6: OpenRouter Fast Buffer
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3000 }
         ];
       }
 
@@ -1867,34 +1887,38 @@ Langkah yang WAJIB Anda lakukan:
       if (isComplexReasoning) {
         return [
           // Tier 1: OmniRoute Dedicated Gateway (Codex)
-          { provider: 'omniroute', model: 'Codex', timeout: 2500 },
-          // Tier 2: Ollama Cloud (Utamakan Ollama: Kuota Besar, Reset Tiap 5 Jam)
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 5500 },
-          // Tier 3: OpenCode Zen Gateway
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
-          // Tier 4: OpenRouter Cloud Pool
+          { provider: 'omniroute', model: 'Codex', timeout: 1500 },
+          // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
           { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 3500 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3500 },
+          // Tier 3: OpenCode Zen x-preview
+          { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
+          // Tier 4: Nemotron Ultra Pool (Utamakan Ollama -> OpenCode -> OpenRouter)
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 4000 },
+          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 3500 },
           // Tier 5: MiniMax Multimodal
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 }
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 },
+          // Tier 6: OpenRouter Fast Buffer
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3000 }
         ];
       }
 
       // 4. UNIVERSAL AUTO DEFAULT
       return [
         // Tier 1: OmniRoute Dedicated Gateway
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 2500 },
-        // Tier 2: Ollama Cloud (Utamakan Ollama: Kuota Besar, Reset Tiap 5 Jam)
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 5000 },
-        // Tier 3: OpenCode Zen Gateway
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
-        // Tier 4: OpenRouter Cloud Pool
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 1500 },
+        // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
         { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 3500 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3500 },
+        // Tier 3: OpenCode Zen x-preview
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 3500 },
+        // Tier 4: Nemotron Ultra Pool (Utamakan Ollama -> OpenCode -> OpenRouter)
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 4000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 3500 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 3500 },
         // Tier 5: MiniMax Multimodal
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 }
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 3500 },
+        // Tier 6: OpenRouter Fast Buffer
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 3000 }
       ];
     }
 
