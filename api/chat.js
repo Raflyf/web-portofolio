@@ -1842,9 +1842,9 @@ Langkah yang WAJIB Anda lakukan:
           // Tier 1: OmniRoute Dedicated Gateway
           { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3000 },
           // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline)
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 6500 },
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
           // Tier 3: OpenCode Zen x-preview
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 4000 },
+          { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
           // Tier 4: Nemotron Ultra Pool (Ollama Cloud & OpenCode & OpenRouter)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4500 },
@@ -1863,7 +1863,7 @@ Langkah yang WAJIB Anda lakukan:
           // Tier 1: OmniRoute Dedicated Gateway (Codex)
           { provider: 'omniroute', model: 'Codex', timeout: 3500 },
           // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline - Concurrent Speculative Pair)
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
           // Tier 3: OpenCode Zen x-preview
           { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
           // Tier 4: Nemotron Ultra Pool (Ollama Cloud & OpenCode & OpenRouter)
@@ -1883,7 +1883,7 @@ Langkah yang WAJIB Anda lakukan:
         // Tier 1: OmniRoute Dedicated Gateway
         { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3000 },
         // Tier 2: OpenRouter ox-alpha (Model Utama saat OmniRoute offline - Concurrent Speculative Pair)
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7000 },
+        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
         // Tier 3: OpenCode Zen x-preview
         { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
         // Tier 4: Nemotron Ultra Pool (Ollama Cloud & OpenCode)
