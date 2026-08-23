@@ -2706,6 +2706,7 @@ body.modal-open {
 }
 
 .terminal-modal-slot {
+  position: relative;
   width: 100%;
   overflow: hidden;
   display: flex;
@@ -2735,6 +2736,44 @@ body.modal-open {
   max-height: calc(90vh - 170px);
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+/* Convo history panel inside popup modal: use fixed so it escapes overflow:hidden clip */
+.terminal-modal-slot .convo-history-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  padding-top: 80px;
+}
+
+.terminal-modal-slot .convo-history-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Teleported state: convoModal is appended directly to body when in popup mode */
+.convo-modal--teleported {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100001;
+  padding-top: 80px;
+}
+
+.convo-modal--teleported .convo-history-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 /* ==========================================================================
