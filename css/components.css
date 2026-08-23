@@ -1858,12 +1858,12 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   display: flex;
   width: 100%;
   margin: 0.35rem 0;
-  animation: fadeInChatMsg 0.22s ease-out;
+  animation: fadeInChatMsg 0.14s ease-out;
 }
 
 @keyframes fadeInChatMsg {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* User Message Bubble (Right-aligned, Emerald/Cyan Gradient Glow, WhatsApp tail) */
