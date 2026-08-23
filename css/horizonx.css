@@ -443,7 +443,7 @@ body {
 }
 
 .showcase-card:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-4px);
   border-color: var(--hx-border-glow);
   box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.3), 0 0 20px var(--hx-accent-emerald-glow);
 }
@@ -681,31 +681,6 @@ body {
   filter: none !important;
 }
 
-/* Staggered Children Delays for Fluid Cascade */
-.bento-grid .reveal-item:nth-child(1) { transition-delay: 0.04s !important; }
-.bento-grid .reveal-item:nth-child(2) { transition-delay: 0.10s !important; }
-.bento-grid .reveal-item:nth-child(3) { transition-delay: 0.16s !important; }
-.bento-grid .reveal-item:nth-child(4) { transition-delay: 0.22s !important; }
-.bento-grid .reveal-item:nth-child(5) { transition-delay: 0.28s !important; }
-.bento-grid .reveal-item:nth-child(6) { transition-delay: 0.34s !important; }
-
-.hero-pill-badge.reveal-item { transition-delay: 0.02s !important; }
-.hero-main-title.reveal-item { transition-delay: 0.08s !important; }
-.hero-lead-text.reveal-item { transition-delay: 0.14s !important; }
-.hero-btn-group.reveal-item { transition-delay: 0.20s !important; }
-
-.about-pillars .reveal-item:nth-child(1) { transition-delay: 0.06s !important; }
-.about-pillars .reveal-item:nth-child(2) { transition-delay: 0.14s !important; }
-
-.filter-bar.reveal-item { transition-delay: 0.04s !important; }
-.project-spotlight-card.reveal-item { transition-delay: 0.08s !important; }
-.site-footer.reveal-item { transition-delay: 0.06s !important; }
-
-.contact-info-col .reveal-item:nth-child(1) { transition-delay: 0.06s !important; }
-.contact-info-col .reveal-item:nth-child(2) { transition-delay: 0.14s !important; }
-.contact-info-col .reveal-item:nth-child(3) { transition-delay: 0.22s !important; }
-.contact-form.reveal-item { transition-delay: 0.15s !important; }
-
 /* ==========================================================================
    5. 3D MORPHING ACCESSIBLE MODAL DIALOGS (PPT MORPH & 3D PERSPECTIVE)
    ========================================================================== */
@@ -836,20 +811,12 @@ body {
 }
 
 .terminal-card.terminal-landing {
-  animation: terminalLandIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: terminalFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
-@keyframes terminalLandIn {
-  0% {
-    opacity: 0;
-    transform: perspective(1000px) translateY(24px) scale(0.97);
-    filter: blur(8px);
-  }
-  100% {
-    opacity: 1;
-    transform: perspective(1000px) translateY(0) scale(1);
-    filter: blur(0px);
-  }
+@keyframes terminalFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Universal 3D Translucent Glassmorphism (Anti-Solid Design) */
@@ -871,12 +838,10 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.09) !important;
   border-radius: 20px !important;
   box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.12) inset, 0 14px 34px -8px rgba(0, 0, 0, 0.45), 0 2px 6px -1px rgba(0, 0, 0, 0.25) !important;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.3s ease,
-              background 0.3s ease !important;
-  transform-style: preserve-3d;
-  transform: perspective(1000px) translateZ(0);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              background 0.25s ease !important;
 }
 
 [data-theme="light"] .project-card,
@@ -906,9 +871,10 @@ body {
   .pillar-card:hover,
   .bento-tile:hover,
   .contact-method-card:hover {
-    transform: perspective(1000px) translateY(-5px) scale(1.008) translateZ(0) !important;
+    transform: translateY(-4px) !important;
     border-color: rgba(16, 185, 129, 0.45) !important;
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.22) inset, 0 22px 48px -10px rgba(0, 0, 0, 0.6), 0 0 28px -4px rgba(16, 185, 129, 0.22) !important;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 18px 40px -8px rgba(0, 0, 0, 0.55), 0 0 20px -2px rgba(16, 185, 129, 0.2) !important;
+    transition-delay: 0s !important;
   }
 
   [data-theme="light"] .project-card:hover,
@@ -918,7 +884,8 @@ body {
   [data-theme="light"] .pillar-card:hover,
   [data-theme="light"] .bento-tile:hover,
   [data-theme="light"] .contact-method-card:hover {
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 20px 42px -10px rgba(15, 23, 42, 0.18), 0 0 24px -4px rgba(16, 185, 129, 0.18) !important;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 16px 34px -8px rgba(15, 23, 42, 0.15), 0 0 18px -2px rgba(16, 185, 129, 0.15) !important;
+    transition-delay: 0s !important;
   }
 }
 
