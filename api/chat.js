@@ -1557,16 +1557,18 @@ Langkah yang WAJIB Anda lakukan:
 
     async function callOpenCode(mName, tOut = 6000) {
       if (OPENCODE_KEYS.length === 0) return null;
+      const cleanModelName = mName.replace(/^opencode\//i, '');
+
       for (const ocKey of OPENCODE_KEYS) {
         try {
-          const res = await fetchJsonWithTimeout('https://api.opencode.ai/v1/chat/completions', {
+          const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${ocKey}`
             },
             body: JSON.stringify({
-              model: mName.replace(/^opencode\//, ''),
+              model: cleanModelName,
               messages: openRouterMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig
@@ -1574,21 +1576,17 @@ Langkah yang WAJIB Anda lakukan:
           }, tOut);
 
           if (res.ok) {
-            if (typeof res.text === 'string' && res.text.includes('Not Found')) {
-              providerErrors.push(`OpenCode ${mName}: upstream endpoint deprecated/not found`);
-              break; // Fail fast immediately
-            }
             const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'OpenCode Zen Pool');
+              return sendSuccess(content.trim(), mName, 'OpenCode Zen Gateway');
             }
           } else {
-            providerErrors.push(`OpenCode ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            providerErrors.push(`OpenCode Zen ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
             if (res.status === 404 || res.status === 429) break;
             continue;
           }
         } catch (err) {
-          providerErrors.push(`OpenCode ${mName}: ${err.message}`);
+          providerErrors.push(`OpenCode Zen ${mName}: ${err.message}`);
           if (err.name === 'AbortError' || err.message?.includes('Timeout') || err.message?.includes('abort')) {
             break;
           }
