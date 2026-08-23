@@ -775,13 +775,13 @@ function initTimelineSection() {
 
   TIMELINE_DATA.forEach(item => {
     const itemEl = document.createElement('div');
-    itemEl.className = 'timeline-item reveal-item';
+    itemEl.className = 'timeline-item';
 
     const nodeEl = document.createElement('div');
     nodeEl.className = 'timeline-node';
 
     const contentEl = document.createElement('div');
-    contentEl.className = 'timeline-content';
+    contentEl.className = 'timeline-content reveal-item';
 
     const dateEl = document.createElement('div');
     dateEl.className = 'timeline-date';
@@ -808,6 +808,7 @@ function initTimelineSection() {
     itemEl.appendChild(contentEl);
 
     timelineEl.appendChild(itemEl);
+    observeElementForScrollReveal(contentEl);
   });
 }
 
@@ -1289,7 +1290,7 @@ function observeElementForScrollReveal(el) {
 function refreshScrollReveal() {
   if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
-    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-item, .terminal-card, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
+    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-content, .terminal-card, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
   );
 
   revealElements.forEach(el => {
