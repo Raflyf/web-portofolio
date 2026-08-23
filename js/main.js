@@ -1009,11 +1009,16 @@ function initScrollReveal() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('is-revealed');
-        observer.unobserve(entry.target);
+      } else {
+        // Reset when scrolled out of view for bidirectional animation
+        const rect = entry.boundingClientRect;
+        if (rect.top > 0) {
+          entry.target.classList.remove('is-revealed');
+        }
       }
     });
   }, {
-    rootMargin: '0px 0px -50px 0px',
+    rootMargin: '0px 0px -40px 0px',
     threshold: 0.08
   });
 
