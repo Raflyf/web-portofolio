@@ -650,16 +650,35 @@ body {
    5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE
    ========================================================================== */
 .reveal-item {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+  opacity: 0 !important;
+  transform: perspective(1000px) translateY(40px) scale(0.96) !important;
+  filter: blur(6px) !important;
+  transition: opacity 0.68s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.68s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.68s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform, filter;
+}
+
+.reveal-item.reveal-from-top {
+  transform: perspective(1000px) translateY(-40px) scale(0.96) !important;
 }
 
 .reveal-item.is-revealed {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1 !important;
+  transform: perspective(1000px) translateY(0) scale(1) !important;
+  filter: blur(0px) !important;
+}
+
+@media (hover: hover) {
+  .project-card.is-revealed:hover,
+  .project-spotlight-card.is-revealed:hover,
+  .showcase-card.is-revealed:hover,
+  .certificate-card.is-revealed:hover,
+  .pillar-card.is-revealed:hover,
+  .bento-tile.is-revealed:hover,
+  .contact-method-card.is-revealed:hover {
+    transform: perspective(1000px) translateY(-5px) scale(1.008) translateZ(0) !important;
+  }
 }
 
 /* Terminal & Chat Isolation: Inner terminal content must never inherit page scroll blur/perspective */
@@ -670,6 +689,31 @@ body {
 .chat-msg {
   filter: none !important;
 }
+
+/* Staggered Children Delays for Fluid Cascade */
+.bento-grid .reveal-item:nth-child(1) { transition-delay: 0.04s !important; }
+.bento-grid .reveal-item:nth-child(2) { transition-delay: 0.10s !important; }
+.bento-grid .reveal-item:nth-child(3) { transition-delay: 0.16s !important; }
+.bento-grid .reveal-item:nth-child(4) { transition-delay: 0.22s !important; }
+.bento-grid .reveal-item:nth-child(5) { transition-delay: 0.28s !important; }
+.bento-grid .reveal-item:nth-child(6) { transition-delay: 0.34s !important; }
+
+.hero-pill-badge.reveal-item { transition-delay: 0.02s !important; }
+.hero-main-title.reveal-item { transition-delay: 0.08s !important; }
+.hero-lead-text.reveal-item { transition-delay: 0.14s !important; }
+.hero-btn-group.reveal-item { transition-delay: 0.20s !important; }
+
+.about-pillars .reveal-item:nth-child(1) { transition-delay: 0.06s !important; }
+.about-pillars .reveal-item:nth-child(2) { transition-delay: 0.14s !important; }
+
+.filter-bar.reveal-item { transition-delay: 0.04s !important; }
+.project-spotlight-card.reveal-item { transition-delay: 0.08s !important; }
+.site-footer.reveal-item { transition-delay: 0.06s !important; }
+
+.contact-info-col .reveal-item:nth-child(1) { transition-delay: 0.06s !important; }
+.contact-info-col .reveal-item:nth-child(2) { transition-delay: 0.14s !important; }
+.contact-info-col .reveal-item:nth-child(3) { transition-delay: 0.22s !important; }
+.contact-form.reveal-item { transition-delay: 0.15s !important; }
 
 /* ==========================================================================
    5. 3D MORPHING ACCESSIBLE MODAL DIALOGS (PPT MORPH & 3D PERSPECTIVE)

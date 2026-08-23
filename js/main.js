@@ -575,10 +575,11 @@ function renderProjects(category) {
     return;
   }
 
-  projectsToRender.forEach((project) => {
+  projectsToRender.forEach((project, idx) => {
     const card = document.createElement('article');
     card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
+    card.style.transitionDelay = `${idx * 30}ms`;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'project-card__top';
@@ -633,6 +634,12 @@ function renderProjects(category) {
 
     gridEl.appendChild(card);
     observeElementForScrollReveal(card);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        card.classList.add('is-revealed');
+      });
+    });
   });
 }
 
@@ -1141,9 +1148,9 @@ function initContactForm() {
 
       const data = await response.json();
 
-      if (response.ok || data.success === 'true') {
+      if (response.ok || data.success === 'true' || data.success === true) {
         localStorage.setItem('portfolio_last_submit', Date.now().toString());
-
+        telemetry.logEvent('contact_submit', 'success', 'Pengiriman Formulir Kontak Berhasil');
         statusEl.className = 'form-status success';
         statusEl.style.display = 'block';
 
@@ -1165,10 +1172,9 @@ function initContactForm() {
         `;
 
         form.reset();
-        telemetry.logEvent('contact_submit', 'success', 'Pengiriman Formulir Kontak Berhasil');
         showToast('Pesan berhasil terkirim ke email Rafly Firmansyah!');
       } else {
-        throw new Error(data.message || 'Gagal mengirimkan pesan.');
+        throw new Error(data.message || 'Gagal mengirim pesan');
       }
     } catch (err) {
       telemetry.logEvent('contact_submit', 'error', 'Kegagalan Pengiriman Formulir Kontak');
@@ -1301,14 +1307,21 @@ function initScrollReveal() {
   globalScrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
+        if (scrollDirection === 'up') {
+          entry.target.classList.add('reveal-from-top');
+        } else {
+          entry.target.classList.remove('reveal-from-top');
+        }
         entry.target.classList.add('is-revealed');
       } else {
+        // Reset in both directions so elements re-animate when scrolling up and down
         entry.target.classList.remove('is-revealed');
+        entry.target.classList.remove('reveal-from-top');
       }
     });
   }, {
-    rootMargin: '-15px 0px -15px 0px',
-    threshold: 0.08
+    rootMargin: '0px 0px -20px 0px',
+    threshold: 0.04
   });
 
   refreshScrollReveal();
