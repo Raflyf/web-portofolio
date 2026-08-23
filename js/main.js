@@ -510,6 +510,13 @@ function initMobileNavigation() {
       toggleBtn.setAttribute('aria-expanded', 'false');
     });
   });
+
+  document.addEventListener('click', (e) => {
+    if (navMenu.classList.contains('is-open') && !navMenu.contains(e.target) && !toggleBtn.contains(e.target)) {
+      navMenu.classList.remove('is-open');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
 }
 
 /* ==========================================================================
