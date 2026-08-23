@@ -193,6 +193,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
     padding: 0.7rem 1rem;
     border-radius: var(--radius-md);
     background-color: var(--surface-card);
+    color: var(--text-ink);
     border: 1px solid var(--border-subtle);
     width: 100%;
   }
