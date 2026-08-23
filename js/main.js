@@ -560,13 +560,20 @@ function renderProjects(category) {
 
   if (spotlightCard) {
     if (category === 'all' || category === 'ai-ml') {
-      spotlightCard.style.display = 'grid';
+      spotlightCard.style.display = '';
+      spotlightCard.classList.remove('is-hidden');
+      spotlightCard.classList.remove('is-revealed');
+      spotlightCard.classList.add('reveal-item');
+      observeElementForScrollReveal(spotlightCard);
       requestAnimationFrame(() => {
-        spotlightCard.classList.add('is-revealed');
+        requestAnimationFrame(() => {
+          spotlightCard.classList.add('is-revealed');
+        });
       });
     } else {
-      spotlightCard.style.display = 'none';
       spotlightCard.classList.remove('is-revealed');
+      spotlightCard.classList.add('is-hidden');
+      spotlightCard.style.display = 'none';
     }
   }
 
