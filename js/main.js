@@ -98,12 +98,12 @@ const HERO_SHOWCASE_PROJECTS = [
 
 function initHeroShowcaseCarousel() {
   const deck = document.getElementById('hero-showcase-deck');
+  const viewport = document.getElementById('showcase-carousel-viewport');
   const track = document.getElementById('showcase-slider-track');
-  const indicator = document.getElementById('showcase-index-indicator');
   const prevBtn = document.getElementById('showcase-prev-btn');
   const nextBtn = document.getElementById('showcase-next-btn');
 
-  if (!deck || !track) return;
+  if (!deck || !track || !viewport) return;
 
   const total = HERO_SHOWCASE_PROJECTS.length;
   let currentIndex = 0;
@@ -146,6 +146,22 @@ function initHeroShowcaseCarousel() {
     track.appendChild(card);
   });
 
+  function updateCardSizes() {
+    const viewportWidth = viewport.clientWidth;
+    if (!viewportWidth) return;
+    const isMobile = window.innerWidth <= 640;
+    const isTablet = window.innerWidth <= 960 && window.innerWidth > 640;
+    const visibleCount = isMobile ? 1 : (isTablet ? 2 : 3);
+    const gap = 20; // 1.25rem = 20px
+    const cardWidth = Math.floor((viewportWidth - (visibleCount - 1) * gap) / visibleCount);
+
+    const cards = track.querySelectorAll('.showcase-card');
+    cards.forEach(card => {
+      card.style.width = `${cardWidth}px`;
+      card.style.flex = `0 0 ${cardWidth}px`;
+    });
+  }
+
   function getStepWidth() {
     const firstCard = track.querySelector('.showcase-card');
     if (!firstCard) return 360;
@@ -163,11 +179,6 @@ function initHeroShowcaseCarousel() {
 
     const step = getStepWidth();
     track.style.transform = `translate3d(-${currentIndex * step}px, 0, 0)`;
-
-    if (indicator) {
-      const activeProjNum = (currentIndex % total) + 1;
-      indicator.textContent = `Proyek ${activeProjNum} / ${total}`;
-    }
 
     if (!animate) {
       // Force layout repaint
@@ -218,7 +229,7 @@ function initHeroShowcaseCarousel() {
 
   function startTimer() {
     stopTimer();
-    autoTimer = setInterval(nextSlide, 2000);
+    autoTimer = setInterval(nextSlide, 3000);
   }
 
   function stopTimer() {
@@ -265,9 +276,11 @@ function initHeroShowcaseCarousel() {
   }, { passive: true });
 
   window.addEventListener('resize', () => {
+    updateCardSizes();
     updateSlide(false);
   }, { passive: true });
 
+  updateCardSizes();
   updateSlide(false);
   startTimer();
 }
