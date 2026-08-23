@@ -1201,7 +1201,7 @@ window.addEventListener('scroll', () => {
 
 function initScrollReveal() {
   const revealElements = document.querySelectorAll(
-    '.section-header, .about-bio, .pillar-card, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-method-card, .contact-form, .stats-strip, .hero-showcase-canvas'
+    '.section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-method-card, .contact-form, .stats-strip, .hero-showcase-canvas'
   );
 
   if (revealElements.length === 0) return;
@@ -1222,8 +1222,8 @@ function initScrollReveal() {
       }
     });
   }, {
-    rootMargin: '-30px 0px -30px 0px',
-    threshold: 0.06
+    rootMargin: '0px 0px -20px 0px',
+    threshold: 0.04
   });
 
   revealElements.forEach(el => {
