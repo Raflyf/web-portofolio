@@ -532,10 +532,21 @@ function initProjectsSection() {
 
   filterTabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      if (tab.classList.contains('active')) return;
       filterTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const category = tab.getAttribute('data-filter-project');
-      renderProjects(category);
+      
+      const gridEl = document.getElementById('projects-grid');
+      const spotlightCard = document.getElementById('spotlight-project-card');
+      if (gridEl) gridEl.classList.add('is-tab-fading-out');
+      if (spotlightCard) spotlightCard.classList.add('is-tab-fading-out');
+
+      setTimeout(() => {
+        renderProjects(category);
+        if (gridEl) gridEl.classList.remove('is-tab-fading-out');
+        if (spotlightCard) spotlightCard.classList.remove('is-tab-fading-out');
+      }, 160);
     });
   });
 }
@@ -550,8 +561,12 @@ function renderProjects(category) {
   if (spotlightCard) {
     if (category === 'all' || category === 'ai-ml') {
       spotlightCard.style.display = 'grid';
+      requestAnimationFrame(() => {
+        spotlightCard.classList.add('is-revealed');
+      });
     } else {
       spotlightCard.style.display = 'none';
+      spotlightCard.classList.remove('is-revealed');
     }
   }
 
@@ -569,9 +584,9 @@ function renderProjects(category) {
 
   secondaryProjects.forEach((project, idx) => {
     const card = document.createElement('article');
-    card.className = 'project-card reveal-item is-revealed';
+    card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
-    card.style.transitionDelay = `${idx * 40}ms`;
+    card.style.transitionDelay = `${idx * 45}ms`;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'project-card__top';
@@ -625,6 +640,10 @@ function renderProjects(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
+
+    requestAnimationFrame(() => {
+      card.classList.add('is-revealed');
+    });
   });
 }
 
@@ -641,10 +660,18 @@ function initCertificatesSection() {
 
   filterTabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      if (tab.classList.contains('active')) return;
       filterTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const category = tab.getAttribute('data-filter-cert');
-      renderCertificates(category);
+      
+      const gridEl = document.getElementById('certificates-grid');
+      if (gridEl) gridEl.classList.add('is-tab-fading-out');
+
+      setTimeout(() => {
+        renderCertificates(category);
+        if (gridEl) gridEl.classList.remove('is-tab-fading-out');
+      }, 160);
     });
   });
 }
@@ -661,8 +688,8 @@ function renderCertificates(category) {
 
   filtered.forEach((cert, idx) => {
     const card = document.createElement('article');
-    card.className = 'certificate-card reveal-item is-revealed';
-    card.style.transitionDelay = `${idx * 30}ms`;
+    card.className = 'certificate-card reveal-item';
+    card.style.transitionDelay = `${idx * 35}ms`;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'cert-card__top';
@@ -733,10 +760,15 @@ function renderCertificates(category) {
     }
 
     card.appendChild(topWrap);
+    card.appendChild(infoWrap);
     card.appendChild(metaWrap);
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
+
+    requestAnimationFrame(() => {
+      card.classList.add('is-revealed');
+    });
   });
 }
 
