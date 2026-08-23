@@ -1238,6 +1238,9 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
 
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
+      if (!cleaned || cleaned.trim().length === 0) {
+        cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      }
 
       if (res.headersSent) return true;
       const isSpecific = (model && model !== 'auto');
@@ -1353,10 +1356,10 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     // Maximum token limits: Calibrated for lightning-fast sub-5s response and deep exhaustive coverage
-    // LOW=1536 (~6k chars), NORMAL=2048 (~8k chars), THINKING/HIGH=3072 (~12k chars)
+    // LOW=600 (~2.4k chars), NORMAL=900 (~3.6k chars), THINKING/HIGH=1200 (~4.8k chars)
     const maxTokensConfig = effectiveEffort === 'low' 
-      ? 1536 
-      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 3072 : 2048);
+      ? 600 
+      : (effectiveEffort === 'thinking' || effectiveEffort === 'high' ? 1200 : 900);
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.3 : 0.25);
 
     // ========================================================================
@@ -1598,7 +1601,11 @@ Langkah yang WAJIB Anda lakukan:
           }, perKeyTimeout);
 
           if (res.ok) {
-            const content = res.data?.choices?.[0]?.message?.content;
+            const msg = res.data?.choices?.[0]?.message;
+            let content = msg?.content;
+            if ((!content || content.trim().length === 0) && (msg?.reasoning || msg?.reasoning_content)) {
+              content = msg.reasoning || msg.reasoning_content;
+            }
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'OpenCode Zen Gateway');
             }
@@ -1671,7 +1678,10 @@ Langkah yang WAJIB Anda lakukan:
           }, tOut);
 
           if (res.ok) {
-            const content = res.data?.message?.content;
+            let content = res.data?.message?.content;
+            if ((!content || content.trim().length === 0) && (res.data?.message?.reasoning || res.data?.message?.thinking)) {
+              content = res.data.message.reasoning || res.data.message.thinking;
+            }
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
             }
