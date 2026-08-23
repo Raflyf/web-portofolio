@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.100.0';
-import { telemetry } from './telemetry.js?v=10.100.0';
-import { terminalAI } from './terminal-ai.js?v=10.100.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.250.0';
+import { telemetry } from './telemetry.js?v=10.250.0';
+import { terminalAI } from './terminal-ai.js?v=10.250.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -89,32 +89,51 @@ export function initTerminal() {
     }
   }
 
-  if (customEffortBtn && customEffortMenu) {
-    customEffortBtn.addEventListener('click', (e) => {
+  function toggleCustomEffortMenu(e) {
+    if (e) {
+      e.preventDefault();
       e.stopPropagation();
-      const isVisible = customEffortMenu.style.display !== 'none';
-      customEffortMenu.style.display = isVisible ? 'none' : 'flex';
+    }
+    if (!customEffortMenu) return;
+    const isVisible = customEffortMenu.style.display === 'flex' || customEffortMenu.style.display === 'block';
+    customEffortMenu.style.display = isVisible ? 'none' : 'flex';
+    if (customEffortBtn) {
       customEffortBtn.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
-    });
+    }
+  }
+
+  function selectCustomEffortOption(val, e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (effortSelect) {
+      effortSelect.value = val;
+      effortSelect.dispatchEvent(new Event('change'));
+    }
+    syncCustomEffortUI(val);
+    if (customEffortMenu) {
+      customEffortMenu.style.display = 'none';
+    }
+    if (customEffortBtn) {
+      customEffortBtn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  if (customEffortBtn && customEffortMenu) {
+    customEffortBtn.addEventListener('click', toggleCustomEffortMenu);
 
     customEffortMenu.querySelectorAll('li').forEach(li => {
-      li.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const chosenVal = li.getAttribute('data-value');
-        if (effortSelect) {
-          effortSelect.value = chosenVal;
-          effortSelect.dispatchEvent(new Event('change'));
-        }
-        syncCustomEffortUI(chosenVal);
-        customEffortMenu.style.display = 'none';
-        customEffortBtn.setAttribute('aria-expanded', 'false');
-      });
+      const val = li.getAttribute('data-value');
+      li.addEventListener('click', (e) => selectCustomEffortOption(val, e));
     });
 
     document.addEventListener('click', (e) => {
-      if (customEffortMenu.style.display !== 'none' && !customEffortBtn.contains(e.target) && !customEffortMenu.contains(e.target)) {
-        customEffortMenu.style.display = 'none';
-        customEffortBtn.setAttribute('aria-expanded', 'false');
+      if (customEffortMenu && customEffortMenu.style.display !== 'none') {
+        if (!customEffortBtn.contains(e.target) && !customEffortMenu.contains(e.target)) {
+          customEffortMenu.style.display = 'none';
+          if (customEffortBtn) customEffortBtn.setAttribute('aria-expanded', 'false');
+        }
       }
     });
   }
