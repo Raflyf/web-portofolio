@@ -167,6 +167,12 @@ body {
   box-shadow: 0 2px 10px var(--hx-accent-emerald-glow);
 }
 
+.nav-link::after,
+.nav-link.active::after {
+  display: none !important;
+  content: none !important;
+}
+
 /* ==========================================================================
    2. MOTIF HERO SECTION (CLEAN MONOCHROME & 3D INTERACTION)
    ========================================================================== */
