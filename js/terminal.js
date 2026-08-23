@@ -1827,6 +1827,15 @@ export function initTerminal() {
     }, 300);
   }
 
+  const heroOpenTerminalBtn = document.getElementById('hero-open-terminal-btn');
+  if (heroOpenTerminalBtn) {
+    heroOpenTerminalBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openTerminalModal();
+    });
+  }
+
   if (floatingTerminalBtn) {
     floatingTerminalBtn.addEventListener('click', (e) => {
       e.preventDefault();
