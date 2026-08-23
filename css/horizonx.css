@@ -651,9 +651,10 @@ body {
    ========================================================================== */
 .reveal-item {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.38s ease,
-              transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(28px);
+  transition: opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
 .reveal-item.is-revealed {

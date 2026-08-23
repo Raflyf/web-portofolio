@@ -577,7 +577,7 @@ function renderProjects(category) {
 
   projectsToRender.forEach((project) => {
     const card = document.createElement('article');
-    card.className = 'project-card reveal-item is-revealed';
+    card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
 
     const topWrap = document.createElement('div');
@@ -633,10 +633,6 @@ function renderProjects(category) {
 
     gridEl.appendChild(card);
     observeElementForScrollReveal(card);
-
-    requestAnimationFrame(() => {
-      card.classList.add('is-revealed');
-    });
   });
 }
 
@@ -682,7 +678,7 @@ function renderCertificates(category) {
 
   filtered.forEach((cert) => {
     const card = document.createElement('article');
-    card.className = 'certificate-card reveal-item is-revealed';
+    card.className = 'certificate-card reveal-item';
 
     const topWrap = document.createElement('div');
     topWrap.className = 'cert-card__top';
@@ -759,10 +755,6 @@ function renderCertificates(category) {
 
     gridEl.appendChild(card);
     observeElementForScrollReveal(card);
-
-    requestAnimationFrame(() => {
-      card.classList.add('is-revealed');
-    });
   });
 }
 
@@ -1310,12 +1302,13 @@ function initScrollReveal() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('is-revealed');
-        globalScrollObserver.unobserve(entry.target);
+      } else {
+        entry.target.classList.remove('is-revealed');
       }
     });
   }, {
-    rootMargin: '0px 0px -40px 0px',
-    threshold: 0.05
+    rootMargin: '-15px 0px -15px 0px',
+    threshold: 0.08
   });
 
   refreshScrollReveal();
