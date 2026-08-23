@@ -593,7 +593,7 @@ ${certsOverview}
     if (userProvider === 'openrouter' || userProvider === 'auto' || !this.customApiProvider) {
       try {
         const customCtrl = new AbortController();
-        const customTimer = setTimeout(() => customCtrl.abort(), 120000);
+        const customTimer = setTimeout(() => customCtrl.abort(), 300000); // 5 Menit Timeout untuk Heavy Reasoning
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
