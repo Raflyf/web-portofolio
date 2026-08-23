@@ -188,6 +188,12 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
     animation: mobileNavFadeIn 0.22s var(--ease-smooth-out) forwards;
   }
 
+  html[data-theme="light"] .nav-menu.is-open {
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
+  }
+
   .nav-link {
     font-size: var(--fs-body);
     padding: 0.7rem 1rem;
@@ -196,6 +202,12 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
     color: var(--text-ink);
     border: 1px solid var(--border-subtle);
     width: 100%;
+  }
+
+  html[data-theme="light"] .nav-link {
+    color: #0f172a;
+    background-color: #f8fafc;
+    border-color: rgba(15, 23, 42, 0.1);
   }
 
   .nav-link.active {

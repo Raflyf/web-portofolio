@@ -357,6 +357,18 @@ img, svg {
     z-index: var(--z-dropdown);
   }
 
+  html[data-theme="light"] .nav-menu.is-open {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.12) !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  html[data-theme="light"] .nav-link {
+    color: #0f172a !important;
+    background-color: #f8fafc !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+  }
+
   .mobile-nav-toggle {
     display: inline-flex !important;
   }
