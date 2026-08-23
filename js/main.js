@@ -579,7 +579,7 @@ function renderProjects(category) {
     const card = document.createElement('article');
     card.className = 'project-card reveal-item';
     card.setAttribute('tabindex', '0');
-    card.style.transitionDelay = `${idx * 55}ms`;
+    card.style.transitionDelay = `${idx * 30}ms`;
 
     const topWrap = document.createElement('div');
     topWrap.className = 'project-card__top';
