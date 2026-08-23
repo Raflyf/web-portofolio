@@ -1009,7 +1009,7 @@ window.addEventListener('scroll', () => {
 
 function initScrollReveal() {
   const revealElements = document.querySelectorAll(
-    '.section-header, .about-bio, .pillar-card, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-window, .contact-card, .stats-strip, .hero-showcase-canvas'
+    '.section-header, .about-bio, .pillar-card, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-card, #terminal-inpage-slot, .contact-card, .contact-form-card, .contact-info-card, .stats-strip, .hero-showcase-canvas'
   );
 
   if (revealElements.length === 0) return;
