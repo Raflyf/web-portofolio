@@ -1772,7 +1772,9 @@ Langkah yang WAJIB Anda lakukan:
           { provider: 'omniroute', model: 'Codex', timeout: 8000 },
           // Tier 1b: OmniRoute nemotron-laguna (550B fallback)
           { provider: 'omniroute', model: 'nemotron-laguna', timeout: 5000 },
-          // Tier 1c: OmniRoute Antigravity (claude-opus — last resort, cepat limit)
+          // Tier 1c: OmniRoute x-preview-f-free
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 5000 },
+          // Tier 1d: OmniRoute Antigravity (claude-opus — last resort, cepat limit)
           { provider: 'omniroute', model: 'Antigravity', timeout: 5000 },
           // Tier 2: Ollama Cloud Nemotron-3-Ultra
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
