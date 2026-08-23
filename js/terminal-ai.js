@@ -593,7 +593,7 @@ ${certsOverview}
     if (userProvider === 'openrouter' || userProvider === 'auto' || !this.customApiProvider) {
       try {
         const customCtrl = new AbortController();
-        const customTimer = setTimeout(() => customCtrl.abort(), 20000);
+        const customTimer = setTimeout(() => customCtrl.abort(), 120000);
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -603,7 +603,9 @@ ${certsOverview}
             'X-Title': 'Rafly Portfolio Lab'
           },
           body: JSON.stringify({
-            model: (this.currentModel && this.currentModel !== 'auto') ? this.currentModel : 'nvidia/nemotron-3-nano-30b-a3b:free',
+            model: (this.currentModel && this.currentModel !== 'auto') 
+              ? this.currentModel 
+              : (this.reasoningEffort === 'high' ? 'nvidia/nemotron-4-340b-instruct' : 'nvidia/nemotron-3-nano-30b-a3b:free'),
             messages: [
               { role: 'system', content: 'Kamu adalah asisten AI teknis profesional. Jawab selalu dalam Bahasa Indonesia.' },
               ...this.conversationHistory.slice(-10),
