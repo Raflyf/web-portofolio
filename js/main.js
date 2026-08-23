@@ -999,7 +999,9 @@ function initScrollProgressBar() {
 }
 
 function initScrollReveal() {
-  const revealElements = document.querySelectorAll('.section, .bento-tile, .project-card, .certificate-card, .timeline-item');
+  const revealElements = document.querySelectorAll(
+    '.section-header, .about-bio, .pillar-card, .bento-tile, .project-card, .certificate-card, .timeline-item, .terminal-window, .contact-card, .stats-strip, .hero-showcase-canvas'
+  );
 
   if (revealElements.length === 0) return;
 
@@ -1010,7 +1012,10 @@ function initScrollReveal() {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.15 });
+  }, {
+    rootMargin: '0px 0px -50px 0px',
+    threshold: 0.08
+  });
 
   revealElements.forEach(el => {
     el.classList.add('reveal-item');
