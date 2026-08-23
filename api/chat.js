@@ -651,7 +651,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'vision',
       isAnalysisOrComparison: true,
       effort: 'medium',
-      omniCandidates: ['Vision-model', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/minimax-m3'],
+      omniCandidates: ['Vision-model', 'opencode/nemotron-3-ultra-free', 'meta-llama/llama-3.3-70b-instruct:free', 'ollama/minimax-m3'],
       label: 'Vision & Multimodal Perception (Gemini 3.1 Flash & MiniMax M3)'
     };
   }
@@ -677,7 +677,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'project_architecture',
       isAnalysisOrComparison: true,
       effort: 'high',
-      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'meta-llama/llama-3.3-70b-instruct:free', 'opencode/nemotron-3-ultra-free'],
       label: 'Deep Architecture, Explanation & Comparative Analysis (Nemotron Ultra 550B)'
     };
   }
@@ -689,7 +689,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'deep_reasoning',
       isAnalysisOrComparison: true,
       effort: 'thinking',
-      omniCandidates: ['Antigravity', 'Codex', 'x-preview-f-free', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      omniCandidates: ['Antigravity', 'Codex', 'x-preview-f-free', 'nemotron-laguna', 'meta-llama/llama-3.3-70b-instruct:free', 'opencode/nemotron-3-ultra-free'],
       label: 'Deep Reasoning & Mathematical Derivations (Nemotron Ultra 550B)'
     };
   }
@@ -701,7 +701,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'heavy_coding',
       isAnalysisOrComparison: true,
       effort: 'high',
-      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'meta-llama/llama-3.3-70b-instruct:free', 'opencode/nemotron-3-ultra-free'],
       label: 'Heavy Coding & System Architecture (Nemotron Ultra 550B & Codex)'
     };
   }
@@ -713,7 +713,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'heavy_coding',
       isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
       effort: 'medium',
-      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
+      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'meta-llama/llama-3.3-70b-instruct:free', 'opencode/nemotron-3-ultra-free'],
       label: 'Coding & Algorithm Synthesis (Nemotron & Codex)'
     };
   }
@@ -724,7 +724,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     category: isShortQuery ? 'trivial_casual' : 'basic_standard',
     isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
     effort: isShortQuery ? 'low' : 'medium',
-    omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/nemotron-3-ultra', 'ollama/minimax-m3'],
+    omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-laguna', 'opencode/nemotron-3-ultra-free', 'meta-llama/llama-3.3-70b-instruct:free', 'ollama/nemotron-3-ultra', 'ollama/minimax-m3'],
     label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Ultra 550B)' : (isShortQuery ? 'Quick Interaction (Nemotron Nano 30B)' : 'Standard Q&A (Nemotron Nano 30B)')
   };
 }
@@ -1707,7 +1707,7 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 18000 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 14000 },
             { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 }
+            { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 6000 }
           ];
         }
         if (t.includes('x-preview') || t.includes('preview')) {
@@ -1715,25 +1715,25 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'opencode', model: 'x-preview-f-free', timeout: 15000 },
             { provider: 'omniroute', model: 'x-preview-f-free', timeout: 5000 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 14000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 5000 }
+            { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', timeout: 10000 },
+            { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 5000 }
           ];
         }
         if (t.includes('ultra') || t.includes('nemotron')) {
           return [
             { provider: 'omniroute', model: 'nemotron-laguna', timeout: 3500 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
+            { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', timeout: 16000 },
             { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 4000 }
+            { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 4000 }
           ];
         }
         if (t.includes('codex') || t.includes('antigravity')) {
           return [
             { provider: 'omniroute', model: t.includes('antigravity') ? 'Antigravity' : 'Codex', timeout: 3500 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 20000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 15000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 }
+            { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', timeout: 15000 },
+            { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 6000 }
           ];
         }
         if (t.includes('minimax') || t.includes('m3')) {
@@ -1741,8 +1741,8 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
             { provider: 'ollama', model: 'minimax-m3', timeout: 12000 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 15000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 8000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 4000 }
+            { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', timeout: 8000 },
+            { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 4000 }
           ];
         }
       }
@@ -1755,7 +1755,7 @@ Langkah yang WAJIB Anda lakukan:
           // Tier 2: Ollama Cloud Nemotron-3-Nano (Sangat hemat token, sub-1s)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
           // Tier 3: OpenRouter Nemotron-3-Nano (0.8s ultra-fast free)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 5000 },
+          { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 5000 },
           // Tier 4: OpenCode Zen Fast Buffer
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
           // Tier 5: Ollama Cloud MiniMax-M3
@@ -1771,11 +1771,11 @@ Langkah yang WAJIB Anda lakukan:
           // Tier 2: Ollama Cloud Nemotron-3-Ultra (SOTA 550B MoE)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 22000 },
           // Tier 3: OpenRouter Nemotron-3-Ultra-550B
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
+          { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', timeout: 16000 },
           // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free (SOTA 550B Reasoning)
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
           // Tier 5: OpenRouter Nemotron-3-Nano (Jaminan Safety Net Sub-5s)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 4000 }
+          { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 4000 }
         ];
       }
 
@@ -1786,11 +1786,11 @@ Langkah yang WAJIB Anda lakukan:
         // Tier 2: Ollama Cloud Nemotron-3-Ultra
         { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 18000 },
         // Tier 3: OpenRouter Nemotron-3-Ultra-550B
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
+        { provider: 'openrouter', model: 'meta-llama/llama-3.3-70b-instruct:free', timeout: 14000 },
         // Tier 4: OpenCode Zen Nemotron-3-Ultra-Free
         { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 },
         // Tier 5: OpenRouter Nemotron-3-Nano-30B
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 6000 }
+        { provider: 'openrouter', model: 'google/gemini-2.0-flash-lite-preview-02-05:free', timeout: 6000 }
       ];
     }
 
