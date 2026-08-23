@@ -554,11 +554,11 @@
 }
 
 .marquee-track--left {
-  animation: hxMarqueeLeft 24s linear infinite !important;
+  animation: hxMarqueeLeft 52s linear infinite !important;
 }
 
 .marquee-track--right {
-  animation: hxMarqueeRight 24s linear infinite !important;
+  animation: hxMarqueeRight 52s linear infinite !important;
 }
 
 .marquee-container:hover .marquee-track {
@@ -607,16 +607,16 @@
    ========================================================================== */
 .reveal-item {
   opacity: 0 !important;
-  transform: perspective(1000px) translateY(45px) scale(0.95) !important;
-  filter: blur(8px) !important;
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform: perspective(1000px) translateY(40px) scale(0.96) !important;
+  filter: blur(6px) !important;
+  transition: opacity 0.68s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.68s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.68s cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: opacity, transform, filter;
 }
 
 .reveal-item.reveal-from-top {
-  transform: perspective(1000px) translateY(-45px) scale(0.95) !important;
+  transform: perspective(1000px) translateY(-40px) scale(0.96) !important;
 }
 
 .reveal-item.is-revealed {
@@ -732,9 +732,9 @@
    6. MOTION PERSISTENCE & HARDWARE ACCELERATION
    ========================================================================== */
 .marquee-track--left {
-  animation: hxMarqueeLeft 24s linear infinite !important;
+  animation: hxMarqueeLeft 52s linear infinite !important;
 }
 
 .marquee-track--right {
-  animation: hxMarqueeRight 24s linear infinite !important;
+  animation: hxMarqueeRight 52s linear infinite !important;
 }
