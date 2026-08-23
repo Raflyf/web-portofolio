@@ -199,7 +199,7 @@ function initHeroShowcaseCarousel() {
         updateSlide(false);
       }
       isTransitioning = false;
-    }, 650);
+    }, 950);
   }
 
   function prevSlide() {
@@ -215,7 +215,7 @@ function initHeroShowcaseCarousel() {
           updateSlide(true);
           setTimeout(() => {
             isTransitioning = false;
-          }, 650);
+          }, 950);
         });
       });
     } else {
@@ -223,7 +223,7 @@ function initHeroShowcaseCarousel() {
       updateSlide(true);
       setTimeout(() => {
         isTransitioning = false;
-      }, 650);
+      }, 950);
     }
   }
 
