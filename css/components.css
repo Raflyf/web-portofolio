@@ -1294,13 +1294,15 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 48px;
+  padding-top: 36px;
   animation: convoFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1313,11 +1315,13 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  background: rgba(2, 6, 23, 0.7);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .convo-history-panel {
@@ -1536,6 +1540,83 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   font-size: 0.8rem;
   font-family: var(--font-mono);
 }
+
+/* Light Mode Overrides for Conversation History Modal */
+[data-theme="light"] .convo-history-backdrop {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+[data-theme="light"] .convo-history-panel {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  box-shadow: 0 24px 60px -10px rgba(15, 23, 42, 0.25), 0 0 30px rgba(16, 185, 129, 0.1);
+  color: #0f172a;
+}
+
+[data-theme="light"] .convo-search-box {
+  background: rgba(241, 245, 249, 0.85);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .convo-search-input {
+  color: #0f172a;
+}
+
+[data-theme="light"] .convo-search-input::placeholder {
+  color: #64748b;
+}
+
+[data-theme="light"] .convo-esc-tag {
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .convo-group-label {
+  color: #64748b;
+}
+
+[data-theme="light"] .convo-item:hover,
+[data-theme="light"] .convo-item--selected {
+  background: rgba(15, 23, 42, 0.05);
+}
+
+[data-theme="light"] .convo-item--active {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+[data-theme="light"] .convo-item-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .convo-item--active .convo-item-title {
+  color: #059669;
+}
+
+[data-theme="light"] .convo-item-preview {
+  color: #64748b;
+}
+
+[data-theme="light"] .convo-item-time {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .convo-delete-btn {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .convo-footer {
+  background: rgba(248, 250, 252, 0.95);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  color: #64748b;
+}
+
+[data-theme="light"] .convo-footer-hint kbd {
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  color: #475569;
+}
+
 
 /* Terminal Advanced Markdown Typography & Tables */
 .terminal-table-wrapper {
@@ -2736,44 +2817,6 @@ body.modal-open {
   max-height: calc(90vh - 170px);
   overflow-y: auto;
   overscroll-behavior: contain;
-}
-
-/* Convo history panel inside popup modal: use fixed so it escapes overflow:hidden clip */
-.terminal-modal-slot .convo-history-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 10000;
-  padding-top: 80px;
-}
-
-.terminal-modal-slot .convo-history-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-}
-
-/* Teleported state: convoModal is appended directly to body when in popup mode */
-.convo-modal--teleported {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 100001;
-  padding-top: 80px;
-}
-
-.convo-modal--teleported .convo-history-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
 }
 
 /* ==========================================================================
