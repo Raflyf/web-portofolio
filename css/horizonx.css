@@ -651,15 +651,12 @@
 }
 
 /* ==========================================================================
-   6. REDUCED MOTION OVERRIDES
+   6. MOTION PERSISTENCE & HARDWARE ACCELERATION
    ========================================================================== */
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track,
-  .motif-3d-card,
-  .modal-dialog[open],
-  .terminal-modal-dialog[open] {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-  }
+.marquee-track--left {
+  animation: hxMarqueeLeft 24s linear infinite !important;
+}
+
+.marquee-track--right {
+  animation: hxMarqueeRight 24s linear infinite !important;
 }
