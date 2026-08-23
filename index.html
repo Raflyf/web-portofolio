@@ -233,159 +233,90 @@
   <main id="main-content" role="main">
 
     <!-- =======================================================================
-         1. HERO SECTION (HorizonX Staggered Typography & 3D Fan-Cards Stack)
+         1. HERO SECTION (HorizonX Aurel Liquid Hero & Vantro AI Showcase)
          ======================================================================= -->
     <section class="hero-section" id="hero" aria-labelledby="hero-title">
-      <div class="container">
-        <div class="hero-grid">
-          <!-- Left Column: Editorial Introduction -->
-          <div class="hero-intro-wrap">
-            <div class="hero-live-badge hero-fadescale">
-              <span class="status-indicator" aria-hidden="true"></span>
-              <span>S1 Informatika UBSI · Terbuka untuk Riset & Rekayasa AI/ML</span>
-              <span id="hero-clock" style="margin-left:auto;font-family:var(--font-mono);font-size:0.75rem;color:var(--accent-emerald);">WIB (UTC+7)</span>
+      <div class="container hero-liquid-wrap">
+        
+        <!-- Live Status Pill Badge -->
+        <div class="hero-pill-badge">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span>S1 Informatika UBSI · Terbuka untuk Riset &amp; Rekayasa AI/ML</span>
+          <span id="hero-clock" style="font-family:var(--font-mono);font-size:0.75rem;margin-left:0.5rem;color:var(--accent-emerald);">WIB (UTC+7)</span>
+        </div>
+
+        <!-- Grand Title -->
+        <h1 id="hero-title" class="hero-main-title">
+          Membangun Sistem Cerdas, Riset AI &amp; <span class="hero-title-gradient">Arsitektur Web Modern</span>.
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="hero-lead-text">
+          Portofolio resmi <strong>Rafly Firmansyah</strong> (@Raflyf) — Mahasiswa S1 Informatika di Universitas Bina Sarana Informatika yang mendalami riset NLP Multilingual Sentence Transformers, klasifikasi Machine Learning, Computer Vision, dan arsitektur jaringan MikroTik (MTCNA).
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="hero-btn-group">
+          <a href="#projects" class="btn-liquid-primary">
+            <span>Jelajahi Proyek Riset</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+          <a href="#lab" class="btn-liquid-glass">
+            <span>Uji Terminal AI Lab</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          </a>
+        </div>
+
+        <!-- Vantro / Aurel Central Interactive Showcase Deck -->
+        <div class="hero-showcase-canvas" role="region" aria-label="Showcase Unggulan Platform">
+          <div class="showcase-window-header">
+            <div class="showcase-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
             </div>
-
-            <h1 id="hero-title" class="hero-title">
-              <span class="hero-h1-word"><span class="hero-h1-char" style="--ci:0">M</span><span class="hero-h1-char" style="--ci:1">e</span><span class="hero-h1-char" style="--ci:2">m</span><span class="hero-h1-char" style="--ci:3">b</span><span class="hero-h1-char" style="--ci:4">a</span><span class="hero-h1-char" style="--ci:5">n</span><span class="hero-h1-char" style="--ci:6">g</span><span class="hero-h1-char" style="--ci:7">u</span><span class="hero-h1-char" style="--ci:8">n</span></span>
-              <span class="hero-h1-word"><span class="hero-h1-char" style="--ci:9">S</span><span class="hero-h1-char" style="--ci:10">i</span><span class="hero-h1-char" style="--ci:11">s</span><span class="hero-h1-char" style="--ci:12">t</span><span class="hero-h1-char" style="--ci:13">e</span><span class="hero-h1-char" style="--ci:14">m</span></span>
-              <span class="hero-h1-word"><span class="hero-h1-char" style="--ci:15">C</span><span class="hero-h1-char" style="--ci:16">e</span><span class="hero-h1-char" style="--ci:17">r</span><span class="hero-h1-char" style="--ci:18">d</span><span class="hero-h1-char" style="--ci:19">a</span><span class="hero-h1-char" style="--ci:20">s</span></span>
-              <span class="hero-h1-word"><span class="hero-h1-char" style="--ci:21">&amp;</span></span>
-              <br class="hidden sm:inline">
-              <span class="hero-h1-word"><span class="hero-h1-char" style="--ci:22">R</span><span class="hero-h1-char" style="--ci:23">i</span><span class="hero-h1-char" style="--ci:24">s</span><span class="hero-h1-char" style="--ci:25">e</span><span class="hero-h1-char" style="--ci:26">t</span></span>
-              <span class="hero-h1-word"><span class="hero-title__highlight"><span class="hero-h1-char" style="--ci:27">A</span><span class="hero-h1-char" style="--ci:28">I</span> <span class="hero-h1-char" style="--ci:29">T</span><span class="hero-h1-char" style="--ci:30">e</span><span class="hero-h1-char" style="--ci:31">r</span><span class="hero-h1-char" style="--ci:32">b</span><span class="hero-h1-char" style="--ci:33">u</span><span class="hero-h1-char" style="--ci:34">k</span><span class="hero-h1-char" style="--ci:35">a</span></span></span>.
-            </h1>
-
-            <p class="hero-subtitle hero-fadescale">
-              Halo, saya <strong>Rafly Firmansyah</strong> (@Raflyf). Mahasiswa <strong>S1 Informatika</strong> di <strong>Universitas Bina Sarana Informatika (UBSI)</strong> yang berfokus pada riset NLP (Sentence Transformers), klasifikasi Machine Learning, rekayasa jaringan MikroTik (MTCNA), dan arsitektur web modern.
-            </p>
-
-            <div class="hero-actions hero-fadescale">
-              <a href="#projects" class="btn-primary">
-                <span>Jelajahi Proyek</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-              </a>
-              <a href="#certificates" class="btn-secondary">
-                <span>Lihat Sertifikat</span>
-              </a>
+            <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent-emerald);font-weight:600;">
+              rafly@node-ubsi-s1: ~/research-deck (Live Gateway)
             </div>
-
-            <!-- Horizontal Metrics Ribbon -->
-            <div class="hero-metrics-ribbon hero-fadescale" role="region" aria-label="Statistik Pengembang">
-              <div class="hero-metric-item">
-                <div class="hero-metric-val">S1</div>
-                <div class="hero-metric-lbl">Informatika UBSI</div>
-              </div>
-              <div class="hero-metric-item">
-                <div class="hero-metric-val">5<span>+</span></div>
-                <div class="hero-metric-lbl">Proyek Riset GitHub</div>
-              </div>
-              <div class="hero-metric-item">
-                <div class="hero-metric-val">9</div>
-                <div class="hero-metric-lbl">Sertifikasi Terverifikasi</div>
-              </div>
-              <div class="hero-metric-item">
-                <div class="hero-metric-val">15<span>+</span></div>
-                <div class="hero-metric-lbl">Basis Data Terindeks</div>
-              </div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">
+              S1 Informatika UBSI
             </div>
           </div>
 
-          <!-- Right Column: HorizonX 3D Perspective Interactive Fan-Cards Stack -->
-          <div class="hero-fan-container" role="region" aria-label="Showcase Kartu Proyek 3D HorizonX">
-            
-            <!-- Fan Card 1: OpenPlagiarismChecker -->
-            <a href="#projects" class="fan-card" style="--tx: -170px; --ty: 30px; --rot: -14deg; z-index: 10;">
-              <div class="fan-card-media" style="background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(16,185,129,0.35);">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
-                </div>
-                <span class="fan-card-badge">NLP · Skripsi</span>
-              </div>
-              <div class="fan-card-body">
-                <h3 class="fan-card-title">OpenPlagiarismChecker</h3>
-                <p class="fan-card-desc">IndoBERT &amp; RoBERTa Cosine Similarity engine untuk deteksi parafrasa akademik.</p>
-                <div class="fan-card-footer">
-                  <span>99.4% Cosine Precision</span>
-                  <span class="fan-card-action">Buka &rarr;</span>
-                </div>
+          <div class="showcase-grid-preview">
+            <!-- Showcase Card 1: NLP Research -->
+            <a href="#projects" class="showcase-card">
+              <span class="showcase-card-tag">NLP · AI Research</span>
+              <h2 class="showcase-card-title">OpenPlagiarismChecker</h2>
+              <p class="showcase-card-desc">IndoBERT &amp; RoBERTa Cosine Similarity engine untuk deteksi parafrasa akademik IEEE format.</p>
+              <div class="showcase-card-footer">
+                <span>99.4% Cosine Precision</span>
+                <span>Detail &rarr;</span>
               </div>
             </a>
 
-            <!-- Fan Card 2: Spam-Email Classifier -->
-            <a href="#projects" class="fan-card" style="--tx: -85px; --ty: 10px; --rot: -7deg; z-index: 20;">
-              <div class="fan-card-media" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(139,92,246,0.35);">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
-                </div>
-                <span class="fan-card-badge" style="color:var(--hx-glow-purple);">Machine Learning</span>
-              </div>
-              <div class="fan-card-body">
-                <h3 class="fan-card-title">Spam-Email Classifier</h3>
-                <p class="fan-card-desc">TF-IDF Vectorizer &amp; Naive Bayes pipeline anti-phishing dengan domain adaptation.</p>
-                <div class="fan-card-footer">
-                  <span>98.7% F1-Score</span>
-                  <span class="fan-card-action">Buka &rarr;</span>
-                </div>
+            <!-- Showcase Card 2: AI Terminal & SOTA Gateway -->
+            <a href="#lab" class="showcase-card" style="border-color: rgba(16,185,129,0.35); background: rgba(22, 27, 34, 0.85);">
+              <span class="showcase-card-tag" style="background:rgba(6,182,212,0.15);color:var(--hx-cyan);">AI Terminal · SOTA</span>
+              <h2 class="showcase-card-title">OmniRoute AI Gateway</h2>
+              <p class="showcase-card-desc">Multi-provider speculative gateway (Ox-Alpha, Codex, Nemotron 3 Ultra, x-preview-f) sub-3s latency.</p>
+              <div class="showcase-card-footer">
+                <span style="color:var(--hx-cyan);">Sub-3s Failover</span>
+                <span style="color:var(--hx-cyan);">Buka Lab &rarr;</span>
               </div>
             </a>
 
-            <!-- Fan Card 3: Cyber-Editorial Portfolio & AI Terminal (Center Primary) -->
-            <a href="#lab" class="fan-card" style="--tx: 0px; --ty: -8px; --rot: -1.8deg; z-index: 30; border-color: rgba(16,185,129,0.4);">
-              <div class="fan-card-media" style="background: linear-gradient(135deg, #0c4a6e 0%, #082f49 100%);">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(6,182,212,0.4);">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                </div>
-                <span class="fan-card-badge" style="color:var(--hx-glow-cyan);background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.3);">AI Terminal · SOTA</span>
-              </div>
-              <div class="fan-card-body">
-                <h3 class="fan-card-title">AI Portfolio &amp; Terminal</h3>
-                <p class="fan-card-desc">Multi-provider speculative gateway (Ox-Alpha, Codex, Nemotron 3 Ultra, x-preview-f).</p>
-                <div class="fan-card-footer">
-                  <span>Sub-3s Failover</span>
-                  <span class="fan-card-action">Coba Lab &rarr;</span>
-                </div>
+            <!-- Showcase Card 3: Computer Vision & Edge AI -->
+            <a href="#projects" class="showcase-card">
+              <span class="showcase-card-tag" style="background:rgba(245,158,11,0.15);color:var(--hx-amber);">Computer Vision</span>
+              <h2 class="showcase-card-title">MediaPipe &amp; OpenCV</h2>
+              <p class="showcase-card-desc">Hand landmark tracker untuk kontrol gestur presentasi PPT dan deteksi blur varians Laplacian.</p>
+              <div class="showcase-card-footer">
+                <span style="color:var(--hx-amber);">60 FPS Low Latency</span>
+                <span style="color:var(--hx-amber);">Detail &rarr;</span>
               </div>
             </a>
-
-            <!-- Fan Card 4: laser_pointer_PPT -->
-            <a href="#projects" class="fan-card" style="--tx: 85px; --ty: 10px; --rot: 6.8deg; z-index: 20;">
-              <div class="fan-card-media" style="background: linear-gradient(135deg, #78350f 0%, #451a03 100%);">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(245,158,11,0.35);">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                </div>
-                <span class="fan-card-badge" style="color:var(--hx-glow-amber);">Computer Vision</span>
-              </div>
-              <div class="fan-card-body">
-                <h3 class="fan-card-title">laser_pointer_PPT</h3>
-                <p class="fan-card-desc">MediaPipe Hand Landmark tracker untuk kontrol gestur presenter PPT Morph.</p>
-                <div class="fan-card-footer">
-                  <span>60 FPS Latency Rendah</span>
-                  <span class="fan-card-action">Buka &rarr;</span>
-                </div>
-              </div>
-            </a>
-
-            <!-- Fan Card 5: FotoKitaBlur -->
-            <a href="#projects" class="fan-card" style="--tx: 170px; --ty: 30px; --rot: 14deg; z-index: 10;">
-              <div class="fan-card-media" style="background: linear-gradient(135deg, #134e4a 0%, #042f2e 100%);">
-                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(20,184,166,0.35);">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                </div>
-                <span class="fan-card-badge">Edge Vision</span>
-              </div>
-              <div class="fan-card-body">
-                <h3 class="fan-card-title">FotoKitaBlur Filter</h3>
-                <p class="fan-card-desc">Evaluasi ketajaman foto otomatis menggunakan algoritma varians Laplacian OpenCV.</p>
-                <div class="fan-card-footer">
-                  <span>Laplacian Engine</span>
-                  <span class="fan-card-action">Buka &rarr;</span>
-                </div>
-              </div>
-            </a>
-
           </div>
         </div>
+
       </div>
     </section>
 
