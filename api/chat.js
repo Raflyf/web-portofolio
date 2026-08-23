@@ -1752,49 +1752,41 @@ Langkah yang WAJIB Anda lakukan:
       // 2. CASUAL / TRIVIAL QUERIES (Dedicated OmniRoute / Nemotron Nano Pool)
       if (isTrivialCasual) {
         return [
-          // Tier 1: OmniRoute Dedicated Gateway (Fast Probe)
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 10000 },
-          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 8000 },
+          // Tier 1: OmniRoute Dedicated Gateway (Single Fast 6s Probe)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 6000 },
           // Tier 2: Nemotron Nano Super-Fast Pool (Sub-second response)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 6000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
           // Tier 3: Fast Buffer Pool
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 6000 },
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 6000 }
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 }
         ];
       }
 
       // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Fast Deep Reasoning Pool)
       if (isComplexReasoning) {
         return [
-          // Tier 1: OmniRoute Dedicated Gateway (Fastest Probes & Reasoning)
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 12000 },
-          { provider: 'omniroute', model: 'Codex', timeout: 12000 },
-          { provider: 'omniroute', model: 'nemotron-laguna', timeout: 10000 },
-          { provider: 'omniroute', model: 'Antigravity', timeout: 8000 },
+          // Tier 1: OmniRoute Dedicated Gateway (Single Fast 8s Probe)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 8000 },
           // Tier 2: Nemotron Nano Pool (Fast, Complete, Zero-Timeout Guarantee)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 6000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
-          // Tier 3: Fast Cloud Reasoning (x-preview, ox-alpha, OpenCode)
-          { provider: 'opencode', model: 'x-preview-f-free', timeout: 7000 },
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7000 },
-          { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 }
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
+          // Tier 3: Fast Cloud Reasoning (ox-alpha & Ollama)
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 }
         ];
       }
 
       // 4. UNIVERSAL AUTO DEFAULT
       return [
-        // Tier 1: OmniRoute Gateway
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 12000 },
-        { provider: 'omniroute', model: 'nemotron-laguna', timeout: 10000 },
-        { provider: 'omniroute', model: 'Codex', timeout: 10000 },
+        // Tier 1: OmniRoute Gateway (Single Fast 7s Probe)
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 7000 },
         // Tier 2: Nemotron Nano Super-Fast Pool
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 6000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
         // Tier 3: Fast Buffer Pool
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 7000 },
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 }
+        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 }
       ];
     }
 
