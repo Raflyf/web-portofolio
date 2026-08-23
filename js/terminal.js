@@ -1794,6 +1794,12 @@ export function initTerminal() {
       try {
         if (terminalCard.parentNode !== terminalInpageSlot) {
           terminalInpageSlot.appendChild(terminalCard);
+          terminalCard.classList.remove('terminal-landing');
+          void terminalCard.offsetWidth;
+          terminalCard.classList.add('terminal-landing');
+          setTimeout(() => {
+            terminalCard.classList.remove('terminal-landing');
+          }, 450);
         }
         // Ensure convo-history-modal stays inside terminalCard
         if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
