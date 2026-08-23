@@ -647,23 +647,26 @@ body {
 }
 
 /* ==========================================================================
-   5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE
+   5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE (3D BLUR & SPRING CURVE)
    ========================================================================== */
 .reveal-item {
   opacity: 0 !important;
-  transform: translateY(32px) !important;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: opacity, transform;
+  transform: perspective(1000px) translateY(44px) scale(0.96) !important;
+  filter: blur(8px) !important;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform, filter;
 }
 
 .reveal-item.reveal-from-top {
-  transform: translateY(-32px) !important;
+  transform: perspective(1000px) translateY(-44px) scale(0.96) !important;
 }
 
 .reveal-item.is-revealed {
   opacity: 1 !important;
-  transform: translateY(0) !important;
+  transform: perspective(1000px) translateY(0) scale(1) !important;
+  filter: blur(0px) !important;
 }
 
 /* Universal Instant Hover with Zero Delay across All Revealed Cards */

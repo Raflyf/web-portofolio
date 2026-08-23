@@ -1306,21 +1306,20 @@ function initScrollReveal() {
   globalScrollObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        if (scrollDirection === 'up') {
+        entry.target.classList.add('is-revealed');
+      } else {
+        entry.target.classList.remove('is-revealed');
+        // If element is above the viewport, mark it as reveal-from-top so it slides down when scrolling back up
+        if (entry.boundingClientRect.top < 0) {
           entry.target.classList.add('reveal-from-top');
         } else {
           entry.target.classList.remove('reveal-from-top');
         }
-        entry.target.classList.add('is-revealed');
-      } else {
-        // Reset in both directions so elements re-animate when scrolling up and down
-        entry.target.classList.remove('is-revealed');
-        entry.target.classList.remove('reveal-from-top');
       }
     });
   }, {
-    rootMargin: '-50px 0px -60px 0px',
-    threshold: 0.15
+    rootMargin: '-30px 0px -40px 0px',
+    threshold: 0.08
   });
 
   refreshScrollReveal();
