@@ -1276,7 +1276,11 @@ Langkah yang WAJIB Anda lakukan:
       let currentBudget = maxTotalChars - (systemStr.length + userStr.length);
       if (currentBudget < 1500) currentBudget = 1500;
 
-      const validHistory = Array.isArray(historyList) ? historyList : [];
+      const validHistory = (Array.isArray(historyList) ? historyList : []).filter(item => {
+        if (!item || !item.content) return false;
+        const c = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
+        return !c.includes('antrean seluruh provider AI sedang penuh') && !c.includes('kendala jaringan') && !c.includes('[AI Fallback]');
+      });
       const selectedHistory = [];
 
       for (let i = validHistory.length - 1; i >= 0; i--) {
