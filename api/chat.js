@@ -1789,10 +1789,12 @@ Langkah yang WAJIB Anda lakukan:
         const t = model.toLowerCase();
         if (t.includes('ox-alpha') || t.includes('0x-alpha') || t.includes('alpha')) {
           return [
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
+            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
             { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3500 },
             { provider: 'opencode', model: 'x-preview-f-free', timeout: 5000 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 }
           ];
         }
@@ -1800,18 +1802,20 @@ Langkah yang WAJIB Anda lakukan:
           return [
             { provider: 'opencode', model: 'x-preview-f-free', timeout: 5000 },
             { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3500 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7500 },
+            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 }
           ];
         }
         if (t.includes('ultra') || t.includes('nemotron')) {
           return [
             { provider: 'omniroute', model: 'nemotron-laguna', timeout: 3500 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7500 },
+            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
             { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 }
           ];
@@ -1819,9 +1823,11 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('codex') || t.includes('antigravity')) {
           return [
             { provider: 'omniroute', model: t.includes('antigravity') ? 'Antigravity' : 'Codex', timeout: 3500 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7500 },
+            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
             { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
             { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 }
           ];
         }
@@ -1829,9 +1835,10 @@ Langkah yang WAJIB Anda lakukan:
           return [
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 6500 },
             { provider: 'ollama', model: 'minimax-m3', timeout: 6500 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7500 },
+            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 },
             { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7000 }
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 }
           ];
         }
       }
@@ -1845,7 +1852,7 @@ Langkah yang WAJIB Anda lakukan:
           { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
           // Tier 3: OpenCode Zen x-preview
           { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
-          // Tier 4: Nemotron Ultra Pool (Ollama Cloud & OpenCode & OpenRouter)
+          // Tier 4: Nemotron Ultra Pool (Ollama Cloud -> OpenCode -> OpenRouter)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 4500 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
@@ -1866,7 +1873,7 @@ Langkah yang WAJIB Anda lakukan:
           { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
           // Tier 3: OpenCode Zen x-preview
           { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
-          // Tier 4: Nemotron Ultra Pool (Ollama Cloud & OpenCode & OpenRouter)
+          // Tier 4: Nemotron Ultra Pool (Ollama Cloud -> OpenCode -> OpenRouter)
           { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7500 },
           { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
@@ -1886,7 +1893,7 @@ Langkah yang WAJIB Anda lakukan:
         { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 9000 },
         // Tier 3: OpenCode Zen x-preview
         { provider: 'opencode', model: 'x-preview-f-free', timeout: 4500 },
-        // Tier 4: Nemotron Ultra Pool (Ollama Cloud & OpenCode)
+        // Tier 4: Nemotron Ultra Pool (Ollama Cloud -> OpenCode -> OpenRouter)
         { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 7000 },
         { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 5000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 5000 },
