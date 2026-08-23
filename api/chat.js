@@ -1518,18 +1518,20 @@ Langkah yang WAJIB Anda lakukan:
       const perKeyTimeout = Math.min(tOut, 4500);
       const keysToTry = OPENROUTER_KEYS.slice(0, 3);
 
-      // OpenRouter payload normalization (encapsulate system prompt into user message for instant sub-3s responses)
-      const formattedMessages = (function() {
-        const sys = openRouterMessages.find(m => m.role === 'system');
-        const nonSys = openRouterMessages.filter(m => m.role !== 'system');
-        if (sys && nonSys.length > 0) {
-          const uIdx = nonSys.findIndex(m => m.role === 'user');
-          if (uIdx !== -1) {
-            return nonSys.map((m, i) => i === uIdx ? { ...m, content: `[Instruksi: ${sys.content}]\n\n${m.content}` } : m);
-          }
-        }
-        return openRouterMessages;
-      })();
+      // Model-specific payload normalization (stealth/ox-alpha requires user-encapsulated instructions for sub-2s responses)
+      const formattedMessages = (mName === 'stealth/ox-alpha')
+        ? (function() {
+            const sys = openRouterMessages.find(m => m.role === 'system');
+            const nonSys = openRouterMessages.filter(m => m.role !== 'system');
+            if (sys && nonSys.length > 0) {
+              const lastUserIdx = nonSys.findLastIndex ? nonSys.findLastIndex(m => m.role === 'user') : nonSys.map(m => m.role).lastIndexOf('user');
+              if (lastUserIdx !== -1 && typeof nonSys[lastUserIdx].content === 'string') {
+                return nonSys.map((m, i) => i === lastUserIdx ? { ...m, content: `[Instruksi: ${sys.content}]\n\n${m.content}` } : m);
+              }
+            }
+            return openRouterMessages.filter(m => m.role !== 'system');
+          })()
+        : openRouterMessages;
 
       for (const orKey of keysToTry) {
         try {
