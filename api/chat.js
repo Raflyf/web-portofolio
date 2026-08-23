@@ -1516,7 +1516,7 @@ Langkah yang WAJIB Anda lakukan:
             body: JSON.stringify({
               model: mName,
               messages: openRouterMessages,
-              max_tokens: 2048,
+              max_tokens: maxTokensConfig,
               temperature: 0.3
             })
           }, tOut);
@@ -1527,7 +1527,11 @@ Langkah yang WAJIB Anda lakukan:
               if (res.data.error.message?.includes('upstream')) break;
               continue;
             }
-            const content = res.data?.choices?.[0]?.message?.content;
+            const msg = res.data?.choices?.[0]?.message;
+            let content = msg?.content;
+            if ((!content || content.trim().length === 0) && msg?.reasoning) {
+              content = msg.reasoning;
+            }
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'OpenRouter Cloud Pool');
             }
@@ -1551,7 +1555,7 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 10000) {
+    async function callOpenCode(mName, tOut = 6000) {
       if (OPENCODE_KEYS.length === 0) return null;
       for (const ocKey of OPENCODE_KEYS) {
         try {
@@ -1570,6 +1574,10 @@ Langkah yang WAJIB Anda lakukan:
           }, tOut);
 
           if (res.ok) {
+            if (typeof res.text === 'string' && res.text.includes('Not Found')) {
+              providerErrors.push(`OpenCode ${mName}: upstream endpoint deprecated/not found`);
+              break; // Fail fast immediately
+            }
             const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'OpenCode Zen Pool');
