@@ -12,169 +12,7 @@ import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v
 import { telemetry } from './telemetry.js?v=10.100.0';
 
 // ============================================================================
-// 1. IN-BROWSER SEMANTIC KNOWLEDGE BASE (Offline Standalone Fallback)
-// ============================================================================
-const SEMANTIC_PATTERNS = [
-  {
-    keywords: ['model apa', 'kamu model apa', 'model kamu apa', 'siapa kamu', 'asisten apa', 'ai apa', 'who are you', 'what model', 'kamu siapa', 'kamu ai apa', 'ini ai apa', 'modelnya apa'],
-    respond: () => [
-      "Saya adalah asisten AI interaktif di website portofolio Rafly Firmansyah.",
-      "Saya siap membantu Anda mengeksplorasi proyek riset Machine Learning, NLP, IoT, dan repositori kode Rafly. Ada yang ingin Anda diskusikan?"
-    ]
-  },
-  {
-    keywords: ['github', 'repo', 'repositori', 'source code', 'link github', 'git', 'web-portofolio', 'raflyf'],
-    respond: () => [
-      "Repositori resmi GitHub untuk portofolio dan riset Rafly Firmansyah:",
-      "• Web Portofolio (Utama) : https://github.com/Raflyf/web-portofolio",
-      "• Profil Akun GitHub     : https://github.com/Raflyf (@Raflyf)",
-      "",
-      "Repositori Riset Open-Source:",
-      "1. OpenPlagiarismChecker : https://github.com/Raflyf/OpenPlagiarismChecker",
-      "2. Spam-Email-Classifier : https://github.com/Raflyf/Spam-Email-Classifier",
-      "3. Laser-Pointer-PPT     : https://github.com/Raflyf/Laser-Pointer-PPT-Presenter-Gesture",
-      "4. FotoKitaBlur          : https://github.com/Raflyf/FotoKitaBlur"
-    ]
-  },
-  {
-    keywords: ['plagiarism', 'plagiat', 'turnitin', 'openplagiarism', 'skripsi', 'n-gram', 'shingling', 'sentence transformer', 'semantic paraphrasing'],
-    respond: () => [
-      "[RISET AKADEMIK UNGGULAN: OpenPlagiarismChecker]",
-      "----------------------------------------------------------------",
-      "Sistem deteksi kesamaan dokumen akademik komprehensif mengutamakan privasi:",
-      "  - Exact Match Engine   : 5-Word N-Gram Shingling (pencocokan cepat)",
-      "  - Paraphrasing Engine  : Multilingual Sentence Transformers (Cosine Sim)",
-      "  - Repository Indexed   : 15+ Basis data jurnal (GARUDA, Neliti, BASE, dll)",
-      "  - Stack Teknologi      : Python, Flask, PyTorch, Scikit-Learn",
-      "  - Status Riset         : Siap deployment riset skripsi 2026",
-      "  - Repositori GitHub    : https://github.com/Raflyf/OpenPlagiarismChecker"
-    ]
-  },
-  {
-    keywords: ['spam', 'email', 'complement naive bayes', 'naive bayes', 'cnb', 'xgboost', 'klasifikasi', 'imbalanced', 'concept drift', 'domain adaptation', 'f1-score'],
-    respond: () => [
-      "[RISET TERAPAN: Spam-Email Classifier & Evaluator]",
-      "----------------------------------------------------------------",
-      "Aplikasi web klasifikasi dan komparasi performa model Machine Learning:",
-      "  - Komparasi Algoritma  : Complement Naive Bayes (CNB) vs XGBoost",
-      "  - Domain Adaptation    : Penanganan fenomena Concept Drift pada dataset email modern",
-      "  - Fitur Unggulan       : Dynamic Class Balancing (slider rasio 10:90 - 90:10)",
-      "  - Metrik Evaluasi      : Confusion Matrix, Precision, Recall, F1-Score",
-      "  - Stack Teknologi      : Python, Flask, Pandas, Scikit-Learn, Chart.js",
-      "  - Repositori GitHub    : https://github.com/Raflyf/Spam-Email-Classifier"
-    ]
-  },
-  {
-    keywords: ['laser', 'ppt', 'powerpoint', 'gyroscope', 'smartphone', 'remote', 'websocket', 'socketio'],
-    respond: () => [
-      "[PROYEK IoT & KONTROL: laser_pointer_PPT]",
-      "----------------------------------------------------------------",
-      "Pengendali slide presentasi nirsentuh berbasis sensor gerak smartphone:",
-      "  - Sensor               : DeviceOrientation & Gyroscope Smartphone",
-      "  - Komunikasi Real-time : WebSocket via Flask-SocketIO (Low Latency)",
-      "  - Kontrol Kursor       : PyAutoGUI virtual cursor mapper di PC presenter",
-      "  - Repositori GitHub    : https://github.com/Raflyf/Laser-Pointer-PPT-Presenter-Gesture"
-    ]
-  },
-  {
-    keywords: ['fotokita', 'blur', 'face', 'mediapipe', 'gesture', 'v-sign', 'privasi', 'opencv'],
-    respond: () => [
-      "[PROYEK COMPUTER VISION: FotoKitaBlur]",
-      "----------------------------------------------------------------",
-      "Aplikasi otomatisasi privasi kamera real-time:",
-      "  - Gesture Recognition  : MediaPipe Tasks Vision (deteksi gestur Peace/V-Sign)",
-      "  - Image Processing     : OpenCV Gaussian Blur filter otomatis",
-      "  - Kecepatan            : Real-time 30+ FPS Edge Inference di browser/PC",
-      "  - Repositori GitHub    : https://github.com/Raflyf/FotoKitaBlur"
-    ]
-  },
-  {
-    keywords: ['proyek', 'project', 'karya', 'aplikasi', 'portofolio', 'daftar project'],
-    respond: () => [
-      "Daftar 4 Proyek Riset Unggulan Rafly Firmansyah:",
-      "1. OpenPlagiarismChecker (NLP) - https://github.com/Raflyf/OpenPlagiarismChecker",
-      "2. Spam-Email-Classifier (ML) - https://github.com/Raflyf/Spam-Email-Classifier",
-      "3. Laser-Pointer-PPT (IoT) - https://github.com/Raflyf/Laser-Pointer-PPT-Presenter-Gesture",
-      "4. FotoKitaBlur (Computer Vision) - https://github.com/Raflyf/FotoKitaBlur",
-      "",
-      "Ketik 'projects' pada terminal untuk ringkasan teknis lengkap."
-    ]
-  },
-  {
-    keywords: ['bnsp', 'analis program', 'program analyst', 'sertifikasi nasional', 'lsp', 'kompetensi'],
-    respond: () => [
-      "[KREDENSIAL RESMI: BNSP Sertifikat Kompetensi Analis Program]",
-      "----------------------------------------------------------------",
-      "Sertifikasi Standar Kompetensi Kerja Nasional Indonesia (SKKNI):",
-      "  - No. Registrasi : TIK 037 00481 2026",
-      "  - Masa Berlaku   : 2026 s/d 2029 (3 Tahun Terakreditasi)",
-      "  - Lembaga Uji    : LSP Informatika / Badan Nasional Sertifikasi Profesi",
-      "  - Cakupan        : 10 Unit Kompetensi Analisis & Rekayasa Perangkat Lunak",
-      "",
-      "Ketik 'certifs' untuk rincian 10 sertifikat lengkap."
-    ]
-  },
-  {
-    keywords: ['mikrotik', 'mtcna', 'jaringan', 'routeros', 'routing', 'firewall', 'latvia'],
-    respond: () => [
-      "[KREDENSIAL JARINGAN: MikroTik Certified Network Associate (MTCNA)]",
-      "----------------------------------------------------------------",
-      "Sertifikasi teknis internasional dari MikroTikls SIA (Riga, Latvia):",
-      "  - Credential ID : 2410NA3062",
-      "  - Kompetensi    : RouterOS, Static Routing, Firewall, DHCP, Bandwidth Queue, Wireless"
-    ]
-  },
-  {
-    keywords: ['sertifikat', 'sertif', 'kredensial', 'sertifikasi', 'transkrip', 'prestasi', 'piagam'],
-    respond: () => [
-      "Kredensial & Sertifikasi Utama Terverifikasi (Total 10 Sertifikat):",
-      "1. BNSP: Analis Program (No. Reg: TIK 037 00481 2026)",
-      "2. MikroTik MTCNA Latvia (Credential ID: 2410NA3062)",
-      "3. Cisco Python PCAP Certified (OpenEDG)",
-      "4. Kominfo Digital Entrepreneurship Academy (DEA)",
-      "5. Harisenin Full-Stack Web Development SiM-K",
-      "",
-      "Ketik 'certifs' pada terminal untuk melihat daftar lengkap beserta kredensial."
-    ]
-  },
-  {
-    keywords: ['profil', 'biodata', 'tentang', 'siapa', 'about', 'pendidikan', 'kampus', 'kuliah', 'ubsi', 'sukabumi'],
-    respond: () => [
-      "Profil Pengembang:",
-      `• Nama        : ${DEVELOPER_PROFILE.name} (${DEVELOPER_PROFILE.handle})`,
-      `• Pendidikan  : ${DEVELOPER_PROFILE.degree}`,
-      `• Kampus      : ${DEVELOPER_PROFILE.institution}`,
-      `• Fokus Bidang: ${DEVELOPER_PROFILE.bio}`,
-      `• Kontak      : WA ${DEVELOPER_PROFILE.whatsapp} | Email ${DEVELOPER_PROFILE.email}`
-    ]
-  },
-  {
-    keywords: ['skill', 'keahlian', 'kemampuan', 'tech stack', 'teknologi', 'stack', 'pemrograman', 'bahasa'],
-    respond: () => [
-      "Matriks Keterampilan Teknis Rafly Firmansyah:",
-      "• AI / ML    : Python, PyTorch, Scikit-Learn, XGBoost, Sentence Transformers, NLP",
-      "• Vision     : MediaPipe Vision, OpenCV, Edge Inference",
-      "• Backend    : Flask, REST API, WebSockets, PHP, MySQL, Supabase",
-      "• Frontend   : Vanilla JavaScript ES6+, Modern HTML5/CSS3, Chart.js",
-      "• Network    : MikroTik RouterOS (MTCNA), Network Security & Firewall"
-    ]
-  },
-  {
-    keywords: ['kontak', 'contact', 'email', 'whatsapp', 'wa', 'hubungi', 'hire', 'rekrut'],
-    respond: () => [
-      "[INFORMASI KONTAK RESMI]",
-      "----------------------------------------------------------------",
-      `Nama     : ${DEVELOPER_PROFILE.name}`,
-      `WhatsApp : ${DEVELOPER_PROFILE.whatsapp} (${DEVELOPER_PROFILE.whatsappUrl})`,
-      `Email    : ${DEVELOPER_PROFILE.email}`,
-      `GitHub   : ${DEVELOPER_PROFILE.github}`,
-      `Website  : https://raflyfirmansyah-portofolio.vercel.app/`
-    ]
-  }
-];
-
-// ============================================================================
-// 2. TERMINAL AI CONTROLLER
+// TERMINAL AI CONTROLLER
 // ============================================================================
 class TerminalAIEngine {
   constructor() {
@@ -727,63 +565,16 @@ ${certsOverview}
         ];
       }
 
-    }
-
-    // 2. High-Precision Semantic Match & Contextual Offline Resilience
-    const [semanticMatch, dynamicMemories] = await Promise.all([
-      Promise.resolve(this.checkSemanticMatch(cleanQuery)),
-      this.fetchMatchingSupabaseMemories(cleanQuery)
-    ]);
-
-    if (semanticMatch || (dynamicMemories && dynamicMemories.length > 0)) {
-      this.lastExecutionInfo = {
-        isAuto: true,
-        resolvedModel: 'Local Semantic Knowledge Base',
-        requestedModel: this.currentModel,
-        isFailover: true,
-        provider: 'In-Browser Semantic Engine',
-        effort: 'OFFLINE_RAG',
-        category: 'offline_fallback'
-      };
-      if (telemetry) {
-        telemetry.logEvent('ai_query_resolved', 'auto:local_semantic_engine', `[Auto ➔ Local Semantic Engine] ${cleanQuery.substring(0, 60)}`);
-      }
-
-      const responseLines = [];
-
-      if (semanticMatch) {
-        responseLines.push(...semanticMatch);
-      } else if (dynamicMemories && dynamicMemories.length > 0) {
-        responseLines.push("[INFORMASI TERVERIFIKASI BASIS DATA PORTOFOLIO]:");
-        dynamicMemories.forEach(m => responseLines.push(`• ${m}`));
-      }
-
-      if (attachments && attachments.length > 0 && semanticMatch) {
-        responseLines.push(
-          "",
-          "ℹ️ *[Catatan]*: Lampiran file/gambar Anda telah terunggah. Karena koneksi vision cloud sedang padat, asisten menampilkan informasi terverifikasi langsung dari basis data portofolio."
-        );
-      }
-
-      return responseLines;
-    }
-
-    // 3. Contextual fallback if asking about github or general assistance
-    const qLower = cleanQuery.toLowerCase();
-    if (qLower.includes('github') || qLower.includes('repo') || qLower.includes('git')) {
       return [
-        "Repositori resmi GitHub untuk portofolio Rafly Firmansyah adalah:",
-        "👉 https://github.com/Raflyf/web-portofolio",
-        "",
-        "Akun GitHub Pengembang:",
-        "👉 https://github.com/Raflyf (@Raflyf)"
+        `[KONEKSI TERPUTUS]: Gagal terhubung ke gateway model AI.`,
+        `Silakan periksa koneksi internet Anda atau coba beberapa saat lagi.`
       ];
     }
 
-    // 4. Generic friendly response if completely offline and no match found
+    // Return explicit error from API if available
     return [
-      "Maaf, saat ini koneksi ke server AI sedang mengalami antrean penuh.",
-      "Anda dapat mengulang pertanyaan Anda, atau menggunakan perintah terminal langsung seperti 'skills', 'projects', 'certifs', 'models', 'contact'."
+      "Maaf, saat ini antrean seluruh provider AI sedang penuh atau mengalami kendala jaringan.",
+      "Silakan coba kirim ulang pertanyaan Anda."
     ];
   }
 
@@ -839,37 +630,6 @@ ${certsOverview}
           }
         }
       } catch (_) {}
-    }
-
-    return null;
-  }
-
-  checkSemanticMatch(query) {
-    const q = query.toLowerCase();
-    const words = q.split(/[\s,?.!]+/).filter(Boolean);
-
-    let bestMatch = null;
-    let highestScore = 0;
-
-    for (const item of SEMANTIC_PATTERNS) {
-      let score = 0;
-      for (const kw of item.keywords) {
-        if (kw.includes(' ')) {
-          if (q.includes(kw)) score += 3;
-        } else {
-          if (words.includes(kw)) score += 2;
-          else if (q.includes(kw)) score += 1;
-        }
-      }
-
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = item;
-      }
-    }
-
-    if (bestMatch && highestScore >= 2) {
-      return bestMatch.respond();
     }
 
     return null;
