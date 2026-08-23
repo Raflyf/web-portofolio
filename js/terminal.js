@@ -1794,12 +1794,13 @@ export function initTerminal() {
       try {
         if (terminalCard.parentNode !== terminalInpageSlot) {
           terminalInpageSlot.appendChild(terminalCard);
+          terminalCard.classList.add('is-revealed');
           terminalCard.classList.remove('terminal-landing');
           void terminalCard.offsetWidth;
           terminalCard.classList.add('terminal-landing');
           setTimeout(() => {
             terminalCard.classList.remove('terminal-landing');
-          }, 450);
+          }, 600);
         }
         // Ensure convo-history-modal stays inside terminalCard
         if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
@@ -1830,7 +1831,7 @@ export function initTerminal() {
       scrollToBottom();
       setTimeout(scrollToBottom, 50);
       setTimeout(scrollToBottom, 200);
-    }, 300);
+    }, 220);
   }
 
   const heroOpenTerminalBtn = document.getElementById('hero-open-terminal-btn');

@@ -848,12 +848,20 @@ body {
 }
 
 .terminal-card.terminal-landing {
-  animation: terminalFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: terminalLandIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
-@keyframes terminalFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes terminalLandIn {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) translateY(36px) scale(0.96);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) translateY(0) scale(1);
+    filter: blur(0px);
+  }
 }
 
 /* Universal 3D Translucent Glassmorphism (Anti-Solid Design) */
