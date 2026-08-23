@@ -827,7 +827,11 @@ function smoothCloseModal(dialog) {
   if (!dialog || !dialog.open || dialog.classList.contains('is-closing')) return;
   dialog.classList.add('is-closing');
   setTimeout(() => {
-    dialog.close();
+    try {
+      dialog.close();
+    } catch (e) {
+      dialog.removeAttribute('open');
+    }
     dialog.classList.remove('is-closing');
     document.body.classList.remove('modal-open');
     document.documentElement.classList.remove('modal-open');
@@ -839,7 +843,9 @@ function initModals() {
   activeCertModal = document.getElementById('cert-modal');
 
   document.querySelectorAll('.modal-close-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const dialog = btn.closest('dialog');
       if (dialog) smoothCloseModal(dialog);
     });
@@ -853,7 +859,17 @@ function initModals() {
       document.documentElement.classList.remove('modal-open');
     });
 
+    // Intercept native Escape (cancel event) for smooth exit animation
+    dialog.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      smoothCloseModal(dialog);
+    });
+
     dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) {
+        smoothCloseModal(dialog);
+        return;
+      }
       const rect = dialog.getBoundingClientRect();
       const isInDialog = (
         rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&

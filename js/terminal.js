@@ -376,6 +376,7 @@ export function initTerminal() {
 
   function openConvoHistoryModal() {
     if (!convoModal) return;
+    convoModal.classList.remove('is-closing');
 
     // Ensure convoModal is inside terminalCard so it always renders inside the active container (inpage or top-layer dialog)
     if (terminalCard && convoModal.parentNode !== terminalCard) {
@@ -392,13 +393,17 @@ export function initTerminal() {
   }
 
   function closeConvoHistoryModal() {
-    if (!convoModal) return;
-    convoModal.style.display = 'none';
-    convoModal.setAttribute('aria-hidden', 'true');
+    if (!convoModal || convoModal.style.display === 'none' || convoModal.classList.contains('is-closing')) return;
+    convoModal.classList.add('is-closing');
+    setTimeout(() => {
+      convoModal.style.display = 'none';
+      convoModal.setAttribute('aria-hidden', 'true');
+      convoModal.classList.remove('is-closing');
 
-    if (!isMobileDevice() && terminalInput) {
-      terminalInput.focus();
-    }
+      if (!isMobileDevice() && terminalInput) {
+        terminalInput.focus();
+      }
+    }, 180);
   }
 
 
@@ -1731,24 +1736,23 @@ export function initTerminal() {
 
   function openTerminalModal() {
     if (!terminalModal || !terminalModalSlot || !terminalCard) return;
-    try {
-      if (terminalCard.parentNode !== terminalModalSlot) {
-        terminalModalSlot.appendChild(terminalCard);
+    terminalModal.classList.remove('is-closing');
+
+    // Teleport terminal card into modal slot
+    if (terminalCard.parentNode !== terminalModalSlot) {
+      terminalModalSlot.appendChild(terminalCard);
+    }
+    // Ensure convo-history-modal stays inside terminalCard
+    if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
+      terminalCard.appendChild(convoHistoryModal);
+    }
+
+    if (!terminalModal.open) {
+      if (typeof terminalModal.showModal === 'function') {
+        terminalModal.showModal();
+      } else {
+        terminalModal.setAttribute('open', '');
       }
-      // Ensure convo-history-modal stays inside terminalCard
-      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
-        terminalCard.appendChild(convoHistoryModal);
-      }
-      if (!terminalModal.open) {
-        if (typeof terminalModal.showModal === 'function') {
-          terminalModal.showModal();
-        } else {
-          terminalModal.setAttribute('open', '');
-        }
-      }
-    } catch (err) {
-      console.warn('showModal fallback:', err);
-      terminalModal.setAttribute('open', '');
     }
 
     document.body.classList.add('modal-open');
@@ -1760,7 +1764,6 @@ export function initTerminal() {
         terminalBody.scrollTop = terminalBody.scrollHeight;
       }
     };
-
     scrollToBottom();
     setTimeout(scrollToBottom, 60);
     setTimeout(scrollToBottom, 250);
@@ -1777,38 +1780,51 @@ export function initTerminal() {
 
   function closeTerminalModal() {
     if (!terminalModal || !terminalInpageSlot || !terminalCard) return;
-    try {
+    if (terminalModal.classList.contains('is-closing')) return;
+
+    if (!terminalModal.open) {
       if (terminalCard.parentNode !== terminalInpageSlot) {
         terminalInpageSlot.appendChild(terminalCard);
       }
-      // Ensure convo-history-modal stays inside terminalCard
-      if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
-        terminalCard.appendChild(convoHistoryModal);
-      }
-      if (terminalModal.open) {
-        if (typeof terminalModal.close === 'function') {
-          terminalModal.close();
-        } else {
-          terminalModal.removeAttribute('open');
-        }
-      }
-    } catch (err) {
-      terminalModal.removeAttribute('open');
+      return;
     }
 
-    document.body.classList.remove('modal-open');
-    document.documentElement.classList.remove('modal-open');
-    if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
-
-    const scrollToBottom = () => {
-      if (terminalBody) {
-        terminalBody.scrollTop = terminalBody.scrollHeight;
+    terminalModal.classList.add('is-closing');
+    setTimeout(() => {
+      try {
+        if (terminalCard.parentNode !== terminalInpageSlot) {
+          terminalInpageSlot.appendChild(terminalCard);
+        }
+        // Ensure convo-history-modal stays inside terminalCard
+        if (convoHistoryModal && convoHistoryModal.parentNode !== terminalCard) {
+          terminalCard.appendChild(convoHistoryModal);
+        }
+        if (terminalModal.open) {
+          if (typeof terminalModal.close === 'function') {
+            terminalModal.close();
+          } else {
+            terminalModal.removeAttribute('open');
+          }
+        }
+      } catch (err) {
+        terminalModal.removeAttribute('open');
       }
-    };
 
-    scrollToBottom();
-    setTimeout(scrollToBottom, 50);
-    setTimeout(scrollToBottom, 200);
+      terminalModal.classList.remove('is-closing');
+      document.body.classList.remove('modal-open');
+      document.documentElement.classList.remove('modal-open');
+      if (terminalPopBtn) terminalPopBtn.style.display = 'inline-flex';
+
+      const scrollToBottom = () => {
+        if (terminalBody) {
+          terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+      };
+
+      scrollToBottom();
+      setTimeout(scrollToBottom, 50);
+      setTimeout(scrollToBottom, 200);
+    }, 220);
   }
 
   if (floatingTerminalBtn) {
