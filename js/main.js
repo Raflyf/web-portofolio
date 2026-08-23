@@ -1290,7 +1290,7 @@ function observeElementForScrollReveal(el) {
 function refreshScrollReveal() {
   if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
-    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-spotlight-card, .project-card, .certificate-card, .timeline-item, #terminal-inpage-slot, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
+    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .section-header, .about-bio, .pillar-card, .marquee-container, .skills-bento-grid, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-item, #terminal-inpage-slot, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
   );
 
   revealElements.forEach(el => {
