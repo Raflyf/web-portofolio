@@ -866,6 +866,29 @@ body {
   }
 }
 
+/* Desktop & Global Terminal Header Controls (Single Unified Horizontal Row) */
+.terminal-controls-wrap {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+}
+
+.terminal-controls-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.terminal-controls-options {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
 /* Universal 3D Translucent Glassmorphism (Anti-Solid Design) */
 .project-card,
 .project-spotlight-card,
