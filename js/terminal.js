@@ -759,6 +759,7 @@ export function initTerminal() {
       "   - nemotron-3-super (120B CoT | Reasoning Architecture)",
       "",
       "3. OpenRouter Modern SOTA Pool (openrouter.ai | Tier 3):",
+      "   - stealth/ox-alpha (Ox Alpha | 1M Context Frontier SOTA Reasoning & Coding)",
       "   - nvidia/nemotron-3-ultra-550b-a55b:free (550B MoE)",
       "   - nvidia/nemotron-3-super-120b-a12b:free (120B MoE)",
       "   - nvidia/nemotron-3-nano-30b-a3b:free (30B Fast)",
