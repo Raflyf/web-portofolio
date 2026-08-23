@@ -766,22 +766,22 @@
 
 .modal-dialog::backdrop,
 .terminal-modal-dialog::backdrop {
-  background: rgba(9, 13, 18, 0.8) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  animation: backdropFade 0.35s ease forwards !important;
+  background: rgba(9, 13, 18, 0.78) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  animation: backdropFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 [data-theme="light"] .modal-dialog::backdrop,
 [data-theme="light"] .terminal-modal-dialog::backdrop {
-  background: rgba(15, 23, 42, 0.5) !important;
+  background: rgba(15, 23, 42, 0.45) !important;
 }
 
 .modal-dialog.is-closing::backdrop,
 .modal-dialog[open].is-closing::backdrop,
 .terminal-modal-dialog.is-closing::backdrop,
 .terminal-modal-dialog[open].is-closing::backdrop {
-  animation: backdropFadeOut 0.22s ease forwards !important;
+  animation: backdropFadeOut 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 @keyframes backdropFade {
