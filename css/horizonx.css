@@ -824,3 +824,166 @@ body {
 .marquee-track--right {
   animation: hxMarqueeRight 52s linear infinite !important;
 }
+
+/* ==========================================================================
+   7. LUXURY 3D TRANSLUCENT GLASSMORPHIC CARDS & PERFORMANCE ENGINE
+   ========================================================================== */
+
+/* Universal 3D Translucent Glassmorphism (Anti-Solid Design) */
+.project-card,
+.project-spotlight-card,
+.showcase-card,
+.hero-showcase-canvas,
+.certificate-card,
+.pillar-card,
+.bento-tile,
+.terminal-card,
+.contact-method-card,
+.contact-form,
+.stats-strip,
+.timeline-item .timeline-content {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(14, 20, 29, 0.72) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.12) inset, 0 14px 34px -8px rgba(0, 0, 0, 0.45), 0 2px 6px -1px rgba(0, 0, 0, 0.25) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease,
+              background 0.3s ease !important;
+  transform-style: preserve-3d;
+  transform: perspective(1000px) translateZ(0);
+}
+
+[data-theme="light"] .project-card,
+[data-theme="light"] .project-spotlight-card,
+[data-theme="light"] .showcase-card,
+[data-theme="light"] .hero-showcase-canvas,
+[data-theme="light"] .certificate-card,
+[data-theme="light"] .pillar-card,
+[data-theme="light"] .bento-tile,
+[data-theme="light"] .terminal-card,
+[data-theme="light"] .contact-method-card,
+[data-theme="light"] .contact-form,
+[data-theme="light"] .stats-strip,
+[data-theme="light"] .timeline-item .timeline-content {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.78) 100%) !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.9) inset, 0 12px 28px -6px rgba(15, 23, 42, 0.1), 0 2px 6px -1px rgba(15, 23, 42, 0.05) !important;
+}
+
+@media (hover: hover) {
+  .project-card:hover,
+  .project-spotlight-card:hover,
+  .showcase-card:hover,
+  .certificate-card:hover,
+  .pillar-card:hover,
+  .bento-tile:hover,
+  .contact-method-card:hover {
+    transform: perspective(1000px) translateY(-5px) scale(1.008) translateZ(0) !important;
+    border-color: rgba(16, 185, 129, 0.45) !important;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.22) inset, 0 22px 48px -10px rgba(0, 0, 0, 0.6), 0 0 28px -4px rgba(16, 185, 129, 0.22) !important;
+  }
+
+  [data-theme="light"] .project-card:hover,
+  [data-theme="light"] .project-spotlight-card:hover,
+  [data-theme="light"] .showcase-card:hover,
+  [data-theme="light"] .certificate-card:hover,
+  [data-theme="light"] .pillar-card:hover,
+  [data-theme="light"] .bento-tile:hover,
+  [data-theme="light"] .contact-method-card:hover {
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 20px 42px -10px rgba(15, 23, 42, 0.18), 0 0 24px -4px rgba(16, 185, 129, 0.18) !important;
+  }
+}
+
+/* Performance: Paint Containment to Isolate Repaints */
+.project-card,
+.certificate-card,
+.bento-tile,
+.pillar-card,
+.marquee-track {
+  contain: layout style;
+}
+
+/* GPU Hardware Acceleration on Dynamic Layers */
+.showcase-carousel-track,
+.marquee-track,
+.modal-dialog,
+.terminal-modal-dialog {
+  will-change: transform;
+}
+
+/* Mobile & Small Screen Ultra-Smooth Responsive Layout */
+@media (max-width: 768px) {
+  body {
+    padding-top: 3.75rem !important;
+    overflow-x: hidden !important;
+  }
+
+  .nav-container {
+    padding: 0.65rem 1rem !important;
+  }
+
+  .hero-section {
+    padding-top: 1.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  .projects-grid,
+  .certificates-grid,
+  .skills-bento-grid,
+  .pillars-grid,
+  .stats-strip-inner,
+  .contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  .modal-dialog,
+  .terminal-modal-dialog {
+    max-width: 95vw !important;
+    width: 95vw !important;
+    max-height: 88dvh !important;
+    border-radius: 18px !important;
+  }
+
+  /* Mobile Performance Tuning: lighter blur for silky 120Hz scrolling */
+  .project-card,
+  .certificate-card,
+  .bento-tile,
+  .pillar-card,
+  .terminal-card {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-btn-group {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .btn-motif-primary,
+  .btn-motif-secondary {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .modal-header,
+  .terminal-modal-header {
+    padding: 0.85rem 1rem !important;
+  }
+
+  .modal-body {
+    padding: 1rem !important;
+  }
+}
