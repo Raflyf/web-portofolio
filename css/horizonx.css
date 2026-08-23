@@ -402,24 +402,6 @@
   overflow: hidden;
   box-sizing: border-box;
   flex-shrink: 0;
-  width: calc((100% - 2.5rem) / 3);
-  min-width: 320px;
-}
-
-@media (max-width: 1024px) {
-  .showcase-card {
-    min-width: 290px;
-  }
-}
-
-@media (max-width: 768px) {
-  .showcase-card {
-    min-width: 260px;
-    width: calc(100% - 1rem);
-  }
-  .showcase-window-header {
-    justify-content: center;
-  }
 }
 
 [data-theme="light"] .showcase-card {
