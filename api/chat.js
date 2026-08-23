@@ -930,33 +930,21 @@ export default async function handler(req, res) {
       const isPureLocal = u.includes('127.0.0.1') || u.includes('localhost');
       if (process.env.VERCEL && isPureLocal) continue;
 
-      const isHf = u.includes('hf.space') || u.includes('huggingface');
       const pingStart = Date.now();
       try {
-        const baseUrl = u.replace(/\/v1.*$/, '').replace(/\/+$/, '');
-        const pingUrl = isHf ? `${baseUrl}/gradio_api/info` : (u.includes('/models') ? u : `${u}/models`);
+        const pingUrl = u.includes('/models') ? u : `${u}/models`;
         const headers = {
-          'Authorization': `Bearer ${process.env.HF_TOKEN || process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
+          'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
           'ngrok-skip-browser-warning': 'true',
           'Accept': 'application/json'
         };
         const pingRes = await fetchJsonWithTimeout(pingUrl, { method: 'GET', headers }, 2500);
-        if (isHf) {
-          if (pingRes.ok && (pingRes.data?.named_endpoints || pingRes.status === 200)) {
-            isOmniAlive = true;
-            omniLatency = Date.now() - pingStart;
-            activeEndpointType = cand.type;
-            activeUrl = u;
-            break;
-          }
-        } else {
-          if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
-            isOmniAlive = true;
-            omniLatency = Date.now() - pingStart;
-            activeEndpointType = cand.type;
-            activeUrl = u;
-            break;
-          }
+        if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
+          isOmniAlive = true;
+          omniLatency = Date.now() - pingStart;
+          activeEndpointType = cand.type;
+          activeUrl = u;
+          break;
         }
       } catch (_) {}
     }

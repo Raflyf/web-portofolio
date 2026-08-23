@@ -351,7 +351,7 @@ class DashboardApp {
     const hfUrl    = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
     const ngrokUrl = localStorage.getItem('omniroute_last_ngrok_url') || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
     const localUrl = 'http://localhost:20128/v1';
-    const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
+    const defaultKey = 'sk-omniroute';
 
     // Swap logic: toggle primary <-> secondary
     // [Cloud HF] → Primary=HF,    Secondary=Ngrok
@@ -402,7 +402,7 @@ class DashboardApp {
     if (omnirouteModal) {
       const defaultPrimaryUrl   = 'https://rflyyyf-omniroute-gateway.hf.space/v1';
       const defaultSecondaryUrl = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
-      const defaultKey = 'sk-7a9b51a264768e32-b3f9b7-6e1cdacd';
+      const defaultKey = 'sk-omniroute';
 
       const currentPrimary   = localStorage.getItem('omniroute_custom_tunnel')    || defaultPrimaryUrl;
       const currentSecondary = localStorage.getItem('omniroute_secondary_endpoint') || localStorage.getItem('omniroute_last_ngrok_url') || defaultSecondaryUrl;
