@@ -8,8 +8,8 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.250.0';
-import { telemetry } from './telemetry.js?v=10.250.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.260.0';
+import { telemetry } from './telemetry.js?v=10.260.0';
 
 // ============================================================================
 // TERMINAL AI CONTROLLER
