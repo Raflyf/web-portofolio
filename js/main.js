@@ -577,7 +577,7 @@ function renderProjects(category) {
 
   projectsToRender.forEach((project) => {
     const card = document.createElement('article');
-    card.className = 'project-card reveal-item';
+    card.className = 'project-card';
     card.setAttribute('tabindex', '0');
 
     const topWrap = document.createElement('div');
@@ -632,13 +632,6 @@ function renderProjects(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
-    observeElementForScrollReveal(card);
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        card.classList.add('is-revealed');
-      });
-    });
   });
 }
 
@@ -684,7 +677,7 @@ function renderCertificates(category) {
 
   filtered.forEach((cert) => {
     const card = document.createElement('article');
-    card.className = 'certificate-card reveal-item';
+    card.className = 'certificate-card';
 
     const topWrap = document.createElement('div');
     topWrap.className = 'cert-card__top';
@@ -760,7 +753,6 @@ function renderCertificates(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
-    observeElementForScrollReveal(card);
   });
 }
 
@@ -781,7 +773,7 @@ function initTimelineSection() {
     nodeEl.className = 'timeline-node';
 
     const contentEl = document.createElement('div');
-    contentEl.className = 'timeline-content reveal-item';
+    contentEl.className = 'timeline-content';
 
     const dateEl = document.createElement('div');
     dateEl.className = 'timeline-date';
@@ -808,7 +800,6 @@ function initTimelineSection() {
     itemEl.appendChild(contentEl);
 
     timelineEl.appendChild(itemEl);
-    observeElementForScrollReveal(contentEl);
   });
 }
 
@@ -1290,7 +1281,7 @@ function observeElementForScrollReveal(el) {
 function refreshScrollReveal() {
   if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
-    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .section-header, .about-bio, .pillar-card, .marquee-container, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-content, .terminal-card, .contact-method-card, .contact-form, .site-footer, .stats-strip, .hero-showcase-canvas'
+    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .hero-showcase-canvas, .section-header, .about-bio, .about-pillars, .marquee-container, .skills-bento-grid, .filter-bar, #projects-grid, #certificates-grid, #experience-timeline, .terminal-card, .contact-info-col, .contact-form, .site-footer, .stats-strip'
   );
 
   revealElements.forEach(el => {
