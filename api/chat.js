@@ -891,6 +891,83 @@ async function fetchDynamicOmniRouteUrl() {
   return null;
 }
 
+/**
+ * Intelligent Unified AI Key Resolver
+ * Automatically classifies tokens from a single AI_KEYS variable or legacy per-provider env vars.
+ */
+function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = null) {
+  const unifiedRaw = [
+    process.env.AI_KEYS,
+    process.env.AI_API_KEYS,
+    process.env.ALL_KEYS,
+    process.env.API_KEYS
+  ].filter(Boolean).join(',');
+
+  const allTokens = [
+    ...unifiedRaw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean),
+    ...(process.env.OPENROUTER_API_KEYS ? process.env.OPENROUTER_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.OPENROUTER_API_KEY,
+    ...(process.env.OPENCODE_API_KEYS ? process.env.OPENCODE_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.OPENCODE_API_KEY,
+    ...(process.env.OLLAMA_CLOUD_API_KEYS ? process.env.OLLAMA_CLOUD_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.OLLAMA_CLOUD_API_KEY,
+    process.env.OLLAMA_API_KEY,
+    ...(process.env.MINIMAX_API_KEYS ? process.env.MINIMAX_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.MINIMAX_API_KEY,
+    ...(process.env.NVIDIA_API_KEYS ? process.env.NVIDIA_API_KEYS.split(',').map(s => s.trim()) : []),
+    process.env.NVIDIA_API_KEY
+  ].filter(Boolean);
+
+  const openrouter = [];
+  const opencode = [];
+  const minimax = [];
+  const ollama = [];
+  const nvidia = [];
+  let omnirouteKey = process.env.OMNIROUTE_KEY || 'sk-omniroute';
+
+  for (const token of allTokens) {
+    if (token.startsWith('sk-or-v1-')) {
+      if (!openrouter.includes(token)) openrouter.push(token);
+    } else if (token.startsWith('sk-cp-') || token.startsWith('sk-minimax-')) {
+      if (!minimax.includes(token)) minimax.push(token);
+    } else if (token.startsWith('nvapi-')) {
+      if (!nvidia.includes(token)) nvidia.push(token);
+    } else if (token === 'sk-omniroute' || token.startsWith('sk-omni-')) {
+      omnirouteKey = token;
+    } else if (token.startsWith('sk-') && token.length >= 40) {
+      if (!opencode.includes(token)) opencode.push(token);
+    } else if (token.includes('.') || token.length === 32 || token.startsWith('ollama-')) {
+      if (!ollama.includes(token)) ollama.push(token);
+    }
+  }
+
+  // Handle client custom key override
+  if (cleanCustomKey) {
+    if (cleanCustomProvider === 'openrouter' || !cleanCustomProvider) {
+      if (!openrouter.includes(cleanCustomKey)) openrouter.unshift(cleanCustomKey);
+    } else if (cleanCustomProvider === 'opencode') {
+      if (!opencode.includes(cleanCustomKey)) opencode.unshift(cleanCustomKey);
+    } else if (cleanCustomProvider === 'minimax') {
+      if (!minimax.includes(cleanCustomKey)) minimax.unshift(cleanCustomKey);
+    } else if (cleanCustomProvider === 'ollamacloud' || cleanCustomProvider === 'ollama') {
+      if (!ollama.includes(cleanCustomKey)) ollama.unshift(cleanCustomKey);
+    } else if (cleanCustomProvider === 'nvidia') {
+      if (!nvidia.includes(cleanCustomKey)) nvidia.unshift(cleanCustomKey);
+    } else if (cleanCustomProvider === 'omniroute') {
+      omnirouteKey = cleanCustomKey;
+    }
+  }
+
+  return {
+    openrouter,
+    opencode,
+    minimax,
+    ollama,
+    nvidia,
+    omnirouteKey
+  };
+}
+
 export default async function handler(req, res) {
   // Dynamic Standard-Compliant CORS Headers
   const origin = req.headers.origin || '*';
@@ -949,11 +1026,13 @@ export default async function handler(req, res) {
       } catch (_) {}
     }
 
-    const hasOpenRouter = Boolean(process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEYS);
-    const hasOpenCode = Boolean(process.env.OPENCODE_API_KEY || process.env.OPENCODE_API_KEYS);
-    const hasOllama = Boolean(process.env.OLLAMA_API_KEY);
+    const resolvedKeys = getUnifiedProviderKeys();
+    const hasOpenRouter = resolvedKeys.openrouter.length > 0;
+    const hasOpenCode = resolvedKeys.opencode.length > 0;
+    const hasOllama = resolvedKeys.ollama.length > 0;
+    const hasMiniMax = resolvedKeys.minimax.length > 0;
     return res.status(200).json({ 
-      version: 'v10.170.1', 
+      version: 'v10.174.0', 
       status: 'online', 
       omniroute: {
         configured: Boolean(rawPrimary || rawSecondary),
@@ -962,7 +1041,7 @@ export default async function handler(req, res) {
         activeType: activeEndpointType,
         url: activeUrl ? activeUrl.replace(/:[^\/@]+@/, ':***@') : (rawPrimary ? rawPrimary.replace(/:[^\/@]+@/, ':***@') : null)
       },
-      keys: { hasOmni: isOmniAlive, hasOpenRouter, hasOpenCode, hasOllama },
+      keys: { hasOmni: isOmniAlive, hasOpenRouter, hasOpenCode, hasOllama, hasMiniMax },
       timestamp: Date.now() 
     });
   }
@@ -1043,45 +1122,17 @@ export default async function handler(req, res) {
     const OMNIROUTE_NGROK_URL = ngrokOmniUrl ? normUrl(ngrokOmniUrl) : null;
     const OMNIROUTE_LOCAL_URL = normUrl(localOmniUrl);
 
-    const OMNIROUTE_KEY = (cleanCustomKey && cleanCustomProvider === 'omniroute')
-      ? cleanCustomKey
-      : (process.env.OMNIROUTE_KEY || 'sk-omniroute');
-
-    const OPENROUTER_KEYS = [
-      (cleanCustomKey && (cleanCustomProvider === 'openrouter' || !cleanCustomProvider)) ? cleanCustomKey : null,
-      process.env.OPENROUTER_API_KEY,
-      ...(process.env.OPENROUTER_API_KEYS ? process.env.OPENROUTER_API_KEYS.split(',').map(s => s.trim()) : [])
-    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const resolvedKeys = getUnifiedProviderKeys(cleanCustomKey, cleanCustomProvider);
+    const OMNIROUTE_KEY = resolvedKeys.omnirouteKey;
+    const OPENROUTER_KEYS = resolvedKeys.openrouter;
     const OPENROUTER_KEY = OPENROUTER_KEYS[0] || null;
-
-    const NVIDIA_KEYS = [
-      (cleanCustomKey && cleanCustomProvider === 'nvidia') ? cleanCustomKey : null,
-      process.env.NVIDIA_API_KEY,
-      ...(process.env.NVIDIA_API_KEYS ? process.env.NVIDIA_API_KEYS.split(',').map(s => s.trim()) : [])
-    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const NVIDIA_KEYS = resolvedKeys.nvidia;
     const NVIDIA_KEY = NVIDIA_KEYS[0] || null;
-
-    const OPENCODE_KEYS = [
-      (cleanCustomKey && cleanCustomProvider === 'opencode') ? cleanCustomKey : null,
-      process.env.OPENCODE_API_KEY,
-      ...(process.env.OPENCODE_API_KEYS ? process.env.OPENCODE_API_KEYS.split(',').map(s => s.trim()) : [])
-    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const OPENCODE_KEYS = resolvedKeys.opencode;
     const OPENCODE_KEY = OPENCODE_KEYS[0] || null;
-
-    const MINIMAX_KEYS = [
-      (cleanCustomKey && cleanCustomProvider === 'minimax') ? cleanCustomKey : null,
-      process.env.MINIMAX_API_KEY,
-      ...(process.env.MINIMAX_API_KEYS ? process.env.MINIMAX_API_KEYS.split(',').map(s => s.trim()) : [])
-    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const MINIMAX_KEYS = resolvedKeys.minimax;
     const MINIMAX_KEY = MINIMAX_KEYS[0] || null;
-
-    const OLLAMA_KEYS = [
-      (cleanCustomKey && (cleanCustomProvider === 'ollamacloud' || cleanCustomProvider === 'ollama')) ? cleanCustomKey : null,
-      process.env.OLLAMA_CLOUD_API_KEY,
-      process.env.OLLAMA_API_KEY,
-      ...(process.env.OLLAMA_CLOUD_API_KEYS ? process.env.OLLAMA_CLOUD_API_KEYS.split(',').map(s => s.trim()) : []),
-      ...(process.env.OLLAMA_API_KEYS ? process.env.OLLAMA_API_KEYS.split(',').map(s => s.trim()) : [])
-    ].filter((v, i, a) => v && a.indexOf(v) === i);
+    const OLLAMA_KEYS = resolvedKeys.ollama;
     const OLLAMA_KEY = OLLAMA_KEYS[0] || null;
 
     const providerErrors = [];
