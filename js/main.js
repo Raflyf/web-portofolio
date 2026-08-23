@@ -632,6 +632,11 @@ function renderProjects(category) {
     card.appendChild(actionsWrap);
 
     gridEl.appendChild(card);
+    observeElementForScrollReveal(card);
+
+    requestAnimationFrame(() => {
+      card.classList.add('is-revealed');
+    });
   });
 }
 
@@ -1313,12 +1318,16 @@ function initScrollReveal() {
       } else {
         // Reset in both directions so elements re-animate when scrolling up and down
         entry.target.classList.remove('is-revealed');
-        entry.target.classList.remove('reveal-from-top');
+        if (scrollDirection === 'down') {
+          entry.target.classList.remove('reveal-from-top');
+        } else {
+          entry.target.classList.add('reveal-from-top');
+        }
       }
     });
   }, {
-    rootMargin: '0px 0px -20px 0px',
-    threshold: 0.04
+    rootMargin: '-30px 0px -40px 0px',
+    threshold: 0.08
   });
 
   refreshScrollReveal();
