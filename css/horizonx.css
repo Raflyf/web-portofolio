@@ -651,14 +651,14 @@ body {
    ========================================================================== */
 .reveal-item {
   opacity: 0 !important;
-  transform: translateY(20px) !important;
-  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform: translateY(32px) !important;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: opacity, transform;
 }
 
 .reveal-item.reveal-from-top {
-  transform: translateY(-20px) !important;
+  transform: translateY(-32px) !important;
 }
 
 .reveal-item.is-revealed {
