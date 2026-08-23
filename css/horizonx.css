@@ -829,6 +829,29 @@ body {
    7. LUXURY 3D TRANSLUCENT GLASSMORPHIC CARDS & PERFORMANCE ENGINE
    ========================================================================== */
 
+/* Terminal Landing & Slot Retention System */
+#terminal-inpage-slot {
+  min-height: 480px;
+  position: relative;
+}
+
+.terminal-card.terminal-landing {
+  animation: terminalLandIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes terminalLandIn {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) translateY(24px) scale(0.97);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
 /* Universal 3D Translucent Glassmorphism (Anti-Solid Design) */
 .project-card,
 .project-spotlight-card,
