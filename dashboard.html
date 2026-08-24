@@ -11,8 +11,8 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/style.css?v=10.100.0">
-  <link rel="stylesheet" href="css/dashboard.css?v=10.100.0">
+  <link rel="stylesheet" href="css/style.css?v=10.270.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=10.270.0">
 
   <!-- Chart.js from Cloudflare CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -40,6 +40,17 @@
           <span>Buka Panel Observabilitas</span>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
+        
+        <div class="pin-aux-actions">
+          <button type="button" class="pin-link-btn" id="pin-forgot-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span>Lupa PIN? Reset via Email OTP</span>
+          </button>
+          <button type="button" class="pin-link-btn pin-unlock-btn" id="pin-unlock-local-btn" style="display:none;" title="Reset batas percobaan kunci lokal browser ini">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+            <span>Reset Batas Kunci</span>
+          </button>
+        </div>
       </form>
 
       <div class="pin-crypto-badge">
@@ -550,11 +561,66 @@
     </div>
   </div>
 
+  <!-- =========================================================================
+       7. EMAIL OTP PIN RESET MODAL (High-Security Recovery)
+       ========================================================================= -->
+  <div class="dash-modal" id="otp-reset-modal">
+    <div class="dash-modal-card" role="dialog" aria-labelledby="otp-reset-title">
+      <div class="modal-header-row">
+        <h3 id="otp-reset-title" class="modal-title">Reset Master PIN via Email OTP</h3>
+        <button type="button" id="otp-reset-close-btn" class="dash-modal-close" aria-label="Tutup modal">&times;</button>
+      </div>
+
+      <p class="modal-desc">
+        Kode verifikasi OTP 6-digit akan dikirimkan ke email terverifikasi pemilik: <strong class="text-emerald">rafly***02@gmail.com</strong>.
+      </p>
+
+      <!-- Step 1: Request OTP -->
+      <div id="otp-step-request" class="otp-step-panel">
+        <button type="button" id="otp-send-code-btn" class="pin-submit-btn" style="margin-top:0.35rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          <span id="otp-send-btn-text">Kirim Kode OTP ke Email</span>
+        </button>
+        <div id="otp-send-status" class="otp-status-message" style="display:none;"></div>
+      </div>
+
+      <!-- Step 2: Input OTP & New PIN -->
+      <form id="otp-verify-form" class="modal-form" style="display:none; margin-top:0.75rem;">
+        <div>
+          <label for="otp-code-input" class="modal-label">Kode OTP 6-Digit (dari Email)</label>
+          <input type="text" id="otp-code-input" class="pin-input" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required inputmode="numeric">
+        </div>
+
+        <div>
+          <label for="otp-new-pin-input" class="modal-label">Master PIN Baru (4-8 Digit)</label>
+          <input type="password" id="otp-new-pin-input" class="pin-input" placeholder="••••••" maxlength="8" required>
+        </div>
+
+        <div>
+          <label for="otp-confirm-pin-input" class="modal-label">Konfirmasi PIN Baru</label>
+          <input type="password" id="otp-confirm-pin-input" class="pin-input" placeholder="••••••" maxlength="8" required>
+        </div>
+
+        <div id="otp-verify-error" class="pin-error" style="display:none;"></div>
+
+        <button type="submit" id="otp-submit-btn" class="pin-submit-btn" style="margin-top:0.5rem;">
+          <span>Verifikasi &amp; Simpan PIN Baru</span>
+        </button>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.75rem;">
+          <button type="button" id="otp-resend-btn" class="pin-link-btn" disabled style="font-size:0.78rem;">
+            Kirim Ulang Kode (<span id="otp-countdown">60</span>s)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Floating Smooth Back-to-Top Button -->
   <button id="floating-back-to-top" class="floating-back-to-top" aria-label="Gulir kembali ke paling atas halaman">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script type="module" src="js/dashboard.js?v=10.100.0"></script>
+  <script type="module" src="js/dashboard.js?v=10.270.0"></script>
 </body>
 </html>

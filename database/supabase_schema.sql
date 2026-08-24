@@ -106,3 +106,45 @@ ON public.ai_memories
 FOR DELETE
 TO anon
 USING (false);
+
+-- ============================================================================
+-- 6. ADMIN SECURITY & CLOUD PIN AUTHENTICATION (Cross-Browser Sync & OTP Reset)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS public.admin_auth_config (
+    id TEXT PRIMARY KEY DEFAULT 'master_auth',
+    pin_hash TEXT NOT NULL,
+    lockout_attempts INT DEFAULT 0,
+    locked_until TIMESTAMPTZ,
+    otp_code_hash TEXT,
+    otp_expires_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Seed initial master PIN "080402" hash
+INSERT INTO public.admin_auth_config (id, pin_hash, lockout_attempts, locked_until)
+VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', 0, NULL)
+ON CONFLICT (id) DO UPDATE SET
+    pin_hash = EXCLUDED.pin_hash,
+    updated_at = timezone('utc'::text, now());
+
+ALTER TABLE public.admin_auth_config ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public anonymous read admin_auth_config"
+ON public.admin_auth_config
+FOR SELECT
+TO anon
+USING (true);
+
+CREATE POLICY "Allow public anonymous insert admin_auth_config"
+ON public.admin_auth_config
+FOR INSERT
+TO anon
+WITH CHECK (true);
+
+CREATE POLICY "Allow public anonymous update admin_auth_config"
+ON public.admin_auth_config
+FOR UPDATE
+TO anon
+USING (true);
+

@@ -63,7 +63,9 @@ class DashboardApp {
   }
 
   async init() {
+    this.cloudPinHash = null;
     this.initAuthGateway();
+    this.initOtpResetFlow();
     this.initEventListeners();
     this.initInertiaSmoothWheel();
     this.initBackToTopButton();
@@ -71,7 +73,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 1. CRYPTOGRAPHIC PIN AUTHENTICATION
+  // 1. CRYPTOGRAPHIC PIN AUTHENTICATION & SUPABASE CLOUD SYNC
   // =========================================================================
   async hashPin(pin) {
     const encoder = new TextEncoder();
@@ -81,22 +83,104 @@ class DashboardApp {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
+  async fetchCloudPinHash() {
+    // 1. Try Vercel Serverless Endpoint
+    try {
+      const res = await fetch('/api/admin-otp?action=get_auth_state', {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.pin_hash) {
+          this.cloudPinHash = data.pin_hash;
+          localStorage.setItem('dash_custom_pin_hash', data.pin_hash);
+          return data.pin_hash;
+        }
+      }
+    } catch (_) {}
+
+    // 2. Direct Supabase Fallback Query
+    try {
+      const config = this.getSupabaseConfig();
+      if (config && config.url && config.anonKey) {
+        const res = await fetch(`${config.url}/rest/v1/admin_auth_config?id=eq.master_auth&select=*`, {
+          method: 'GET',
+          headers: {
+            'apikey': config.anonKey,
+            'Authorization': `Bearer ${config.anonKey}`,
+            'Accept': 'application/json'
+          }
+        });
+        if (res.ok) {
+          const rows = await res.json();
+          if (Array.isArray(rows) && rows.length > 0 && rows[0].pin_hash) {
+            this.cloudPinHash = rows[0].pin_hash;
+            localStorage.setItem('dash_custom_pin_hash', rows[0].pin_hash);
+            return rows[0].pin_hash;
+          }
+        }
+      }
+    } catch (_) {}
+
+    const localSaved = localStorage.getItem('dash_custom_pin_hash');
+    this.cloudPinHash = localSaved || DEFAULT_PIN_HASH;
+    return this.cloudPinHash;
+  }
+
   initAuthGateway() {
     const overlay = document.getElementById('pin-gateway');
     const form = document.getElementById('pin-form');
     const input = document.getElementById('pin-input');
     const errorEl = document.getElementById('pin-error');
+    const unlockLocalBtn = document.getElementById('pin-unlock-local-btn');
+    const forgotBtn = document.getElementById('pin-forgot-btn');
+    const otpModal = document.getElementById('otp-reset-modal');
+
+    // Pre-fetch cloud PIN hash asynchronously
+    this.fetchCloudPinHash();
 
     // Check existing valid session (30-min auto expiry)
     const session = sessionStorage.getItem(SESSION_AUTH_KEY);
     if (session) {
-      const parsed = JSON.parse(session);
-      if (Date.now() - parsed.timestamp < 30 * 60 * 1000) {
-        overlay.style.display = 'none';
-        this.loadDashboardData();
-        this.startRealtimePolling();
-        return;
-      }
+      try {
+        const parsed = JSON.parse(session);
+        if (Date.now() - parsed.timestamp < 30 * 60 * 1000) {
+          overlay.style.display = 'none';
+          this.loadDashboardData();
+          this.startRealtimePolling();
+          return;
+        }
+      } catch (_) {}
+    }
+
+    // Check initial lockout state
+    const initialLockout = this.getLockoutInfo();
+    if (initialLockout.lockedUntil && Date.now() < initialLockout.lockedUntil) {
+      const remainingMin = Math.max(1, Math.ceil((initialLockout.lockedUntil - Date.now()) / 60000));
+      errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
+      errorEl.style.display = 'block';
+      if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
+    }
+
+    // Reset local lockout button handler
+    if (unlockLocalBtn) {
+      unlockLocalBtn.addEventListener('click', () => {
+        localStorage.removeItem(LOCKOUT_KEY);
+        errorEl.style.display = 'none';
+        unlockLocalBtn.style.display = 'none';
+        input.value = '';
+        input.focus();
+      });
+    }
+
+    // Forgot PIN handler -> Opens OTP Reset Modal
+    if (forgotBtn && otpModal) {
+      forgotBtn.addEventListener('click', () => {
+        otpModal.classList.add('is-open');
+        const sendBtn = document.getElementById('otp-send-code-btn');
+        if (sendBtn) sendBtn.focus();
+      });
     }
 
     form.addEventListener('submit', async (e) => {
@@ -106,17 +190,24 @@ class DashboardApp {
       // Check brute-force lockout
       const lockout = this.getLockoutInfo();
       if (lockout.lockedUntil && Date.now() < lockout.lockedUntil) {
-        const remainingMin = Math.ceil((lockout.lockedUntil - Date.now()) / 60000);
+        const remainingMin = Math.max(1, Math.ceil((lockout.lockedUntil - Date.now()) / 60000));
         errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
         errorEl.style.display = 'block';
+        if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
         return;
       }
 
+      // Ensure latest cloud PIN hash is used
+      const activePinHash = this.cloudPinHash || await this.fetchCloudPinHash();
       const inputHash = await this.hashPin(enteredPin);
-      const savedHash = localStorage.getItem('dash_custom_pin_hash') || DEFAULT_PIN_HASH;
 
-      // Master PIN verification
-      if (inputHash === savedHash || inputHash === DEFAULT_PIN_HASH) {
+      // Master PIN verification (checks Cloud PIN Hash, local custom hash, or default seed)
+      const localHash = localStorage.getItem('dash_custom_pin_hash');
+      const isMatch = (inputHash === activePinHash) || 
+                      (localHash && inputHash === localHash) || 
+                      (inputHash === DEFAULT_PIN_HASH);
+
+      if (isMatch) {
         // Success
         sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
         localStorage.removeItem(LOCKOUT_KEY);
@@ -130,6 +221,7 @@ class DashboardApp {
         if (attempts >= 5) {
           lockedUntil = Date.now() + 15 * 60 * 1000; // 15 min lockout
           errorEl.textContent = 'Terlalu banyak percobaan gagal. Akses dikunci 15 menit.';
+          if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
         } else {
           errorEl.textContent = `PIN Salah. Sisa percobaan: ${5 - attempts}`;
         }
@@ -139,6 +231,183 @@ class DashboardApp {
         input.focus();
       }
     });
+  }
+
+  // =========================================================================
+  // 1B. EMAIL OTP RESET FLOW CONTROLLER
+  // =========================================================================
+  initOtpResetFlow() {
+    const otpModal = document.getElementById('otp-reset-modal');
+    const closeBtn = document.getElementById('otp-reset-close-btn');
+    const sendBtn = document.getElementById('otp-send-code-btn');
+    const sendBtnText = document.getElementById('otp-send-btn-text');
+    const sendStatus = document.getElementById('otp-send-status');
+    const stepRequest = document.getElementById('otp-step-request');
+    const verifyForm = document.getElementById('otp-verify-form');
+    const otpCodeInput = document.getElementById('otp-code-input');
+    const newPinInput = document.getElementById('otp-new-pin-input');
+    const confirmPinInput = document.getElementById('otp-confirm-pin-input');
+    const verifyError = document.getElementById('otp-verify-error');
+    const resendBtn = document.getElementById('otp-resend-btn');
+    const countdownSpan = document.getElementById('otp-countdown');
+    const submitVerifyBtn = document.getElementById('otp-submit-btn');
+
+    let countdownTimer = null;
+
+    const closeModal = () => {
+      if (otpModal) otpModal.classList.remove('is-open');
+      if (countdownTimer) clearInterval(countdownTimer);
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (otpModal) {
+      otpModal.addEventListener('click', (e) => {
+        if (e.target === otpModal) closeModal();
+      });
+    }
+
+    const startCountdown = (duration = 60) => {
+      if (countdownTimer) clearInterval(countdownTimer);
+      let left = duration;
+      if (resendBtn) resendBtn.disabled = true;
+      if (countdownSpan) countdownSpan.textContent = String(left);
+
+      countdownTimer = setInterval(() => {
+        left--;
+        if (countdownSpan) countdownSpan.textContent = String(left);
+        if (left <= 0) {
+          clearInterval(countdownTimer);
+          if (resendBtn) {
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Kirim Ulang Kode OTP';
+          }
+        }
+      }, 1000);
+    };
+
+    const handleSendOtp = async () => {
+      if (sendBtn) sendBtn.disabled = true;
+      if (sendBtnText) sendBtnText.textContent = 'Mengirim kode ke raflyfirmansyah02@gmail.com...';
+      if (sendStatus) {
+        sendStatus.className = 'otp-status-message is-loading';
+        sendStatus.textContent = 'Menghubungkan gateway keamanan & mengirim kode OTP...';
+        sendStatus.style.display = 'block';
+      }
+
+      try {
+        const res = await fetch('/api/admin-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'send_otp' })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          if (sendStatus) {
+            sendStatus.className = 'otp-status-message is-success';
+            sendStatus.textContent = data.message || 'Kode OTP telah berhasil dikirimkan ke email Anda.';
+          }
+          if (stepRequest) stepRequest.style.display = 'none';
+          if (verifyForm) verifyForm.style.display = 'block';
+          if (otpCodeInput) otpCodeInput.focus();
+          startCountdown(60);
+        } else {
+          throw new Error(data.message || 'Gagal mengirim OTP dari server.');
+        }
+      } catch (err) {
+        if (sendStatus) {
+          sendStatus.className = 'otp-status-message is-error';
+          sendStatus.textContent = `Gagal mengirim OTP: ${err.message}. Silakan coba lagi.`;
+        }
+        if (sendBtn) sendBtn.disabled = false;
+        if (sendBtnText) sendBtnText.textContent = 'Kirim Kode OTP ke Email';
+      }
+    };
+
+    if (sendBtn) sendBtn.addEventListener('click', handleSendOtp);
+    if (resendBtn) resendBtn.addEventListener('click', handleSendOtp);
+
+    if (verifyForm) {
+      verifyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const otpCode = otpCodeInput ? otpCodeInput.value.trim() : '';
+        const newPin = newPinInput ? newPinInput.value.trim() : '';
+        const confirmPin = confirmPinInput ? confirmPinInput.value.trim() : '';
+
+        if (!otpCode || otpCode.length !== 6) {
+          if (verifyError) {
+            verifyError.textContent = 'Kode OTP harus 6 digit angka.';
+            verifyError.style.display = 'block';
+          }
+          return;
+        }
+
+        if (!newPin || newPin.length < 4 || newPin.length > 8) {
+          if (verifyError) {
+            verifyError.textContent = 'Master PIN baru harus terdiri dari 4-8 digit.';
+            verifyError.style.display = 'block';
+          }
+          return;
+        }
+
+        if (newPin !== confirmPin) {
+          if (verifyError) {
+            verifyError.textContent = 'Konfirmasi PIN tidak cocok.';
+            verifyError.style.display = 'block';
+          }
+          return;
+        }
+
+        if (verifyError) verifyError.style.display = 'none';
+        if (submitVerifyBtn) {
+          submitVerifyBtn.disabled = true;
+          submitVerifyBtn.textContent = 'Memverifikasi...';
+        }
+
+        try {
+          const res = await fetch('/api/admin-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'verify_otp_and_reset_pin',
+              otp_code: otpCode,
+              new_pin: newPin
+            })
+          });
+
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.success) {
+            // Update local memory & cache
+            const newHash = data.new_pin_hash || await this.hashPin(newPin);
+            this.cloudPinHash = newHash;
+            localStorage.setItem('dash_custom_pin_hash', newHash);
+            localStorage.removeItem(LOCKOUT_KEY);
+
+            // Automatically grant session
+            sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
+            
+            closeModal();
+            const overlay = document.getElementById('pin-gateway');
+            if (overlay) overlay.style.display = 'none';
+            this.loadDashboardData();
+            this.startRealtimePolling();
+            alert('Master PIN berhasil direset! Anda langsung masuk ke Observability Dashboard.');
+          } else {
+            throw new Error(data.message || 'Kode OTP tidak valid atau kadaluwarsa.');
+          }
+        } catch (err) {
+          if (verifyError) {
+            verifyError.textContent = err.message;
+            verifyError.style.display = 'block';
+          }
+        } finally {
+          if (submitVerifyBtn) {
+            submitVerifyBtn.disabled = false;
+            submitVerifyBtn.textContent = 'Verifikasi & Simpan PIN Baru';
+          }
+        }
+      });
+    }
   }
 
   getLockoutInfo() {
@@ -2056,11 +2325,50 @@ class DashboardApp {
       changePinForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newPin = document.getElementById('new-pin-input').value.trim();
-        if (newPin.length < 4) return;
+        if (newPin.length < 4 || newPin.length > 8) {
+          alert('Master PIN harus terdiri dari 4-8 digit.');
+          return;
+        }
         const newHash = await this.hashPin(newPin);
+
+        // 1. Update local cache
+        this.cloudPinHash = newHash;
         localStorage.setItem('dash_custom_pin_hash', newHash);
+        localStorage.removeItem(LOCKOUT_KEY);
+
+        // 2. Synchronize with Vercel API & Supabase Cloud
+        try {
+          await fetch('/api/admin-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update_pin', new_pin: newPin })
+          });
+        } catch (_) {}
+
+        try {
+          const config = this.getSupabaseConfig();
+          if (config && config.url && config.anonKey) {
+            await fetch(`${config.url}/rest/v1/admin_auth_config`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': config.anonKey,
+                'Authorization': `Bearer ${config.anonKey}`,
+                'Prefer': 'resolution=merge-duplicates,return=minimal'
+              },
+              body: JSON.stringify({
+                id: 'master_auth',
+                pin_hash: newHash,
+                lockout_attempts: 0,
+                locked_until: null,
+                updated_at: new Date().toISOString()
+              })
+            });
+          }
+        } catch (_) {}
+
         changePinModal.classList.remove('is-open');
-        alert('Master PIN berhasil diperbarui.');
+        alert('Master PIN berhasil diperbarui dan disinkronkan ke Supabase Cloud.');
       });
     }
 
