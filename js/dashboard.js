@@ -152,8 +152,8 @@ class DashboardApp {
           }
         });
       }, {
-        rootMargin: '0px 0px -40px 0px',
-        threshold: 0.05
+        rootMargin: '-30px 0px -40px 0px',
+        threshold: 0.08
       });
 
       this.refreshScrollReveal();
@@ -165,7 +165,7 @@ class DashboardApp {
   refreshScrollReveal() {
     if (!this.scrollObserver) return;
     const items = document.querySelectorAll(
-      '.kpi-card, .chart-card, .intel-card, .omniroute-topology-card, .ai-models-matrix-card, .table-card'
+      '.kpi-card, .chart-card, .intel-card, .omniroute-combo-tile, .ai-model-banner-card, .ai-model-card, .table-card'
     );
     items.forEach(el => {
       el.classList.add('reveal-item');
@@ -1268,7 +1268,7 @@ class DashboardApp {
     const isAutoActive = !rawActiveModel || rawActiveModel === 'auto';
     if (autoSlotEl) {
       autoSlotEl.innerHTML = `
-        <div class="ai-model-banner-card ${isAutoActive ? 'is-terminal-active' : ''}">
+        <div class="ai-model-banner-card reveal-item ${isAutoActive ? 'is-terminal-active' : ''}">
           <div class="ai-banner-left">
             <div class="ai-banner-top">
               <div class="ai-model-icon-tag" style="color:var(--accent-emerald-text);font-size:0.82rem;">
@@ -1318,7 +1318,7 @@ class DashboardApp {
         const activeCardClass = m.isCurrentActive ? 'is-terminal-active' : '';
 
         return `
-          <div class="ai-model-card ${activeCardClass}">
+          <div class="ai-model-card reveal-item ${activeCardClass}">
             ${badge}
             <div class="ai-model-top">
               <div class="ai-model-icon-tag">
@@ -1453,7 +1453,7 @@ class DashboardApp {
     listEl.innerHTML = pageItems.map(m => {
       const timeStr = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
       return `
-        <div class="ai-model-card" style="padding:0.95rem;background-color:var(--surface-badge);">
+        <div class="ai-model-card reveal-item" style="padding:0.95rem;background-color:var(--surface-badge);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
             <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent-emerald-text);font-weight:700;">RAG KNOWLEDGE ITEM</span>
             <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">${timeStr}</span>
