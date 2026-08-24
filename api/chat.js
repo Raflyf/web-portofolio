@@ -82,20 +82,10 @@ ${effortDirective}
 
 [BATASAN ANTI-HALUSINASI & PEMISAHAN TOPIK]:
 - Portofolio resmi Rafly Firmansyah HANYA memiliki 5 proyek di Ground Truth di bawah: OpenPlagiarismChecker, Spam-Email Detection System, laser_pointer_PPT, FotoKitaBlur, dan web-portofolio.
-- Jika pengguna bertanya tentang rilis model AI industri global (seperti DeepSeek, OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama, Mistral, Nvidia Nemotron, dll), jelaskan perkembangan model AI dunia nyata tersebut. DILARANG KERAS mengarang bahwa Rafly Firmansyah membuat model bernama 'Perilisann' atau mengklaim rilis produk fiktif!
+- Jika pengguna bertanya tentang rilis model AI industri global (seperti DeepSeek, OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama, Mistral, Nvidia Nemotron, dll), jelaskan perkembangan model AI dunia nyata tersebut HANYA berdasarkan fakta penelusuran web yang tersedia. DILARANG KERAS mengarang bahwa Rafly Firmansyah membuat model bernama 'Perilisann' atau mengklaim rilis produk fiktif!
 - DILARANG MEMBUAT URL PALSU / FIKTIF. Hanya sertakan URL yang benar-benar ada di [FAKTA & PERKEMBANGAN BERITA TERKINI] di atas.
-- DILARANG MENYEBUT NAMA MEDIA / SUMBER (seperti "menurut Koran Jakarta", "dilaporkan Bloomberg Technoz", "artikel TechCrunch") kecuali nama media tersebut secara eksplisit tercantum di data pencarian di atas. Jangan mengarang nama media sebagai referensi.
-- DILARANG MENGARANG ANGKA BENCHMARK SPESIFIK (seperti "peningkatan 12 persen BLEU", "28 milidetik per token") jika angka tersebut tidak tercantum di data pencarian. Gunakan deskripsi kualitatif jika data kuantitatif tidak tersedia.
-
-[AI MODEL BASELINE KNOWLEDGE - VERSI TERBARU PER AGUSTUS 2026]:
-PENTING: Gunakan versi model berikut sebagai referensi "terbaru". JANGAN menyebut versi lama (Claude 3.5, DeepSeek V2, GPT-4o, dll) sebagai model terbaru.
-- Anthropic Claude: Claude 5 (versi terbaru)
-- DeepSeek: DeepSeek V4 Flash & V4 Pro (versi terbaru)
-- OpenAI: GPT-5 (versi terbaru)
-- Google: Gemini 2.5 Pro / Flash (versi terbaru)
-- Meta: Llama 4 (versi terbaru)
-- Nvidia: Nemotron 3 Nano 30B / Lightning / Super 120B (versi terbaru)
-Jika data pencarian tidak mengembalikan detail spesifik versi ini, sebutkan versi di atas sebagai baseline dan tambahkan catatan "detail benchmark belum tersedia dari sumber terkini".
+- DILARANG MENYEBUT NAMA MEDIA / SUMBER kecuali nama media tersebut secara eksplisit tercantum di data pencarian di atas.
+- DILARANG MENGARANG ANGKA BENCHMARK SPESIFIK jika angka tersebut tidak tercantum di data pencarian.
 
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
 - **OpenPlagiarismChecker** – Deteksi plagiarisme akademik 100% lokal offline. Dual Engine: 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal. [GitHub](https://github.com/Raflyf/OpenPlagiarismChecker)
@@ -277,21 +267,21 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push('LMSYS Chatbot Arena leaderboard 2026');
   }
 
-  // 2c. Provider-Specific Latest Version Queries
+  // 2c. Dynamic Provider-Specific Search Queries (No hardcoded versions)
   if (/\bclaude\b/i.test(qNorm)) {
-    queries.push('Anthropic Claude 5 benchmark release 2026');
+    queries.push('Anthropic Claude AI latest model release benchmark');
   }
   if (/\bdeepseek\b/i.test(qNorm)) {
-    queries.push('DeepSeek V4 Flash Pro benchmark release 2026');
+    queries.push('DeepSeek AI latest model release benchmark');
   }
   if (/\bopenai|chatgpt|gpt\b/i.test(qNorm)) {
-    queries.push('OpenAI GPT-5 benchmark release 2026');
+    queries.push('OpenAI ChatGPT GPT latest model release benchmark');
   }
   if (/\bgemini\b/i.test(qNorm)) {
-    queries.push('Google Gemini 2.5 Pro benchmark release 2026');
+    queries.push('Google Gemini AI latest model release benchmark');
   }
   if (/\bllama\b/i.test(qNorm)) {
-    queries.push('Meta Llama 4 latest model 2026 release');
+    queries.push('Meta Llama AI latest model release benchmark');
   }
 
   // 3. Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
@@ -1266,6 +1256,15 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+      }
+
+      // 7. Append automated disclaimer footer (Transparansi Real-Time & Anti-Hallucination Disclaimer)
+      const isSimpleGreeting = /^(halo|hai|hey|siang|pagi|malam|tes|test|ping|oke|ok|sip|makasih|terima kasih|sama-sama)[.! ]*$/i.test(cleaned.trim());
+      if (!isSimpleGreeting && !cleaned.includes('Catatan:') && !cleaned.includes('Disclaimer:')) {
+        const disclaimer = (sessionLanguage === 'en')
+          ? '\n\n---\n> *Catatan: Respons ini dihasilkan otomatis oleh AI. Informasi mungkin belum mencakup perkembangan paling mutakhir, sudah lawas, atau berpotensi mengandung halusinasi dan kekeliruan fakta.*'
+          : '\n\n---\n> *Catatan: Jawaban ini dihasilkan otomatis oleh AI. Informasi mungkin belum mencakup data paling mutakhir, sudah lawas, atau berpotensi mengandung halusinasi dan kekeliruan fakta.*';
+        cleaned = `${cleaned}${disclaimer}`;
       }
 
       if (res.headersSent) return true;
