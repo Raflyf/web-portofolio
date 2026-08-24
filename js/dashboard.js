@@ -1,15 +1,16 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - ADMIN OBSERVABILITY DASHBOARD CONTROLLER (v6.1.0)
+ * RAFLY FIRMANSYAH - ADMIN OBSERVABILITY DASHBOARD CONTROLLER (v6.2.0)
  * HorizonX Deep Obsidian Glassmorphism Architecture & Dual-Theme Engine
  * Features:
  * - 🛡️ Web Crypto PIN Auth & Supabase Cloud-Synced Master Kredensial
  * - ✉️ Email OTP Recovery Engine (raflyfirmansyah02@gmail.com)
  * - 🌓 Dual-Theme Controller (Dark & Light Mode with Dynamic Chart.js)
  * - 📊 3D Glassmorphic Bento KPIs & Chart.js Multi-Metric Visualizations
- * - 🤖 Complete 12 AI Models Matrix & Continuous RAG Memory Explorer
+ * - 🤖 Standalone Auto Router Banner & Dynamic Most-Used AI Model Ranking
  * - ⚡ OmniRoute Dual-Endpoint Host Probing & Live Traffic Deduplication
- * - 🌊 Kinetic Scroll Reveal (Optical De-Blur & Spring Curve)
+ * - 🌊 Kinetic Bidirectional Scroll Reveal (Optical De-Blur & Spring Curve)
+ * - 🚀 Momentum Inertia Smooth Wheel Physics Engine (60-120fps fluid scroll)
  * - 📑 Compact Sliding Window Pagination (Eliminates Button Overflow)
  * ============================================================================
  */
@@ -39,6 +40,7 @@ class DashboardApp {
     this.tablePageSize = 10;
     this.cloudPinHash = null;
     this.currentTheme = localStorage.getItem('portfolio_theme') || 'dark';
+    this.scrollObserver = null;
   }
 
   cleanKey(val) {
@@ -123,28 +125,45 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 2. KINETIC SCROLL REVEAL (Optical De-Blur & Spring Curve)
+  // 2. KINETIC BIDIRECTIONAL SCROLL REVEAL (De-Blur & Spring Curve)
   // =========================================================================
   initScrollReveal() {
-    const revealItems = document.querySelectorAll('.reveal-item');
-    if (!revealItems.length) return;
+    if (this.scrollObserver) {
+      this.scrollObserver.disconnect();
+    }
 
     if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver((entries) => {
+      this.scrollObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-revealed');
+          } else {
+            entry.target.classList.remove('is-revealed');
+            if (entry.boundingClientRect.top < 0) {
+              entry.target.classList.add('reveal-from-top');
+            } else {
+              entry.target.classList.remove('reveal-from-top');
+            }
           }
         });
       }, {
-        threshold: 0.08,
-        rootMargin: '0px 0px -40px 0px'
+        rootMargin: '-20px 0px -40px 0px',
+        threshold: 0.06
       });
 
-      revealItems.forEach(el => observer.observe(el));
+      this.refreshScrollReveal();
     } else {
-      revealItems.forEach(el => el.classList.add('is-revealed'));
+      document.querySelectorAll('.reveal-item').forEach(el => el.classList.add('is-revealed'));
     }
+  }
+
+  refreshScrollReveal() {
+    if (!this.scrollObserver) return;
+    const items = document.querySelectorAll('.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile');
+    items.forEach(el => {
+      el.classList.add('reveal-item');
+      this.scrollObserver.observe(el);
+    });
   }
 
   // =========================================================================
@@ -296,7 +315,7 @@ class DashboardApp {
           if (overlay) overlay.style.display = 'none';
           this.loadDashboardData();
           this.startRealtimePolling();
-          this.initScrollReveal();
+          this.refreshScrollReveal();
         } else {
           // Failed attempt handling
           const attempts = (lockout.attempts || 0) + 1;
@@ -477,7 +496,7 @@ class DashboardApp {
             if (overlay) overlay.style.display = 'none';
             this.loadDashboardData();
             this.startRealtimePolling();
-            this.initScrollReveal();
+            this.refreshScrollReveal();
             alert('Master PIN berhasil direset! Anda langsung masuk ke Observability Dashboard.');
           } else {
             throw new Error(data.message || 'Kode OTP tidak valid atau kadaluwarsa.');
@@ -620,7 +639,7 @@ class DashboardApp {
     this.renderAllAIModelsMatrix();
     this.renderAIMemoryList();
     this.renderActivityTable();
-    this.initScrollReveal();
+    this.refreshScrollReveal();
   }
 
   renderKPIs() {
@@ -1007,23 +1026,24 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 9. COMPREHENSIVE 12 AI MODELS MATRIX (All Model Queries Accumulated)
+  // 9. STANDALONE AUTO ROUTER BANNER & DYNAMIC MOST-USED MODEL RANKING
   // =========================================================================
   renderAllAIModelsMatrix() {
+    const autoSlotEl = document.getElementById('ai-auto-router-slot');
     const gridEl = document.getElementById('ai-models-grid');
     const totalCountEl = document.getElementById('ai-matrix-total-count');
-    if (!gridEl) return;
 
-    const MODELS_CATALOG = [
-      {
-        id: 'auto-router',
-        name: 'Auto Gateway Router',
-        desc: 'Dynamic 6-Tier Cascade Failover (OmniRoute, Ollama, OpenRouter, OpenCode, MiniMax, Local Semantic)',
-        provider: 'SMART ROUTER',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
-        matcher: (s) => s.includes('auto') || s.includes('router') || s.includes('gateway')
-      },
+    const AUTO_MODEL = {
+      id: 'auto-router',
+      name: 'Auto Gateway Router',
+      desc: 'Dynamic 6-Tier Cascade Failover (OmniRoute, Ollama, OpenRouter, OpenCode, MiniMax, Local Semantic)',
+      provider: 'SMART ROUTER & PRIMARY CASCADE',
+      badgeClass: 'badge-emerald',
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
+      matcher: (s) => s.includes('auto') || s.includes('router') || s.includes('gateway')
+    };
+
+    const INDIVIDUAL_MODELS = [
       {
         id: 'codex',
         name: 'Codex (GPT-5.6 Terra)',
@@ -1126,8 +1146,9 @@ class DashboardApp {
     ];
 
     let totalAIQueries = 0;
+    let autoRouterCount = 0;
     const modelCounts = {};
-    MODELS_CATALOG.forEach(m => { modelCounts[m.id] = 0; });
+    INDIVIDUAL_MODELS.forEach(m => { modelCounts[m.id] = 0; });
 
     // Use full events list to capture all historical & real-time executions
     const eventPool = this.filteredEvents.length > 0 ? this.filteredEvents : this.events;
@@ -1162,41 +1183,74 @@ class DashboardApp {
       if (isAIEvent) {
         totalAIQueries++;
         let matched = false;
-        for (const m of MODELS_CATALOG) {
-          if (m.id !== 'auto-router' && m.matcher(combined)) {
+        for (const m of INDIVIDUAL_MODELS) {
+          if (m.matcher(combined)) {
             modelCounts[m.id]++;
             matched = true;
             break;
           }
         }
         if (!matched) {
-          modelCounts['auto-router']++;
+          autoRouterCount++;
         }
       }
     });
 
     if (totalCountEl) totalCountEl.textContent = `${totalAIQueries}x`;
 
-    gridEl.innerHTML = MODELS_CATALOG.map(m => {
-      const count = modelCounts[m.id] || 0;
-      return `
-        <div class="ai-model-card">
-          <div class="ai-model-top">
-            <div class="ai-model-icon-tag">
-              ${m.icon}
-              <span>${m.name.split(' ')[0]}</span>
+    // 1. Render Featured Standalone Full-Width Card for Auto Gateway Router
+    if (autoSlotEl) {
+      autoSlotEl.innerHTML = `
+        <div class="ai-model-banner-card reveal-item">
+          <div class="ai-banner-left">
+            <div class="ai-banner-top">
+              <div class="ai-model-icon-tag" style="color:var(--accent-emerald-text);font-size:0.82rem;">
+                ${AUTO_MODEL.icon}
+                <span>${AUTO_MODEL.name}</span>
+              </div>
+              <span class="ai-model-status-pill ${AUTO_MODEL.badgeClass}">${AUTO_MODEL.provider}</span>
             </div>
-            <span class="ai-model-status-pill ${m.badgeClass}">${m.provider}</span>
+            <div class="ai-banner-title">${AUTO_MODEL.name} (Smart Inference Cascades)</div>
+            <div class="ai-banner-desc">${AUTO_MODEL.desc}</div>
           </div>
-          <div class="ai-model-name">${this.sanitize(m.name)}</div>
-          <div class="ai-model-desc">${this.sanitize(m.desc)}</div>
-          <div class="ai-model-count-row">
-            <span class="ai-model-count-label">Total Eksekusi</span>
-            <span class="ai-model-count-num">${count}x</span>
+          <div class="ai-banner-right">
+            <span class="ai-banner-count-label">Total Resolusi Router</span>
+            <span class="ai-banner-count-num">${autoRouterCount}x</span>
           </div>
         </div>
       `;
-    }).join('');
+    }
+
+    // 2. Dynamically sort individual models by execution count descending (Most Used on Top)
+    const sortedModels = [...INDIVIDUAL_MODELS].map(m => ({
+      ...m,
+      count: modelCounts[m.id] || 0
+    })).sort((a, b) => b.count - a.count);
+
+    // 3. Render Sorted Dynamic Grid
+    if (gridEl) {
+      gridEl.innerHTML = sortedModels.map((m, idx) => {
+        const rankBadge = `<span class="ai-model-rank-badge">#${idx + 1}</span>`;
+        return `
+          <div class="ai-model-card reveal-item">
+            ${rankBadge}
+            <div class="ai-model-top">
+              <div class="ai-model-icon-tag">
+                ${m.icon}
+                <span>${m.name.split(' ')[0]}</span>
+              </div>
+              <span class="ai-model-status-pill ${m.badgeClass}">${m.provider}</span>
+            </div>
+            <div class="ai-model-name">${this.sanitize(m.name)}</div>
+            <div class="ai-model-desc">${this.sanitize(m.desc)}</div>
+            <div class="ai-model-count-row">
+              <span class="ai-model-count-label">Total Eksekusi</span>
+              <span class="ai-model-count-num">${m.count}x</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   // =========================================================================
@@ -1297,7 +1351,7 @@ class DashboardApp {
     listEl.innerHTML = pageItems.map(m => {
       const timeStr = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
       return `
-        <div class="ai-model-card" style="padding:0.95rem;background-color:var(--surface-badge);">
+        <div class="ai-model-card reveal-item" style="padding:0.95rem;background-color:var(--surface-badge);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
             <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent-emerald-text);font-weight:700;">RAG KNOWLEDGE ITEM</span>
             <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">${timeStr}</span>
@@ -1802,34 +1856,86 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 16. INERTIA SMOOTH WHEEL & BACK-TO-TOP PHYSICS ENGINE
+  // 16. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
   // =========================================================================
   initInertiaSmoothWheel() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    let targetY = window.scrollY;
-    let currentY = window.scrollY;
-    let isWheeling = false;
+    let currentY = window.scrollY || window.pageYOffset;
+    let targetY = currentY;
+    let isRunning = false;
+    const ease = 0.095;
+
+    const updateWheelPhysics = () => {
+      const diff = targetY - currentY;
+      
+      if (Math.abs(diff) > 0.5) {
+        currentY += diff * ease;
+        window.scrollTo(0, Math.round(currentY * 10) / 10);
+        requestAnimationFrame(updateWheelPhysics);
+      } else {
+        currentY = targetY;
+        window.scrollTo(0, targetY);
+        isRunning = false;
+      }
+    };
 
     window.addEventListener('wheel', (e) => {
-      const activeEl = document.activeElement;
-      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT' || activeEl.closest('.table-responsive'))) {
+      // If modal is open, let native dialog scrolling take full control
+      if (document.querySelector('.dash-modal.is-open')) {
         return;
       }
-      targetY = Math.max(0, Math.min(document.documentElement.scrollHeight - window.innerHeight, targetY + e.deltaY * 0.85));
 
-      if (!isWheeling) {
-        isWheeling = true;
-        const tick = () => {
-          currentY += (targetY - currentY) * 0.12;
-          window.scrollTo(0, Math.round(currentY));
-          if (Math.abs(targetY - currentY) > 0.5) {
-            requestAnimationFrame(tick);
-          } else {
-            isWheeling = false;
-          }
-        };
-        requestAnimationFrame(tick);
+      const path = e.composedPath ? e.composedPath() : [];
+      const isScrollableChild = path.some(el => {
+        if (!el || !el.classList) return false;
+        return (
+          el.classList.contains('table-responsive') ||
+          el.classList.contains('dash-modal-card') ||
+          el.tagName === 'INPUT' ||
+          el.tagName === 'TEXTAREA' ||
+          el.tagName === 'SELECT'
+        );
+      });
+
+      if (isScrollableChild) {
+        targetY = window.scrollY || window.pageYOffset;
+        currentY = targetY;
+        return;
+      }
+
+      if (e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
+        targetY = window.scrollY || window.pageYOffset;
+        currentY = targetY;
+        return;
+      }
+
+      e.preventDefault();
+
+      const maxScroll = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+
+      let delta = e.deltaY;
+      if (e.deltaMode === 1) delta *= 35;
+      if (e.deltaMode === 2) delta *= 750;
+
+      targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
+
+      if (!isRunning) {
+        isRunning = true;
+        currentY = window.scrollY || window.pageYOffset;
+        requestAnimationFrame(updateWheelPhysics);
+      }
+    }, { passive: false });
+
+    window.addEventListener('scroll', () => {
+      if (!isRunning) {
+        currentY = window.scrollY || window.pageYOffset;
+        targetY = currentY;
       }
     }, { passive: true });
   }
