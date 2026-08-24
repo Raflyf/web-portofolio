@@ -1259,32 +1259,17 @@ class DashboardApp {
       const combined = `${target} ${label} ${type}`;
       const ts = new Date(e.created_at || 0).getTime();
 
+      // Strictly isolate genuine AI query inference events (excluding general terminal commands like help/clear/etc.)
       const isAIEvent = type === 'ai_query_resolved' ||
                         type === 'ai_chat' ||
                         type === 'ai_query' ||
-                        type === 'terminal_cmd' ||
-                        target.includes('auto') || 
-                        target.includes('model') || 
-                        target.includes('deepseek') || 
-                        target.includes('nemotron') || 
-                        target.includes('codex') || 
-                        target.includes('antigravity') || 
-                        target.includes('gemma') || 
-                        target.includes('minimax') || 
-                        target.includes('vision') || 
-                        target.includes('liquid') || 
-                        target.includes('ox-alpha') || 
-                        target.includes('semantic') || 
-                        label.includes('auto') || 
-                        label.includes('via') || 
-                        label.includes('ai') || 
-                        label.includes('model');
+                        (type === 'terminal_cmd' && (target.startsWith('ai:') || target.startsWith('chat:') || target.startsWith('ask:')));
 
       if (isAIEvent) {
         totalAIQueries++;
 
-        // Track Auto Gateway Router resolutions (any event with auto target or auto label prefix)
-        const isAutoRouted = target.startsWith('auto') || label.includes('[auto') || target === 'auto';
+        // Track Auto Gateway Router resolutions (explicit auto target or auto label prefix)
+        const isAutoRouted = target.startsWith('auto') || label.includes('[auto') || label.includes('[Auto') || target === 'auto';
         if (isAutoRouted) {
           autoRouterCount++;
         }
@@ -1302,7 +1287,7 @@ class DashboardApp {
           }
         }
 
-        // Fallback: if not matched to specific individual model and not explicitly auto, count in router
+        // Fallback for unknown AI model query to ensure total count consistency
         if (!matchedIndividual && !isAutoRouted) {
           autoRouterCount++;
         }
@@ -1360,13 +1345,15 @@ class DashboardApp {
 
         return `
           <div class="ai-model-card ${activeCardClass}">
-            ${badge}
             <div class="ai-model-top">
               <div class="ai-model-icon-tag">
                 ${m.icon}
                 <span>${m.name.split(' ')[0]}</span>
               </div>
-              <span class="ai-model-status-pill ${m.badgeClass}">${m.provider}</span>
+              <div class="ai-model-top-badges">
+                ${badge}
+                <span class="ai-model-status-pill ${m.badgeClass}">${m.provider}</span>
+              </div>
             </div>
             <div class="ai-model-name">${this.sanitize(m.name)}</div>
             <div class="ai-model-desc">${this.sanitize(m.desc)}</div>
@@ -2234,6 +2221,7 @@ class DashboardApp {
         e.stopPropagation();
         const isOpen = wrapper.classList.toggle('is-open');
         trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        
         // Close other dropdowns
         document.querySelectorAll('.custom-select-wrapper.is-open').forEach(w => {
           if (w !== wrapper) {
@@ -2241,6 +2229,11 @@ class DashboardApp {
             const trig = w.querySelector('.custom-select-trigger');
             if (trig) trig.setAttribute('aria-expanded', 'false');
           }
+        });
+
+        // Ensure parent bars/headers raise z-index above all cards
+        document.querySelectorAll('.dash-section-bar, .table-header-row').forEach(p => {
+          p.style.zIndex = (p.contains(wrapper) && isOpen) ? '9999' : '';
         });
       });
 
@@ -2265,6 +2258,9 @@ class DashboardApp {
         w.classList.remove('is-open');
         const trig = w.querySelector('.custom-select-trigger');
         if (trig) trig.setAttribute('aria-expanded', 'false');
+      });
+      document.querySelectorAll('.dash-section-bar, .table-header-row').forEach(p => {
+        p.style.zIndex = '';
       });
     });
   }
