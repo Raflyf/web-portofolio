@@ -255,7 +255,13 @@ body {
   .ai-model-banner-card:hover,
   .ai-model-banner-card.is-revealed:hover,
   .omniroute-combo-tile:hover,
-  .omniroute-combo-tile.is-revealed:hover {
+  .omniroute-combo-tile.is-revealed:hover,
+  .omniroute-topology-card:hover,
+  .omniroute-topology-card.is-revealed:hover,
+  .ai-models-matrix-card:hover,
+  .ai-models-matrix-card.is-revealed:hover,
+  .table-card:hover,
+  .table-card.is-revealed:hover {
     transform: translateY(-4px) !important;
     transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
                 box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
@@ -480,9 +486,6 @@ body {
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.15rem;
   box-shadow: var(--shadow-card);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.28s ease;
   position: relative;
   overflow: hidden;
 }
@@ -585,9 +588,6 @@ body {
   border-radius: var(--radius-lg);
   padding: 1.35rem;
   box-shadow: var(--shadow-card);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.28s ease;
 }
 
 [data-theme="light"] .chart-card {
@@ -649,9 +649,6 @@ body {
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   box-shadow: var(--shadow-card);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.28s ease;
 }
 
 [data-theme="light"] .intel-card {
@@ -746,9 +743,6 @@ body {
   padding: 1.35rem;
   margin-bottom: 1rem;
   box-shadow: var(--shadow-card);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.28s ease;
 }
 
 [data-theme="light"] .omniroute-topology-card {
@@ -945,9 +939,6 @@ body {
   padding: 1.35rem;
   margin-bottom: 1rem;
   box-shadow: var(--shadow-card);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.28s ease;
 }
 
 [data-theme="light"] .ai-models-matrix-card {
@@ -977,7 +968,6 @@ body {
   justify-content: space-between;
   gap: 1.5rem;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 0 24px rgba(16, 185, 129, 0.08);
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
@@ -1066,7 +1056,6 @@ body {
   flex-direction: column;
   justify-content: space-between;
   gap: 0.65rem;
-  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
 

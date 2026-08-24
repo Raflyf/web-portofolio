@@ -161,7 +161,7 @@ class DashboardApp {
   refreshScrollReveal() {
     if (!this.scrollObserver) return;
     const items = document.querySelectorAll(
-      '.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile, .table-card, .dash-header-card, .section-header-wrap'
+      '.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile, .omniroute-topology-card, .ai-models-matrix-card, .rag-memory-card, .table-card, .dash-header-card, .section-header-wrap'
     );
     items.forEach(el => {
       el.classList.add('reveal-item');
