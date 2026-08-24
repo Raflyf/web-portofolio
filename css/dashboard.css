@@ -1728,25 +1728,6 @@ body {
 }
 
 @media (max-width: 768px) {
-  /* Mobile Performance Tuning: 60-120fps hardware acceleration & lighter blur */
-  .reveal-item {
-    transform: translateY(20px) scale(0.98) !important;
-    filter: none !important;
-    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    will-change: opacity, transform;
-  }
-
-  .reveal-item.reveal-from-top {
-    transform: translateY(-20px) scale(0.98) !important;
-  }
-
-  .reveal-item.is-revealed {
-    opacity: 1 !important;
-    transform: translateY(0) scale(1) !important;
-    filter: none !important;
-  }
-
   .ambient-glow-layer {
     display: none !important;
   }
