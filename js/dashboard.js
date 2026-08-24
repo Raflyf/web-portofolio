@@ -79,9 +79,9 @@ class DashboardApp {
     this.initAuthGateway();
     this.initOtpResetFlow();
     this.initEventListeners();
+    this.initScrollReveal();
     this.initInertiaSmoothWheel();
     this.initBackToTopButton();
-    // initScrollReveal is called in postAuthBootstrap AFTER auth + data load
     this.checkOmniRouteRealtimeStatus();
   }
 
@@ -139,6 +139,7 @@ class DashboardApp {
             entry.target.classList.add('is-revealed');
           } else {
             entry.target.classList.remove('is-revealed');
+            // If element is above the viewport, mark it as reveal-from-top so it slides down when scrolling back up
             if (entry.boundingClientRect.top < 0) {
               entry.target.classList.add('reveal-from-top');
             } else {
@@ -147,8 +148,8 @@ class DashboardApp {
           }
         });
       }, {
-        rootMargin: '0px 0px -20px 0px',
-        threshold: 0.04
+        rootMargin: '-30px 0px -40px 0px',
+        threshold: 0.08
       });
 
       this.refreshScrollReveal();
@@ -158,16 +159,13 @@ class DashboardApp {
   }
 
   refreshScrollReveal() {
-    const items = document.querySelectorAll('.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile, .table-card');
+    if (!this.scrollObserver) return;
+    const items = document.querySelectorAll(
+      '.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile, .table-card, .dash-header-card, .section-header-wrap'
+    );
     items.forEach(el => {
       el.classList.add('reveal-item');
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) {
-        el.classList.add('is-revealed');
-      }
-      if (this.scrollObserver) {
-        this.scrollObserver.observe(el);
-      }
+      this.scrollObserver.observe(el);
     });
   }
 
@@ -239,19 +237,12 @@ class DashboardApp {
     // Pre-fetch cloud PIN hash asynchronously
     this.fetchCloudPinHash();
 
-    // Shared post-auth bootstrap: load data THEN activate reveal + smooth wheel
+    // Shared post-auth bootstrap: load data THEN refresh reveal observer
     const postAuthBootstrap = async () => {
       if (overlay) overlay.style.display = 'none';
       await this.loadDashboardData();
       this.startRealtimePolling();
-      // Double rAF ensures browser has painted new DOM before observing
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          document.body.classList.add('reveal-ready');
-          this.initScrollReveal();
-          this.refreshScrollReveal();
-        });
-      });
+      this.refreshScrollReveal();
     };
 
     // Check existing valid session (30-min auto expiry)
@@ -1901,22 +1892,50 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 16. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
+  // 16. CUSTOM CUBIC SMOOTH-SCROLL ENGINE & INERTIA SMOOTH WHEEL
   // =========================================================================
-  initInertiaSmoothWheel() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  smoothScrollTo(targetY, duration = 1100) {
+    const startY = window.scrollY || window.pageYOffset;
+    const distance = targetY - startY;
+    
+    if (Math.abs(distance) < 2) return;
 
+    let startTime = null;
+
+    function easeInOutCubic(t) {
+      return t < 0.5 
+        ? 4 * t * t * t 
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function animationLoop(currentTime) {
+      if (!startTime) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      const easedProgress = easeInOutCubic(progress);
+
+      window.scrollTo(0, startY + (distance * easedProgress));
+
+      if (progress < 1) {
+        window.requestAnimationFrame(animationLoop);
+      }
+    }
+
+    window.requestAnimationFrame(animationLoop);
+  }
+
+  initInertiaSmoothWheel() {
     let currentY = window.scrollY || window.pageYOffset;
     let targetY = currentY;
     let isRunning = false;
-    const ease = 0.085; // Lower = smoother & longer glide
+    const ease = 0.095;
 
     const updateWheelPhysics = () => {
       const diff = targetY - currentY;
       
-      if (Math.abs(diff) > 0.4) {
+      if (Math.abs(diff) > 0.5) {
         currentY += diff * ease;
-        window.scrollTo(0, currentY);
+        window.scrollTo(0, Math.round(currentY * 10) / 10);
         requestAnimationFrame(updateWheelPhysics);
       } else {
         currentY = targetY;
@@ -1927,7 +1946,7 @@ class DashboardApp {
 
     window.addEventListener('wheel', (e) => {
       // If modal is open, let native dialog scrolling take full control
-      if (document.querySelector('.dash-modal.is-open')) {
+      if (document.body.classList.contains('modal-open') || document.querySelector('.dash-modal.is-open')) {
         return;
       }
 
@@ -1937,7 +1956,8 @@ class DashboardApp {
         return (
           el.classList.contains('dash-modal-card') ||
           el.tagName === 'TEXTAREA' ||
-          el.tagName === 'SELECT'
+          el.tagName === 'SELECT' ||
+          el.classList.contains('table-responsive')
         );
       });
 
@@ -1948,6 +1968,12 @@ class DashboardApp {
       }
 
       if (e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
+        targetY = window.scrollY || window.pageYOffset;
+        currentY = targetY;
+        return;
+      }
 
       e.preventDefault();
 
@@ -1982,15 +2008,17 @@ class DashboardApp {
     if (!btn) return;
 
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 400) {
+      const currentScroll = window.scrollY || window.pageYOffset;
+      if (currentScroll > 350) {
         btn.classList.add('is-visible');
       } else {
         btn.classList.remove('is-visible');
       }
     }, { passive: true });
 
-    btn.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.smoothScrollTo(0, 1150);
     });
   }
 }
