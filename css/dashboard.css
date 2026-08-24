@@ -1421,6 +1421,11 @@ body {
   padding: 1.5rem;
 }
 
+html.is-admin-authenticated #pin-gateway,
+html.is-admin-authenticated .pin-gateway-overlay {
+  display: none !important;
+}
+
 .pin-card {
   background: linear-gradient(145deg, rgba(16, 24, 38, 0.95) 0%, rgba(10, 15, 24, 0.98) 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);

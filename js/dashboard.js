@@ -167,7 +167,7 @@ class DashboardApp {
   refreshScrollReveal() {
     if (!this.scrollObserver) return;
     const items = document.querySelectorAll(
-      '.kpi-card, .chart-card, .intel-card, .omniroute-combo-tile, .ai-model-banner-card, .ai-model-card, .table-card'
+      '.kpi-card, .chart-card, .intel-card, .omniroute-topology-card, .ai-models-matrix-card, .table-card, .dash-section-bar'
     );
     items.forEach(el => {
       el.classList.add('reveal-item');
@@ -245,22 +245,26 @@ class DashboardApp {
 
     // Shared post-auth bootstrap: load data THEN refresh reveal observer
     const postAuthBootstrap = async () => {
+      document.documentElement.classList.add('is-admin-authenticated');
       if (overlay) overlay.style.display = 'none';
       await this.loadDashboardData();
       this.startRealtimePolling();
       this.refreshScrollReveal();
     };
 
-    // Check existing valid session (30-min auto expiry)
-    const session = sessionStorage.getItem(SESSION_AUTH_KEY);
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        if (Date.now() - parsed.timestamp < 30 * 60 * 1000) {
-          postAuthBootstrap();
-          return;
-        }
-      } catch (_) {}
+    // Check existing valid session (24-hour auto expiry)
+    let session = null;
+    try {
+      const raw = localStorage.getItem(SESSION_AUTH_KEY) || sessionStorage.getItem(SESSION_AUTH_KEY);
+      if (raw) session = JSON.parse(raw);
+    } catch (_) {}
+
+    if (session && session.auth && (Date.now() - session.timestamp < 24 * 60 * 60 * 1000)) {
+      postAuthBootstrap();
+      return;
+    } else {
+      document.documentElement.classList.remove('is-admin-authenticated');
+      if (overlay) overlay.style.display = 'flex';
     }
 
     // Check initial lockout state
@@ -324,8 +328,11 @@ class DashboardApp {
                         (inputHash === DEFAULT_PIN_HASH);
 
         if (isMatch) {
-          // Success
-          sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
+          // Success: Save to both localStorage and sessionStorage (24-hour persistent admin session)
+          const sessionPayload = JSON.stringify({ auth: true, timestamp: Date.now() });
+          localStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
+          sessionStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
+          document.documentElement.classList.add('is-admin-authenticated');
           localStorage.removeItem(LOCKOUT_KEY);
           postAuthBootstrap();
         } else {
@@ -540,6 +547,8 @@ class DashboardApp {
   logout() {
     if (this.pollInterval) clearInterval(this.pollInterval);
     sessionStorage.removeItem(SESSION_AUTH_KEY);
+    localStorage.removeItem(SESSION_AUTH_KEY);
+    document.documentElement.classList.remove('is-admin-authenticated');
     window.location.reload();
   }
 
@@ -1291,7 +1300,7 @@ class DashboardApp {
     const isAutoActive = !rawActiveModel || rawActiveModel === 'auto';
     if (autoSlotEl) {
       autoSlotEl.innerHTML = `
-        <div class="ai-model-banner-card reveal-item ${isAutoActive ? 'is-terminal-active' : ''}">
+        <div class="ai-model-banner-card ${isAutoActive ? 'is-terminal-active' : ''}">
           <div class="ai-banner-left">
             <div class="ai-banner-top">
               <div class="ai-model-icon-tag" style="color:var(--accent-emerald-text);font-size:0.82rem;">
@@ -1341,7 +1350,7 @@ class DashboardApp {
         const activeCardClass = m.isCurrentActive ? 'is-terminal-active' : '';
 
         return `
-          <div class="ai-model-card reveal-item ${activeCardClass}">
+          <div class="ai-model-card ${activeCardClass}">
             ${badge}
             <div class="ai-model-top">
               <div class="ai-model-icon-tag">
@@ -1477,7 +1486,7 @@ class DashboardApp {
     listEl.innerHTML = pageItems.map(m => {
       const timeStr = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
       return `
-        <div class="ai-model-card reveal-item" style="padding:0.95rem;background-color:var(--surface-badge);">
+        <div class="ai-model-card" style="padding:0.95rem;background-color:var(--surface-badge);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
             <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent-emerald-text);font-weight:700;">RAG KNOWLEDGE ITEM</span>
             <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">${timeStr}</span>
