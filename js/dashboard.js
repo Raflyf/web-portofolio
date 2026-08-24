@@ -89,7 +89,6 @@ class DashboardApp {
   // 1. THEME CONTROLLER (Full HorizonX Dark & Light Synchronization)
   // =========================================================================
   initThemeEngine() {
-    const toggleBtn = document.getElementById('theme-toggle-btn');
     const root = document.documentElement;
 
     const applyTheme = (theme) => {
@@ -97,16 +96,17 @@ class DashboardApp {
       root.setAttribute('data-theme', theme);
       localStorage.setItem('portfolio_theme', theme);
 
-      const sunIcon = toggleBtn?.querySelector('.sun-icon');
-      const moonIcon = toggleBtn?.querySelector('.moon-icon');
-
-      if (theme === 'light') {
-        if (sunIcon) sunIcon.style.display = 'block';
-        if (moonIcon) moonIcon.style.display = 'none';
-      } else {
-        if (sunIcon) sunIcon.style.display = 'none';
-        if (moonIcon) moonIcon.style.display = 'block';
-      }
+      document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+        const sunIcon = btn.querySelector('.sun-icon');
+        const moonIcon = btn.querySelector('.moon-icon');
+        if (theme === 'light') {
+          if (sunIcon) sunIcon.style.display = 'block';
+          if (moonIcon) moonIcon.style.display = 'none';
+        } else {
+          if (sunIcon) sunIcon.style.display = 'none';
+          if (moonIcon) moonIcon.style.display = 'block';
+        }
+      });
 
       // Re-render charts with updated theme colors
       if (Object.keys(this.charts).length > 0) {
@@ -114,14 +114,18 @@ class DashboardApp {
       }
     };
 
+    this.toggleTheme = () => {
+      const nextTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(nextTheme);
+    };
+
     applyTheme(this.currentTheme);
 
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', () => {
-        const nextTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
-        applyTheme(nextTheme);
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.toggleTheme();
       });
-    }
+    });
   }
 
   // =========================================================================
@@ -1379,21 +1383,20 @@ class DashboardApp {
   // =========================================================================
   // 11. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG)
   // =========================================================================
-  async renderAIMemoryList() {
-    const listEl = document.getElementById('ai-memories-list');
+  async fetchAIMemories(isSilent = false) {
     const totalBadgeEl = document.getElementById('ai-memory-total-count');
-    const paginationEl = document.getElementById('ai-memories-pagination');
-    if (!listEl) return;
-
+    const listEl = document.getElementById('ai-memories-list');
     const config = this.getSupabaseConfig();
     if (!config || !config.url || !config.anonKey) {
-      listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;">Supabase belum terkonfigurasi.</div>`;
+      if (listEl && this.memories.length === 0) {
+        listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;">Supabase belum terkonfigurasi.</div>`;
+      }
       if (totalBadgeEl) totalBadgeEl.textContent = '0 Memori';
       return;
     }
 
     try {
-      const res = await fetch(`${config.url}/rest/v1/ai_memories?select=*&order=created_at.desc`, {
+      const res = await fetch(`${config.url}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=200`, {
         headers: {
           'apikey': config.anonKey,
           'Authorization': `Bearer ${config.anonKey}`,
@@ -1402,9 +1405,26 @@ class DashboardApp {
       });
 
       if (res.ok) {
-        this.memories = await res.json();
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          this.memories = data;
+          this.renderAIMemoryList();
+        }
       }
     } catch (_) {}
+  }
+
+  renderAIMemoryList() {
+    const listEl = document.getElementById('ai-memories-list');
+    const totalBadgeEl = document.getElementById('ai-memory-total-count');
+    const paginationEl = document.getElementById('ai-memories-pagination');
+    if (!listEl) return;
+
+    if (this.memories.length === 0 && !this.isFetchingMemories) {
+      this.isFetchingMemories = true;
+      this.fetchAIMemories().finally(() => { this.isFetchingMemories = false; });
+      return;
+    }
 
     const total = this.memories.length;
     if (totalBadgeEl) totalBadgeEl.textContent = `${total} Fakta Aktif`;
@@ -1423,7 +1443,7 @@ class DashboardApp {
     listEl.innerHTML = pageItems.map(m => {
       const timeStr = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
       return `
-        <div class="ai-model-card reveal-item" style="padding:0.95rem;background-color:var(--surface-badge);">
+        <div class="ai-model-card" style="padding:0.95rem;background-color:var(--surface-badge);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
             <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent-emerald-text);font-weight:700;">RAG KNOWLEDGE ITEM</span>
             <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">${timeStr}</span>
@@ -1614,6 +1634,9 @@ class DashboardApp {
       if (pollTick % 3 === 0) {
         this.checkOmniRouteRealtimeStatus();
       }
+      if (pollTick % 10 === 0) {
+        this.fetchAIMemories(true);
+      }
     }, 3000);
   }
 
@@ -1621,6 +1644,26 @@ class DashboardApp {
   // 14. EVENT LISTENERS & MODAL DIALOG CONTROLLERS
   // =========================================================================
   initEventListeners() {
+    // Mobile Nav Toggle Drawer (matching index.html)
+    const mobileToggle = document.getElementById('dash-mobile-nav-toggle');
+    const navMenu = document.getElementById('dash-nav-menu');
+    if (mobileToggle && navMenu) {
+      mobileToggle.addEventListener('click', () => {
+        const isOpen = navMenu.classList.toggle('is-open');
+        mobileToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+
+      // Close mobile menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (navMenu.classList.contains('is-open') && !navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+          navMenu.classList.remove('is-open');
+          mobileToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+
+
     // Time Range Select
     const rangeSelect = document.getElementById('dash-time-range');
     if (rangeSelect) {
