@@ -687,7 +687,11 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN BERITA TERKINI 2026]:\n${uniqueSnippets.join('\n')}\n(PANDUAN SINTESIS: Gunakan poin-poin berita di atas sebagai fakta pendukung. Rangkum dan jelaskan peristiwa ini dalam bentuk **paragraf naratif yang utuh, runut, dan mengalir**. DILARANG mencantumkan ulang daftar timestamp/bullet tanggal mentah.)\n`;
+      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN BERITA TERKINI 2026]:\n${uniqueSnippets.join('\n')}\n\n[PANDUAN SINTESIS - WAJIB DIIKUTI KETAT]:\n- GUNAKAN HANYA informasi yang secara eksplisit tercantum di headline/snippet di atas. DILARANG menambahkan detail, nama model, versi, atau angka yang tidak muncul verbatim di data pencarian.
+- Jika nama model, versi, atau angka benchmark tidak ada di data pencarian: JANGAN menyebutkannya. Cukup sampaikan "Data spesifik tidak tersedia dari sumber terkini" untuk bagian tersebut.
+- DILARANG menginterpolasi dari pengetahuan training (misalnya: jangan karang nama model seperti 'GPT-5.6', 'Qwen-3827B', 'Muse Glimmer' jika tidak ada di headline di atas).
+- Untuk BERITA: rangkum dalam narasi paragraf berdasar judul-judul di atas saja.
+- Untuk PERBANDINGAN/BENCHMARK: buat tabel hanya dari data yang tersedia, tandai 'Tidak tersedia' untuk kolom tanpa data pencarian.\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
