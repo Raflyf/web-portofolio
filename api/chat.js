@@ -216,10 +216,6 @@ function formulateSmartSearchQueries(query, history = []) {
 
   if (coreSubject.length >= 3) {
     queries.push(coreSubject);
-    // Entity expansion for Indonesian queries
-    if (coreSubject.includes('mandiri') && !coreSubject.includes('bank')) {
-      queries.push(coreSubject.replace(/\bmandiri\b/gi, 'bank mandiri'));
-    }
   }
   if (qClean.length >= 3 && qClean !== coreSubject) {
     queries.push(qClean);
