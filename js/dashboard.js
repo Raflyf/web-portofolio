@@ -1213,15 +1213,6 @@ class DashboardApp {
         matcher: (s) => s.includes('vision') || s.includes('minimax') || s.includes('mimo')
       },
       {
-        id: 'nemotron-3-ultra',
-        name: 'nemotron-3-ultra',
-        desc: 'Frontier reasoning engine untuk analisis komparatif mendalam dan bedah arsitektur proyek riset (opencode/nemotron-3-ultra-free)',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
-        matcher: (s) => s.includes('nemotron-3-ultra') || s.includes('nemotron-ultra') || s.includes('laguna') || s.includes('550b') || s.includes('nemotron-laguna')
-      },
-      {
         id: 'nemotron-lightning',
         name: 'nemotron-lighting',
         desc: 'Fast-response engine untuk percakapan kasual, sapaan cepat, dan trivia responsif sub-detik di OmniRoute (100 akun pool)',
@@ -1237,7 +1228,16 @@ class DashboardApp {
         provider: 'OPENCODE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => s.includes('ox-alpha') || s.includes('0x-alpha') || s.includes('stealth/ox-alpha') || s.includes('deepseek')
+        matcher: (s) => s.includes('ox-alpha') || s.includes('0x-alpha') || s.includes('stealth/ox-alpha')
+      },
+      {
+        id: 'deepseek',
+        name: 'DeepSeek Chat (V3)',
+        desc: 'Model analitik cepat dari DeepSeek untuk kueri informasi, perbandingan, dan riset teks padat di OpenRouter pool',
+        provider: 'OPENROUTER',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
+        matcher: (s) => s.includes('deepseek')
       },
       {
         id: 'gemma4',
@@ -1260,7 +1260,7 @@ class DashboardApp {
       {
         id: 'nemotron-nano',
         name: 'Nvidia Nemotron 3 Nano (30B)',
-        desc: 'Asisten responsif sub-detik untuk percakapan cepat dan ringkasan padat di Ollama Cloud',
+        desc: 'Model utama auto-router untuk semua kueri informatif, berita, dan Q&A - prioritas pertama di pipeline Ollama Cloud',
         provider: 'OLLAMA CLOUD',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
