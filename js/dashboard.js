@@ -155,7 +155,7 @@ class DashboardApp {
         });
       }, {
         rootMargin: '10px 0px -10px 0px',
-        threshold: 0.02
+        threshold: 0.08
       });
 
       this.refreshScrollReveal();
