@@ -1781,13 +1781,126 @@ body {
     grid-template-columns: 1fr;
   }
   .dash-header-wrap {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .dash-header-mobile-controls {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .dash-mobile-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: var(--text-ink) !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+  }
+
+  [data-theme="light"] .dash-mobile-toggle {
+    background: rgba(15, 23, 42, 0.06) !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    color: #0f172a !important;
+  }
+
+  /* Dropdown Navigation Menu matching index.html */
+  #dash-nav-menu {
+    display: none;
+    position: fixed;
+    top: 3.75rem;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    background: #090e17;
+    background-color: #090e17;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0 0 20px 20px;
+    padding: 1.25rem 1.25rem 1.5rem;
+    gap: 0.65rem;
+    z-index: 99999;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.85);
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    box-sizing: border-box;
   }
-  .dash-actions-group {
-    width: 100%;
-    justify-content: flex-start;
+
+  [data-theme="light"] #dash-nav-menu {
+    background: #ffffff;
+    background-color: #ffffff;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
   }
+
+  #dash-nav-menu.is-open {
+    display: flex !important;
+  }
+
+  #dash-nav-menu .dash-status-pill,
+  #dash-nav-menu .dash-select,
+  #dash-nav-menu .dash-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.65rem 1rem !important;
+    font-size: 0.88rem !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Auto Gateway Router Banner Mobile Responsiveness (No clipping) */
+  .ai-model-banner-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.85rem !important;
+    padding: 1.15rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .ai-banner-left {
+    width: 100% !important;
+  }
+
+  .ai-banner-top {
+    flex-wrap: wrap !important;
+    gap: 0.4rem !important;
+  }
+
+  .ai-banner-right {
+    width: 100% !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-top: 0.75rem !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  [data-theme="light"] .ai-banner-right {
+    border-top-color: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .ai-banner-count-label {
+    font-size: 0.72rem !important;
+  }
+
+  .ai-banner-count-num {
+    font-size: 1.5rem !important;
+  }
+
   .table-header-row {
     flex-direction: column;
     align-items: flex-start;
