@@ -498,7 +498,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2600);
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     const structuredSnippets = [];
     const rawSnippets = [];
@@ -1191,8 +1191,32 @@ export default async function handler(req, res) {
       // 5. Sanitize repetitive template closing boilerplate
       cleaned = cleaned.replace(/(?:\n\n|\n)(?:Jika Anda (?:memerlukan|membutuhkan|tertarik|ingin|butuh)[\s\S]*?(?:siap membantu|hubungi|mengeksplorasi|contoh kode| relevan)[\s\S]*?$)/i, '').trim();
 
-      // 6. Strip fake placeholder domains (e.g. example.com)
-      cleaned = cleaned.replace(/\[([^\]]+)\]\((?:https?:\/\/(?:www\.)?(?:example\.com|domain\.com|test\.com)[^\)]*)\)/gi, '$1');
+      // 6. Strip URL fiktif / dikarang model (Anti-Hallucination URL Forgery Filter)
+      // Whitelist: domain resmi Rafly + domain berita/ref terpercaya + URL yang memang ada di rawSnippets scraping nyata
+      const officialDomains = [
+        'github.com', 'raflyfirmansyah-portofolio.vercel.app', 'bnsp.go.id', 'mikrotik.com', 'netacad.com',
+        'wa.me', 'google.com', 'news.google.com', 'bing.com', 'wikipedia.org', 'wikimedia.org',
+        'techcrunch.com', 'reuters.com', 'bbc.com', 'bbc.co.uk', 'theverge.com', 'wired.com',
+        'bloomberg.com', 'wsj.com', 'nytimes.com', 'apnews.com', 'aljazeera.com',
+        'kompas.com', 'detik.com', 'tempo.co', 'cnnindonesia.com', 'tribunnews.com',
+        'liputan6.com', 'cnbcindonesia.com', 'idntimes.com', 'kumparan.com', 'republika.co.id',
+        'antara.co.id', 'antaranews.com', 'sindonews.com', 'bisnis.com', 'medcom.id',
+        'suara.com', 'jpnn.com', 'okezone.com', 'merdeka.com', 'rmol.id', 'viva.co.id',
+        'huggingface.co', 'arxiv.org', 'openai.com', 'anthropic.com', 'deepmind.google',
+        'deepseek.com', 'mistral.ai', 'meta.com', 'nvidia.com', 'microsoft.com',
+        'spacex.com', 'nasa.gov', 'nature.com', 'science.org', 'vercel.com', 'supabase.com',
+        'r.jina.ai'
+      ];
+      cleaned = cleaned.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, (match, linkText, url) => {
+        try {
+          const hostname = new URL(url).hostname.replace(/^www\./, '');
+          const isOfficialDomain = officialDomains.some(d => hostname === d || hostname.endsWith('.' + d));
+          if (isOfficialDomain) return match; // URL resmi, biarkan
+          return linkText; // URL tidak dikenal, strip jadi teks saja
+        } catch (_) {
+          return linkText; // URL malformed, strip
+        }
+      });
 
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
