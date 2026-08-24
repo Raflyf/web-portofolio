@@ -12,13 +12,22 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/style.css?v=10.300.0">
-  <link rel="stylesheet" href="css/dashboard.css?v=10.300.0">
+  <link rel="stylesheet" href="css/style.css?v=10.305.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=10.305.0">
 
   <!-- Chart.js from Cloudflare CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
+
+  <!-- =========================================================================
+       HORIZONX AMBIENT MORPHING MESH & KINETIC DRIFTING GLOW
+       ========================================================================= -->
+  <div class="ambient-glow-layer" aria-hidden="true">
+    <div class="ambient-blob ambient-blob--1"></div>
+    <div class="ambient-blob ambient-blob--2"></div>
+    <div class="ambient-blob ambient-blob--3"></div>
+  </div>
 
   <!-- =========================================================================
        1. SECURITY PIN AUTHENTICATION GATEWAY (HorizonX Glass Card + SHA-256)
@@ -123,7 +132,7 @@
   <main class="dash-container" role="main">
 
     <!-- 5 Bento Metric Cards Grid -->
-    <section class="dash-kpi-grid" aria-label="Ringkasan Metrik Utama">
+    <section class="dash-kpi-grid reveal-item" aria-label="Ringkasan Metrik Utama">
       <!-- 1. Total Views -->
       <div class="kpi-card">
         <div class="kpi-card-header">
@@ -197,7 +206,7 @@
     </section>
 
     <!-- Top Charts Grid (Row 1) -->
-    <section class="charts-grid-main" aria-label="Grafik Tren Trafik dan Interaksi">
+    <section class="charts-grid-main reveal-item" aria-label="Grafik Tren Trafik dan Interaksi">
       <!-- 1. Traffic Velocity Line Chart -->
       <div class="chart-card">
         <div class="chart-card-header">
@@ -226,7 +235,7 @@
     </section>
 
     <!-- Lower Intelligence Grid (4 Core Analytical Cards) -->
-    <section class="intelligence-grid" aria-label="Matriks Intelijen dan Leaderboard">
+    <section class="intelligence-grid reveal-item" aria-label="Matriks Intelijen dan Leaderboard">
       <!-- 1. Platform & Device Ratio Doughnut Chart -->
       <div class="intel-card">
         <div class="chart-title-wrap">
@@ -273,7 +282,7 @@
     </section>
 
     <!-- Dedicated OmniRoute Private Host & Priority Combos Topology Card -->
-    <section class="omniroute-topology-card" aria-label="Status Gateway OmniRoute & Topologi Model Combos">
+    <section class="omniroute-topology-card reveal-item" aria-label="Status Gateway OmniRoute & Topologi Model Combos">
       <div class="omniroute-header-wrap">
         <div class="chart-title-wrap">
           <div class="omniroute-badge-row">
@@ -356,8 +365,8 @@
       <div class="omniroute-footer-tiers">
         <span class="tier-label">Failover Cascade:</span>
         <span class="tier-badge">Tier 1: OmniRoute Dedicated (Codex / x-preview-f-free / Antigravity / Vision-model / nemotron-laguna)</span>
-        <span class="tier-badge">Tier 2: Ollama Cloud SOTA Hub (Nemotron 3 Ultra 550B / MiniMax-M3 1M / Nemotron Nano 30B / Gemma 4 31B / Super 120B)</span>
-        <span class="tier-badge">Tier 3: OpenRouter Multi-Key Pool (Nemotron Ultra 550B / Super 120B / Nano 30B / Vision Suite)</span>
+        <span class="tier-badge">Tier 2: Ollama Cloud SOTA Hub (Google Gemma 4 31B / Nemotron 3 Ultra 550B / Nemotron Super 120B / Nemotron Nano 30B)</span>
+        <span class="tier-badge">Tier 3: OpenRouter Multi-Key Pool (Ox-Alpha 1M Frontier / Nemotron 3 Ultra 550B / LiquidAI LFM 2.5)</span>
         <span class="tier-badge">Tier 4: OpenCode Zen Pool (x-preview-f-free / Nemotron Ultra Free / Mimo Multimodal)</span>
         <span class="tier-badge">Tier 5: MiniMax Direct Production API (MiniMax-M3)</span>
         <span class="tier-badge">Tier 6: In-Browser Semantic Engine (Offline Resilient + Supabase Continuous RAG)</span>
@@ -365,7 +374,7 @@
     </section>
 
     <!-- Dedicated AI Models Comprehensive Count Matrix (All Models) -->
-    <section class="ai-models-matrix-card" aria-label="Matriks Pemantauan Lengkap Seluruh Model AI">
+    <section class="ai-models-matrix-card reveal-item" aria-label="Matriks Pemantauan Lengkap Seluruh Model AI">
       <div class="table-header-row">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Penghitung &amp; Pemantauan Seluruh Model AI</h2>
@@ -382,7 +391,7 @@
     </section>
 
     <!-- Dedicated AI Long-Term Memory (Supabase Continuous RAG) Explorer -->
-    <section class="ai-models-matrix-card" aria-label="Memori Jangka Panjang AI Supabase">
+    <section class="ai-models-matrix-card reveal-item" aria-label="Memori Jangka Panjang AI Supabase">
       <div class="table-header-row">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Memori Jangka Panjang AI (Supabase Continuous RAG)</h2>
@@ -401,7 +410,7 @@
     </section>
 
     <!-- Activity Stream Table -->
-    <section class="table-card" aria-label="Tabel Riwayat Aktivitas Pengunjung">
+    <section class="table-card reveal-item" aria-label="Tabel Riwayat Aktivitas Pengunjung">
       <div class="table-header-row">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Log Aktivitas Pengunjung Terkini</h2>
@@ -420,6 +429,7 @@
             <option value="link_click">Link Click / Detail</option>
             <option value="cert_view">Cert View</option>
             <option value="terminal_cmd">Terminal Command</option>
+            <option value="ai_query_resolved">AI Query Resolved</option>
             <option value="contact_submit">Contact Submit</option>
           </select>
 
@@ -628,6 +638,6 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script type="module" src="js/dashboard.js?v=10.300.0"></script>
+  <script type="module" src="js/dashboard.js?v=10.305.0"></script>
 </body>
 </html>
