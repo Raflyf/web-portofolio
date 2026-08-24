@@ -739,8 +739,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'project_architecture',
       isAnalysisOrComparison: true,
       effort: 'high',
-      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-ultra', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
-      label: 'Deep Architecture, Explanation & Comparative Analysis (Nemotron Ultra 550B)'
+      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-nano', 'deepseek/deepseek-chat'],
+      label: 'Deep Architecture, Explanation & Comparative Analysis (Nemotron Nano 30B)'
     };
   }
 
@@ -751,8 +751,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'deep_reasoning',
       isAnalysisOrComparison: true,
       effort: 'thinking',
-      omniCandidates: ['Antigravity', 'Codex', 'x-preview-f-free', 'nemotron-3-ultra', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
-      label: 'Deep Reasoning & Mathematical Derivations (Nemotron Ultra 550B)'
+      omniCandidates: ['Antigravity', 'Codex', 'x-preview-f-free', 'nemotron-3-nano', 'deepseek/deepseek-chat'],
+      label: 'Deep Reasoning & Mathematical Derivations (Nemotron Nano 30B)'
     };
   }
 
@@ -763,8 +763,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'heavy_coding',
       isAnalysisOrComparison: true,
       effort: 'high',
-      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-ultra', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
-      label: 'Heavy Coding & System Architecture (Nemotron Ultra 550B & Codex)'
+      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-nano', 'deepseek/deepseek-chat'],
+      label: 'Heavy Coding & System Architecture (Nemotron Nano 30B & Codex)'
     };
   }
 
@@ -775,8 +775,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'heavy_coding',
       isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
       effort: 'medium',
-      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-ultra', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'opencode/nemotron-3-ultra-free'],
-      label: 'Coding & Algorithm Synthesis (Nemotron & Codex)'
+      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-nano', 'deepseek/deepseek-chat'],
+      label: 'Coding & Algorithm Synthesis (Nemotron Nano & Codex)'
     };
   }
 
@@ -786,8 +786,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     category: isShortQuery ? 'trivial_casual' : 'basic_standard',
     isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
     effort: isShortQuery ? 'low' : 'medium',
-    omniCandidates: ['nemotron-lighting', 'nemotron-lightning', 'x-preview-f-free', 'nemotron-3-ultra', 'Codex'],
-    label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Ultra 550B)' : (isShortQuery ? 'Quick Interaction (Nemotron Lightning)' : 'Standard Q&A & Trivia (Nemotron Lightning)')
+    omniCandidates: ['nemotron-lighting', 'nemotron-lightning', 'x-preview-f-free', 'nemotron-3-nano', 'deepseek/deepseek-chat'],
+    label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Nano 30B)' : (isShortQuery ? 'Quick Interaction (Nemotron Lightning)' : 'Standard Q&A & Trivia (Nemotron Lightning)')
   };
 }
 
@@ -1135,7 +1135,7 @@ export default async function handler(req, res) {
       : reasoningEffort;
 
     let targetModel = (model === 'auto' || !model)
-      ? (queryIntent?.isAnalysisOrComparison ? 'Nemotron-3-Ultra-550B' : 'Nemotron-3-Nano-30B')
+      ? 'Nemotron-3-Nano-30B'
       : model;
 
     if (hasImages && (model === 'auto' || !model)) {
@@ -1812,7 +1812,7 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 30000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 20000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 }
           ];
         }
         if (t.includes('x-preview') || t.includes('preview')) {
@@ -1820,8 +1820,7 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'omniroute', model: 'x-preview-f-free', timeout: 4000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
             { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 20000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 20000 }
           ];
         }
         if (t.includes('lightning') || t.includes('lighting')) {
@@ -1834,17 +1833,15 @@ Langkah yang WAJIB Anda lakukan:
         }
         if (t.includes('ultra') || t.includes('nemotron')) {
           return [
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 30000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 18000 },
             { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 },
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-            { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 4000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 }
           ];
         }
         if (t.includes('codex') || t.includes('antigravity')) {
           return [
             { provider: 'omniroute', model: t.includes('antigravity') ? 'Antigravity' : 'Codex', timeout: 4000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 30000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
             { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 },
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 }
@@ -1854,8 +1851,8 @@ Langkah yang WAJIB Anda lakukan:
           return [
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 25000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 18000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 20000 }
+            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 20000 },
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 20000 }
           ];
         }
       }
@@ -1875,9 +1872,8 @@ Langkah yang WAJIB Anda lakukan:
         return [
           { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3500 },
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 30000 },
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 30000 },
-          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 35000 },
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 28000 },
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 28000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 20000 },
           { provider: 'omniroute', model: 'Codex', timeout: 4000 }
         ];
@@ -1889,8 +1885,7 @@ Langkah yang WAJIB Anda lakukan:
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 20000 },
         { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 30000 }
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 }
       ];
     }
 
