@@ -87,6 +87,16 @@ ${effortDirective}
 - DILARANG MENYEBUT NAMA MEDIA / SUMBER (seperti "menurut Koran Jakarta", "dilaporkan Bloomberg Technoz", "artikel TechCrunch") kecuali nama media tersebut secara eksplisit tercantum di data pencarian di atas. Jangan mengarang nama media sebagai referensi.
 - DILARANG MENGARANG ANGKA BENCHMARK SPESIFIK (seperti "peningkatan 12 persen BLEU", "28 milidetik per token") jika angka tersebut tidak tercantum di data pencarian. Gunakan deskripsi kualitatif jika data kuantitatif tidak tersedia.
 
+[AI MODEL BASELINE KNOWLEDGE - VERSI TERBARU PER AGUSTUS 2026]:
+PENTING: Gunakan versi model berikut sebagai referensi "terbaru". JANGAN menyebut versi lama (Claude 3.5, DeepSeek V2, GPT-4o, dll) sebagai model terbaru.
+- Anthropic Claude: Claude 5 (versi terbaru)
+- DeepSeek: DeepSeek V4 Flash & V4 Pro (versi terbaru)
+- OpenAI: GPT-5 (versi terbaru)
+- Google: Gemini 2.5 Pro / Flash (versi terbaru)
+- Meta: Llama 4 (versi terbaru)
+- Nvidia: Nemotron 3 Nano 30B / Lightning / Super 120B (versi terbaru)
+Jika data pencarian tidak mengembalikan detail spesifik versi ini, sebutkan versi di atas sebagai baseline dan tambahkan catatan "detail benchmark belum tersedia dari sumber terkini".
+
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
 - **OpenPlagiarismChecker** – Deteksi plagiarisme akademik 100% lokal offline. Dual Engine: 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal. [GitHub](https://github.com/Raflyf/OpenPlagiarismChecker)
 - **Spam-Email Detection System** – ML Skripsi: adaptif Concept Drift/Covariate Shift, Domain Adaptation 8x pada 30% data kontemporer, Ensemble CNB 77% & XGBoost 93% F1. [GitHub](https://github.com/Raflyf/Spam-Email)
@@ -269,19 +279,19 @@ function formulateSmartSearchQueries(query, history = []) {
 
   // 2c. Provider-Specific Latest Version Queries
   if (/\bclaude\b/i.test(qNorm)) {
-    queries.push('Anthropic Claude latest model 2026 benchmark release');
+    queries.push('Anthropic Claude 5 benchmark release 2026');
   }
   if (/\bdeepseek\b/i.test(qNorm)) {
-    queries.push('DeepSeek latest model V3 R2 2026 benchmark release');
+    queries.push('DeepSeek V4 Flash Pro benchmark release 2026');
   }
   if (/\bopenai|chatgpt|gpt\b/i.test(qNorm)) {
-    queries.push('OpenAI GPT latest model 2026 benchmark release');
+    queries.push('OpenAI GPT-5 benchmark release 2026');
   }
   if (/\bgemini\b/i.test(qNorm)) {
-    queries.push('Google Gemini latest model 2026 benchmark release');
+    queries.push('Google Gemini 2.5 Pro benchmark release 2026');
   }
   if (/\bllama\b/i.test(qNorm)) {
-    queries.push('Meta Llama latest model 2026 release');
+    queries.push('Meta Llama 4 latest model 2026 release');
   }
 
   // 3. Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
