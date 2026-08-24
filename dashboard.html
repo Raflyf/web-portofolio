@@ -335,17 +335,7 @@
           <span class="chart-subtitle">Private Model Inference Server via Ngrok Static Domain &amp; Local Infrastructure</span>
         </div>
         <div class="omniroute-actions-wrap">
-          <div class="omniroute-switch-group" role="group" aria-label="Beralih Host OmniRoute">
-            <button type="button" class="omniroute-switch-btn is-active" id="btn-switch-hf" title="Beralih ke Hugging Face Cloud 24/7 sebagai Host Utama">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-              <span>Cloud HF</span>
-            </button>
-            <button type="button" class="omniroute-switch-btn" id="btn-switch-ngrok" title="Beralih ke Ngrok / Localhost sebagai Host Utama">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-              <span>Ngrok Local</span>
-            </button>
-          </div>
-          <div class="omniroute-live-pill is-standby" id="omniroute-live-pill" title="Status ketersediaan tunnel lokal OmniRoute secara real-time (Klik untuk konfigurasi)" style="cursor: pointer;">
+          <div class="omniroute-live-pill is-standby" id="omniroute-live-pill" title="Status ketersediaan tunnel Ngrok OmniRoute secara real-time (Klik untuk konfigurasi)" style="cursor: pointer;">
             <span class="omniroute-live-dot" id="omniroute-live-dot" aria-hidden="true"></span>
             <span id="omniroute-live-text">HOST STATUS: MEMERIKSA...</span>
           </div>
@@ -613,12 +603,12 @@
   <div class="dash-modal" id="omniroute-modal">
     <div class="dash-modal-card" role="dialog" aria-labelledby="omniroute-title">
       <div class="modal-header-row">
-        <h3 id="omniroute-title" class="modal-title">Konfigurasi OmniRoute Dual-Endpoint</h3>
+        <h3 id="omniroute-title" class="modal-title">Konfigurasi OmniRoute Ngrok &amp; Localhost</h3>
         <button type="button" id="omniroute-close-btn" class="dash-modal-close" aria-label="Tutup modal">&times;</button>
       </div>
 
       <p class="modal-desc">
-        Konfigurasikan 2 endpoint publik OmniRoute. Keduanya selalu aktif dalam rantai failover. Tombol toggle di dashboard hanya membalik urutan prioritas: siapa yang dicoba pertama (Primary) dan siapa yang menjadi fallback (Secondary).
+        Konfigurasikan endpoint OmniRoute berbasis Ngrok Static Tunnel (Primary) dan Localhost daemon :20128 (Secondary). Seluruh inferensi diproses privat melalui infrastruktur lokal yang aman.
       </p>
 
       <div class="omniroute-preset-box">

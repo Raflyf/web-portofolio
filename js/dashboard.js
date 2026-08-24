@@ -1639,13 +1639,14 @@ class DashboardApp {
     let statusLabel = '';
     let headerStatusLabel = '';
 
-    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
+    // 1. Probe Primary Ngrok Tunnel
+    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
     if (customTunnel) {
       try {
         const cleanTunnel = customTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
         const probeUrl = cleanTunnel.includes('/models') ? cleanTunnel : (cleanTunnel.includes('/v1') ? `${cleanTunnel}/models` : `${cleanTunnel}/v1/models`);
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1500);
+        const timer = setTimeout(() => controller.abort(), 1800);
         const t0 = performance.now();
         const res = await fetch(probeUrl, {
           method: 'GET',
@@ -1663,26 +1664,27 @@ class DashboardApp {
       } catch (_) {}
     }
 
+    // 2. Probe Secondary Localhost Fallback (:20128) if Ngrok didn't respond
     if (!isOnline) {
+      const localEndpoint = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_secondary_endpoint') : null) || 'http://localhost:20128/v1';
       try {
+        const cleanLocal = localEndpoint.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+        const probeUrl = cleanLocal.includes('/models') ? cleanLocal : (cleanLocal.includes('/v1') ? `${cleanLocal}/models` : `${cleanLocal}/v1/models`);
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 2000);
+        const timer = setTimeout(() => controller.abort(), 1200);
         const t0 = performance.now();
-        const res = await fetch('/api/chat', {
+        const res = await fetch(probeUrl, {
           method: 'GET',
           headers: { 'Accept': 'application/json' },
           signal: controller.signal
         });
         clearTimeout(timer);
-        if (res.ok) {
-          const data = await res.json().catch(() => null);
-          if (data?.omniroute?.isOnline) {
-            isOnline = true;
-            const lat = data.omniroute.latencyMs || Math.round(performance.now() - t0);
-            latencyText = `${lat}ms`;
-            statusLabel = `HOST STATUS: CLOUD ACTIVE (${latencyText})`;
-            headerStatusLabel = `OMNIROUTE: CLOUD (${latencyText})`;
-          }
+        if (res.ok || res.status === 200 || res.status === 401) {
+          isOnline = true;
+          const t1 = Math.round(performance.now() - t0);
+          latencyText = `${t1}ms`;
+          statusLabel = `HOST STATUS: LOCALHOST ACTIVE (${latencyText})`;
+          headerStatusLabel = `OMNIROUTE: LOCALHOST (${latencyText})`;
         }
       } catch (_) {}
     }
@@ -1704,7 +1706,7 @@ class DashboardApp {
         dotEl.style.backgroundColor = 'var(--accent-amber)';
         dotEl.style.boxShadow = '0 0 8px var(--accent-amber)';
       }
-      if (textEl) textEl.textContent = 'HOST STATUS: STANDBY (HF CLOUD)';
+      if (textEl) textEl.textContent = 'HOST STATUS: STANDBY (NGROK OFFLINE)';
 
       if (headerDotEl) {
         headerDotEl.style.backgroundColor = 'var(--accent-amber)';
@@ -1929,26 +1931,6 @@ class DashboardApp {
           inp1.value = inp2.value;
           inp2.value = temp;
         }
-      });
-    }
-
-    // OmniRoute Host Switch Buttons (HF Cloud vs Ngrok Local)
-    const btnSwitchHf = document.getElementById('btn-switch-hf');
-    const btnSwitchNgrok = document.getElementById('btn-switch-ngrok');
-
-    if (btnSwitchHf && btnSwitchNgrok) {
-      btnSwitchHf.addEventListener('click', () => {
-        btnSwitchHf.classList.add('is-active');
-        btnSwitchNgrok.classList.remove('is-active');
-        localStorage.setItem('omniroute_active_mode', 'cloud_hf');
-        this.checkOmniRouteRealtimeStatus();
-      });
-
-      btnSwitchNgrok.addEventListener('click', () => {
-        btnSwitchNgrok.classList.add('is-active');
-        btnSwitchHf.classList.remove('is-active');
-        localStorage.setItem('omniroute_active_mode', 'ngrok_local');
-        this.checkOmniRouteRealtimeStatus();
       });
     }
 
