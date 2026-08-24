@@ -828,7 +828,7 @@ export function initTerminal() {
       "   - Codex (GPT-5.6 Terra - Feb 2026 | Coding Specialist)",
       "   - x-preview-f-free (OpenCode x-preview | SOTA Coding & Fast Reasoning)",
       "   - Antigravity (Claude Opus 4.6 Thinking - Feb 2026 | Deep CoT)",
-      "   - nemotron-laguna (Nemotron 3.5 Laguna - Jan 2026 | SOTA MoE)",
+      "   - nemotron-3-ultra (Nvidia Nemotron 3 Ultra 550B MoE · OmniRoute)",
       "   - Vision-model (Multimodal Vision SOTA | Image Perception & OCR)",
       "",
       "2. Ollama Cloud SOTA Hub (ollama.com | Tier 2):",
@@ -1609,7 +1609,7 @@ export function initTerminal() {
 
         const validKeywords = [
           'auto', 'codex', 'antigravity', 'deepseek', 'deepseek-v4', 'v4', 'flash',
-          'nemotron', 'nemotron-ultra', 'ultra', 'nemotron-super', 'super', 'laguna',
+          'nemotron', 'nemotron-3-ultra', 'nemotron-ultra', 'ultra', 'nemotron-super', 'super', 'laguna',
           'mimo', 'x-preview', 'muse', 'hy3', 'big-pickle', 'minimax', 'm3', 'vision',
           'nvidia', 'opencode', 'openrouter', 'omniroute', 'ollama'
         ];
