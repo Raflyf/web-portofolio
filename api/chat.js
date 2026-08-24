@@ -88,15 +88,15 @@ ${effortDirective}
 - DILARANG MENGARANG ANGKA BENCHMARK SPESIFIK (seperti "peningkatan 12 persen BLEU", "28 milidetik per token") jika angka tersebut tidak tercantum di data pencarian. Gunakan deskripsi kualitatif jika data kuantitatif tidak tersedia.
 
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
-- OpenPlagiarismChecker: [https://github.com/Raflyf/OpenPlagiarismChecker](https://github.com/Raflyf/OpenPlagiarismChecker) (Deteksi plagiarisme akademik 100% lokal offline / Zero Data Egress dengan Dual Engine 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal).
-- Spam-Email Detection System: [https://github.com/Raflyf/Spam-Email](https://github.com/Raflyf/Spam-Email) (Riset ML Skripsi adaptif Concept Drift / Covariate Shift dengan Domain Adaptation pembobotan 8x pada 30% data kontemporer + Ensemble CNB 77% & XGBoost 93% F1 93%).
-- laser_pointer_PPT: [https://github.com/Raflyf/laser_pointer_PPT](https://github.com/Raflyf/laser_pointer_PPT) (Remote pointer PowerPoint nirsentuh sensor smartphone mobile gyroscope via WebSocket Flask-SocketIO + PyAutoGUI).
-- FotoKitaBlur: [https://github.com/FotoKitaBlur](https://github.com/FotoKitaBlur) (Edge CV privasi wajah gestur Peace Sign / V-Sign lokal via MediaPipe Tasks Vision + OpenCV).
-- web-portofolio: [https://github.com/Raflyf/web-portofolio](https://github.com/Raflyf/web-portofolio) | Demo: [https://raflyfirmansyah-portofolio.vercel.app/](https://raflyfirmansyah-portofolio.vercel.app/) (Vanilla JS modular, OKLCH design system, Terminal AI, Supabase RAG memory).
-- Sertifikat BNSP Analis Program (2025): No. Reg TIK.1241.04242 2025, Verifikasi: [https://bnsp.go.id](https://bnsp.go.id)
-- Sertifikat MikroTik MTCNA (2025): No. 2502NA6383 (Riga, Latvia), Verifikasi: [https://mikrotik.com/certificates](https://mikrotik.com/certificates)
-- Sertifikat Cisco PCAP (2024): Cisco Networking Academy & OpenEDG Python Institute, Verifikasi: [https://www.netacad.com](https://www.netacad.com)
-- Kontak & Profil: GitHub [https://github.com/Raflyf](https://github.com/Raflyf) | Email: [raflyfirmansyah02@gmail.com](mailto:raflyfirmansyah02@gmail.com) | WhatsApp: [https://wa.me/628991333323](https://wa.me/628991333323)`;
+- **OpenPlagiarismChecker** – Deteksi plagiarisme akademik 100% lokal offline. Dual Engine: 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal. [GitHub](https://github.com/Raflyf/OpenPlagiarismChecker)
+- **Spam-Email Detection System** – ML Skripsi: adaptif Concept Drift/Covariate Shift, Domain Adaptation 8x pada 30% data kontemporer, Ensemble CNB 77% & XGBoost 93% F1. [GitHub](https://github.com/Raflyf/Spam-Email)
+- **laser_pointer_PPT** – Remote pointer PowerPoint nirsentuh via sensor gyroscope smartphone, WebSocket Flask-SocketIO + PyAutoGUI. [GitHub](https://github.com/Raflyf/laser_pointer_PPT)
+- **FotoKitaBlur** – Edge CV privasi wajah, deteksi gestur Peace Sign/V-Sign secara lokal via MediaPipe Tasks Vision + OpenCV. [GitHub](https://github.com/FotoKitaBlur)
+- **web-portofolio** – Landing page portofolio: Vanilla JS modular, OKLCH design system, Terminal AI, Supabase RAG memory. [GitHub](https://github.com/Raflyf/web-portofolio) | [Demo](https://raflyfirmansyah-portofolio.vercel.app/)
+- Sertifikat BNSP Analis Program (2025): No. Reg TIK.1241.04242 2025. [Verifikasi](https://bnsp.go.id)
+- Sertifikat MikroTik MTCNA (2025): No. 2502NA6383 (Riga, Latvia). [Verifikasi](https://mikrotik.com/certificates)
+- Sertifikat Cisco PCAP (2024): Cisco Networking Academy & OpenEDG Python Institute. [Verifikasi](https://www.netacad.com)
+- Kontak: [GitHub](https://github.com/Raflyf) | [Email](mailto:raflyfirmansyah02@gmail.com) | [WhatsApp](https://wa.me/628991333323)`;
 }
 
 async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
