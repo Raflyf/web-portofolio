@@ -996,8 +996,8 @@ class DashboardApp {
       {
         id: 'codex',
         name: 'Codex (GPT-5.6 Terra)',
-        desc: 'Advanced software engineering, large-scale architecture, and deep algorithmic programming',
-        provider: 'TIER 1 PRIMARY',
+        desc: 'Spesialis rekayasa software, arsitektur sistem besar, dan penalaran koding berat',
+        provider: 'TIER 1 OMNIROUTE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
         matcher: (s) => s.includes('codex') || s.includes('gpt-5') || s.includes('terra')
@@ -1005,8 +1005,8 @@ class DashboardApp {
       {
         id: 'antigravity',
         name: 'Antigravity (Opus 4.6 Thinking)',
-        desc: 'Deep analytical Chain-of-Thought (CoT) reasoning, scientific research synthesis, document inspection',
-        provider: 'TIER 1 PRIMARY',
+        desc: 'Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah, dan telaah dokumen',
+        provider: 'TIER 1 OMNIROUTE',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
         matcher: (s) => s.includes('antigravity') || s.includes('opus') || s.includes('claude')
@@ -1014,8 +1014,8 @@ class DashboardApp {
       {
         id: 'x-preview',
         name: 'x-preview-f-free',
-        desc: 'High-speed minimalist reasoning and zero-boilerplate coding engine',
-        provider: 'TIER 1 PRIMARY',
+        desc: 'Engine penalaran dan koding presisi dari OpenCode berbasis prinsip YAGNI & inferensi cepat',
+        provider: 'TIER 1 & 4 ZEN',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
         matcher: (s) => s.includes('x-preview') || s.includes('preview-f')
@@ -1023,25 +1023,34 @@ class DashboardApp {
       {
         id: 'vision-model',
         name: 'Vision-model (MiniMax-M3 / mimo)',
-        desc: 'Multimodal image recognition, OCR document analysis, and visual synthesis',
-        provider: 'TIER 1 PRIMARY',
+        desc: 'Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi',
+        provider: 'TIER 1 & 5 VISION',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
         matcher: (s) => s.includes('vision') || s.includes('minimax') || s.includes('mimo')
       },
       {
         id: 'nemotron-laguna',
-        name: 'Nvidia Nemotron 3 Ultra (550B MoE)',
-        desc: 'Laguna S frontier reasoning engine for massive comparative system benchmarks',
-        provider: 'TIER 1 PRIMARY',
+        name: 'Nemotron Laguna S / Ultra 550B',
+        desc: 'Frontier reasoning engine untuk analisis komparatif mendalam dan bedah arsitektur proyek riset',
+        provider: 'TIER 1 & 2 MOE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
-        matcher: (s) => s.includes('laguna') || s.includes('nemotron-3-ultra') || s.includes('550b')
+        matcher: (s) => s.includes('laguna') || s.includes('nemotron-3-ultra') || s.includes('550b') || s.includes('nemotron-laguna')
+      },
+      {
+        id: 'ox-alpha',
+        name: 'Ox-Alpha (1M Frontier Reasoning)',
+        desc: 'Frontier reasoning & coding dengan jendela konteks 1 juta token di OpenRouter SOTA pool',
+        provider: 'TIER 3 OPENROUTER',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
+        matcher: (s) => s.includes('ox-alpha') || s.includes('0x-alpha') || s.includes('stealth/ox-alpha')
       },
       {
         id: 'gemma4',
         name: 'Google Gemma 4 (31B Dense)',
-        desc: 'High-precision dense open-weights model for fast technical queries',
+        desc: 'Arsitektur dense berkecepatan tinggi dari Google untuk kueri teknis terarah di Ollama Cloud',
         provider: 'TIER 2 OLLAMA',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>`,
@@ -1050,8 +1059,8 @@ class DashboardApp {
       {
         id: 'nemotron-super',
         name: 'Nvidia Nemotron 3 Super (120B)',
-        desc: 'Intermediate dense reasoning model optimized for low latency',
-        provider: 'TIER 2 OLLAMA',
+        desc: 'Model penalaran dense 120B teroptimasi untuk latensi rendah di Ollama Cloud & OpenRouter',
+        provider: 'TIER 2 & 3 SOTA',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
         matcher: (s) => s.includes('nemotron-3-super') || s.includes('super:120b') || s.includes('120b')
@@ -1059,26 +1068,17 @@ class DashboardApp {
       {
         id: 'nemotron-nano',
         name: 'Nvidia Nemotron 3 Nano (30B)',
-        desc: 'Sub-second responsive assistant for conversational speed and brief summaries',
-        provider: 'TIER 2 OLLAMA',
+        desc: 'Asisten responsif sub-detik untuk percakapan cepat dan ringkasan padat di Ollama & OpenRouter',
+        provider: 'TIER 2 & 3 FAST',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
         matcher: (s) => s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || s.includes('30b')
       },
       {
-        id: 'deepseek-r1',
-        name: 'DeepSeek R1 (Thinking CoT)',
-        desc: 'Open weights reinforcement learning model with verifiable reasoning step trails',
-        provider: 'TIER 3 CLOUD',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => s.includes('deepseek-r1') || (s.includes('deepseek') && s.includes('thinking'))
-      },
-      {
         id: 'liquid-lfm',
         name: 'LiquidAI LFM 2.5 (2.6B)',
-        desc: 'Liquid neural state-space model for instant sub-30ms token streaming',
-        provider: 'TIER 3 CLOUD',
+        desc: 'Neural state-space model dinamis untuk streaming token instan sub-30ms di OpenRouter pool',
+        provider: 'TIER 3 DYNAMIC',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
         matcher: (s) => s.includes('liquid') || s.includes('lfm')
@@ -1086,8 +1086,8 @@ class DashboardApp {
       {
         id: 'local-semantic',
         name: 'In-Browser Semantic Engine',
-        desc: 'Sub-15ms offline client-side cosine similarity + Supabase Continuous RAG Memory',
-        provider: 'TIER 6 FALLBACK',
+        desc: 'Engine pencarian pola sub-15ms lokal di peramban + Supabase Continuous RAG Memory saat offline',
+        provider: 'TIER 6 OFFLINE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`,
         matcher: (s) => s.includes('local_semantic') || s.includes('semantic engine') || s.includes('offline_rag')
