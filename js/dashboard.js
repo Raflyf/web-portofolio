@@ -81,7 +81,7 @@ class DashboardApp {
     this.initEventListeners();
     this.initInertiaSmoothWheel();
     this.initBackToTopButton();
-    this.initScrollReveal();
+    // initScrollReveal is called in postAuthBootstrap AFTER auth + data load
     this.checkOmniRouteRealtimeStatus();
   }
 
@@ -239,15 +239,28 @@ class DashboardApp {
     // Pre-fetch cloud PIN hash asynchronously
     this.fetchCloudPinHash();
 
+    // Shared post-auth bootstrap: load data THEN activate reveal + smooth wheel
+    const postAuthBootstrap = async () => {
+      if (overlay) overlay.style.display = 'none';
+      await this.loadDashboardData();
+      this.startRealtimePolling();
+      // Double rAF ensures browser has painted new DOM before observing
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.body.classList.add('reveal-ready');
+          this.initScrollReveal();
+          this.refreshScrollReveal();
+        });
+      });
+    };
+
     // Check existing valid session (30-min auto expiry)
     const session = sessionStorage.getItem(SESSION_AUTH_KEY);
     if (session) {
       try {
         const parsed = JSON.parse(session);
         if (Date.now() - parsed.timestamp < 30 * 60 * 1000) {
-          if (overlay) overlay.style.display = 'none';
-          this.loadDashboardData();
-          this.startRealtimePolling();
+          postAuthBootstrap();
           return;
         }
       } catch (_) {}
@@ -317,10 +330,7 @@ class DashboardApp {
           // Success
           sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
           localStorage.removeItem(LOCKOUT_KEY);
-          if (overlay) overlay.style.display = 'none';
-          this.loadDashboardData();
-          this.startRealtimePolling();
-          this.refreshScrollReveal();
+          postAuthBootstrap();
         } else {
           // Failed attempt handling
           const attempts = (lockout.attempts || 0) + 1;
@@ -1899,14 +1909,14 @@ class DashboardApp {
     let currentY = window.scrollY || window.pageYOffset;
     let targetY = currentY;
     let isRunning = false;
-    const ease = 0.095;
+    const ease = 0.085; // Lower = smoother & longer glide
 
     const updateWheelPhysics = () => {
       const diff = targetY - currentY;
       
-      if (Math.abs(diff) > 0.5) {
+      if (Math.abs(diff) > 0.4) {
         currentY += diff * ease;
-        window.scrollTo(0, Math.round(currentY * 10) / 10);
+        window.scrollTo(0, currentY);
         requestAnimationFrame(updateWheelPhysics);
       } else {
         currentY = targetY;
@@ -1938,12 +1948,6 @@ class DashboardApp {
       }
 
       if (e.ctrlKey || e.shiftKey || e.altKey) return;
-
-      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
-        targetY = window.scrollY || window.pageYOffset;
-        currentY = targetY;
-        return;
-      }
 
       e.preventDefault();
 
