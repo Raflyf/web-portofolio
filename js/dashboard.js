@@ -579,11 +579,11 @@ class DashboardApp {
       try {
         let endpoint = '';
         if (isBackground && this.latestEventTimestamp) {
-          // Delta query: only rows newer than our latest known timestamp (cuts egress by 99.9%)
-          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,session_id,created_at&created_at=gt.${encodeURIComponent(this.latestEventTimestamp)}&order=created_at.desc&limit=50`;
+          // Delta query: only rows newer than our latest known timestamp with full analytics fields
+          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&created_at=gt.${encodeURIComponent(this.latestEventTimestamp)}&order=created_at.desc&limit=100`;
         } else {
-          // Initial or manual refresh query: limited lightweight fields
-          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,session_id,created_at&order=created_at.desc&limit=500`;
+          // Comprehensive query: all essential telemetry fields up to 5000 rows
+          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc&limit=5000`;
         }
 
         const res = await fetch(endpoint, {
@@ -625,17 +625,22 @@ class DashboardApp {
       }
     }
 
-    // 3. Intelligent Dual-Source Deduplication (3-second time bucket filter)
+    // 3. Intelligent Dual-Source Deduplication (Primary by ID, Secondary by Time Bucket)
     const allRawEvents = [...remoteEvents, ...localEvents];
     allRawEvents.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
     const deduplicated = [];
+    const seenIds = new Set();
     const seenSignatures = new Set();
 
     for (const e of allRawEvents) {
       if (!e) continue;
+      if (e.id) {
+        if (seenIds.has(e.id)) continue;
+        seenIds.add(e.id);
+      }
       const ts = new Date(e.created_at || 0).getTime();
-      const timeBucket = Math.floor(ts / 3000);
+      const timeBucket = Math.floor(ts / 1500);
       const sid = (e.session_id || 'sess').substring(0, 30);
       const type = (e.event_type || 'unknown').toLowerCase();
       const target = (e.event_target || '').toLowerCase().trim().substring(0, 50);
@@ -653,6 +658,25 @@ class DashboardApp {
 
     this.events = deduplicated;
     this.filterAndRender(isBackground);
+  }
+
+  startRealtimePolling() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
+
+    // High-efficiency polling every 4 seconds for live telemetry & AI model updates
+    this.pollInterval = setInterval(() => {
+      this.loadDashboardData(true);
+    }, 4000);
+
+    // Instant cross-tab sync when actions occur in other tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === LOCAL_STORAGE_KEY) {
+        this.loadDashboardData(true);
+      }
+    });
   }
 
   // =========================================================================
@@ -734,7 +758,25 @@ class DashboardApp {
     // 1. Traffic Velocity Line Chart
     const trafficCanvas = document.getElementById('traffic-chart');
     if (trafficCanvas) {
-      const numDays = this.analyticsRange === 'today' ? 1 : (this.analyticsRange === '30d' ? 30 : (this.analyticsRange === 'all' ? 30 : 7));
+      let numDays = 7;
+      if (this.analyticsRange === 'today') numDays = 1;
+      else if (this.analyticsRange === '7d') numDays = 7;
+      else if (this.analyticsRange === '14d') numDays = 14;
+      else if (this.analyticsRange === '30d') numDays = 30;
+      else if (this.analyticsRange === 'all') {
+        if (events.length > 0) {
+          const validTs = events.map(e => new Date(e.created_at || 0).getTime()).filter(t => t > 0);
+          if (validTs.length > 0) {
+            const earliest = Math.min(...validTs);
+            const daysDiff = Math.ceil((Date.now() - earliest) / 86400000);
+            numDays = Math.max(7, Math.min(60, daysDiff || 30));
+          } else {
+            numDays = 30;
+          }
+        } else {
+          numDays = 30;
+        }
+      }
       const dayBuckets = {};
       for (let i = numDays - 1; i >= 0; i--) {
         const d = new Date(Date.now() - i * 86400000);
