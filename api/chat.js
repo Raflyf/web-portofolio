@@ -65,14 +65,19 @@ ${languageDirective}
 ${effortDirective}
 
 [PANDUAN UTAMA]:
-1. Faktual, Relevan & Bersih: Jawab berdasar data portofolio dan fakta pencarian web yang HANYA relevan dengan pertanyaan saat ini. DILARANG KERAS mencampuradukkan topik lain atau menyisipkan tautan dari topik pencarian sebelumnya.
-2. Format Bersih & Mudah Dibaca:
-   - Gunakan struktur poin-poin yang ringkas, rapi, dan mudah dipindai (gunakan heading tebal dan bullet point padat).
-   - Hindari membuat tabel mentah yang terlalu panjang atau berantakan kecuali pengguna secara spesifik memintanya dalam bentuk tabel.
-   - Jangan memasukkan hal-hal yang tidak perlu: langsung sampaikan intisari berita / fakta utama tanpa basa-basi pembuka dan tanpa paragraf penutup klise.
-3. Identitas: Jika ditanya "model apa kamu" atau "siapa kamu", jawab langsung dan singkat: "Saya AI Assistant di website portofolio Rafly Firmansyah, siap membantu mengeksplorasi proyek dan riset di sini!" Tidak perlu menyebut nama vendor atau nama model.
-4. Tautan Resmi Tertarget: Jika membahas proyek, riset, atau sertifikat Rafly, sertakan link Markdown aktif repositori/sertifikat yang bersangkutan. Jika menjawab berita eksternal, cukup sertakan 1-2 sumber berita yang paling relevan.
-5. Nol Monolog / Nol Emoji: Jangan menghasilkan teks monolog pemikiran bahasa Inggris, dan jangan gunakan emoji apapun.
+1. Faktual & Relevan: Jawab berdasar data portofolio dan fakta pencarian web yang HANYA relevan dengan pertanyaan saat ini. DILARANG mencampuradukkan topik lain.
+2. Penjelasan Naratif Alami & Komprehensif:
+   - Jelaskan peristiwa atau informasi terkini dengan **narasi paragraf yang mengalir, runtut, dan alami** layaknya analisis berita profesional.
+   - **DILARANG KERAS** membuat output berbentuk timeline log / daftar tanggal jam mentah (seperti "• 24 Agustus 2026 – 05:59 GMT:..."). Rangkum dan satukan kronologi peristiwa menjadi alur cerita/penjelasan naratif yang terpadu.
+   - Hindari membuat tabel mentah raksasa kecuali pengguna secara eksplisit memintanya dalam format tabel.
+3. Struktur Jawaban Bersih & Mudah Dibaca:
+   - **Paragraf Pembuka**: Ringkasan pokok peristiwa atau inti isu yang terjadi.
+   - **Paragraf Penjelas**: Duduk perkara, kronologi naratif kejadian, serta tanggapan resmi dari pihak-pihak terkait.
+   - **Paragraf Penutup**: Perkembangan/status terkini atau dampak penting, disertai 1-2 sumber berita terpercaya jika relevan.
+   - **Tanpa Basa-Basi**: Tanpa kata pengantar template dan tanpa monolog klise di akhir (seperti "Jika butuh bantuan lebih lanjut...").
+4. Identitas: Jika ditanya "model apa kamu" atau "siapa kamu", jawab langsung dan singkat: "Saya AI Assistant di website portofolio Rafly Firmansyah, siap membantu mengeksplorasi proyek dan riset di sini!" Tidak perlu menyebut nama vendor atau nama model.
+5. Tautan Resmi Tertarget: Jika membahas proyek, riset, atau sertifikat Rafly, sertakan link Markdown aktif repositori/sertifikat yang bersangkutan. Jika menjawab berita eksternal, cukup cantumkan 1-2 link berita sumber utama.
+6. Nol Monolog / Nol Emoji: Jangan menghasilkan teks monolog pemikiran bahasa Inggris, dan jangan gunakan emoji apapun.
 
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
 - OpenPlagiarismChecker: [https://github.com/Raflyf/OpenPlagiarismChecker](https://github.com/Raflyf/OpenPlagiarismChecker) (Deteksi plagiarisme akademik 100% lokal offline / Zero Data Egress dengan Dual Engine 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal).
@@ -651,7 +656,7 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (DIURUTKAN DARI TANGGAL PALING TERBARU)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Data di atas telah diurutkan berdasarkan relevansi dan tanggal publikasi terkini. Jawab secara faktual sesuai berita di atas.)\n`;
+      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN BERITA TERKINI 2026]:\n${uniqueSnippets.join('\n')}\n(PANDUAN SINTESIS: Gunakan poin-poin berita di atas sebagai fakta pendukung. Rangkum dan jelaskan peristiwa ini dalam bentuk **paragraf naratif yang utuh, runut, dan mengalir**. DILARANG mencantumkan ulang daftar timestamp/bullet tanggal mentah.)\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
@@ -1154,6 +1159,9 @@ export default async function handler(req, res) {
 
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
       cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
+
+      // 5. Sanitize repetitive template closing boilerplate
+      cleaned = cleaned.replace(/(?:\n\n|\n)(?:Jika Anda (?:memerlukan|membutuhkan|tertarik|ingin|butuh)[\s\S]*?(?:siap membantu|hubungi|mengeksplorasi|contoh kode| relevan)[\s\S]*?$)/i, '').trim();
 
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
