@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - ADMIN OBSERVABILITY DASHBOARD CONTROLLER (v6.0.0)
+ * RAFLY FIRMANSYAH - ADMIN OBSERVABILITY DASHBOARD CONTROLLER (v6.1.0)
  * HorizonX Deep Obsidian Glassmorphism Architecture & Dual-Theme Engine
  * Features:
  * - 🛡️ Web Crypto PIN Auth & Supabase Cloud-Synced Master Kredensial
@@ -9,6 +9,8 @@
  * - 📊 3D Glassmorphic Bento KPIs & Chart.js Multi-Metric Visualizations
  * - 🤖 Complete 12 AI Models Matrix & Continuous RAG Memory Explorer
  * - ⚡ OmniRoute Dual-Endpoint Host Probing & Live Traffic Deduplication
+ * - 🌊 Kinetic Scroll Reveal (Optical De-Blur & Spring Curve)
+ * - 📑 Compact Sliding Window Pagination (Eliminates Button Overflow)
  * ============================================================================
  */
 
@@ -32,7 +34,7 @@ class DashboardApp {
     this.supabaseConfig = this.getSupabaseConfig();
     this.memories = [];
     this.memoryCurrentPage = 1;
-    this.memoryPageSize = 10;
+    this.memoryPageSize = 8;
     this.tableCurrentPage = 1;
     this.tablePageSize = 10;
     this.cloudPinHash = null;
@@ -77,6 +79,7 @@ class DashboardApp {
     this.initEventListeners();
     this.initInertiaSmoothWheel();
     this.initBackToTopButton();
+    this.initScrollReveal();
     this.checkOmniRouteRealtimeStatus();
   }
 
@@ -120,7 +123,32 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 2. CRYPTOGRAPHIC PIN AUTHENTICATION & SUPABASE CLOUD SYNC
+  // 2. KINETIC SCROLL REVEAL (Optical De-Blur & Spring Curve)
+  // =========================================================================
+  initScrollReveal() {
+    const revealItems = document.querySelectorAll('.reveal-item');
+    if (!revealItems.length) return;
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+          }
+        });
+      }, {
+        threshold: 0.08,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      revealItems.forEach(el => observer.observe(el));
+    } else {
+      revealItems.forEach(el => el.classList.add('is-revealed'));
+    }
+  }
+
+  // =========================================================================
+  // 3. CRYPTOGRAPHIC PIN AUTHENTICATION & SUPABASE CLOUD SYNC
   // =========================================================================
   async hashPin(pin) {
     const encoder = new TextEncoder();
@@ -268,6 +296,7 @@ class DashboardApp {
           if (overlay) overlay.style.display = 'none';
           this.loadDashboardData();
           this.startRealtimePolling();
+          this.initScrollReveal();
         } else {
           // Failed attempt handling
           const attempts = (lockout.attempts || 0) + 1;
@@ -291,7 +320,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 3. EMAIL OTP RESET FLOW CONTROLLER
+  // 4. EMAIL OTP RESET FLOW CONTROLLER
   // =========================================================================
   initOtpResetFlow() {
     const otpModal = document.getElementById('otp-reset-modal');
@@ -448,6 +477,7 @@ class DashboardApp {
             if (overlay) overlay.style.display = 'none';
             this.loadDashboardData();
             this.startRealtimePolling();
+            this.initScrollReveal();
             alert('Master PIN berhasil direset! Anda langsung masuk ke Observability Dashboard.');
           } else {
             throw new Error(data.message || 'Kode OTP tidak valid atau kadaluwarsa.');
@@ -483,7 +513,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 4. DATA RETRIEVAL (Dual-Source Hybrid Merge: Supabase REST + Local Cache)
+  // 5. DATA RETRIEVAL (Dual-Source Hybrid Merge: Supabase REST + Local Cache)
   // =========================================================================
   async loadDashboardData(isBackground = false) {
     const syncStatusEl = document.getElementById('sync-status');
@@ -565,7 +595,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 5. FILTERING & AGGREGATION
+  // 6. FILTERING & AGGREGATION
   // =========================================================================
   filterAndRender() {
     const now = Date.now();
@@ -590,12 +620,13 @@ class DashboardApp {
     this.renderAllAIModelsMatrix();
     this.renderAIMemoryList();
     this.renderActivityTable();
+    this.initScrollReveal();
   }
 
   renderKPIs() {
     const pageViews = this.filteredEvents.filter(e => e.event_type === 'page_view').length;
     const uniqueSessions = new Set(this.filteredEvents.map(e => e.session_id)).size || (pageViews > 0 ? 1 : 0);
-    const linkClicks = this.filteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'cert_view').length;
+    const linkClicks = this.filteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'cert_view' || e.event_type === 'project_view').length;
     const contacts = this.filteredEvents.filter(e => e.event_target === 'whatsapp' || e.event_type === 'contact_submit').length;
     const interactivity = (this.filteredEvents.length / Math.max(1, uniqueSessions)).toFixed(1);
 
@@ -613,16 +644,16 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 6. CHART.JS VISUALIZATION RENDERING (HorizonX Adaptive Theme Engine)
+  // 7. CHART.JS VISUALIZATION RENDERING (HorizonX Adaptive Theme Engine)
   // =========================================================================
   renderCharts() {
     if (!window.Chart) return;
 
     const isDark = this.currentTheme !== 'light';
     const emerald = isDark ? 'rgba(16, 185, 129, 1)' : 'rgba(5, 150, 105, 1)';
-    const emeraldDim = isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(5, 150, 105, 0.12)';
+    const emeraldDim = isDark ? 'rgba(16, 185, 129, 0.18)' : 'rgba(5, 150, 105, 0.14)';
     const cyan = isDark ? 'rgba(6, 182, 212, 1)' : 'rgba(2, 132, 199, 1)';
-    const cyanDim = isDark ? 'rgba(6, 182, 212, 0.15)' : 'rgba(2, 132, 199, 0.12)';
+    const cyanDim = isDark ? 'rgba(6, 182, 212, 0.18)' : 'rgba(2, 132, 199, 0.14)';
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.06)';
     const textColor = isDark ? 'rgba(203, 213, 225, 0.85)' : 'rgba(51, 65, 85, 0.9)';
 
@@ -700,7 +731,7 @@ class DashboardApp {
       });
     }
 
-    // 2. Link & Project Interactions Bar Chart (9 Unified Categories)
+    // 2. Link & Project Interactions Bar Chart (9 Categories)
     const linksCanvas = document.getElementById('links-chart');
     if (linksCanvas) {
       const linksCtx = linksCanvas.getContext('2d');
@@ -730,7 +761,7 @@ class DashboardApp {
         else if (target.includes('fotokita') || label.includes('fotokita')) counts['FotoKita']++;
         else if (target.includes('portofolio') || label.includes('portofolio')) counts['Portfolio']++;
         else if (e.event_type === 'cert_view' || label.includes('sertifikat')) counts['Sertifikat']++;
-        else if (e.event_type === 'terminal_cmd' || label.includes('terminal')) counts['Terminal']++;
+        else if (e.event_type === 'terminal_cmd' || e.event_type === 'ai_query_resolved' || label.includes('terminal')) counts['Terminal']++;
       });
 
       this.charts.links = new Chart(linksCtx, {
@@ -809,7 +840,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 7. INTELLIGENCE LEADERBOARDS (HorizonX Unified Normalization)
+  // 8. INTELLIGENCE LEADERBOARDS (HorizonX Unified Normalization)
   // =========================================================================
   sanitize(str) {
     if (!str) return '';
@@ -976,7 +1007,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 8. COMPREHENSIVE 12 AI MODELS MATRIX (All Models Synchronized)
+  // 9. COMPREHENSIVE 12 AI MODELS MATRIX (All Model Queries Accumulated)
   // =========================================================================
   renderAllAIModelsMatrix() {
     const gridEl = document.getElementById('ai-models-grid');
@@ -1045,7 +1076,7 @@ class DashboardApp {
         provider: 'TIER 3 OPENROUTER',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => s.includes('ox-alpha') || s.includes('0x-alpha') || s.includes('stealth/ox-alpha')
+        matcher: (s) => s.includes('ox-alpha') || s.includes('0x-alpha') || s.includes('stealth/ox-alpha') || s.includes('deepseek')
       },
       {
         id: 'gemma4',
@@ -1098,13 +1129,38 @@ class DashboardApp {
     const modelCounts = {};
     MODELS_CATALOG.forEach(m => { modelCounts[m.id] = 0; });
 
-    this.filteredEvents.forEach(e => {
-      if (e.event_type === 'terminal_cmd' || e.event_type === 'ai_chat') {
-        totalAIQueries++;
-        const target = (e.event_target || '').toLowerCase();
-        const label = (e.event_label || '').toLowerCase();
-        const combined = `${target} ${label}`;
+    // Use full events list to capture all historical & real-time executions
+    const eventPool = this.filteredEvents.length > 0 ? this.filteredEvents : this.events;
 
+    eventPool.forEach(e => {
+      const type = (e.event_type || '').toLowerCase();
+      const target = (e.event_target || '').toLowerCase();
+      const label = (e.event_label || '').toLowerCase();
+      const combined = `${target} ${label} ${type}`;
+
+      const isAIEvent = type === 'ai_query_resolved' ||
+                        type === 'ai_chat' ||
+                        type === 'ai_query' ||
+                        type === 'terminal_cmd' ||
+                        target.includes('auto') || 
+                        target.includes('model') || 
+                        target.includes('deepseek') || 
+                        target.includes('nemotron') || 
+                        target.includes('codex') || 
+                        target.includes('antigravity') || 
+                        target.includes('gemma') || 
+                        target.includes('minimax') || 
+                        target.includes('vision') || 
+                        target.includes('liquid') || 
+                        target.includes('ox-alpha') || 
+                        target.includes('semantic') || 
+                        label.includes('auto') || 
+                        label.includes('via') || 
+                        label.includes('ai') || 
+                        label.includes('model');
+
+      if (isAIEvent) {
+        totalAIQueries++;
         let matched = false;
         for (const m of MODELS_CATALOG) {
           if (m.id !== 'auto-router' && m.matcher(combined)) {
@@ -1144,7 +1200,58 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 9. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG)
+  // 10. COMPACT SLIDING WINDOW PAGINATION BUILDER
+  // =========================================================================
+  renderPagination(currentPage, totalPages, type) {
+    if (totalPages <= 1) return '';
+
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (const i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    let html = `<div class="pagination-wrapper">`;
+    
+    // Prev button
+    html += `<button type="button" class="pagination-btn pagination-nav" data-${type}-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''} aria-label="Halaman Sebelumnya">&lsaquo;</button>`;
+    
+    rangeWithDots.forEach(p => {
+      if (p === '...') {
+        html += `<span class="pagination-ellipsis">&hellip;</span>`;
+      } else {
+        html += `<button type="button" class="pagination-btn ${p === currentPage ? 'active' : ''}" data-${type}-page="${p}">${p}</button>`;
+      }
+    });
+    
+    // Next button
+    html += `<button type="button" class="pagination-btn pagination-nav" data-${type}-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''} aria-label="Halaman Berikutnya">&rsaquo;</button>`;
+    
+    // Page Info
+    html += `<span class="pagination-info">Hlm ${currentPage} / ${totalPages}</span>`;
+    html += `</div>`;
+    return html;
+  }
+
+  // =========================================================================
+  // 11. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG)
   // =========================================================================
   async renderAIMemoryList() {
     const listEl = document.getElementById('ai-memories-list');
@@ -1200,24 +1307,22 @@ class DashboardApp {
       `;
     }).join('');
 
-    if (paginationEl && totalPages > 1) {
-      paginationEl.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
-        <button type="button" class="pagination-btn ${p === this.memoryCurrentPage ? 'active' : ''}" data-mem-page="${p}">
-          ${p}
-        </button>
-      `).join('');
-
+    if (paginationEl) {
+      paginationEl.innerHTML = this.renderPagination(this.memoryCurrentPage, totalPages, 'mem');
       paginationEl.querySelectorAll('[data-mem-page]').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          this.memoryCurrentPage = Number(e.target.getAttribute('data-mem-page'));
-          this.renderAIMemoryList();
+          const targetPage = Number(e.currentTarget.getAttribute('data-mem-page'));
+          if (targetPage >= 1 && targetPage <= totalPages) {
+            this.memoryCurrentPage = targetPage;
+            this.renderAIMemoryList();
+          }
         });
       });
     }
   }
 
   // =========================================================================
-  // 10. REAL-TIME ACTIVITY STREAM TABLE
+  // 12. REAL-TIME ACTIVITY STREAM TABLE
   // =========================================================================
   renderActivityTable() {
     const tbody = document.getElementById('activity-table-body');
@@ -1269,31 +1374,27 @@ class DashboardApp {
       `;
     }).join('');
 
-    if (paginationEl && totalPages > 1) {
-      paginationEl.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
-        <button type="button" class="pagination-btn ${p === this.tableCurrentPage ? 'active' : ''}" data-table-page="${p}">
-          ${p}
-        </button>
-      `).join('');
-
+    if (paginationEl) {
+      paginationEl.innerHTML = this.renderPagination(this.tableCurrentPage, totalPages, 'table');
       paginationEl.querySelectorAll('[data-table-page]').forEach(btn => {
         btn.addEventListener('click', (e) => {
-          this.tableCurrentPage = Number(e.target.getAttribute('data-table-page'));
-          this.renderActivityTable();
+          const targetPage = Number(e.currentTarget.getAttribute('data-table-page'));
+          if (targetPage >= 1 && targetPage <= totalPages) {
+            this.tableCurrentPage = targetPage;
+            this.renderActivityTable();
+          }
         });
       });
     }
   }
 
   // =========================================================================
-  // 11. OMNIROUTE REALTIME HOST PROBING
+  // 13. OMNIROUTE REALTIME HOST PROBING
   // =========================================================================
   async checkOmniRouteRealtimeStatus() {
-    const pillEl = document.getElementById('omniroute-live-pill');
     const dotEl = document.getElementById('omniroute-live-dot');
     const textEl = document.getElementById('omniroute-live-text');
 
-    const headerPillEl = document.getElementById('header-omniroute-pill');
     const headerDotEl = document.getElementById('header-omniroute-dot');
     const headerTextEl = document.getElementById('header-omniroute-text');
 
@@ -1391,7 +1492,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 12. EVENT LISTENERS & MODAL DIALOG CONTROLLERS
+  // 14. EVENT LISTENERS & MODAL DIALOG CONTROLLERS
   // =========================================================================
   initEventListeners() {
     // Time Range Select
@@ -1667,7 +1768,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 13. CSV & JSON DATA EXPORTERS
+  // 15. CSV & JSON DATA EXPORTERS
   // =========================================================================
   exportCSV() {
     if (!this.filteredEvents || this.filteredEvents.length === 0) {
@@ -1701,7 +1802,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 14. INERTIA SMOOTH WHEEL & BACK-TO-TOP PHYSICS ENGINE
+  // 16. INERTIA SMOOTH WHEEL & BACK-TO-TOP PHYSICS ENGINE
   // =========================================================================
   initInertiaSmoothWheel() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
