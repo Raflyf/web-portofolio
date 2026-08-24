@@ -8,11 +8,12 @@
   <!-- Security Headers & Strict CSP -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: https://*.supabase.co https://openrouter.ai;">
   <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#07090e">
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/style.css?v=10.270.0">
-  <link rel="stylesheet" href="css/dashboard.css?v=10.270.0">
+  <link rel="stylesheet" href="css/style.css?v=10.300.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=10.300.0">
 
   <!-- Chart.js from Cloudflare CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -20,12 +21,12 @@
 <body>
 
   <!-- =========================================================================
-       1. SECURITY PIN AUTHENTICATION GATEWAY (SHA-256 Web Crypto)
+       1. SECURITY PIN AUTHENTICATION GATEWAY (HorizonX Glass Card + SHA-256)
        ========================================================================= -->
   <div class="pin-gateway-overlay" id="pin-gateway">
     <div class="pin-card" role="dialog" aria-labelledby="pin-title">
       <div class="pin-icon-wrap" aria-hidden="true">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
       </div>
 
       <div class="pin-header-text">
@@ -55,13 +56,13 @@
 
       <div class="pin-crypto-badge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-        <span>SHA-256 Web Crypto & Brute-Force Lockout Protected</span>
+        <span>SHA-256 Web Crypto &amp; Cloud PIN Sync Protected</span>
       </div>
     </div>
   </div>
 
   <!-- =========================================================================
-       2. DASHBOARD TOP NAVIGATION BAR
+       2. DASHBOARD TOP NAVIGATION BAR (HorizonX Header)
        ========================================================================= -->
   <header class="dash-header">
     <div class="dash-container dash-header-wrap">
@@ -74,12 +75,18 @@
         </a>
       </div>
 
-      <!-- Controls, Status Indicators & Quick Actions (Aligned to Right) -->
+      <!-- Controls, Status Indicators & Quick Actions -->
       <div class="dash-actions-group">
+        <button type="button" id="theme-toggle-btn" class="dash-btn theme-toggle-btn" aria-label="Ganti Tema Dark/Light" title="Beralih Tema (Dark / Light)">
+          <svg class="sun-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+
         <div class="dash-status-pill" id="dash-supabase-pill" title="Status Cloud Supabase (Klik untuk konfigurasi)" style="cursor: pointer;">
           <span class="dash-status-dot" aria-hidden="true"></span>
           <span id="sync-status">Supabase Live</span>
         </div>
+
         <div class="dash-status-pill omniroute-header-pill" id="header-omniroute-pill" title="Status Host OmniRoute Gateway (Klik untuk konfigurasi)" style="cursor: pointer;">
           <span class="dash-status-dot" id="header-omniroute-dot" style="background-color: var(--accent-amber);" aria-hidden="true"></span>
           <span id="header-omniroute-text">OMNIROUTE: STANDBY</span>
@@ -111,7 +118,7 @@
   </header>
 
   <!-- =========================================================================
-       3. MAIN METRICS & CHARTS INTERFACE
+       3. MAIN METRICS & CHARTS INTERFACE (HorizonX Container)
        ========================================================================= -->
   <main class="dash-container" role="main">
 
@@ -125,7 +132,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </div>
         </div>
-        <div class="kpi-value" id="kpi-views">0</div>
+        <div class="kpi-value text-emerald" id="kpi-views">0</div>
         <div class="kpi-meta">
           <span class="kpi-delta-tag">+100%</span>
           <span>Akumulasi impresi</span>
@@ -170,7 +177,7 @@
         </div>
         <div class="kpi-value text-rose" id="kpi-contacts">0</div>
         <div class="kpi-meta">
-          <span>Kirim Form & Chat WA</span>
+          <span>Kirim Form &amp; Chat WA</span>
         </div>
       </div>
 
@@ -208,7 +215,7 @@
       <div class="chart-card">
         <div class="chart-card-header">
           <div class="chart-title-wrap">
-            <h2 class="chart-title">Distribusi Klik Tautan & Aksi</h2>
+            <h2 class="chart-title">Distribusi Klik Tautan &amp; Aksi</h2>
             <span class="chart-subtitle">Frekuensi klik per proyek, media kontak, sertifikat, dan lab CLI</span>
           </div>
         </div>
@@ -224,7 +231,7 @@
       <div class="intel-card">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Rasio Perangkat</h2>
-          <span class="chart-subtitle">Proporsi Ponsel, Komputer & Tablet</span>
+          <span class="chart-subtitle">Proporsi Ponsel, Komputer &amp; Tablet</span>
         </div>
         <div class="chart-canvas-box" style="height:210px;">
           <canvas id="devices-chart"></canvas>
@@ -238,7 +245,7 @@
           <span class="chart-subtitle">Proyek riset GitHub yang paling banyak dieksplorasi</span>
         </div>
         <div class="ranked-list" id="project-ranked-list">
-          <!-- Populated by js/dashboard.js -->
+          <!-- Populated dynamically by js/dashboard.js -->
         </div>
       </div>
 
@@ -249,18 +256,18 @@
           <span class="chart-subtitle">Kredensial dan transkrip yang paling banyak dibuka</span>
         </div>
         <div class="ranked-list" id="cert-ranked-list">
-          <!-- Populated by js/dashboard.js -->
+          <!-- Populated dynamically by js/dashboard.js -->
         </div>
       </div>
 
       <!-- 4. Traffic Acquisition & Referrer Leaderboard -->
       <div class="intel-card">
         <div class="chart-title-wrap">
-          <h2 class="chart-title">Saluran Trafik & Referrer</h2>
-          <span class="chart-subtitle">Asal rujukan pengunjung (Search, GitHub, WA, Direct)</span>
+          <h2 class="chart-title">Saluran Trafik &amp; Referrer</h2>
+          <span class="chart-subtitle">Asal rujukan pengunjung (Google, GitHub, WA, Direct)</span>
         </div>
         <div class="ranked-list" id="referrer-ranked-list">
-          <!-- Populated by js/dashboard.js -->
+          <!-- Populated dynamically by js/dashboard.js -->
         </div>
       </div>
     </section>
@@ -322,7 +329,7 @@
             <span class="omniroute-engine-tag">x-preview-f-free</span>
           </div>
           <div class="omniroute-combo-name">x-preview-f-free</div>
-          <div class="omniroute-combo-desc">Engine penalaran dan koding presisi dari organisasi independen berbasis prinsip YAGNI & inferensi cepat.</div>
+          <div class="omniroute-combo-desc">Engine penalaran dan koding presisi dari organisasi independen berbasis prinsip YAGNI &amp; inferensi cepat.</div>
         </div>
 
         <!-- Combo 4: Vision-model -->
@@ -361,7 +368,7 @@
     <section class="ai-models-matrix-card" aria-label="Matriks Pemantauan Lengkap Seluruh Model AI">
       <div class="table-header-row">
         <div class="chart-title-wrap">
-          <h2 class="chart-title">Penghitung & Pemantauan Seluruh Model AI</h2>
+          <h2 class="chart-title">Penghitung &amp; Pemantauan Seluruh Model AI</h2>
           <span class="chart-subtitle">Frekuensi eksekusi per model secara menyeluruh (Pilihan Manual + Resolusi Auto Cloud Router)</span>
         </div>
         <div class="ai-matrix-total-badge" id="ai-matrix-total-badge">
@@ -379,7 +386,7 @@
       <div class="table-header-row">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Memori Jangka Panjang AI (Supabase Continuous RAG)</h2>
-          <span class="chart-subtitle">Basis data pengetahuan dan fakta yang dipelajari AI dari pencarian web real-time & masukan pengguna</span>
+          <span class="chart-subtitle">Basis data pengetahuan dan fakta yang dipelajari AI dari pencarian web real-time &amp; masukan pengguna</span>
         </div>
         <div class="ai-matrix-total-badge" id="ai-memory-total-badge">
           Basis Data RAG: <strong id="ai-memory-total-count" class="text-emerald">Sinkronisasi...</strong>
@@ -448,7 +455,7 @@
   </main>
 
   <!-- =========================================================================
-       4. CHANGE PIN MODAL
+       4. CHANGE PIN MODAL (Active Authenticated Sessions)
        ========================================================================= -->
   <div class="dash-modal" id="changepin-modal">
     <div class="dash-modal-card" role="dialog" aria-labelledby="changepin-title">
@@ -458,7 +465,7 @@
       </div>
 
       <p class="modal-desc">
-        Perbarui Master PIN akses dashboard. PIN baru akan di-hash menggunakan algoritma SHA-256 dan disimpan aman di peramban Anda.
+        Perbarui Master PIN akses dashboard. PIN baru akan di-hash menggunakan algoritma SHA-256 dan disinkronkan langsung ke Supabase Cloud.
       </p>
 
       <form id="changepin-form" class="modal-form">
@@ -468,7 +475,7 @@
         </div>
 
         <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
-          <span>Simpan PIN Baru</span>
+          <span>Simpan &amp; Sinkronkan PIN Cloud</span>
         </button>
       </form>
     </div>
@@ -485,7 +492,7 @@
       </div>
 
       <p class="modal-desc">
-        Sinkronkan telemetri ke cloud Supabase pribadi untuk memantau trafik dari berbagai perangkat secara terpusat.
+        Sinkronkan telemetri dan PIN keamanan ke cloud Supabase pribadi untuk memantau trafik dari berbagai perangkat secara terpusat.
       </p>
 
       <form id="config-form" class="modal-form">
@@ -500,7 +507,7 @@
         </div>
 
         <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
-          <span>Simpan & Sambungkan Cloud</span>
+          <span>Simpan &amp; Sambungkan Cloud</span>
         </button>
       </form>
     </div>
@@ -621,6 +628,6 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script type="module" src="js/dashboard.js?v=10.270.0"></script>
+  <script type="module" src="js/dashboard.js?v=10.300.0"></script>
 </body>
 </html>

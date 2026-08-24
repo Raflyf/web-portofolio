@@ -1,8 +1,14 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - ADMIN TELEMETRY DASHBOARD CONTROLLER (v3.2.0)
- * Chart.js Visualizations, Web Crypto PIN Auth, Supabase REST Sync, Leaderboards
- * Inertia Smooth-Scroll Physics Engine & Anti-Cache Real-Time Polling
+ * RAFLY FIRMANSYAH - ADMIN OBSERVABILITY DASHBOARD CONTROLLER (v6.0.0)
+ * HorizonX Deep Obsidian Glassmorphism Architecture & Dual-Theme Engine
+ * Features:
+ * - 🛡️ Web Crypto PIN Auth & Supabase Cloud-Synced Master Kredensial
+ * - ✉️ Email OTP Recovery Engine (raflyfirmansyah02@gmail.com)
+ * - 🌓 Dual-Theme Controller (Dark & Light Mode with Dynamic Chart.js)
+ * - 📊 3D Glassmorphic Bento KPIs & Chart.js Multi-Metric Visualizations
+ * - 🤖 Complete 12 AI Models Matrix & Continuous RAG Memory Explorer
+ * - ⚡ OmniRoute Dual-Endpoint Host Probing & Live Traffic Deduplication
  * ============================================================================
  */
 
@@ -29,6 +35,8 @@ class DashboardApp {
     this.memoryPageSize = 10;
     this.tableCurrentPage = 1;
     this.tablePageSize = 10;
+    this.cloudPinHash = null;
+    this.currentTheme = localStorage.getItem('portfolio_theme') || 'dark';
   }
 
   cleanKey(val) {
@@ -63,7 +71,7 @@ class DashboardApp {
   }
 
   async init() {
-    this.cloudPinHash = null;
+    this.initThemeEngine();
     this.initAuthGateway();
     this.initOtpResetFlow();
     this.initEventListeners();
@@ -73,7 +81,46 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 1. CRYPTOGRAPHIC PIN AUTHENTICATION & SUPABASE CLOUD SYNC
+  // 1. THEME CONTROLLER (Full HorizonX Dark & Light Synchronization)
+  // =========================================================================
+  initThemeEngine() {
+    const toggleBtn = document.getElementById('theme-toggle-btn');
+    const root = document.documentElement;
+
+    const applyTheme = (theme) => {
+      this.currentTheme = theme;
+      root.setAttribute('data-theme', theme);
+      localStorage.setItem('portfolio_theme', theme);
+
+      const sunIcon = toggleBtn?.querySelector('.sun-icon');
+      const moonIcon = toggleBtn?.querySelector('.moon-icon');
+
+      if (theme === 'light') {
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (moonIcon) moonIcon.style.display = 'none';
+      } else {
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (moonIcon) moonIcon.style.display = 'block';
+      }
+
+      // Re-render charts with updated theme colors
+      if (Object.keys(this.charts).length > 0) {
+        this.renderCharts();
+      }
+    };
+
+    applyTheme(this.currentTheme);
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        const nextTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme);
+      });
+    }
+  }
+
+  // =========================================================================
+  // 2. CRYPTOGRAPHIC PIN AUTHENTICATION & SUPABASE CLOUD SYNC
   // =========================================================================
   async hashPin(pin) {
     const encoder = new TextEncoder();
@@ -146,7 +193,7 @@ class DashboardApp {
       try {
         const parsed = JSON.parse(session);
         if (Date.now() - parsed.timestamp < 30 * 60 * 1000) {
-          overlay.style.display = 'none';
+          if (overlay) overlay.style.display = 'none';
           this.loadDashboardData();
           this.startRealtimePolling();
           return;
@@ -158,8 +205,10 @@ class DashboardApp {
     const initialLockout = this.getLockoutInfo();
     if (initialLockout.lockedUntil && Date.now() < initialLockout.lockedUntil) {
       const remainingMin = Math.max(1, Math.ceil((initialLockout.lockedUntil - Date.now()) / 60000));
-      errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
-      errorEl.style.display = 'block';
+      if (errorEl) {
+        errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
+        errorEl.style.display = 'block';
+      }
       if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
     }
 
@@ -167,10 +216,12 @@ class DashboardApp {
     if (unlockLocalBtn) {
       unlockLocalBtn.addEventListener('click', () => {
         localStorage.removeItem(LOCKOUT_KEY);
-        errorEl.style.display = 'none';
+        if (errorEl) errorEl.style.display = 'none';
         unlockLocalBtn.style.display = 'none';
-        input.value = '';
-        input.focus();
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
       });
     }
 
@@ -183,58 +234,64 @@ class DashboardApp {
       });
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const enteredPin = input.value.trim();
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const enteredPin = input ? input.value.trim() : '';
 
-      // Check brute-force lockout
-      const lockout = this.getLockoutInfo();
-      if (lockout.lockedUntil && Date.now() < lockout.lockedUntil) {
-        const remainingMin = Math.max(1, Math.ceil((lockout.lockedUntil - Date.now()) / 60000));
-        errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
-        errorEl.style.display = 'block';
-        if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
-        return;
-      }
-
-      // Ensure latest cloud PIN hash is used
-      const activePinHash = this.cloudPinHash || await this.fetchCloudPinHash();
-      const inputHash = await this.hashPin(enteredPin);
-
-      // Master PIN verification (checks Cloud PIN Hash, local custom hash, or default seed)
-      const localHash = localStorage.getItem('dash_custom_pin_hash');
-      const isMatch = (inputHash === activePinHash) || 
-                      (localHash && inputHash === localHash) || 
-                      (inputHash === DEFAULT_PIN_HASH);
-
-      if (isMatch) {
-        // Success
-        sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
-        localStorage.removeItem(LOCKOUT_KEY);
-        overlay.style.display = 'none';
-        this.loadDashboardData();
-        this.startRealtimePolling();
-      } else {
-        // Failed attempt handling
-        const attempts = (lockout.attempts || 0) + 1;
-        let lockedUntil = null;
-        if (attempts >= 5) {
-          lockedUntil = Date.now() + 15 * 60 * 1000; // 15 min lockout
-          errorEl.textContent = 'Terlalu banyak percobaan gagal. Akses dikunci 15 menit.';
+        // Check brute-force lockout
+        const lockout = this.getLockoutInfo();
+        if (lockout.lockedUntil && Date.now() < lockout.lockedUntil) {
+          const remainingMin = Math.max(1, Math.ceil((lockout.lockedUntil - Date.now()) / 60000));
+          if (errorEl) {
+            errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
+            errorEl.style.display = 'block';
+          }
           if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
-        } else {
-          errorEl.textContent = `PIN Salah. Sisa percobaan: ${5 - attempts}`;
+          return;
         }
-        localStorage.setItem(LOCKOUT_KEY, JSON.stringify({ attempts, lockedUntil }));
-        errorEl.style.display = 'block';
-        input.value = '';
-        input.focus();
-      }
-    });
+
+        // Ensure latest cloud PIN hash is used
+        const activePinHash = this.cloudPinHash || await this.fetchCloudPinHash();
+        const inputHash = await this.hashPin(enteredPin);
+
+        // Master PIN verification (checks Cloud PIN Hash, local custom hash, or default seed)
+        const localHash = localStorage.getItem('dash_custom_pin_hash');
+        const isMatch = (inputHash === activePinHash) || 
+                        (localHash && inputHash === localHash) || 
+                        (inputHash === DEFAULT_PIN_HASH);
+
+        if (isMatch) {
+          // Success
+          sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
+          localStorage.removeItem(LOCKOUT_KEY);
+          if (overlay) overlay.style.display = 'none';
+          this.loadDashboardData();
+          this.startRealtimePolling();
+        } else {
+          // Failed attempt handling
+          const attempts = (lockout.attempts || 0) + 1;
+          let lockedUntil = null;
+          if (attempts >= 5) {
+            lockedUntil = Date.now() + 15 * 60 * 1000; // 15 min lockout
+            if (errorEl) errorEl.textContent = 'Terlalu banyak percobaan gagal. Akses dikunci 15 menit.';
+            if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
+          } else {
+            if (errorEl) errorEl.textContent = `PIN Salah. Sisa percobaan: ${5 - attempts}`;
+          }
+          localStorage.setItem(LOCKOUT_KEY, JSON.stringify({ attempts, lockedUntil }));
+          if (errorEl) errorEl.style.display = 'block';
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
+        }
+      });
+    }
   }
 
   // =========================================================================
-  // 1B. EMAIL OTP RESET FLOW CONTROLLER
+  // 3. EMAIL OTP RESET FLOW CONTROLLER
   // =========================================================================
   initOtpResetFlow() {
     const otpModal = document.getElementById('otp-reset-modal');
@@ -419,291 +476,6 @@ class DashboardApp {
     }
   }
 
-  startRealtimePolling() {
-    if (this.pollInterval) clearInterval(this.pollInterval);
-    // Real-time live background polling every 3 seconds for telemetry, and OmniRoute status check every 8 seconds
-    this.checkOmniRouteRealtimeStatus();
-    let pollTick = 0;
-    this.pollInterval = setInterval(() => {
-      this.loadDashboardData(true);
-      pollTick++;
-      if (pollTick % 3 === 0) {
-        this.checkOmniRouteRealtimeStatus();
-      }
-    }, 3000);
-  }
-
-  async checkOmniRouteRealtimeStatus() {
-    const pillEl = document.getElementById('omniroute-live-pill');
-    const dotEl = document.getElementById('omniroute-live-dot');
-    const textEl = document.getElementById('omniroute-live-text');
-
-    const headerPillEl = document.getElementById('header-omniroute-pill');
-    const headerDotEl = document.getElementById('header-omniroute-dot');
-    const headerTextEl = document.getElementById('header-omniroute-text');
-
-    let isOnline = false;
-    let latencyText = '';
-    let statusLabel = '';
-    let headerStatusLabel = '';
-
-    // 1. Direct Probe Primary Endpoint (Ngrok Tunnel / Custom Tunnel)
-    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
-    if (customTunnel) {
-      try {
-        const cleanTunnel = customTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-        const probeUrl = cleanTunnel.includes('/models') ? cleanTunnel : (cleanTunnel.includes('/v1') ? `${cleanTunnel}/models` : `${cleanTunnel}/v1/models`);
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1500);
-        const t0 = performance.now();
-        const res = await fetch(probeUrl, {
-          method: 'GET',
-          headers: {
-            'ngrok-skip-browser-warning': 'true',
-            'Accept': 'application/json'
-          },
-          signal: controller.signal
-        });
-        clearTimeout(timer);
-        if (res.ok || res.status === 200 || res.status === 401) {
-          const data = await res.json().catch(() => null);
-          if (data && (Array.isArray(data.data) || data.object === 'list' || data.named_endpoints || res.status === 401)) {
-            isOnline = true;
-            const t1 = Math.round(performance.now() - t0);
-            latencyText = `${t1}ms`;
-            const isNgrok = cleanTunnel.includes('ngrok');
-            const typeLabel = isNgrok ? 'NGROK TUNNEL' : (cleanTunnel.includes('localhost') ? 'LOCAL DAEMON' : 'TUNNEL');
-            statusLabel = `HOST STATUS: ${typeLabel} ACTIVE (${latencyText})`;
-            headerStatusLabel = `OMNIROUTE: ${typeLabel} (${latencyText})`;
-          }
-        }
-      } catch (_) {
-        // Primary probe offline / timeout
-      }
-    }
-
-    // 2. Direct In-Browser Secondary Endpoint Probe (Fallback if Primary is down)
-    const secondaryEndpoint = (typeof window !== 'undefined' ? (localStorage.getItem('omniroute_secondary_endpoint') || localStorage.getItem('omniroute_local_endpoint')) : null) || '';
-    if (!isOnline && secondaryEndpoint && typeof window !== 'undefined') {
-      const cleanSec = secondaryEndpoint.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-      const probeUrl = cleanSec.includes('/models') ? cleanSec : (cleanSec.includes('/v1') ? `${cleanSec}/models` : `${cleanSec}/v1/models`);
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1500);
-        const t0 = performance.now();
-        const res = await fetch(probeUrl, {
-          method: 'GET',
-          headers: {
-            'ngrok-skip-browser-warning': 'true',
-            'Accept': 'application/json'
-          },
-          signal: controller.signal
-        });
-        clearTimeout(timer);
-        if (res.ok || res.status === 200 || res.status === 401) {
-          const data = await res.json().catch(() => null);
-          if (data && (Array.isArray(data.data) || data.object === 'list' || data.named_endpoints || res.status === 401)) {
-            isOnline = true;
-            const t1 = Math.round(performance.now() - t0);
-            latencyText = `${t1}ms`;
-            const isNgrokSec = cleanSec.includes('ngrok');
-            const secLabel = isNgrokSec ? 'NGROK FALLBACK' : (cleanSec.includes('localhost') ? 'LOCAL FALLBACK' : 'FALLBACK');
-            statusLabel = `HOST STATUS: ${secLabel} ACTIVE (${latencyText})`;
-            headerStatusLabel = `OMNIROUTE: ${secLabel} (${latencyText})`;
-          }
-        }
-      } catch (_) {}
-    }
-
-    // 3. Fallback: Query Vercel Gateway Health Probe (/api/chat)
-    if (!isOnline) {
-      try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 2000);
-        const t0 = performance.now();
-        const res = await fetch('/api/chat', {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-          signal: controller.signal
-        });
-        clearTimeout(timer);
-        if (res.ok) {
-          const data = await res.json().catch(() => null);
-          if (data?.omniroute?.isOnline && !data?.omniroute?.url?.includes('127.0.0.1') && !data?.omniroute?.url?.includes('localhost')) {
-            isOnline = true;
-            const lat = data.omniroute.latencyMs || Math.round(performance.now() - t0);
-            latencyText = `${lat}ms`;
-            const isFallback = data.omniroute.activeType === 'secondary_fallback';
-            const baseType = data.omniroute.url?.includes('ngrok') ? 'NGROK' : 'GATEWAY';
-            const typeLabel = isFallback ? `${baseType} FALLBACK` : baseType;
-            statusLabel = `HOST STATUS: ${typeLabel} ACTIVE (${latencyText})`;
-            headerStatusLabel = `OMNIROUTE: ${typeLabel} (${latencyText})`;
-          }
-        }
-      } catch (_) {}
-    }
-
-    // 4. Update Visual State for Card Pill & Header Pill
-    if (isOnline) {
-      if (pillEl) {
-        pillEl.classList.remove('is-offline', 'is-standby');
-        pillEl.classList.add('is-online');
-        pillEl.style.cursor = 'pointer';
-      }
-      if (dotEl) {
-        dotEl.style.backgroundColor = 'var(--accent-emerald)';
-        dotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
-      }
-      if (textEl) {
-        textEl.textContent = statusLabel || 'HOST STATUS: ACTIVE TUNNEL (<50ms)';
-      }
-
-      if (headerPillEl) {
-        headerPillEl.classList.add('is-online');
-      }
-      if (headerDotEl) {
-        headerDotEl.style.backgroundColor = 'var(--accent-emerald)';
-        headerDotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
-      }
-      if (headerTextEl) {
-        headerTextEl.textContent = headerStatusLabel || 'OMNIROUTE: ONLINE';
-      }
-    } else {
-      if (pillEl) {
-        pillEl.classList.remove('is-online');
-        pillEl.classList.add('is-offline', 'is-standby');
-        pillEl.style.cursor = 'pointer';
-      }
-      if (dotEl) {
-        dotEl.style.backgroundColor = 'var(--accent-amber)';
-        dotEl.style.boxShadow = 'none';
-      }
-      if (textEl) {
-        textEl.textContent = 'HOST STATUS: STANDBY / OFFLINE (Auto Cloud Failover)';
-      }
-
-      if (headerPillEl) {
-        headerPillEl.classList.remove('is-online');
-      }
-      if (headerDotEl) {
-        headerDotEl.style.backgroundColor = 'var(--accent-amber)';
-        headerDotEl.style.boxShadow = 'none';
-      }
-      if (headerTextEl) {
-        headerTextEl.textContent = 'OMNIROUTE: STANDBY';
-      }
-    }
-
-    // 5. Update OmniRoute Switch Toggle Button States
-    const switchNgrokBtn = document.getElementById('btn-switch-ngrok');
-    const activeTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
-    const isNgrokActive = activeTunnel.includes('ngrok');
-    if (switchNgrokBtn) switchNgrokBtn.classList.toggle('is-active', isNgrokActive);
-
-    // Attach click-to-sync handler once to card pill and header pill
-    if (pillEl && !pillEl.dataset.hasTunnelHandler) {
-      pillEl.dataset.hasTunnelHandler = 'true';
-      pillEl.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
-    }
-    if (headerPillEl && !headerPillEl.dataset.hasTunnelHandler) {
-      headerPillEl.dataset.hasTunnelHandler = 'true';
-      headerPillEl.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
-    }
-  }
-
-  async switchOmniRouteHost(targetType) {
-    const ngrokUrl = localStorage.getItem('omniroute_last_ngrok_url') || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
-    const localUrl = 'http://localhost:20128/v1';
-    const defaultKey = 'sk-omniroute';
-
-    const primaryUrl   = targetType === 'local' ? localUrl : ngrokUrl;
-    const secondaryUrl = targetType === 'local' ? ngrokUrl : localUrl;
-
-    localStorage.setItem('omniroute_custom_tunnel',      primaryUrl);
-    localStorage.setItem('omniroute_secondary_endpoint', secondaryUrl);
-    if (!localStorage.getItem('omniroute_custom_key')) {
-      localStorage.setItem('omniroute_custom_key', defaultKey);
-    }
-
-    const switchNgrokBtn = document.getElementById('btn-switch-ngrok');
-    if (switchNgrokBtn) switchNgrokBtn.classList.toggle('is-active', targetType === 'ngrok');
-
-    // Format: [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <secondary> | LOCAL_FALLBACK: <local>]
-    // Server reads: endpointsToTry = [primary, secondary, localhost(if local)]
-    const factText = `[OMNIROUTE_TUNNEL: ${primaryUrl} | NGROK_FALLBACK: ${secondaryUrl} | LOCAL_FALLBACK: ${localUrl}]`;
-    const synced = await this.saveFactToSupabase('system_omniroute_host', factText);
-
-    if (synced) {
-      this.showToast(`OmniRoute Host dialihkan ke ${targetType === 'local' ? 'Localhost Daemon (:20128)' : 'Ngrok Tunnel'} & tersinkronisasi ke Cloud.`);
-    } else {
-      this.showToast(`OmniRoute Host dialihkan ke ${targetType === 'local' ? 'Localhost Daemon' : 'Ngrok Tunnel'} (tersimpan di browser lokal).`);
-    }
-
-    this.checkOmniRouteStatus();
-  }
-
-  promptSyncOmniRouteTunnel() {
-    const omnirouteModal = document.getElementById('omniroute-modal');
-    if (omnirouteModal) {
-      const defaultPrimaryUrl   = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
-      const defaultSecondaryUrl = 'http://localhost:20128/v1';
-      const defaultKey = 'sk-omniroute';
-
-      const currentPrimary   = localStorage.getItem('omniroute_custom_tunnel')    || defaultPrimaryUrl;
-      const currentSecondary = localStorage.getItem('omniroute_secondary_endpoint') || localStorage.getItem('omniroute_last_ngrok_url') || defaultSecondaryUrl;
-      const currentKey       = localStorage.getItem('omniroute_custom_key')       || defaultKey;
-
-      const urlInput   = document.getElementById('omniroute-url-input');
-      const localInput = document.getElementById('omniroute-local-url-input');
-      const keyInput   = document.getElementById('omniroute-key-input');
-
-      if (urlInput)   urlInput.value   = currentPrimary;
-      if (localInput) localInput.value = currentSecondary;
-      if (keyInput)   keyInput.value   = currentKey;
-
-      omnirouteModal.classList.add('is-open');
-    }
-  }
-
-  buildPaginationNumbers(currentPage, totalPages, dataAttribute) {
-    if (totalPages <= 1) return '';
-    const pages = [];
-    const delta = 2; // Pages around current
-
-    pages.push(1);
-
-    const left = Math.max(2, currentPage - delta);
-    const right = Math.min(totalPages - 1, currentPage + delta);
-
-    if (left > 2) {
-      pages.push('...');
-    }
-
-    for (let i = left; i <= right; i++) {
-      pages.push(i);
-    }
-
-    if (right < totalPages - 1) {
-      pages.push('...');
-    }
-
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
-
-    return pages.map(p => {
-      if (p === '...') {
-        return `<span class="pagination-ellipsis" aria-hidden="true">…</span>`;
-      }
-      const isActive = p === currentPage;
-      return `
-        <button type="button" class="pagination-btn ${isActive ? 'active' : ''}" ${dataAttribute}="${p}" aria-label="Halaman ${p}">
-          ${p}
-        </button>
-      `;
-    }).join('');
-  }
-
   logout() {
     if (this.pollInterval) clearInterval(this.pollInterval);
     sessionStorage.removeItem(SESSION_AUTH_KEY);
@@ -711,7 +483,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 2. DATA RETRIEVAL (Dual-Source Hybrid Merge: Supabase REST + Local Cache)
+  // 4. DATA RETRIEVAL (Dual-Source Hybrid Merge: Supabase REST + Local Cache)
   // =========================================================================
   async loadDashboardData(isBackground = false) {
     const syncStatusEl = document.getElementById('sync-status');
@@ -749,8 +521,6 @@ class DashboardApp {
           } else {
             remoteEvents = [];
           }
-        } else {
-          console.warn('Supabase HTTP error:', res.status, res.statusText);
         }
       } catch (err) {
         console.warn('Gagal memuat Supabase, menggunakan cache lokal:', err);
@@ -768,21 +538,15 @@ class DashboardApp {
       }
     }
 
-    // 3. Intelligent Dual-Source Deduplication & Noise Filter (Collapses identical duplicates)
+    // 3. Intelligent Dual-Source Deduplication (3-second time bucket filter)
     const allRawEvents = [...remoteEvents, ...localEvents];
-
-    // Sort chronologically descending first
-    allRawEvents.sort((a, b) => {
-      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
-    });
+    allRawEvents.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
 
     const deduplicated = [];
     const seenSignatures = new Set();
 
     for (const e of allRawEvents) {
       if (!e) continue;
-      
-      // Compute 3-second time bucket to merge duplicate transmissions / remote vs local identical logs
       const ts = new Date(e.created_at || 0).getTime();
       const timeBucket = Math.floor(ts / 3000);
       const sid = (e.session_id || 'sess').substring(0, 30);
@@ -801,7 +565,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 3. FILTERING & AGGREGATION
+  // 5. FILTERING & AGGREGATION
   // =========================================================================
   filterAndRender() {
     const now = Date.now();
@@ -830,38 +594,46 @@ class DashboardApp {
 
   renderKPIs() {
     const pageViews = this.filteredEvents.filter(e => e.event_type === 'page_view').length;
-    const uniqueSessions = new Set(this.filteredEvents.map(e => e.session_id)).size || 1;
+    const uniqueSessions = new Set(this.filteredEvents.map(e => e.session_id)).size || (pageViews > 0 ? 1 : 0);
     const linkClicks = this.filteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'cert_view').length;
     const contacts = this.filteredEvents.filter(e => e.event_target === 'whatsapp' || e.event_type === 'contact_submit').length;
     const interactivity = (this.filteredEvents.length / Math.max(1, uniqueSessions)).toFixed(1);
 
-    document.getElementById('kpi-views').textContent = pageViews.toLocaleString('id-ID');
-    document.getElementById('kpi-visitors').textContent = uniqueSessions.toLocaleString('id-ID');
-    document.getElementById('kpi-clicks').textContent = linkClicks.toLocaleString('id-ID');
-    document.getElementById('kpi-contacts').textContent = contacts.toLocaleString('id-ID');
-    document.getElementById('kpi-engagement').textContent = interactivity;
+    const vEl = document.getElementById('kpi-views');
+    const uEl = document.getElementById('kpi-visitors');
+    const cEl = document.getElementById('kpi-clicks');
+    const ctEl = document.getElementById('kpi-contacts');
+    const engEl = document.getElementById('kpi-engagement');
+
+    if (vEl) vEl.textContent = pageViews.toLocaleString('id-ID');
+    if (uEl) uEl.textContent = uniqueSessions.toLocaleString('id-ID');
+    if (cEl) cEl.textContent = linkClicks.toLocaleString('id-ID');
+    if (ctEl) ctEl.textContent = contacts.toLocaleString('id-ID');
+    if (engEl) engEl.textContent = interactivity;
   }
 
   // =========================================================================
-  // 4. CHART.JS VISUALIZATION RENDERING
+  // 6. CHART.JS VISUALIZATION RENDERING (HorizonX Adaptive Theme Engine)
   // =========================================================================
   renderCharts() {
     if (!window.Chart) return;
 
-    const emerald = 'rgba(37, 211, 102, 1)';
-    const emeraldDim = 'rgba(37, 211, 102, 0.15)';
-    const cyan = 'rgba(56, 189, 248, 1)';
-    const cyanDim = 'rgba(56, 189, 248, 0.15)';
-    const gridColor = 'rgba(255, 255, 255, 0.08)';
-    const textColor = 'rgba(203, 213, 225, 0.8)';
+    const isDark = this.currentTheme !== 'light';
+    const emerald = isDark ? 'rgba(16, 185, 129, 1)' : 'rgba(5, 150, 105, 1)';
+    const emeraldDim = isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(5, 150, 105, 0.12)';
+    const cyan = isDark ? 'rgba(6, 182, 212, 1)' : 'rgba(2, 132, 199, 1)';
+    const cyanDim = isDark ? 'rgba(6, 182, 212, 0.15)' : 'rgba(2, 132, 199, 0.12)';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.06)';
+    const textColor = isDark ? 'rgba(203, 213, 225, 0.85)' : 'rgba(51, 65, 85, 0.9)';
 
     Chart.defaults.color = textColor;
     Chart.defaults.font.family = "'JetBrains Mono', monospace";
     Chart.defaults.font.size = 11;
 
     // 1. Traffic Velocity Line Chart
-    const trafficCtx = document.getElementById('traffic-chart')?.getContext('2d');
-    if (trafficCtx) {
+    const trafficCanvas = document.getElementById('traffic-chart');
+    if (trafficCanvas) {
+      const trafficCtx = trafficCanvas.getContext('2d');
       if (this.charts.traffic) this.charts.traffic.destroy();
 
       const dayBuckets = {};
@@ -895,7 +667,7 @@ class DashboardApp {
               backgroundColor: emeraldDim,
               fill: true,
               tension: 0.35,
-              borderWidth: 2,
+              borderWidth: 2.5,
               pointRadius: 4,
               pointHoverRadius: 6
             },
@@ -906,7 +678,7 @@ class DashboardApp {
               backgroundColor: cyanDim,
               fill: true,
               tension: 0.35,
-              borderWidth: 2,
+              borderWidth: 2.5,
               pointRadius: 4
             }
           ]
@@ -914,7 +686,12 @@ class DashboardApp {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: 'top' } },
+          plugins: { 
+            legend: { 
+              position: 'top',
+              labels: { boxWidth: 12, font: { weight: '600' } }
+            } 
+          },
           scales: {
             x: { grid: { color: gridColor } },
             y: { grid: { color: gridColor }, beginAtZero: true }
@@ -923,9 +700,10 @@ class DashboardApp {
       });
     }
 
-    // 2. Link & Project Interactions Bar Chart (9 Categories)
-    const linksCtx = document.getElementById('links-chart')?.getContext('2d');
-    if (linksCtx) {
+    // 2. Link & Project Interactions Bar Chart (9 Unified Categories)
+    const linksCanvas = document.getElementById('links-chart');
+    if (linksCanvas) {
+      const linksCtx = linksCanvas.getContext('2d');
       if (this.charts.links) this.charts.links.destroy();
 
       const counts = {
@@ -963,10 +741,10 @@ class DashboardApp {
             label: 'Total Klik',
             data: Object.values(counts),
             backgroundColor: [
-              'rgba(37, 211, 102, 0.85)',
-              'rgba(56, 189, 248, 0.85)',
+              'rgba(16, 185, 129, 0.85)',
+              'rgba(6, 182, 212, 0.85)',
               'rgba(168, 85, 247, 0.85)',
-              'rgba(251, 191, 36, 0.85)',
+              'rgba(245, 158, 11, 0.85)',
               'rgba(236, 72, 153, 0.85)',
               'rgba(20, 184, 166, 0.85)',
               'rgba(99, 102, 241, 0.85)',
@@ -992,8 +770,9 @@ class DashboardApp {
     }
 
     // 3. Platform & Device Ratio Doughnut Chart
-    const devicesCtx = document.getElementById('devices-chart')?.getContext('2d');
-    if (devicesCtx) {
+    const devicesCanvas = document.getElementById('devices-chart');
+    if (devicesCanvas) {
+      const devicesCtx = devicesCanvas.getContext('2d');
       if (this.charts.devices) this.charts.devices.destroy();
 
       const deviceCounts = { Mobile: 0, Desktop: 0, Tablet: 0 };
@@ -1011,11 +790,11 @@ class DashboardApp {
           datasets: [{
             data: [deviceCounts.Mobile, deviceCounts.Desktop, deviceCounts.Tablet],
             backgroundColor: [
-              'rgba(37, 211, 102, 0.85)',
-              'rgba(56, 189, 248, 0.85)',
-              'rgba(251, 191, 36, 0.85)'
+              'rgba(16, 185, 129, 0.85)',
+              'rgba(6, 182, 212, 0.85)',
+              'rgba(245, 158, 11, 0.85)'
             ],
-            borderColor: 'oklch(0.16 0.018 250)',
+            borderColor: isDark ? '#090e17' : '#ffffff',
             borderWidth: 3
           }]
         },
@@ -1030,9 +809,15 @@ class DashboardApp {
   }
 
   // =========================================================================
+  // 7. INTELLIGENCE LEADERBOARDS (HorizonX Unified Normalization)
   // =========================================================================
-  // 5. INTELLIGENCE LEADERBOARDS (Unified Normalization)
-  // =========================================================================
+  sanitize(str) {
+    if (!str) return '';
+    const temp = document.createElement('div');
+    temp.textContent = str;
+    return temp.innerHTML;
+  }
+
   normalizeCertName(target = '', label = '') {
     const combined = `${target} ${label}`.toLowerCase();
     if (combined.includes('bnsp') || combined.includes('analis') || combined.includes('program')) return 'BNSP: Analis Program';
@@ -1046,35 +831,6 @@ class DashboardApp {
     if (combined.includes('simk') || combined.includes('simulasi')) return 'Harisenin Full-Stack SiM-K';
     if (combined.includes('coding-camp') || combined.includes('javascript')) return 'Harisenin JavaScript Camp';
     return target || label || 'Sertifikat Kompetensi';
-  }
-
-  normalizeAIQuery(target = '', label = '') {
-    const combined = `${target} ${label}`.toLowerCase();
-    const isAuto = combined.includes('auto:') || combined.includes('[auto') || combined.includes('auto ➔') || target === 'auto';
-    const tag = isAuto ? 'Auto: ' : '';
-
-    if (combined.includes('ox-alpha') || combined.includes('0x-alpha') || combined.includes('stealth/ox-alpha')) return `${tag}Ox-Alpha (1M Frontier Reasoning)`;
-    if (combined.includes('gemma4') || combined.includes('gemma-4') || combined.includes('gemma')) return `${tag}Google Gemma 4 (31B Dense)`;
-    if (combined.includes('nemotron-3-super') || combined.includes('nemotron super') || combined.includes('120b')) return `${tag}Nvidia Nemotron 3 Super (120B)`;
-    if (combined.includes('nemotron-3-nano') || combined.includes('nemotron nano') || combined.includes('nano:30b') || combined.includes('nano-30b') || combined.includes('30b')) return `${tag}Nvidia Nemotron 3 Nano (30B)`;
-    if (combined.includes('nemotron-3-ultra') || combined.includes('nemotron ultra') || combined.includes('550b') || combined.includes('ultra-free') || combined.includes('nemotron')) return `${tag}Nvidia Nemotron 3 Ultra (550B MoE)`;
-    if (combined.includes('liquid') || combined.includes('lfm')) return `${tag}LiquidAI LFM 2.5 (2.6B)`;
-    if (combined.includes('laguna') || combined.includes('laguna-s')) return `${tag}Nemotron Laguna S (Frontier MoE)`;
-    if (combined.includes('minimax-m3') || combined.includes('vision-model') || combined.includes('mimo') || combined.includes('minimax')) return `${tag}MiniMax-M3 Vision Multimodal`;
-    if (combined.includes('x-preview') || combined.includes('preview-f-free')) return `${tag}x-preview-f-free (OpenCode)`;
-    if (combined.includes('deepseek-r1') || combined.includes('thinking') || combined.includes('reasoning')) return `${tag}DeepSeek R1 (Thinking CoT)`;
-    if (combined.includes('deepseek') || combined.includes('v4-flash') || combined.includes('flash-free')) return `${tag}DeepSeek V4 Flash`;
-    if (combined.includes('codex') || combined.includes('gpt-5') || combined.includes('koding') || combined.includes('coding')) return `${tag}Codex (GPT-5.6 Terra)`;
-    if (combined.includes('antigravity') || combined.includes('opus') || combined.includes('claude')) return `${tag}Antigravity (Claude Opus 4.6)`;
-    if (combined.includes('openrouter/free') || combined.includes('universal free')) return `${tag}OpenRouter Universal Free Auto Router`;
-    if (combined.includes('local_semantic') || combined.includes('semantic engine') || combined.includes('offline_rag')) return 'Auto: Local Semantic Fallback';
-
-    if (combined.includes('plagiarism') || combined.includes('plagiat')) return 'Tanya: Arsitektur Plagiarism';
-    if (combined.includes('skripsi') || combined.includes('nlp')) return 'Tanya: Riset NLP & Skripsi';
-    if (combined.includes('kontak') || combined.includes('hubungi') || combined.includes('email') || combined.includes('wa')) return 'Tanya: Informasi Kontak';
-    if (combined.includes('sertifikat') || combined.includes('bnsp') || combined.includes('mikrotik')) return 'Tanya: Kredensial Kompetensi';
-    if (combined.includes('help') || combined.includes('skills') || combined.includes('projects') || combined.includes('benchmarks')) return `CLI: $ ${target.toLowerCase()}`;
-    return label ? (label.length > 28 ? label.substring(0, 26) + '...' : label) : (target || 'Konsultasi AI');
   }
 
   normalizeProjectName(target = '', label = '') {
@@ -1140,7 +896,7 @@ class DashboardApp {
       }).join('');
     }
 
-    // 2. Certificate Views Leaderboard (Consolidated)
+    // 2. Certificate Views Leaderboard
     const certListEl = document.getElementById('cert-ranked-list');
     if (certListEl) {
       const certCounts = {};
@@ -1220,547 +976,167 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 5B. COMPREHENSIVE ALL AI MODELS USAGE MATRIX (Counters & Auto Resolution)
+  // 8. COMPREHENSIVE 12 AI MODELS MATRIX (All Models Synchronized)
   // =========================================================================
   renderAllAIModelsMatrix() {
     const gridEl = document.getElementById('ai-models-grid');
     const totalCountEl = document.getElementById('ai-matrix-total-count');
     if (!gridEl) return;
 
-    const SVG_ICONS = {
-      router: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
-      code: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
-      cot: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>`,
-      fast: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-      flagship: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
-      vision: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
-      offline: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`
-    };
-
-    const isNIM = (s) => /\b(nim|integrate\.api\.nvidia\.com)\b/i.test(s);
-    const isOpenCode = (s) => /\b(opencode|api\.opencode\.ai|opencode\.ai)\b/i.test(s);
-    const isOllama = (s) => /\b(ollama|ollama\.com)\b/i.test(s);
-    const isOmniRoute = (s) => /\b(omniroute|trycloudflare)\b/i.test(s);
-    const isMiniMaxDirect = (s) => /\b(api\.minimax\.io|minimax direct)\b/i.test(s);
-    const isOpenRouter = (s) => /\b(openrouter|open-router)\b/i.test(s) || (!isOpenCode(s) && !isOllama(s) && !isOmniRoute(s) && !isMiniMaxDirect(s) && !/\b(local_semantic|offline_rag)\b/i.test(s));
-
     const MODELS_CATALOG = [
-      // 0. Auto Gateway Router Overview
       {
         id: 'auto-router',
-        name: 'Auto Cloud Gateway',
-        category: 'Router Gateway',
-        tag: 'Intelligent Adaptive SOTA Cascade',
-        icon: SVG_ICONS.router,
-        color: 'var(--accent-cyan)',
-        isRouterCard: true
-      },
-
-      // 1. Ollama Cloud SOTA Hub (High Throughput SOTA Engines)
-      {
-        id: 'nemotron-nano-ollama',
-        name: 'Nemotron 3 Nano (30B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-nano:30b (Sub-1.5s Fast Q&A)',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s);
-        }
+        name: 'Auto Gateway Router',
+        desc: 'Dynamic 6-Tier Cascade Failover (OmniRoute, Ollama, OpenRouter, OpenCode, MiniMax, Local Semantic)',
+        provider: 'SMART ROUTER',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
+        matcher: (s) => s.includes('auto') || s.includes('router') || s.includes('gateway')
       },
       {
-        id: 'nemotron-super-ollama',
-        name: 'Nemotron 3 Super (120B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-super (120B CoT Reasoning)',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(super|120b|nemotron-3-super)\b/i.test(s);
-        }
+        id: 'codex',
+        name: 'Codex (GPT-5.6 Terra)',
+        desc: 'Advanced software engineering, large-scale architecture, and deep algorithmic programming',
+        provider: 'TIER 1 PRIMARY',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+        matcher: (s) => s.includes('codex') || s.includes('gpt-5') || s.includes('terra')
       },
       {
-        id: 'gemma4-ollama',
-        name: 'Google Gemma 4 (31B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · gemma4:31b (Dense Multimodal SOTA)',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(gemma|gemma4|31b)\b/i.test(s);
-        }
+        id: 'antigravity',
+        name: 'Antigravity (Opus 4.6 Thinking)',
+        desc: 'Deep analytical Chain-of-Thought (CoT) reasoning, scientific research synthesis, document inspection',
+        provider: 'TIER 1 PRIMARY',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
+        matcher: (s) => s.includes('antigravity') || s.includes('opus') || s.includes('claude')
       },
       {
-        id: 'nemotron-ultra-ollama',
-        name: 'Nemotron 3 Ultra (550B)',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · nemotron-3-ultra (550B MoE Frontier)',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
-        }
-      },
-      {
-        id: 'minimax-m3-ollama',
-        name: 'MiniMax-M3 Multimodal',
-        category: 'Ollama Cloud Engine',
-        tag: 'ollama.com · minimax-m3 (1M MSA Context Vision)',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOllama(s) && /\b(minimax|m3|mimo)\b/i.test(s);
-        }
-      },
-
-      // 2. OmniRoute Dedicated Local Gateway (The 5 Combos Configured in OmniRoute)
-      {
-        id: 'omniroute-codex',
-        name: 'Codex',
-        category: 'OmniRoute Dedicated',
-        tag: 'codex/gpt-5.6-terra · Heavy Coding & Architecture',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return /\b(codex|gpt-5\.6|terra)\b/i.test(s);
-        }
-      },
-      {
-        id: 'omniroute-antigravity',
-        name: 'Antigravity',
-        category: 'OmniRoute Dedicated',
-        tag: 'claude-opus-4-6-thinking · Deep CoT Reasoning',
-        icon: SVG_ICONS.cot,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return /\b(antigravity|claude-opus|opus|kiro)\b/i.test(s);
-        }
-      },
-      {
-        id: 'omniroute-x-preview',
+        id: 'x-preview',
         name: 'x-preview-f-free',
-        category: 'OmniRoute Dedicated',
-        tag: 'opencode/x-preview-f-free · SOTA Coding & Fast Reasoning',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return /\b(x-preview|x-preview-f-free)\b/i.test(s) || (isOmniRoute(s) && /\bx-preview\b/i.test(s));
-        }
+        desc: 'High-speed minimalist reasoning and zero-boilerplate coding engine',
+        provider: 'TIER 1 PRIMARY',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('x-preview') || s.includes('preview-f')
       },
       {
-        id: 'omniroute-vision',
-        name: 'Vision-model',
-        category: 'OmniRoute Dedicated',
-        tag: 'MiniMax-M3 / mimo-v2.5 · Multimodal Vision & OCR',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(vision-model|vision)\b/i.test(s);
-        }
+        id: 'vision-model',
+        name: 'Vision-model (MiniMax-M3 / mimo)',
+        desc: 'Multimodal image recognition, OCR document analysis, and visual synthesis',
+        provider: 'TIER 1 PRIMARY',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+        matcher: (s) => s.includes('vision') || s.includes('minimax') || s.includes('mimo')
       },
       {
-        id: 'omniroute-nemotron',
-        name: 'nemotron-laguna',
-        category: 'OmniRoute Dedicated',
-        tag: 'opencode/nemotron-3-ultra-free · Frontier MoE',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOmniRoute(s) && /\b(laguna|nemotron-laguna)\b/i.test(s);
-        }
-      },
-
-      // 3. OpenRouter Modern SOTA Pool (Multi-Key Cloud Pool)
-      {
-        id: 'nemotron-3-ultra-openrouter',
-        name: 'Nvidia Nemotron 3 Ultra (550B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '550B MoE · Frontier Analytical Engine',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
-        }
+        id: 'nemotron-laguna',
+        name: 'Nvidia Nemotron 3 Ultra (550B MoE)',
+        desc: 'Laguna S frontier reasoning engine for massive comparative system benchmarks',
+        provider: 'TIER 1 PRIMARY',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+        matcher: (s) => s.includes('laguna') || s.includes('nemotron-3-ultra') || s.includes('550b')
       },
       {
-        id: 'nemotron-3-super-openrouter',
+        id: 'gemma4',
+        name: 'Google Gemma 4 (31B Dense)',
+        desc: 'High-precision dense open-weights model for fast technical queries',
+        provider: 'TIER 2 OLLAMA',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>`,
+        matcher: (s) => s.includes('gemma') || s.includes('gemma-4') || s.includes('gemma4')
+      },
+      {
+        id: 'nemotron-super',
         name: 'Nvidia Nemotron 3 Super (120B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '120B CoT Reasoning · Deep Analytical Engine',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(super|120b|nemotron-3-super)\b/i.test(s);
-        }
+        desc: 'Intermediate dense reasoning model optimized for low latency',
+        provider: 'TIER 2 OLLAMA',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('nemotron-3-super') || s.includes('super:120b') || s.includes('120b')
       },
       {
-        id: 'nemotron-3-nano-openrouter',
+        id: 'nemotron-nano',
         name: 'Nvidia Nemotron 3 Nano (30B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '30B A3B · Ultra-Fast Conversational SOTA',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(nano|30b|nemotron-3-nano)\b/i.test(s) && !/omni|vl/i.test(s);
-        }
+        desc: 'Sub-second responsive assistant for conversational speed and brief summaries',
+        provider: 'TIER 2 OLLAMA',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+        matcher: (s) => s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || s.includes('30b')
       },
       {
-        id: 'liquid-lfm-openrouter',
+        id: 'deepseek-r1',
+        name: 'DeepSeek R1 (Thinking CoT)',
+        desc: 'Open weights reinforcement learning model with verifiable reasoning step trails',
+        provider: 'TIER 3 CLOUD',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
+        matcher: (s) => s.includes('deepseek-r1') || (s.includes('deepseek') && s.includes('thinking'))
+      },
+      {
+        id: 'liquid-lfm',
         name: 'LiquidAI LFM 2.5 (2.6B)',
-        category: 'OpenRouter Cloud Pool',
-        tag: '2.6B Dynamic · Sub-2s Instant Engine',
-        icon: SVG_ICONS.fast,
-        color: 'var(--accent-amber)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && /\b(liquid|lfm|2\.6b|2\.5)\b/i.test(s);
-        }
+        desc: 'Liquid neural state-space model for instant sub-30ms token streaming',
+        provider: 'TIER 3 CLOUD',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('liquid') || s.includes('lfm')
       },
-      {
-        id: 'openrouter-free-auto',
-        name: 'OpenRouter Universal Free',
-        category: 'OpenRouter Cloud Pool',
-        tag: 'openrouter/free · Universal SOTA Auto Router',
-        icon: SVG_ICONS.router,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenRouter(s) && (/\b(openrouter\/free|universal free)\b/i.test(s) || (t === 'openrouter/free' || l.includes('openrouter/free')));
-        }
-      },
-
-      // 4. OpenCode Zen Cloud Pool
-      {
-        id: 'nemotron-ultra-opencode',
-        name: 'Nemotron 3 Ultra (550B)',
-        category: 'OpenCode Cloud Pool',
-        tag: 'opencode/nemotron-3-ultra-free · Frontier MoE',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(ultra|550b|nemotron-3-ultra)\b/i.test(s);
-        }
-      },
-      {
-        id: 'x-preview-opencode',
-        name: 'x-preview-f-free',
-        category: 'OpenCode Cloud Pool',
-        tag: 'opencode/x-preview-f-free · SOTA Coding & Fast Reasoning',
-        icon: SVG_ICONS.code,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(x-preview|x-preview-f-free)\b/i.test(s);
-        }
-      },
-      {
-        id: 'mimo-opencode',
-        name: 'Mimo V2.5 Multimodal',
-        category: 'OpenCode Cloud Pool',
-        tag: 'opencode/mimo-v2.5-free · Vision & OCR',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(mimo|v2\.5|mimo-v2\.5-free)\b/i.test(s);
-        }
-      },
-      {
-        id: 'laguna-s-opencode',
-        name: 'Nemotron Laguna S',
-        category: 'OpenCode Cloud Pool',
-        tag: 'opencode/laguna-s-2.1-free · Frontier MoE',
-        icon: SVG_ICONS.flagship,
-        color: 'var(--accent-emerald)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return isOpenCode(s) && /\b(laguna|laguna-s|laguna-s-2\.1-free)\b/i.test(s);
-        }
-      },
-
-      // 5. MiniMax Frontier API Provider
-      {
-        id: 'minimax-m3-direct',
-        name: 'MiniMax-M3 Frontier Vision',
-        category: 'MiniMax Frontier API',
-        tag: 'api.minimax.io · MiniMax-M3 (1M MSA Vision)',
-        icon: SVG_ICONS.vision,
-        color: 'var(--accent-cyan)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return !isOllama(s) && !isOmniRoute(s) && !isOpenCode(s) && !isOpenRouter(s) && /\b(minimax|mimo|api\.minimax\.io|direct)\b/i.test(s);
-        }
-      },
-
-      // 6. In-Browser Local Engine (Zero-Latency Offline)
       {
         id: 'local-semantic',
-        name: 'Local Semantic Engine',
-        category: 'In-Browser Engine',
-        tag: 'In-Browser Sub-15ms Pattern Matcher + Supabase Continuous RAG',
-        icon: SVG_ICONS.offline,
-        color: 'var(--text-muted)',
-        match: (t, l) => {
-          const s = `${t} ${l}`;
-          return /\b(local_semantic|semantic pattern|local semantic|semantic knowledge|offline_rag)\b/i.test(s);
-        }
+        name: 'In-Browser Semantic Engine',
+        desc: 'Sub-15ms offline client-side cosine similarity + Supabase Continuous RAG Memory',
+        provider: 'TIER 6 FALLBACK',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`,
+        matcher: (s) => s.includes('local_semantic') || s.includes('semantic engine') || s.includes('offline_rag')
       }
     ];
 
-    // 1. Isolate verified unique AI consultation executions (deduplicate and filter out UI/noise events)
-    const actualConsultations = [];
-    const seenQueries = new Set();
+    let totalAIQueries = 0;
+    const modelCounts = {};
+    MODELS_CATALOG.forEach(m => { modelCounts[m.id] = 0; });
 
-    // Priority 1: Resolved events (ai_query_resolved)
-    const resolvedEvents = this.filteredEvents.filter(e => e.event_type === 'ai_query_resolved');
-    resolvedEvents.forEach(e => {
-      const ts = new Date(e.created_at || 0).getTime();
-      const bucket = Math.floor(ts / 3000);
-      const sid = (e.session_id || 'sess').substring(0, 30);
-      const sig = `${sid}__${bucket}`;
-      if (!seenQueries.has(sig)) {
-        seenQueries.add(sig);
-        actualConsultations.push(e);
-      }
-    });
-
-    // Priority 2: Standalone legacy ai_query events without resolved event in same window
     this.filteredEvents.forEach(e => {
-      if (e.event_type === 'ai_query' || e.event_type === 'terminal_ai_query') {
-        const ts = new Date(e.created_at || 0).getTime();
-        const bucket = Math.floor(ts / 3000);
-        const sid = (e.session_id || 'sess').substring(0, 30);
-        const sig = `${sid}__${bucket}`;
-        if (!seenQueries.has(sig)) {
-          seenQueries.add(sig);
-          actualConsultations.push(e);
+      if (e.event_type === 'terminal_cmd' || e.event_type === 'ai_chat') {
+        totalAIQueries++;
+        const target = (e.event_target || '').toLowerCase();
+        const label = (e.event_label || '').toLowerCase();
+        const combined = `${target} ${label}`;
+
+        let matched = false;
+        for (const m of MODELS_CATALOG) {
+          if (m.id !== 'auto-router' && m.matcher(combined)) {
+            modelCounts[m.id]++;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          modelCounts['auto-router']++;
         }
       }
     });
 
-    const totalConsultations = actualConsultations.length;
+    if (totalCountEl) totalCountEl.textContent = `${totalAIQueries}x`;
 
-    // 2. Track Auto Router breakdown & Individual Model Statistics
-    const autoResolvedBreakdown = {};
-    let totalAutoInferences = 0;
-    let totalManualInferences = 0;
-
-    const modelStatsMap = {};
-    MODELS_CATALOG.forEach(m => {
-      modelStatsMap[m.id] = { ...m, manualCount: 0, autoCount: 0, total: 0, lastUsedAt: 0 };
-    });
-
-    actualConsultations.forEach(e => {
-      const ts = new Date(e.created_at || 0).getTime() || 0;
-      const t = (e.event_target || '').trim();
-      const l = (e.event_label || '').trim();
-      const isAuto = t.startsWith('auto:') || t === 'auto' || l.includes('[Auto ➔') || l.includes('Auto Router') || (!t.includes(':') && t === 'auto');
-
-      // Match against model catalog
-      const matchedModel = MODELS_CATALOG.find(m => !m.isRouterCard && m.match && m.match(t, l));
-
-      if (isAuto) {
-        totalAutoInferences++;
-        if (matchedModel) {
-          modelStatsMap[matchedModel.id].autoCount++;
-          modelStatsMap[matchedModel.id].total++;
-          if (ts > modelStatsMap[matchedModel.id].lastUsedAt) {
-            modelStatsMap[matchedModel.id].lastUsedAt = ts;
-          }
-          const breakdownLabel = `${matchedModel.name} · ${matchedModel.category}`;
-          autoResolvedBreakdown[breakdownLabel] = (autoResolvedBreakdown[breakdownLabel] || 0) + 1;
-        } else {
-          // Resolve fallback model name cleanly
-          let fallbackName = t.replace(/^auto:/, '').trim();
-          if ((!fallbackName || fallbackName === 'auto') && l.includes('[Auto ➔')) {
-            fallbackName = l.split('[Auto ➔')[1]?.split('via')[0]?.trim() || '';
-          }
-          if (fallbackName.includes('nemotron-3-nano') || fallbackName.includes('nano-30b') || fallbackName.includes('nano')) {
-            fallbackName = 'Nvidia Nemotron 3 Nano (30B)';
-          } else if (fallbackName.includes('nemotron-3-super') || fallbackName.includes('super-120b') || fallbackName.includes('super')) {
-            fallbackName = 'Nvidia Nemotron 3 Super (120B)';
-          } else if (fallbackName.includes('nemotron-3-ultra') || fallbackName.includes('ultra-550b') || fallbackName.includes('ultra')) {
-            fallbackName = 'Nvidia Nemotron 3 Ultra (550B)';
-          } else if (fallbackName.includes('gemma') || fallbackName.includes('gemma4')) {
-            fallbackName = 'Google Gemma 4 (31B)';
-          } else if (fallbackName.includes('minimax') || fallbackName.includes('m3') || fallbackName.includes('mimo')) {
-            fallbackName = 'MiniMax-M3 Multimodal (1M MSA)';
-          } else if (fallbackName.includes('x-preview') || fallbackName.includes('preview-f-free')) {
-            fallbackName = 'x-preview-f-free';
-          } else if (fallbackName.includes('deepseek') || fallbackName.includes('v4-flash')) {
-            fallbackName = 'DeepSeek V4 Flash';
-          } else if (fallbackName.includes('laguna')) {
-            fallbackName = 'Nemotron Laguna S';
-          } else if (fallbackName.includes('codex') || fallbackName.includes('terra')) {
-            fallbackName = 'Codex (gpt-5.6-terra)';
-          } else if (fallbackName.includes('antigravity') || fallbackName.includes('claude-opus') || fallbackName.includes('opus')) {
-            fallbackName = 'Antigravity (claude-opus-4-6)';
-          } else if (fallbackName.includes('liquid') || fallbackName.includes('lfm')) {
-            fallbackName = 'LiquidAI LFM 2.5 (2.6B)';
-          } else if (fallbackName.includes('llama-3.3-70b') || fallbackName.includes('meta-llama')) {
-            fallbackName = 'Meta Llama 3.3 (70B)';
-          } else if (fallbackName.includes('local_semantic') || fallbackName.includes('offline_rag') || fallbackName.includes('semantic knowledge')) {
-            fallbackName = 'Local Semantic Engine (Browser RAG)';
-          } else if (!fallbackName || fallbackName === 'auto') {
-            fallbackName = 'Nvidia Nemotron 3 Nano (30B)';
-          }
-          autoResolvedBreakdown[fallbackName] = (autoResolvedBreakdown[fallbackName] || 0) + 1;
-        }
-      } else {
-        totalManualInferences++;
-        if (matchedModel) {
-          modelStatsMap[matchedModel.id].manualCount++;
-          modelStatsMap[matchedModel.id].total++;
-          if (ts > modelStatsMap[matchedModel.id].lastUsedAt) {
-            modelStatsMap[matchedModel.id].lastUsedAt = ts;
-          }
-        }
-      }
-    });
-
-    // Populate auto-router overview card
-    modelStatsMap['auto-router'].autoCount = totalAutoInferences;
-    modelStatsMap['auto-router'].manualCount = totalManualInferences;
-    modelStatsMap['auto-router'].total = totalAutoInferences;
-
-    if (totalCountEl) {
-      totalCountEl.textContent = `${totalConsultations.toLocaleString('id-ID')}x`;
-    }
-
-    // Dynamic Auto-Sort: Separate Router Card and sort individual Model Cards dynamically
-    const routerCard = modelStatsMap['auto-router'];
-    const nonRouterStats = MODELS_CATALOG
-      .filter(m => !m.isRouterCard)
-      .map(m => modelStatsMap[m.id]);
-
-    // Primary: Most recently used timestamp (lastUsedAt DESC). The active model instantly jumps to #1!
-    // Secondary: Highest total usage count (total DESC).
-    nonRouterStats.sort((a, b) => {
-      const timeDiff = (b.lastUsedAt || 0) - (a.lastUsedAt || 0);
-      if (timeDiff !== 0) return timeDiff;
-      return (b.total || 0) - (a.total || 0);
-    });
-
-    const modelStats = routerCard ? [routerCard, ...nonRouterStats] : nonRouterStats;
-    const maxModelCount = Math.max(1, ...modelStats.map(m => m.total));
-
-    gridEl.innerHTML = modelStats.map((m, index) => {
-      const pct = Math.round((m.total / maxModelCount) * 100);
-
-      if (m.isRouterCard) {
-        const entries = Object.entries(autoResolvedBreakdown).sort((a, b) => b[1] - a[1]);
-        const listHtml = entries.length > 0
-          ? entries.map(([modelName, count]) => `
-            <div class="ai-model-auto-item" style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0.5rem;font-size:0.75rem;font-family:var(--font-mono);border-bottom:1px dashed var(--border-subtle);background:rgba(255,255,255,0.015);border-radius:4px;margin-bottom:0.25rem;">
-              <span style="color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:0.5rem;">${this.sanitize(modelName)}</span>
-              <strong style="color:var(--accent-emerald);background:rgba(16,185,129,0.1);padding:0.1rem 0.45rem;border-radius:3px;font-size:0.75rem;white-space:nowrap;">${count}x</strong>
-            </div>
-          `).join('')
-          : `<div style="color:var(--text-dim);font-size:0.75rem;padding:0.5rem 0;">Belum ada resolusi mode auto.</div>`;
-
-        return `
-          <div class="ai-model-card ai-model-card-auto-full">
-            <div class="ai-auto-card-grid">
-              
-              <!-- Sisi Kiri: Ringkasan Auto Router & Stats -->
-              <div class="ai-auto-overview-panel" style="display:flex;flex-direction:column;gap:0.6rem;">
-                <div class="ai-model-card-header" style="display:flex;align-items:center;justify-content:space-between;">
-                  <span class="ai-model-category-tag" style="background:rgba(6,182,212,0.12);border-color:rgba(6,182,212,0.3);color:var(--accent-cyan);font-weight:800;letter-spacing:0.04em;">${this.sanitize(m.category)}</span>
-                  <span class="ai-model-count" style="color:${m.color};font-size:1.6rem;font-weight:900;">${m.total}x</span>
-                </div>
-
-                <div class="ai-model-name-wrap">
-                  <div style="display:flex;align-items:center;gap:0.5rem;color:${m.color};font-size:1.05rem;">
-                    ${m.icon}
-                    <span class="ai-model-name" style="font-size:1.05rem;font-weight:800;">${this.sanitize(m.name)}</span>
-                  </div>
-                  <span class="ai-model-tag" style="font-size:0.75rem;color:var(--text-dim);margin-top:0.2rem;display:block;">${this.sanitize(m.tag)}</span>
-                </div>
-
-                <div class="ai-model-bar-wrap" style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;">
-                  <div class="ai-model-bar-fill" style="width:${pct}%;background:linear-gradient(90deg, var(--accent-cyan), var(--accent-emerald));border-radius:3px;"></div>
-                </div>
-
-                <div class="ai-model-breakdown" style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-dim);font-family:var(--font-mono);background:rgba(0,0,0,0.25);padding:0.45rem 0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);margin-top:0.2rem;">
-                  <span>Manual: <strong style="color:var(--text-body);">${m.manualCount}x</strong></span>
-                  <span>Auto: <strong style="color:var(--accent-cyan);">${m.autoCount}x</strong></span>
-                </div>
-              </div>
-
-              <!-- Sisi Kanan: Daftar Model Terpilih (Scrollable > 5 Items) -->
-              <div class="ai-auto-breakdown-panel" style="display:flex;flex-direction:column;gap:0.35rem;border-left:1px solid var(--border-subtle);padding-left:1.5rem;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
-                  <span style="font-size:0.725rem;font-weight:800;color:var(--text-heading);text-transform:uppercase;letter-spacing:0.04em;font-family:var(--font-mono);">
-                    Model Terpilih Saat Mode Auto:
-                  </span>
-                  <span style="font-size:0.7rem;font-weight:700;color:var(--accent-cyan);font-family:var(--font-mono);">
-                    ${totalAutoInferences}x Total
-                  </span>
-                </div>
-
-                <div class="ai-model-auto-list">
-                  ${listHtml}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        `;
-      }
-
-      // Rank Badges & Active Highlighting for dynamically sorted model cards
-      let rankBadgeHtml = '';
-      let isTopActive = false;
-      if (m.total > 0) {
-        if (index === 1) { // Position #1 among individual models
-          isTopActive = true;
-          rankBadgeHtml = `<span class="ai-model-rank-badge"><span class="ai-model-rank-pulse"></span> #1 AKTIF</span>`;
-        } else if (index === 2) {
-          rankBadgeHtml = `<span class="ai-model-rank-badge" style="background:rgba(6,182,212,0.15);border-color:rgba(6,182,212,0.35);color:var(--accent-cyan);">#2</span>`;
-        } else if (index === 3) {
-          rankBadgeHtml = `<span class="ai-model-rank-badge" style="background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.35);color:var(--accent-amber);">#3</span>`;
-        }
-      }
-
+    gridEl.innerHTML = MODELS_CATALOG.map(m => {
+      const count = modelCounts[m.id] || 0;
       return `
-        <div class="ai-model-card ${isTopActive ? 'is-top-active' : ''}">
-          <div class="ai-model-card-header">
-            <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
-              <span class="ai-model-category-tag">${this.sanitize(m.category)}</span>
-              ${rankBadgeHtml}
-            </div>
-            <span class="ai-model-count" style="color:${m.color};">${m.total}x</span>
-          </div>
-
-          <div class="ai-model-name-wrap">
-            <div style="display:flex;align-items:center;gap:0.45rem;color:${m.color};">
+        <div class="ai-model-card">
+          <div class="ai-model-top">
+            <div class="ai-model-icon-tag">
               ${m.icon}
-              <span class="ai-model-name">${this.sanitize(m.name)}</span>
+              <span>${m.name.split(' ')[0]}</span>
             </div>
-            <span class="ai-model-tag" style="font-size:0.7rem;color:var(--text-dim);">${this.sanitize(m.tag)}</span>
+            <span class="ai-model-status-pill ${m.badgeClass}">${m.provider}</span>
           </div>
-
-          <div class="ai-model-bar-wrap">
-            <div class="ai-model-bar-fill" style="width:${pct}%;background-color:${m.color};"></div>
-          </div>
-
-          <div class="ai-model-breakdown" style="display:flex;justify-content:space-between;font-size:0.725rem;color:var(--text-dim);font-family:var(--font-mono);">
-            <span>Manual: <strong style="color:var(--text-body);">${m.manualCount}x</strong></span>
-            <span>Auto: <strong style="color:var(--accent-cyan);">${m.autoCount}x</strong></span>
+          <div class="ai-model-name">${this.sanitize(m.name)}</div>
+          <div class="ai-model-desc">${this.sanitize(m.desc)}</div>
+          <div class="ai-model-count-row">
+            <span class="ai-model-count-label">Total Eksekusi</span>
+            <span class="ai-model-count-num">${count}x</span>
           </div>
         </div>
       `;
@@ -1768,23 +1144,23 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 5C. AI CONTINUOUS RAG / LONG-TERM MEMORY LIVE EXPLORER
+  // 9. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG)
   // =========================================================================
   async renderAIMemoryList() {
     const listEl = document.getElementById('ai-memories-list');
-    const countEl = document.getElementById('ai-memory-total-count');
-    const pagEl = document.getElementById('ai-memories-pagination');
+    const totalBadgeEl = document.getElementById('ai-memory-total-count');
+    const paginationEl = document.getElementById('ai-memories-pagination');
     if (!listEl) return;
 
-    try {
-      const config = this.getSupabaseConfig();
-      if (!config.url || !config.anonKey) {
-        listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Supabase tidak terkonfigurasi.</div>`;
-        if (pagEl) pagEl.innerHTML = '';
-        return;
-      }
+    const config = this.getSupabaseConfig();
+    if (!config || !config.url || !config.anonKey) {
+      listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;">Supabase belum terkonfigurasi.</div>`;
+      if (totalBadgeEl) totalBadgeEl.textContent = '0 Memori';
+      return;
+    }
 
-      const res = await fetch(`${config.url}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=500`, {
+    try {
+      const res = await fetch(`${config.url}/rest/v1/ai_memories?select=*&order=created_at.desc`, {
         headers: {
           'apikey': config.anonKey,
           'Authorization': `Bearer ${config.anonKey}`,
@@ -1792,451 +1168,230 @@ class DashboardApp {
         }
       });
 
-      if (!res.ok) {
-        listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Gagal memuat memori (HTTP ${res.status}).</div>`;
-        if (pagEl) pagEl.innerHTML = '';
-        return;
+      if (res.ok) {
+        this.memories = await res.json();
       }
-
-      const memories = await res.json();
-      this.memories = Array.isArray(memories) ? memories : [];
-
-      if (this.memories.length === 0) {
-        listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Belum ada memori fakta yang tersimpan di database.</div>`;
-        if (countEl) countEl.textContent = '0 Fakta';
-        if (pagEl) pagEl.innerHTML = '';
-        return;
-      }
-
-      if (countEl) countEl.textContent = `${this.memories.length} Fakta Terkini (Supabase RAG)`;
-
-      this.renderPaginatedMemories();
-    } catch (e) {
-      listEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Error memuat memori: ${this.sanitize(e.message)}</div>`;
-      if (pagEl) pagEl.innerHTML = '';
-    }
-  }
-
-  renderPaginatedMemories() {
-    const listEl = document.getElementById('ai-memories-list');
-    const pagEl = document.getElementById('ai-memories-pagination');
-    if (!listEl) return;
+    } catch (_) {}
 
     const total = this.memories.length;
-    const totalPages = Math.max(1, Math.ceil(total / this.memoryPageSize));
-    if (this.memoryCurrentPage > totalPages) this.memoryCurrentPage = totalPages;
-    if (this.memoryCurrentPage < 1) this.memoryCurrentPage = 1;
+    if (totalBadgeEl) totalBadgeEl.textContent = `${total} Fakta Aktif`;
 
-    const startIdx = (this.memoryCurrentPage - 1) * this.memoryPageSize;
-    const endIdx = Math.min(startIdx + this.memoryPageSize, total);
-    const pageItems = this.memories.slice(startIdx, endIdx);
+    if (total === 0) {
+      listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;padding:0.5rem 0;">Belum ada memori baru yang tersimpan di cloud Supabase.</div>`;
+      if (paginationEl) paginationEl.innerHTML = '';
+      return;
+    }
+
+    const totalPages = Math.ceil(total / this.memoryPageSize);
+    this.memoryCurrentPage = Math.min(this.memoryCurrentPage, totalPages) || 1;
+    const start = (this.memoryCurrentPage - 1) * this.memoryPageSize;
+    const pageItems = this.memories.slice(start, start + this.memoryPageSize);
 
     listEl.innerHTML = pageItems.map(m => {
-      const dateStr = new Date(m.created_at).toLocaleString('id-ID', {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
-      });
-
+      const timeStr = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
       return `
-        <div class="ranked-item" style="background:var(--bg-primary);padding:0.75rem 1rem;border-radius:var(--radius-md);border:1px solid var(--border-card);display:flex;flex-direction:column;gap:0.35rem;">
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;color:var(--text-muted);flex-wrap:wrap;gap:0.5rem;">
-            <span style="color:var(--accent-emerald);font-family:var(--font-mono);font-weight:600;">Sesi: ${this.sanitize(m.session_id || 'unknown')}</span>
-            <span style="font-family:var(--font-mono);color:var(--text-dim);">${dateStr}</span>
+        <div class="ai-model-card" style="padding:0.95rem;background-color:var(--surface-badge);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+            <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent-emerald-text);font-weight:700;">RAG KNOWLEDGE ITEM</span>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">${timeStr}</span>
           </div>
-          <div style="color:var(--text-heading);font-size:0.825rem;line-height:1.5;">${this.sanitize(m.fact_text)}</div>
+          <div style="font-size:0.85rem;color:var(--text-heading);line-height:1.45;">${this.sanitize(m.fact_text || '')}</div>
         </div>
       `;
     }).join('');
 
-    if (pagEl) {
-      if (totalPages <= 1) {
-        pagEl.innerHTML = `<span class="pagination-info">Menampilkan ${total} dari ${total} fakta</span>`;
-        return;
-      }
+    if (paginationEl && totalPages > 1) {
+      paginationEl.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+        <button type="button" class="pagination-btn ${p === this.memoryCurrentPage ? 'active' : ''}" data-mem-page="${p}">
+          ${p}
+        </button>
+      `).join('');
 
-      const pageButtonsHtml = this.buildPaginationNumbers(this.memoryCurrentPage, totalPages, 'data-mempage');
-
-      pagEl.innerHTML = `
-        <span class="pagination-info">Menampilkan ${startIdx + 1}-${endIdx} dari ${total} fakta (Halaman ${this.memoryCurrentPage}/${totalPages})</span>
-        <div class="pagination-controls">
-          <button type="button" class="pagination-btn" id="mem-prev-btn" ${this.memoryCurrentPage === 1 ? 'disabled' : ''} aria-label="Halaman Sebelumnya">
-            Prev
-          </button>
-          ${pageButtonsHtml}
-          <button type="button" class="pagination-btn" id="mem-next-btn" ${this.memoryCurrentPage === totalPages ? 'disabled' : ''} aria-label="Halaman Selanjutnya">
-            Next
-          </button>
-        </div>
-      `;
-
-      const prevBtn = pagEl.querySelector('#mem-prev-btn');
-      if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-          if (this.memoryCurrentPage > 1) {
-            this.memoryCurrentPage--;
-            this.renderPaginatedMemories();
-          }
-        });
-      }
-
-      const nextBtn = pagEl.querySelector('#mem-next-btn');
-      if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-          if (this.memoryCurrentPage < totalPages) {
-            this.memoryCurrentPage++;
-            this.renderPaginatedMemories();
-          }
-        });
-      }
-
-      pagEl.querySelectorAll('.pagination-btn[data-mempage]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const page = parseInt(btn.getAttribute('data-mempage'), 10);
-          if (page && page !== this.memoryCurrentPage) {
-            this.memoryCurrentPage = page;
-            this.renderPaginatedMemories();
-          }
+      paginationEl.querySelectorAll('[data-mem-page]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          this.memoryCurrentPage = Number(e.target.getAttribute('data-mem-page'));
+          this.renderAIMemoryList();
         });
       });
     }
   }
 
   // =========================================================================
-  // 6. ACTIVITY STREAM TABLE & EXPORT
+  // 10. REAL-TIME ACTIVITY STREAM TABLE
   // =========================================================================
   renderActivityTable() {
     const tbody = document.getElementById('activity-table-body');
-    const pagEl = document.getElementById('table-pagination');
+    const paginationEl = document.getElementById('table-pagination');
     if (!tbody) return;
 
-    let displayList = this.filteredEvents;
+    let filtered = this.filteredEvents;
 
     if (this.selectedEventType !== 'all') {
-      displayList = displayList.filter(e => e.event_type === this.selectedEventType);
+      filtered = filtered.filter(e => e.event_type === this.selectedEventType);
     }
 
     if (this.searchTerm) {
       const q = this.searchTerm.toLowerCase();
-      displayList = displayList.filter(e => {
-        const t = (e.event_target || '').toLowerCase();
-        const l = (e.event_label || '').toLowerCase();
-        const tp = (e.event_type || '').toLowerCase();
-        return t.includes(q) || l.includes(q) || tp.includes(q);
+      filtered = filtered.filter(e => {
+        const target = (e.event_target || '').toLowerCase();
+        const label = (e.event_label || '').toLowerCase();
+        const sid = (e.session_id || '').toLowerCase();
+        return target.includes(q) || label.includes(q) || sid.includes(q);
       });
     }
 
-    const total = displayList.length;
-
+    const total = filtered.length;
     if (total === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">
-            Tidak ada data aktivitas yang sesuai dengan filter.
-          </td>
-        </tr>
-      `;
-      if (pagEl) pagEl.innerHTML = '';
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:2rem;">Tidak ada data aktivitas yang sesuai dengan filter.</td></tr>`;
+      if (paginationEl) paginationEl.innerHTML = '';
       return;
     }
 
-    const totalPages = Math.max(1, Math.ceil(total / this.tablePageSize));
-    if (this.tableCurrentPage > totalPages) this.tableCurrentPage = totalPages;
-    if (this.tableCurrentPage < 1) this.tableCurrentPage = 1;
+    const totalPages = Math.ceil(total / this.tablePageSize);
+    this.tableCurrentPage = Math.min(this.tableCurrentPage, totalPages) || 1;
+    const start = (this.tableCurrentPage - 1) * this.tablePageSize;
+    const pageItems = filtered.slice(start, start + this.tablePageSize);
 
-    const startIdx = (this.tableCurrentPage - 1) * this.tablePageSize;
-    const endIdx = Math.min(startIdx + this.tablePageSize, total);
-    const pageItems = displayList.slice(startIdx, endIdx);
+    tbody.innerHTML = pageItems.map(e => {
+      const time = e.created_at ? new Date(e.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+      const typeClass = `type-${(e.event_type || 'default').replace('_', '-')}`;
+      const sidShort = (e.session_id || 'sess').substring(0, 16);
+      const targetText = e.event_label ? `${e.event_target} (${e.event_label})` : (e.event_target || '—');
 
-    tbody.innerHTML = '';
-    pageItems.forEach(e => {
-      const tr = document.createElement('tr');
-      const timeStr = new Date(e.created_at).toLocaleString('id-ID', {
-        day: '2-digit', month: 'short',
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
-      });
-
-      const typeBadge = `<span class="table-event-tag">${this.sanitize(e.event_type)}</span>`;
-      
-      let targetDisplay = e.event_target ? this.sanitize(e.event_target) : '-';
-      let labelDisplay = e.event_label ? this.sanitize(e.event_label) : '';
-
-      // Format page_view with human-readable page name
-      if (e.event_type === 'page_view') {
-        const raw = (e.event_target || '/').toLowerCase();
-        let pageTitle = 'Halaman Utama (Landing Page)';
-        if (raw.includes('dashboard')) pageTitle = 'Admin Dashboard & Telemetri';
-        else if (raw.includes('preview')) pageTitle = 'Pratinjau Kredensial (Preview)';
-        else if (raw !== '/' && raw !== '/index.html' && !raw.includes('halaman utama')) pageTitle = `Halaman: ${this.sanitize(e.event_target)}`;
-        
-        targetDisplay = `<strong style="color:var(--accent-cyan);">${pageTitle}</strong> <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">(${this.sanitize(e.event_target || '/')})</span>`;
-      } else if (e.event_type === 'model_select') {
-        targetDisplay = `<strong style="color:var(--accent-emerald);">${labelDisplay || targetDisplay}</strong>`;
-        labelDisplay = `Konfigurasi Model/Effort: ${this.sanitize(e.event_target)}`;
-      } else if (e.event_type === 'ai_query_resolved' || e.event_type === 'ai_query') {
-        targetDisplay = `<strong style="color:var(--accent-emerald);">${targetDisplay}</strong>`;
-      } else {
-        targetDisplay = `<strong>${targetDisplay}</strong>`;
-      }
-
-      const labelHtml = labelDisplay ? `<br><small style="color:var(--text-dim);">${labelDisplay}</small>` : '';
-
-      tr.innerHTML = `
-        <td style="font-family:var(--font-mono);font-size:0.75rem;white-space:nowrap;color:var(--text-muted);">${timeStr}</td>
-        <td>${typeBadge}</td>
-        <td>${targetDisplay}${labelHtml}</td>
-        <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">${this.sanitize(e.device_type || 'desktop')}</td>
-        <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);">${this.sanitize(e.session_id ? e.session_id.slice(-8) : '-')}</td>
+      return `
+        <tr>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted);">${time}</td>
+          <td><span class="event-type-badge ${typeClass}">${this.sanitize(e.event_type || 'event')}</span></td>
+          <td style="font-weight:600;color:var(--text-heading);">${this.sanitize(targetText)}</td>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-dim);">${this.sanitize(e.device_type || 'desktop')}</td>
+          <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);">${this.sanitize(sidShort)}...</td>
+        </tr>
       `;
+    }).join('');
 
-      tbody.appendChild(tr);
-    });
+    if (paginationEl && totalPages > 1) {
+      paginationEl.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+        <button type="button" class="pagination-btn ${p === this.tableCurrentPage ? 'active' : ''}" data-table-page="${p}">
+          ${p}
+        </button>
+      `).join('');
 
-    if (pagEl) {
-      if (totalPages <= 1) {
-        pagEl.innerHTML = `<span class="pagination-info">Menampilkan ${total} dari ${total} aktivitas</span>`;
-        return;
-      }
-
-      const pageButtonsHtml = this.buildPaginationNumbers(this.tableCurrentPage, totalPages, 'data-tablepage');
-
-      pagEl.innerHTML = `
-        <span class="pagination-info">Menampilkan ${startIdx + 1}-${endIdx} dari ${total} aktivitas (Halaman ${this.tableCurrentPage}/${totalPages})</span>
-        <div class="pagination-controls">
-          <button type="button" class="pagination-btn" id="table-prev-btn" ${this.tableCurrentPage === 1 ? 'disabled' : ''} aria-label="Halaman Sebelumnya">
-            Prev
-          </button>
-          ${pageButtonsHtml}
-          <button type="button" class="pagination-btn" id="table-next-btn" ${this.tableCurrentPage === totalPages ? 'disabled' : ''} aria-label="Halaman Selanjutnya">
-            Next
-          </button>
-        </div>
-      `;
-
-      const prevBtn = pagEl.querySelector('#table-prev-btn');
-      if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-          if (this.tableCurrentPage > 1) {
-            this.tableCurrentPage--;
-            this.renderActivityTable();
-          }
-        });
-      }
-
-      const nextBtn = pagEl.querySelector('#table-next-btn');
-      if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-          if (this.tableCurrentPage < totalPages) {
-            this.tableCurrentPage++;
-            this.renderActivityTable();
-          }
-        });
-      }
-
-      pagEl.querySelectorAll('.pagination-btn[data-tablepage]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const page = parseInt(btn.getAttribute('data-tablepage'), 10);
-          if (page && page !== this.tableCurrentPage) {
-            this.tableCurrentPage = page;
-            this.renderActivityTable();
-          }
+      paginationEl.querySelectorAll('[data-table-page]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          this.tableCurrentPage = Number(e.target.getAttribute('data-table-page'));
+          this.renderActivityTable();
         });
       });
     }
   }
 
-  sanitize(str) {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  exportCSV() {
-    if (this.filteredEvents.length === 0) return;
-
-    const sanitizeCsvCell = (val) => {
-      let str = String(val || '');
-      // Neutralize Excel/Sheets formula execution triggers (=, +, -, @, TAB)
-      if (/^[=+\-@\t\r]/.test(str)) {
-        str = "'" + str;
-      }
-      return `"${str.replace(/"/g, '""')}"`;
-    };
-
-    const headers = ["ID", "Waktu_UTC", "Tipe_Event", "Target", "Label", "Perangkat", "Resolusi", "Referrer", "Sesi_ID"];
-    const rows = this.filteredEvents.map((e, idx) => [
-      idx + 1,
-      sanitizeCsvCell(e.created_at),
-      sanitizeCsvCell(e.event_type),
-      sanitizeCsvCell(e.event_target),
-      sanitizeCsvCell(e.event_label),
-      sanitizeCsvCell(e.device_type),
-      sanitizeCsvCell(e.screen_resolution),
-      sanitizeCsvCell(e.referrer),
-      sanitizeCsvCell(e.session_id)
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `telemetry_export_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  exportJSON() {
-    if (this.filteredEvents.length === 0) return;
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.filteredEvents, null, 2));
-    const link = document.createElement("a");
-    link.setAttribute("href", dataStr);
-    link.setAttribute("download", `telemetry_export_${Date.now()}.json`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
   // =========================================================================
-  // 7. SMOOTH SCROLLING & INERTIA WHEEL ENGINE (Fluid 60-120fps)
+  // 11. OMNIROUTE REALTIME HOST PROBING
   // =========================================================================
-  initInertiaSmoothWheel() {
-    let currentY = window.scrollY || window.pageYOffset;
-    let targetY = currentY;
-    let isRunning = false;
-    const ease = 0.095;
+  async checkOmniRouteRealtimeStatus() {
+    const pillEl = document.getElementById('omniroute-live-pill');
+    const dotEl = document.getElementById('omniroute-live-dot');
+    const textEl = document.getElementById('omniroute-live-text');
 
-    function updateWheelPhysics() {
-      const diff = targetY - currentY;
-      
-      if (Math.abs(diff) > 0.5) {
-        currentY += diff * ease;
-        window.scrollTo(0, Math.round(currentY * 10) / 10);
-        requestAnimationFrame(updateWheelPhysics);
-      } else {
-        currentY = targetY;
-        window.scrollTo(0, targetY);
-        isRunning = false;
-      }
-    }
+    const headerPillEl = document.getElementById('header-omniroute-pill');
+    const headerDotEl = document.getElementById('header-omniroute-dot');
+    const headerTextEl = document.getElementById('header-omniroute-text');
 
-    window.addEventListener('wheel', (e) => {
-      const path = e.composedPath ? e.composedPath() : [];
-      const isScrollableChild = path.some(el => {
-        if (!el || el === window || el === document || el === document.body || el === document.documentElement) return false;
-        if (el.classList && (
-          el.classList.contains('ai-model-auto-list') ||
-          el.classList.contains('table-responsive') ||
-          el.classList.contains('modal-body') ||
-          el.classList.contains('terminal-body') ||
-          el.tagName === 'TEXTAREA' ||
-          el.tagName === 'DIALOG'
-        )) {
-          return true;
+    let isOnline = false;
+    let latencyText = '';
+    let statusLabel = '';
+    let headerStatusLabel = '';
+
+    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
+    if (customTunnel) {
+      try {
+        const cleanTunnel = customTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
+        const probeUrl = cleanTunnel.includes('/models') ? cleanTunnel : (cleanTunnel.includes('/v1') ? `${cleanTunnel}/models` : `${cleanTunnel}/v1/models`);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 1500);
+        const t0 = performance.now();
+        const res = await fetch(probeUrl, {
+          method: 'GET',
+          headers: { 'ngrok-skip-browser-warning': 'true', 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (res.ok || res.status === 200 || res.status === 401) {
+          isOnline = true;
+          const t1 = Math.round(performance.now() - t0);
+          latencyText = `${t1}ms`;
+          statusLabel = `HOST STATUS: NGROK ACTIVE (${latencyText})`;
+          headerStatusLabel = `OMNIROUTE: NGROK (${latencyText})`;
         }
-        try {
-          const style = window.getComputedStyle(el);
-          const isScrollable = (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflowX === 'auto' || style.overflowX === 'scroll');
-          if (isScrollable && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
-            return true;
+      } catch (_) {}
+    }
+
+    if (!isOnline) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 2000);
+        const t0 = performance.now();
+        const res = await fetch('/api/chat', {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data?.omniroute?.isOnline) {
+            isOnline = true;
+            const lat = data.omniroute.latencyMs || Math.round(performance.now() - t0);
+            latencyText = `${lat}ms`;
+            statusLabel = `HOST STATUS: CLOUD ACTIVE (${latencyText})`;
+            headerStatusLabel = `OMNIROUTE: CLOUD (${latencyText})`;
           }
-        } catch (_) {}
-        return false;
-      });
-
-      if (isScrollableChild) {
-        targetY = window.scrollY || window.pageYOffset;
-        currentY = targetY;
-        return;
-      }
-
-      if (e.ctrlKey || e.shiftKey || e.altKey) return;
-
-      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
-        targetY = window.scrollY || window.pageYOffset;
-        currentY = targetY;
-        return;
-      }
-
-      e.preventDefault();
-
-      const maxScroll = Math.max(
-        0,
-        document.documentElement.scrollHeight - window.innerHeight
-      );
-
-      let delta = e.deltaY;
-      if (e.deltaMode === 1) delta *= 35;
-      if (e.deltaMode === 2) delta *= 750;
-
-      targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
-
-      if (!isRunning) {
-        isRunning = true;
-        currentY = window.scrollY || window.pageYOffset;
-        requestAnimationFrame(updateWheelPhysics);
-      }
-    }, { passive: false });
-
-    window.addEventListener('scroll', () => {
-      if (!isRunning) {
-        currentY = window.scrollY || window.pageYOffset;
-        targetY = currentY;
-      }
-    }, { passive: true });
-  }
-
-  smoothScrollTo(targetY, duration = 800) {
-    const startY = window.scrollY || window.pageYOffset;
-    const distance = targetY - startY;
-    let startTime = null;
-
-    function easeInOutCubic(t) {
-      return t < 0.5
-        ? 4 * t * t * t
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+      } catch (_) {}
     }
 
-    function animationLoop(currentTime) {
-      if (!startTime) startTime = currentTime;
-      const timeElapsed = currentTime - startTime;
-      const progress = Math.min(timeElapsed / duration, 1);
-      const easedProgress = easeInOutCubic(progress);
-
-      window.scrollTo(0, startY + (distance * easedProgress));
-
-      if (progress < 1) {
-        window.requestAnimationFrame(animationLoop);
+    if (isOnline) {
+      if (dotEl) {
+        dotEl.style.backgroundColor = 'var(--accent-emerald)';
+        dotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
       }
-    }
+      if (textEl) textEl.textContent = statusLabel;
 
-    window.requestAnimationFrame(animationLoop);
+      if (headerDotEl) {
+        headerDotEl.style.backgroundColor = 'var(--accent-emerald)';
+        headerDotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
+      }
+      if (headerTextEl) headerTextEl.textContent = headerStatusLabel;
+    } else {
+      if (dotEl) {
+        dotEl.style.backgroundColor = 'var(--accent-amber)';
+        dotEl.style.boxShadow = '0 0 8px var(--accent-amber)';
+      }
+      if (textEl) textEl.textContent = 'HOST STATUS: STANDBY (HF CLOUD)';
+
+      if (headerDotEl) {
+        headerDotEl.style.backgroundColor = 'var(--accent-amber)';
+        headerDotEl.style.boxShadow = '0 0 8px var(--accent-amber)';
+      }
+      if (headerTextEl) headerTextEl.textContent = 'OMNIROUTE: STANDBY';
+    }
   }
 
-  initBackToTopButton() {
-    const floatingBtn = document.getElementById('floating-back-to-top');
-    if (!floatingBtn) return;
-
-    floatingBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.smoothScrollTo(0, 850);
-    });
-
-    window.addEventListener('scroll', () => {
-      const currentScroll = window.scrollY || window.pageYOffset;
-      if (currentScroll > 300) {
-        floatingBtn.classList.add('visible');
-      } else {
-        floatingBtn.classList.remove('visible');
+  startRealtimePolling() {
+    if (this.pollInterval) clearInterval(this.pollInterval);
+    this.checkOmniRouteRealtimeStatus();
+    let pollTick = 0;
+    this.pollInterval = setInterval(() => {
+      this.loadDashboardData(true);
+      pollTick++;
+      if (pollTick % 3 === 0) {
+        this.checkOmniRouteRealtimeStatus();
       }
-    }, { passive: true });
+    }, 3000);
   }
 
   // =========================================================================
-  // 8. EVENT LISTENERS & QUICK ACTIONS
+  // 12. EVENT LISTENERS & MODAL DIALOG CONTROLLERS
   // =========================================================================
   initEventListeners() {
     // Time Range Select
@@ -2260,7 +1415,7 @@ class DashboardApp {
           const url = config.url;
           const key = config.anonKey;
 
-          const res = await fetch(`${url}/rest/v1/portfolio_telemetry`, {
+          await fetch(`${url}/rest/v1/portfolio_telemetry`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -2273,30 +1428,138 @@ class DashboardApp {
               event_target: 'ping_test',
               event_label: 'Sinyal Uji Ping Admin Dashboard',
               device_type: 'desktop',
-              screen_resolution: `${window.screen.width}x${window.screen.height}`,
+              screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
               referrer: 'Admin Portal',
-              session_id: 'sess_admin_ping',
-              created_at: new Date().toISOString()
+              session_id: 'sess_admin_ping'
             })
           });
 
-          if (res.ok) {
-            pingBtn.innerHTML = '<span style="color:var(--accent-emerald);">Terkirim</span>';
-            setTimeout(() => {
-              this.loadDashboardData();
-              pingBtn.disabled = false;
-              pingBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Uji Ping</span>';
-            }, 1000);
-          } else {
-            throw new Error('Gagal');
-          }
-        } catch (err) {
-          pingBtn.disabled = false;
-          pingBtn.innerHTML = '<span style="color:var(--accent-rose);">Gagal</span>';
+          pingBtn.innerHTML = '<span>Terkirim!</span>';
           setTimeout(() => {
-            pingBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Uji Ping</span>';
-          }, 2000);
+            pingBtn.disabled = false;
+            pingBtn.innerHTML = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span>Uji Ping</span>
+            `;
+            this.loadDashboardData();
+          }, 1000);
+        } catch (_) {
+          pingBtn.disabled = false;
+          pingBtn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span>Uji Ping</span>
+          `;
         }
+      });
+    }
+
+    // Supabase Config Modal Trigger
+    const supabasePill = document.getElementById('dash-supabase-pill');
+    const configModal = document.getElementById('config-modal');
+    const configClose = document.getElementById('config-close-btn');
+    const configForm = document.getElementById('config-form');
+
+    if (supabasePill && configModal) {
+      supabasePill.addEventListener('click', () => configModal.classList.add('is-open'));
+    }
+    if (configClose && configModal) {
+      configClose.addEventListener('click', () => configModal.classList.remove('is-open'));
+    }
+    if (configModal) {
+      configModal.addEventListener('click', (e) => {
+        if (e.target === configModal) configModal.classList.remove('is-open');
+      });
+    }
+    if (configForm) {
+      configForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url = document.getElementById('supabase-url-input').value.trim();
+        const key = document.getElementById('supabase-key-input').value.trim();
+        localStorage.setItem(CONFIG_KEY, JSON.stringify({ url, anonKey: key }));
+        this.supabaseConfig = { url, anonKey: key };
+        configModal.classList.remove('is-open');
+        this.loadDashboardData();
+      });
+    }
+
+    // OmniRoute Config Modal Trigger
+    const headerOmniPill = document.getElementById('header-omniroute-pill');
+    const liveOmniPill = document.getElementById('omniroute-live-pill');
+    const omniModal = document.getElementById('omniroute-modal');
+    const omniClose = document.getElementById('omniroute-close-btn');
+    const omniForm = document.getElementById('omniroute-form');
+
+    const openOmniModal = () => omniModal && omniModal.classList.add('is-open');
+    if (headerOmniPill) headerOmniPill.addEventListener('click', openOmniModal);
+    if (liveOmniPill) liveOmniPill.addEventListener('click', openOmniModal);
+    if (omniClose && omniModal) {
+      omniClose.addEventListener('click', () => omniModal.classList.remove('is-open'));
+    }
+    if (omniModal) {
+      omniModal.addEventListener('click', (e) => {
+        if (e.target === omniModal) omniModal.classList.remove('is-open');
+      });
+    }
+    if (omniForm) {
+      omniForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const url1 = document.getElementById('omniroute-url-input').value.trim();
+        const url2 = document.getElementById('omniroute-local-url-input').value.trim();
+        const key = document.getElementById('omniroute-key-input').value.trim();
+        localStorage.setItem('omniroute_custom_tunnel', url1);
+        localStorage.setItem('omniroute_secondary_endpoint', url2);
+        localStorage.setItem('omniroute_secret_key', key);
+        omniModal.classList.remove('is-open');
+        this.checkOmniRouteRealtimeStatus();
+      });
+    }
+
+    // OmniRoute Host Preset Quick Fill Buttons
+    const btnPresetNgrok = document.getElementById('preset-btn-ngrok');
+    const btnPresetLocal = document.getElementById('preset-btn-local');
+    const btnPresetSwap = document.getElementById('preset-btn-swap');
+
+    if (btnPresetNgrok) {
+      btnPresetNgrok.addEventListener('click', () => {
+        const inp = document.getElementById('omniroute-url-input');
+        if (inp) inp.value = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+      });
+    }
+    if (btnPresetLocal) {
+      btnPresetLocal.addEventListener('click', () => {
+        const inp = document.getElementById('omniroute-local-url-input');
+        if (inp) inp.value = 'http://localhost:20128/v1';
+      });
+    }
+    if (btnPresetSwap) {
+      btnPresetSwap.addEventListener('click', () => {
+        const inp1 = document.getElementById('omniroute-url-input');
+        const inp2 = document.getElementById('omniroute-local-url-input');
+        if (inp1 && inp2) {
+          const temp = inp1.value;
+          inp1.value = inp2.value;
+          inp2.value = temp;
+        }
+      });
+    }
+
+    // OmniRoute Host Switch Buttons (HF Cloud vs Ngrok Local)
+    const btnSwitchHf = document.getElementById('btn-switch-hf');
+    const btnSwitchNgrok = document.getElementById('btn-switch-ngrok');
+
+    if (btnSwitchHf && btnSwitchNgrok) {
+      btnSwitchHf.addEventListener('click', () => {
+        btnSwitchHf.classList.add('is-active');
+        btnSwitchNgrok.classList.remove('is-active');
+        localStorage.setItem('omniroute_active_mode', 'cloud_hf');
+        this.checkOmniRouteRealtimeStatus();
+      });
+
+      btnSwitchNgrok.addEventListener('click', () => {
+        btnSwitchNgrok.classList.add('is-active');
+        btnSwitchHf.classList.remove('is-active');
+        localStorage.setItem('omniroute_active_mode', 'ngrok_local');
+        this.checkOmniRouteRealtimeStatus();
       });
     }
 
@@ -2331,12 +1594,10 @@ class DashboardApp {
         }
         const newHash = await this.hashPin(newPin);
 
-        // 1. Update local cache
         this.cloudPinHash = newHash;
         localStorage.setItem('dash_custom_pin_hash', newHash);
         localStorage.removeItem(LOCKOUT_KEY);
 
-        // 2. Synchronize with Vercel API & Supabase Cloud
         try {
           await fetch('/api/admin-otp', {
             method: 'POST',
@@ -2403,212 +1664,94 @@ class DashboardApp {
         this.renderActivityTable();
       });
     }
+  }
 
-    // Config Modal
-    const configBtn = document.getElementById('dash-config-btn');
-    const configModal = document.getElementById('config-modal');
-    const configCloseBtn = document.getElementById('config-close-btn');
-    const configForm = document.getElementById('config-form');
-
-    if (configBtn && configModal) {
-      configBtn.addEventListener('click', () => {
-        const config = this.getSupabaseConfig();
-        const urlInput = document.getElementById('supabase-url-input');
-        const keyInput = document.getElementById('supabase-key-input');
-        if (urlInput) urlInput.value = this.cleanKey(config.url) || '';
-        if (keyInput) keyInput.value = this.cleanKey(config.anonKey) || '';
-        configModal.classList.add('is-open');
-      });
+  // =========================================================================
+  // 13. CSV & JSON DATA EXPORTERS
+  // =========================================================================
+  exportCSV() {
+    if (!this.filteredEvents || this.filteredEvents.length === 0) {
+      alert('Tidak ada data untuk diekspor.');
+      return;
     }
+    const headers = ['created_at', 'event_type', 'event_target', 'event_label', 'device_type', 'session_id', 'referrer'];
+    const rows = this.filteredEvents.map(e => headers.map(h => `"${String(e[h] || '').replace(/"/g, '""')}"`).join(','));
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `rafly_portfolio_telemetry_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
-    if (configCloseBtn && configModal) {
-      configCloseBtn.addEventListener('click', () => configModal.classList.remove('is-open'));
+  exportJSON() {
+    if (!this.filteredEvents || this.filteredEvents.length === 0) {
+      alert('Tidak ada data untuk diekspor.');
+      return;
     }
+    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.filteredEvents, null, 2));
+    const link = document.createElement('a');
+    link.setAttribute('href', jsonStr);
+    link.setAttribute('download', `rafly_portfolio_telemetry_${Date.now()}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
-    if (configModal) {
-      configModal.addEventListener('click', (e) => {
-        if (e.target === configModal) configModal.classList.remove('is-open');
-      });
-    }
+  // =========================================================================
+  // 14. INERTIA SMOOTH WHEEL & BACK-TO-TOP PHYSICS ENGINE
+  // =========================================================================
+  initInertiaSmoothWheel() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    // Supabase Status Pill Click (Opens Supabase Config Modal)
-    const supabasePill = document.getElementById('dash-supabase-pill');
-    if (supabasePill && configModal) {
-      supabasePill.addEventListener('click', () => {
-        const config = this.getSupabaseConfig();
-        const urlInput = document.getElementById('supabase-url-input');
-        const keyInput = document.getElementById('supabase-key-input');
-        if (urlInput) urlInput.value = this.cleanKey(config.url) || '';
-        if (keyInput) keyInput.value = this.cleanKey(config.anonKey) || '';
-        configModal.classList.add('is-open');
-      });
-    }
+    let targetY = window.scrollY;
+    let currentY = window.scrollY;
+    let isWheeling = false;
 
-    if (configForm) {
-      configForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const urlInput = document.getElementById('supabase-url-input');
-        const keyInput = document.getElementById('supabase-key-input');
-        const rawUrl = this.cleanKey(urlInput?.value);
-        const rawKey = this.cleanKey(keyInput?.value);
+    window.addEventListener('wheel', (e) => {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT' || activeEl.closest('.table-responsive'))) {
+        return;
+      }
+      targetY = Math.max(0, Math.min(document.documentElement.scrollHeight - window.innerHeight, targetY + e.deltaY * 0.85));
 
-        if (!rawUrl || !rawKey) {
-          alert('Harap masukkan URL dan Anon API Key Supabase yang valid.');
-          return;
-        }
-
-        const cleanConfig = {
-          url: rawUrl.startsWith('http') ? rawUrl.replace(/\/+$/, '') : `https://${rawUrl.replace(/\/+$/, '')}`,
-          anonKey: rawKey
+      if (!isWheeling) {
+        isWheeling = true;
+        const tick = () => {
+          currentY += (targetY - currentY) * 0.12;
+          window.scrollTo(0, Math.round(currentY));
+          if (Math.abs(targetY - currentY) > 0.5) {
+            requestAnimationFrame(tick);
+          } else {
+            isWheeling = false;
+          }
         };
+        requestAnimationFrame(tick);
+      }
+    }, { passive: true });
+  }
 
-        localStorage.setItem(CONFIG_KEY, JSON.stringify(cleanConfig));
-        this.supabaseConfig = cleanConfig;
-        configModal.classList.remove('is-open');
+  initBackToTopButton() {
+    const btn = document.getElementById('floating-back-to-top');
+    if (!btn) return;
 
-        const syncStatusEl = document.getElementById('sync-status');
-        if (syncStatusEl) syncStatusEl.textContent = 'Menyambungkan ke Cloud...';
-        await this.loadDashboardData();
-      });
-    }
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 400) {
+        btn.classList.add('is-visible');
+      } else {
+        btn.classList.remove('is-visible');
+      }
+    }, { passive: true });
 
-    // OmniRoute Switch Toggle Buttons on Card
-    const btnSwitchHf = document.getElementById('btn-switch-hf');
-    const btnSwitchNgrok = document.getElementById('btn-switch-ngrok');
-    if (btnSwitchHf) {
-      btnSwitchHf.addEventListener('click', () => this.switchOmniRouteHost('hf'));
-    }
-    if (btnSwitchNgrok) {
-      btnSwitchNgrok.addEventListener('click', () => this.switchOmniRouteHost('ngrok'));
-    }
-
-    // OmniRoute Modal Preset Buttons
-    const presetBtnHf   = document.getElementById('preset-btn-hf');
-    const presetBtnNgrok = document.getElementById('preset-btn-ngrok');
-    const presetBtnSwap  = document.getElementById('preset-btn-swap');
-
-    // "Ngrok → Endpoint 1": fill Endpoint 1 with saved ngrok URL
-    if (presetBtnHf || presetBtnNgrok) {
-      const btn = presetBtnNgrok || presetBtnHf;
-      btn.addEventListener('click', () => {
-        const urlInput = document.getElementById('omniroute-url-input');
-        const lastNgrok = localStorage.getItem('omniroute_last_ngrok_url') || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
-        if (urlInput) urlInput.value = lastNgrok;
-      });
-    }
-
-    // "Localhost → Endpoint 2": fill Endpoint 2 with localhost
-    const presetBtnLocal = document.getElementById('preset-btn-local');
-    if (presetBtnLocal) {
-      presetBtnLocal.addEventListener('click', () => {
-        const localInput = document.getElementById('omniroute-local-url-input');
-        if (localInput) localInput.value = 'http://localhost:20128/v1';
-      });
-    }
-
-    // "Swap 1 ↔ 2": swap the values of both inputs
-    if (presetBtnSwap) {
-      presetBtnSwap.addEventListener('click', () => {
-        const urlInput   = document.getElementById('omniroute-url-input');
-        const localInput = document.getElementById('omniroute-local-url-input');
-        if (urlInput && localInput) {
-          const tmp = urlInput.value;
-          urlInput.value   = localInput.value;
-          localInput.value = tmp;
-        }
-      });
-    }
-
-    // OmniRoute Config Modal
-    const omniBtn      = document.getElementById('dash-omni-btn');
-    const omniModal    = document.getElementById('omniroute-modal');
-    const omniCloseBtn = document.getElementById('omniroute-close-btn');
-    const omniForm     = document.getElementById('omniroute-form');
-
-    if (omniBtn && omniModal) {
-      omniBtn.addEventListener('click', () => this.promptSyncOmniRouteTunnel());
-    }
-
-    if (omniCloseBtn && omniModal) {
-      omniCloseBtn.addEventListener('click', () => omniModal.classList.remove('is-open'));
-    }
-
-    if (omniModal) {
-      omniModal.addEventListener('click', (e) => {
-        if (e.target === omniModal) omniModal.classList.remove('is-open');
-      });
-    }
-
-    if (omniForm) {
-      omniForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const urlInput   = document.getElementById('omniroute-url-input');
-        const localInput = document.getElementById('omniroute-local-url-input');
-        const keyInput   = document.getElementById('omniroute-key-input');
-        const rawUrl      = this.cleanKey(urlInput?.value);
-        const rawSecondary = this.cleanKey(localInput?.value);
-        const rawKey      = this.cleanKey(keyInput?.value);
-
-        if (!rawUrl) {
-          alert('Harap masukkan Endpoint 1 (Primary) OmniRoute.');
-          return;
-        }
-
-        const normalize = s => {
-          if (!s) return '';
-          const u = s.startsWith('http') ? s : `https://${s}`;
-          return u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-        };
-
-        const cleanPrimary   = normalize(rawUrl);
-        const cleanSecondary = rawSecondary ? normalize(rawSecondary) : '';
-
-        // Persist to localStorage
-        localStorage.setItem('omniroute_custom_tunnel',      cleanPrimary);
-        localStorage.setItem('omniroute_secondary_endpoint', cleanSecondary);
-        // Also track last-known ngrok for quick re-use
-        if (cleanSecondary && (cleanSecondary.includes('ngrok') || cleanSecondary.includes('trycloudflare') || cleanSecondary.includes('cloudflare'))) {
-          localStorage.setItem('omniroute_last_ngrok_url', cleanSecondary);
-        }
-        if (cleanPrimary && (cleanPrimary.includes('ngrok') || cleanPrimary.includes('trycloudflare') || cleanPrimary.includes('cloudflare'))) {
-          localStorage.setItem('omniroute_last_ngrok_url', cleanPrimary);
-        }
-        if (rawKey) {
-          localStorage.setItem('omniroute_custom_key', rawKey);
-        }
-
-        // Build Supabase fact_text:
-        // [OMNIROUTE_TUNNEL: <primary> | NGROK_FALLBACK: <secondary> | LOCAL_FALLBACK: localhost]
-        const ngrokPart = cleanSecondary ? ` | NGROK_FALLBACK: ${cleanSecondary}` : '';
-        const factText = `[OMNIROUTE_TUNNEL: ${cleanPrimary}${ngrokPart} | LOCAL_FALLBACK: http://localhost:20128/v1]`;
-
-        const config = this.getSupabaseConfig();
-        if (config && config.url && config.anonKey) {
-          try {
-            await fetch(`${config.url}/rest/v1/ai_memories`, {
-              method: 'POST',
-              headers: {
-                'apikey': config.anonKey,
-                'Authorization': `Bearer ${config.anonKey}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                fact_text: factText,
-                session_id: 'admin_dashboard_sync'
-              })
-            });
-          } catch (_) {}
-        }
-
-        omniModal.classList.remove('is-open');
-        const headerTextEl = document.getElementById('header-omniroute-text');
-        if (headerTextEl) headerTextEl.textContent = 'OMNIROUTE: MEMERIKSA...';
-        await this.checkOmniRouteRealtimeStatus();
-      });
-    }
+    btn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 }
 
+// Instantiate and initialize dashboard controller on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   const app = new DashboardApp();
   app.init();
