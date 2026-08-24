@@ -116,12 +116,7 @@
           <span id="header-omniroute-text">OMNIROUTE: STANDBY</span>
         </div>
 
-        <select id="dash-time-range" class="dash-select" aria-label="Rentang Waktu Analitik">
-          <option value="today">Hari Ini</option>
-          <option value="7d" selected>7 Hari</option>
-          <option value="30d">30 Hari</option>
-          <option value="all">Semua</option>
-        </select>
+
 
         <button type="button" id="dash-ping-btn" class="dash-btn" title="Kirim Sinyal Telemetri Uji Coba">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
@@ -145,6 +140,22 @@
        3. MAIN METRICS & CHARTS INTERFACE (HorizonX Container)
        ========================================================================= -->
   <main class="dash-container" role="main">
+
+    <!-- Group 1 Filter Bar (Metrik Observabilitas & Tren Kunjungan) -->
+    <div class="dash-section-bar">
+      <div class="dash-section-bar-title">
+        <span class="dash-section-bar-dot"></span>
+        <span>Metrik Observabilitas &amp; Tren Kunjungan</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.65rem;">
+        <select id="filter-group-analytics" class="dash-select" aria-label="Rentang Waktu Observabilitas Pengunjung">
+          <option value="today">Hari Ini</option>
+          <option value="7d" selected>7 Hari</option>
+          <option value="30d">30 Hari</option>
+          <option value="all">Semua</option>
+        </select>
+      </div>
+    </div>
 
     <!-- 5 Bento Metric Cards Grid -->
     <section class="dash-kpi-grid" aria-label="Ringkasan Metrik Utama">
@@ -395,8 +406,16 @@
           <h2 class="chart-title">Penghitung &amp; Pemantauan Seluruh Model AI</h2>
           <span class="chart-subtitle">Frekuensi eksekusi per model secara menyeluruh (Pilihan Manual + Resolusi Auto Cloud Router)</span>
         </div>
-        <div class="ai-matrix-total-badge" id="ai-matrix-total-badge">
-          Total Interaksi AI: <strong id="ai-matrix-total-count" class="text-emerald">0x</strong>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+          <select id="filter-group-ai-models" class="dash-select" aria-label="Rentang Waktu Pemantauan Model AI">
+            <option value="today">Hari Ini</option>
+            <option value="7d">7 Hari</option>
+            <option value="30d">30 Hari</option>
+            <option value="all" selected>Semua</option>
+          </select>
+          <div class="ai-matrix-total-badge" id="ai-matrix-total-badge">
+            Total Interaksi AI: <strong id="ai-matrix-total-count" class="text-emerald">0x</strong>
+          </div>
         </div>
       </div>
 
@@ -418,8 +437,16 @@
           <h2 class="chart-title">Memori Jangka Panjang AI (Supabase Continuous RAG)</h2>
           <span class="chart-subtitle">Basis data pengetahuan dan fakta yang dipelajari AI dari pencarian web real-time &amp; masukan pengguna</span>
         </div>
-        <div class="ai-matrix-total-badge" id="ai-memory-total-badge">
-          Basis Data RAG: <strong id="ai-memory-total-count" class="text-emerald">Sinkronisasi...</strong>
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+          <select id="filter-group-rag-memories" class="dash-select" aria-label="Rentang Waktu Memori RAG">
+            <option value="today">Hari Ini</option>
+            <option value="7d">7 Hari</option>
+            <option value="30d">30 Hari</option>
+            <option value="all" selected>Semua</option>
+          </select>
+          <div class="ai-matrix-total-badge" id="ai-memory-total-badge" style="border-color:rgba(16,185,129,0.25);">
+            Basis Data RAG: <strong id="ai-memory-total-count" class="text-emerald">Sinkronisasi...</strong>
+          </div>
         </div>
       </div>
 
@@ -444,7 +471,14 @@
             <input type="text" id="table-search-input" class="table-search-input" placeholder="Cari event atau target...">
           </div>
 
-          <select id="table-type-filter" class="dash-select">
+          <select id="filter-group-table" class="dash-select" aria-label="Rentang Waktu Tabel Aktivitas">
+            <option value="today">Hari Ini</option>
+            <option value="7d" selected>7 Hari</option>
+            <option value="30d">30 Hari</option>
+            <option value="all">Semua</option>
+          </select>
+
+          <select id="table-type-filter" class="dash-select" aria-label="Filter Tipe Event">
             <option value="all">Semua Tipe Event</option>
             <option value="page_view">Page View</option>
             <option value="link_click">Link Click / Detail</option>
