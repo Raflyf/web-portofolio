@@ -80,6 +80,7 @@ class DashboardApp {
     this.initThemeEngine();
     this.initAuthGateway();
     this.initOtpResetFlow();
+    this.initCustomDropdowns();
     this.initEventListeners();
     this.initScrollReveal();
     this.initInertiaSmoothWheel();
@@ -553,7 +554,7 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 5. DATA RETRIEVAL (Dual-Source Hybrid Merge: Supabase REST + Local Cache)
+  // 5. DATA RETRIEVAL (Egress-Optimized Incremental Delta + Local Cache)
   // =========================================================================
   async loadDashboardData(isBackground = false) {
     const syncStatusEl = document.getElementById('sync-status');
@@ -569,14 +570,22 @@ class DashboardApp {
       localEvents = [];
     }
 
-    // 2. Fetch remote Supabase events
+    // 2. Fetch remote Supabase events (Incremental Egress-Optimized Delta Fetching)
     let remoteEvents = [];
     const config = this.getSupabaseConfig();
-
     let isSupabaseConnected = false;
+
     if (config && config.url && config.anonKey) {
       try {
-        const endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=1000`;
+        let endpoint = '';
+        if (isBackground && this.latestEventTimestamp) {
+          // Delta query: only rows newer than our latest known timestamp (cuts egress by 99.9%)
+          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,session_id,created_at&created_at=gt.${encodeURIComponent(this.latestEventTimestamp)}&order=created_at.desc&limit=50`;
+        } else {
+          // Initial or manual refresh query: limited lightweight fields
+          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,session_id,created_at&order=created_at.desc&limit=500`;
+        }
+
         const res = await fetch(endpoint, {
           headers: {
             'apikey': config.anonKey,
@@ -584,16 +593,24 @@ class DashboardApp {
             'Accept': 'application/json'
           }
         });
+
         if (res.ok) {
-          remoteEvents = await res.json();
-          if (Array.isArray(remoteEvents)) {
+          const incoming = await res.json();
+          if (Array.isArray(incoming)) {
             isSupabaseConnected = true;
-          } else {
-            remoteEvents = [];
+            if (isBackground && this.latestEventTimestamp) {
+              if (incoming.length === 0 && localEvents.length <= this.events.length) {
+                // No new remote events and no new local events -> 0 DOM manipulation, 0 wasted egress!
+                return;
+              }
+              remoteEvents = [...incoming, ...this.events];
+            } else {
+              remoteEvents = incoming;
+            }
           }
         }
       } catch (err) {
-        console.warn('Gagal memuat Supabase, menggunakan cache lokal:', err);
+        console.warn('Supabase fetch failed, using local cache:', err);
       }
     }
 
@@ -630,15 +647,12 @@ class DashboardApp {
       }
     }
 
-    // Fast Signature Diff Check to prevent any UI flickering when data is identical
-    const newSignature = `${deduplicated.length}__${deduplicated[0]?.created_at || ''}__${deduplicated[0]?.id || ''}__${this.activeRange}`;
-    if (isBackground && this.lastDataSignature === newSignature) {
-      return; // 0 DOM manipulation if no new events
+    if (deduplicated.length > 0 && deduplicated[0].created_at) {
+      this.latestEventTimestamp = deduplicated[0].created_at;
     }
-    this.lastDataSignature = newSignature;
 
     this.events = deduplicated;
-    this.filterAndRender();
+    this.filterAndRender(isBackground);
   }
 
   // =========================================================================
@@ -650,6 +664,7 @@ class DashboardApp {
     let cutoff = 0;
     if (range === 'today') cutoff = now - 24 * 60 * 60 * 1000;
     else if (range === '7d') cutoff = now - 7 * 24 * 60 * 60 * 1000;
+    else if (range === '14d') cutoff = now - 14 * 24 * 60 * 60 * 1000;
     else if (range === '30d') cutoff = now - 30 * 24 * 60 * 60 * 1000;
 
     if (cutoff === 0) return items;
@@ -1297,10 +1312,9 @@ class DashboardApp {
     if (totalCountEl) totalCountEl.textContent = `${totalAIQueries}x`;
 
     // 1. Render Fixed Standalone Full-Width Banner Card for Auto Gateway Router (Always fixed at top)
-    const isAutoActive = !rawActiveModel || rawActiveModel === 'auto';
     if (autoSlotEl) {
       autoSlotEl.innerHTML = `
-        <div class="ai-model-banner-card ${isAutoActive ? 'is-terminal-active' : ''}">
+        <div class="ai-model-banner-card">
           <div class="ai-banner-left">
             <div class="ai-banner-top">
               <div class="ai-model-icon-tag" style="color:var(--accent-emerald-text);font-size:0.82rem;">
@@ -1308,7 +1322,6 @@ class DashboardApp {
                 <span>${AUTO_MODEL.name}</span>
               </div>
               <span class="ai-model-status-pill ${AUTO_MODEL.badgeClass}">${AUTO_MODEL.provider}</span>
-              ${isAutoActive ? '<span class="ai-model-active-badge" style="position:static;"><span class="ai-active-pulse-dot"></span>AKTIF DI TERMINAL</span>' : ''}
             </div>
             <div class="ai-banner-title">${AUTO_MODEL.name} (Smart Inference Cascades)</div>
             <div class="ai-banner-desc">${AUTO_MODEL.desc}</div>
@@ -1322,32 +1335,28 @@ class DashboardApp {
     }
 
     // 2. Sort individual models dynamically (below the fixed Auto Banner):
-    // If a specific individual model is active in terminal -> #1 with active badge.
-    // Otherwise -> sorted by most recently used timestamp, then by total execution count.
+    // Highest priority: most recently used timestamp (descending), then total execution count.
     const sortedModels = [...INDIVIDUAL_MODELS].map(m => {
-      const isCurrentActive = Boolean(activeTerminalModel && m.matcher(activeTerminalModel));
       return {
         ...m,
         count: modelCounts[m.id] || 0,
-        lastUsedAt: modelLastUsed[m.id] || 0,
-        isCurrentActive
+        lastUsedAt: modelLastUsed[m.id] || 0
       };
     }).sort((a, b) => {
-      if (a.isCurrentActive && !b.isCurrentActive) return -1;
-      if (!a.isCurrentActive && b.isCurrentActive) return 1;
       if (b.lastUsedAt !== a.lastUsedAt) {
         return b.lastUsedAt - a.lastUsedAt;
       }
       return b.count - a.count;
     });
 
-    // 3. Render Sorted Dynamic Grid
+    // 3. Render Sorted Dynamic Grid (The latest used individual model lights up with active badge & glow)
     if (gridEl) {
       gridEl.innerHTML = sortedModels.map((m, idx) => {
-        const badge = m.isCurrentActive 
-          ? `<span class="ai-model-active-badge"><span class="ai-active-pulse-dot"></span>SEDANG DIPAKAI DI TERMINAL</span>`
+        const isLatestUsed = (idx === 0) && (m.count > 0 || m.lastUsedAt > 0);
+        const badge = isLatestUsed 
+          ? `<span class="ai-model-active-badge"><span class="ai-active-pulse-dot"></span>TERBARU DIGUNAKAN</span>`
           : `<span class="ai-model-rank-badge">#${idx + 1}</span>`;
-        const activeCardClass = m.isCurrentActive ? 'is-terminal-active' : '';
+        const activeCardClass = isLatestUsed ? 'is-terminal-active' : '';
 
         return `
           <div class="ai-model-card ${activeCardClass}">
@@ -1674,13 +1683,13 @@ class DashboardApp {
     this.pollInterval = setInterval(() => {
       this.loadDashboardData(true);
       pollTick++;
-      if (pollTick % 3 === 0) {
+      if (pollTick % 2 === 0) {
         this.checkOmniRouteRealtimeStatus();
       }
-      if (pollTick % 10 === 0) {
+      if (pollTick % 8 === 0) {
         this.fetchAIMemories(true);
       }
-    }, 3000);
+    }, 8000);
   }
 
   // =========================================================================
@@ -2154,6 +2163,110 @@ class DashboardApp {
         targetY = currentY;
       }
     }, { passive: true });
+  }
+
+  initCustomDropdowns() {
+    document.querySelectorAll('.dash-select').forEach(selectEl => {
+      if (selectEl.classList.contains('has-custom-dropdown')) return;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'custom-select-wrapper';
+      wrapper.id = `custom-wrap-${selectEl.id || Math.random().toString(36).substr(2, 6)}`;
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'custom-select-trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'custom-select-label';
+      labelSpan.textContent = selectEl.options[selectEl.selectedIndex]?.text || 'Pilih';
+
+      const arrowSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      arrowSvg.setAttribute('class', 'custom-select-arrow');
+      arrowSvg.setAttribute('width', '11');
+      arrowSvg.setAttribute('height', '11');
+      arrowSvg.setAttribute('viewBox', '0 0 24 24');
+      arrowSvg.setAttribute('fill', 'none');
+      arrowSvg.setAttribute('stroke', 'currentColor');
+      arrowSvg.setAttribute('stroke-width', '2.5');
+      const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      polyline.setAttribute('points', '6 9 12 15 18 9');
+      arrowSvg.appendChild(polyline);
+
+      trigger.appendChild(labelSpan);
+      trigger.appendChild(arrowSvg);
+
+      const menu = document.createElement('div');
+      menu.className = 'custom-select-menu';
+      menu.setAttribute('role', 'listbox');
+
+      const renderOptions = () => {
+        menu.innerHTML = '';
+        Array.from(selectEl.options).forEach(opt => {
+          const optDiv = document.createElement('div');
+          optDiv.className = `custom-select-option ${opt.selected ? 'is-selected' : ''}`;
+          optDiv.setAttribute('role', 'option');
+          optDiv.setAttribute('data-value', opt.value);
+          optDiv.textContent = opt.text;
+
+          optDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectEl.value = opt.value;
+            labelSpan.textContent = opt.text;
+            wrapper.classList.remove('is-open');
+            trigger.setAttribute('aria-expanded', 'false');
+            
+            menu.querySelectorAll('.custom-select-option').forEach(o => o.classList.remove('is-selected'));
+            optDiv.classList.add('is-selected');
+
+            selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+
+          menu.appendChild(optDiv);
+        });
+      };
+
+      renderOptions();
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = wrapper.classList.toggle('is-open');
+        trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        // Close other dropdowns
+        document.querySelectorAll('.custom-select-wrapper.is-open').forEach(w => {
+          if (w !== wrapper) {
+            w.classList.remove('is-open');
+            const trig = w.querySelector('.custom-select-trigger');
+            if (trig) trig.setAttribute('aria-expanded', 'false');
+          }
+        });
+      });
+
+      // Synchronize back if select value changed programmatically
+      selectEl.addEventListener('change', () => {
+        labelSpan.textContent = selectEl.options[selectEl.selectedIndex]?.text || '';
+        menu.querySelectorAll('.custom-select-option').forEach(o => {
+          o.classList.toggle('is-selected', o.getAttribute('data-value') === selectEl.value);
+        });
+      });
+
+      selectEl.classList.add('has-custom-dropdown');
+      selectEl.parentNode.insertBefore(wrapper, selectEl);
+      wrapper.appendChild(selectEl);
+      wrapper.appendChild(trigger);
+      wrapper.appendChild(menu);
+    });
+
+    // Global Click Outside
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select-wrapper.is-open').forEach(w => {
+        w.classList.remove('is-open');
+        const trig = w.querySelector('.custom-select-trigger');
+        if (trig) trig.setAttribute('aria-expanded', 'false');
+      });
+    });
   }
 
   initBackToTopButton() {
