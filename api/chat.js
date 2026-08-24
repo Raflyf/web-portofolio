@@ -260,6 +260,30 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push('rilis model AI terbaru 2026');
   }
 
+  // 2b. Benchmark / Perbandingan AI Model Intent: Fetch real leaderboard & eval news
+  const isBenchmarkQuery = /\b(benchmark|perbandingan|bandingkan|leaderboard|arena ai|lmsys|skor|score|ranking|peringkat|evaluasi model|vs|versus|terbaik|terkuat)\b/i.test(qNorm);
+  if (isBenchmarkQuery) {
+    queries.push('AI model benchmark leaderboard 2026 latest results');
+    queries.push('LMSYS Chatbot Arena leaderboard 2026');
+  }
+
+  // 2c. Provider-Specific Latest Version Queries
+  if (/\bclaude\b/i.test(qNorm)) {
+    queries.push('Anthropic Claude latest model 2026 benchmark release');
+  }
+  if (/\bdeepseek\b/i.test(qNorm)) {
+    queries.push('DeepSeek latest model V3 R2 2026 benchmark release');
+  }
+  if (/\bopenai|chatgpt|gpt\b/i.test(qNorm)) {
+    queries.push('OpenAI GPT latest model 2026 benchmark release');
+  }
+  if (/\bgemini\b/i.test(qNorm)) {
+    queries.push('Google Gemini latest model 2026 benchmark release');
+  }
+  if (/\bllama\b/i.test(qNorm)) {
+    queries.push('Meta Llama latest model 2026 release');
+  }
+
   // 3. Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
   if (Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
@@ -275,7 +299,7 @@ function formulateSmartSearchQueries(query, history = []) {
     }
   }
 
-  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 4);
+  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 6);
 }
 
 /**
