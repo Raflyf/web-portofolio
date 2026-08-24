@@ -498,7 +498,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 2600);
 
     const structuredSnippets = [];
     const rawSnippets = [];
@@ -728,8 +728,12 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   }
 
   // 1. In-Depth Project Analysis, Multi-Repository Breakdown, Explanations, and Comparative Studies
+  // GUARD: Deep analysis (Ultra 550B) hanya untuk proyek/kode Rafly atau analisis teknis berat.
+  // Kueri perbandingan hal EKSTERNAL (benchmark AI lain, berita, topik umum) = medium effort Nano 30B.
   const hasAnalysisOrComparisonKeywords = /\b(jelaskan dan analisi|jelaskan dan analisis|analisis|analisa|bedahkan|bedah|evaluasi mendalam|secara mendalam|lebih dalam|komprehensif|arsitektur sistem|bandingkan|perbandingan|komparasi|jelaskan|jelas|penjelasan|perbedaan|persamaan|detail|rinci|lengkap|kelebihan|kekurangan|trade-off|tradeoff|skripsi|github)\b/i.test(q);
-  const isDeepAnalysis = (hasAnalysisOrComparisonKeywords && (len > 30 || /\b(analisis|analisa|perbandingan|bandingkan|komparasi|jelaskan|bedah|arsitektur)\b/i.test(q))) || len > 120;
+  const hasRaflyProjectContext = /\b(spam|plagiarism|openplagiarism|plagiarisme|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|skripsi|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|riset|concept drift|covariate shift|n-gram|sbert|ensemble|cnb|xgboost|websocket|flask|mediapipe)\b/i.test(q);
+  const hasHeavyTechContext = /\b(arsitektur sistem|microservice|docker|kubernetes|pipeline|implementasikan sistem|buatkan backend|full stack|database schema|sistem auth)\b/i.test(q);
+  const isDeepAnalysis = hasAnalysisOrComparisonKeywords && (hasRaflyProjectContext || hasHeavyTechContext) || len > 150;
   if (isDeepAnalysis) {
     return {
       category: 'project_architecture',
