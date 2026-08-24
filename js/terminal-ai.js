@@ -473,7 +473,7 @@ ${certsOverview}
       const controller = this.currentAbortController || new AbortController();
       const timeout = setTimeout(() => {
         if (!this.isAborted) controller.abort();
-      }, 180000);
+      }, 300000);
       const apiEndpoint = (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
         ? 'https://raflyfirmansyah-portofolio.vercel.app/api/chat'
         : '/api/chat';
