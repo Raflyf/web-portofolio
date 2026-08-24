@@ -1193,7 +1193,8 @@ class DashboardApp {
 
     let totalAIQueries = 0;
     let autoRouterCount = 0;
-    const activeTerminalModel = (localStorage.getItem('ai_selected_model') || 'auto').toLowerCase();
+    const rawActiveModel = (localStorage.getItem('ai_selected_model') || '').toLowerCase().trim();
+    const activeTerminalModel = rawActiveModel === 'auto' ? '' : rawActiveModel;
     const modelCounts = {};
     const modelLastUsed = {};
     INDIVIDUAL_MODELS.forEach(m => { 
@@ -1201,8 +1202,8 @@ class DashboardApp {
       modelLastUsed[m.id] = 0;
     });
 
-    // Use full events list to capture all historical & real-time executions
-    const eventPool = this.filteredEvents.length > 0 ? this.filteredEvents : this.events;
+    // Always use complete all-time events pool (this.events) so historical accumulation is permanent and never decreases
+    const eventPool = this.events && this.events.length > 0 ? this.events : (this.filteredEvents || []);
 
     eventPool.forEach(e => {
       const type = (e.event_type || '').toLowerCase();
@@ -1234,18 +1235,28 @@ class DashboardApp {
 
       if (isAIEvent) {
         totalAIQueries++;
-        let matched = false;
+
+        // Track Auto Gateway Router resolutions (any event with auto target or auto label prefix)
+        const isAutoRouted = target.startsWith('auto') || label.includes('[auto') || target === 'auto';
+        if (isAutoRouted) {
+          autoRouterCount++;
+        }
+
+        // Increment specific individual model counter
+        let matchedIndividual = false;
         for (const m of INDIVIDUAL_MODELS) {
           if (m.matcher(combined)) {
             modelCounts[m.id]++;
             if (ts > modelLastUsed[m.id]) {
               modelLastUsed[m.id] = ts;
             }
-            matched = true;
+            matchedIndividual = true;
             break;
           }
         }
-        if (!matched) {
+
+        // Fallback: if not matched to specific individual model and not explicitly auto, count in router
+        if (!matchedIndividual && !isAutoRouted) {
           autoRouterCount++;
         }
       }
@@ -1253,8 +1264,8 @@ class DashboardApp {
 
     if (totalCountEl) totalCountEl.textContent = `${totalAIQueries}x`;
 
-    // 1. Render Featured Standalone Full-Width Card for Auto Gateway Router
-    const isAutoActive = activeTerminalModel === 'auto' || !activeTerminalModel;
+    // 1. Render Fixed Standalone Full-Width Banner Card for Auto Gateway Router (Always fixed at top)
+    const isAutoActive = !rawActiveModel || rawActiveModel === 'auto';
     if (autoSlotEl) {
       autoSlotEl.innerHTML = `
         <div class="ai-model-banner-card ${isAutoActive ? 'is-terminal-active' : ''}">
@@ -1278,9 +1289,11 @@ class DashboardApp {
       `;
     }
 
-    // 2. Sort individual models: Currently active in terminal is ALWAYS TOP (#1), followed by most recently used
+    // 2. Sort individual models dynamically (below the fixed Auto Banner):
+    // If a specific individual model is active in terminal -> #1 with active badge.
+    // Otherwise -> sorted by most recently used timestamp, then by total execution count.
     const sortedModels = [...INDIVIDUAL_MODELS].map(m => {
-      const isCurrentActive = activeTerminalModel !== 'auto' && m.matcher(activeTerminalModel);
+      const isCurrentActive = Boolean(activeTerminalModel && m.matcher(activeTerminalModel));
       return {
         ...m,
         count: modelCounts[m.id] || 0,
@@ -1288,14 +1301,11 @@ class DashboardApp {
         isCurrentActive
       };
     }).sort((a, b) => {
-      // 1. If currently selected in terminal, immediately place at top
       if (a.isCurrentActive && !b.isCurrentActive) return -1;
       if (!a.isCurrentActive && b.isCurrentActive) return 1;
-      // 2. Sort by most recently used timestamp (latest used comes first)
       if (b.lastUsedAt !== a.lastUsedAt) {
         return b.lastUsedAt - a.lastUsedAt;
       }
-      // 3. Fallback to total count
       return b.count - a.count;
     });
 
