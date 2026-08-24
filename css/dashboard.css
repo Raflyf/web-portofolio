@@ -222,7 +222,7 @@ body {
 /* ==========================================================================
    5. KINETIC SCROLL REVEAL (OPTICAL DE-BLUR & SPRING CURVE)
    ========================================================================== */
-.reveal-item {
+body.reveal-ready .reveal-item {
   opacity: 0 !important;
   transform: perspective(1000px) translateY(44px) scale(0.96) !important;
   filter: blur(8px) !important;
@@ -232,18 +232,18 @@ body {
   will-change: opacity, transform, filter;
 }
 
-.reveal-item.reveal-from-top {
+body.reveal-ready .reveal-item.reveal-from-top {
   transform: perspective(1000px) translateY(-44px) scale(0.96) !important;
 }
 
-.reveal-item.is-revealed {
+body.reveal-ready .reveal-item.is-revealed {
   opacity: 1 !important;
   transform: perspective(1000px) translateY(0) scale(1) !important;
   filter: blur(0px) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal-item {
+  body.reveal-ready .reveal-item {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
