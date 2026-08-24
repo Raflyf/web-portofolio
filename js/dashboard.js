@@ -1175,13 +1175,13 @@ class DashboardApp {
         matcher: (s) => s.includes('vision') || s.includes('minimax') || s.includes('mimo')
       },
       {
-        id: 'nemotron-laguna',
-        name: 'Nemotron Laguna S / Ultra 550B',
-        desc: 'Frontier reasoning engine untuk analisis komparatif mendalam dan bedah arsitektur proyek riset',
-        provider: 'OLLAMA CLOUD',
+        id: 'nemotron-3-ultra',
+        name: 'nemotron-3-ultra',
+        desc: 'Frontier reasoning engine untuk analisis komparatif mendalam dan bedah arsitektur proyek riset (opencode/nemotron-3-ultra-free)',
+        provider: 'OMNIROUTE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
-        matcher: (s) => s.includes('laguna') || s.includes('nemotron-3-ultra') || s.includes('550b') || s.includes('nemotron-laguna')
+        matcher: (s) => s.includes('nemotron-3-ultra') || s.includes('nemotron-ultra') || s.includes('laguna') || s.includes('550b') || s.includes('nemotron-laguna')
       },
       {
         id: 'ox-alpha',
