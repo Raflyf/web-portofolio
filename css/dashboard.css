@@ -230,10 +230,14 @@ body {
   will-change: opacity, transform, filter;
 }
 
+.reveal-item.reveal-from-top {
+  transform: perspective(1000px) translateY(-36px) scale(0.97);
+}
+
 .reveal-item.is-revealed {
-  opacity: 1;
-  transform: perspective(1000px) translateY(0) scale(1);
-  filter: blur(0px);
+  opacity: 1 !important;
+  transform: perspective(1000px) translateY(0) scale(1) !important;
+  filter: blur(0px) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

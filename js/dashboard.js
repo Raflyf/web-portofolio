@@ -147,8 +147,8 @@ class DashboardApp {
           }
         });
       }, {
-        rootMargin: '-20px 0px -40px 0px',
-        threshold: 0.06
+        rootMargin: '0px 0px -20px 0px',
+        threshold: 0.04
       });
 
       this.refreshScrollReveal();
@@ -158,11 +158,16 @@ class DashboardApp {
   }
 
   refreshScrollReveal() {
-    if (!this.scrollObserver) return;
-    const items = document.querySelectorAll('.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile');
+    const items = document.querySelectorAll('.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile, .table-card');
     items.forEach(el => {
       el.classList.add('reveal-item');
-      this.scrollObserver.observe(el);
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('is-revealed');
+      }
+      if (this.scrollObserver) {
+        this.scrollObserver.observe(el);
+      }
     });
   }
 
@@ -1890,9 +1895,7 @@ class DashboardApp {
       const isScrollableChild = path.some(el => {
         if (!el || !el.classList) return false;
         return (
-          el.classList.contains('table-responsive') ||
           el.classList.contains('dash-modal-card') ||
-          el.tagName === 'INPUT' ||
           el.tagName === 'TEXTAREA' ||
           el.tagName === 'SELECT'
         );
