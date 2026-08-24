@@ -829,6 +829,7 @@ export function initTerminal() {
       "   - x-preview-f-free (OpenCode x-preview | SOTA Coding & Fast Reasoning)",
       "   - Antigravity (Claude Opus 4.6 Thinking - Feb 2026 | Deep CoT)",
       "   - nemotron-3-ultra (Nvidia Nemotron 3 Ultra 550B MoE · OmniRoute)",
+      "   - nemotron-lighting (Nvidia Nemotron 3.5 Lightning · Fast Response OmniRoute)",
       "   - Vision-model (Multimodal Vision SOTA | Image Perception & OCR)",
       "",
       "2. Ollama Cloud SOTA Hub (ollama.com | Tier 2):",
@@ -1610,6 +1611,7 @@ export function initTerminal() {
         const validKeywords = [
           'auto', 'codex', 'antigravity', 'deepseek', 'deepseek-v4', 'v4', 'flash',
           'nemotron', 'nemotron-3-ultra', 'nemotron-ultra', 'ultra', 'nemotron-super', 'super', 'laguna',
+          'nemotron-lighting', 'nemotron-lightning', 'lightning', 'lighting',
           'mimo', 'x-preview', 'muse', 'hy3', 'big-pickle', 'minimax', 'm3', 'vision',
           'nvidia', 'opencode', 'openrouter', 'omniroute', 'ollama'
         ];

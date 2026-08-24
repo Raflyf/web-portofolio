@@ -1184,6 +1184,15 @@ class DashboardApp {
         matcher: (s) => s.includes('nemotron-3-ultra') || s.includes('nemotron-ultra') || s.includes('laguna') || s.includes('550b') || s.includes('nemotron-laguna')
       },
       {
+        id: 'nemotron-lightning',
+        name: 'nemotron-lighting',
+        desc: 'Fast-response engine untuk percakapan kasual, sapaan cepat, dan trivia responsif sub-detik di OmniRoute (100 akun pool)',
+        provider: 'OMNIROUTE',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('lightning') || s.includes('lighting') || s.includes('nemotron-lighting') || s.includes('nemotron-lightning')
+      },
+      {
         id: 'ox-alpha',
         name: 'Ox-Alpha (1M Context)',
         desc: 'Frontier reasoning & coding dengan jendela konteks 1 juta token di OpenCode/OpenRouter pool',

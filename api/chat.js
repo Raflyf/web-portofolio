@@ -668,8 +668,8 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'trivial_casual',
       isAnalysisOrComparison: false,
       effort: 'low',
-      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-ultra', 'opencode/nemotron-3-ultra-free'],
-      label: 'Casual Greeting & Quick Interaction (Nemotron Nano 30B)'
+      omniCandidates: ['nemotron-lighting', 'nemotron-lightning', 'x-preview-f-free'],
+      label: 'Casual Greeting & Quick Interaction (Nemotron Lightning)'
     };
   }
 
@@ -722,14 +722,14 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 5. Standard Informative, Conceptual, Ordinary Q&A
+  // 5. Standard Informative, Conceptual, Ordinary Q&A, and Fast Trivia
   const isShortQuery = len < 40 && !hasAnalysisOrComparisonKeywords;
   return {
     category: isShortQuery ? 'trivial_casual' : 'basic_standard',
     isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
     effort: isShortQuery ? 'low' : 'medium',
-    omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-ultra', 'opencode/nemotron-3-ultra-free', 'nvidia/nemotron-3-ultra-550b-a55b:free', 'ollama/nemotron-3-ultra', 'ollama/minimax-m3'],
-    label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Ultra 550B)' : (isShortQuery ? 'Quick Interaction (Nemotron Nano 30B)' : 'Standard Q&A (Nemotron Nano 30B)')
+    omniCandidates: ['nemotron-lighting', 'nemotron-lightning', 'x-preview-f-free', 'nemotron-3-ultra', 'Codex'],
+    label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Ultra 550B)' : (isShortQuery ? 'Quick Interaction (Nemotron Lightning)' : 'Standard Q&A & Trivia (Nemotron Lightning)')
   };
 }
 
@@ -1721,6 +1721,14 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 5000 }
           ];
         }
+        if (t.includes('lightning') || t.includes('lighting')) {
+          return [
+            { provider: 'omniroute', model: 'nemotron-lighting', timeout: 5000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 5000 }
+          ];
+        }
         if (t.includes('ultra') || t.includes('nemotron')) {
           return [
             { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 3500 },
@@ -1749,18 +1757,18 @@ Langkah yang WAJIB Anda lakukan:
         }
       }
 
-      // 2. CASUAL / TRIVIAL QUERIES (Dedicated 100% Free Pool: x-preview & nemotron-3-ultra, ZERO Codex usage)
+      // 2. CASUAL / TRIVIAL QUERIES (Dedicated Fast-Response Pool: nemotron-lighting & x-preview, ZERO heavy model usage)
       if (isTrivialCasual) {
         return [
-          // Tier 1: OmniRoute Free Models (Preserve paid/rate-limited Codex)
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 7000 },
-          { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 6000 },
-          // Tier 2: Nemotron Nano Super-Fast Free Cloud (Ollama Primary -> OpenRouter Nano Fallback)
+          // Tier 1: OmniRoute Fast-Response Models (nemotron-lighting & x-preview)
+          { provider: 'omniroute', model: 'nemotron-lighting', timeout: 5000 },
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 6000 },
+          // Tier 2: Nemotron Nano / Lightning Free Cloud (Ollama Primary -> OpenRouter Nano Fallback)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
           // Tier 3: Fast Buffer Free Pool
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 }
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 7000 }
         ];
       }
 
@@ -1780,15 +1788,15 @@ Langkah yang WAJIB Anda lakukan:
         ];
       }
 
-      // 4. UNIVERSAL AUTO DEFAULT (Free OmniRoute & Free Cloud)
+      // 4. UNIVERSAL AUTO DEFAULT (Fast-Response OmniRoute & Cloud)
       return [
-        // Tier 1: OmniRoute Free Models (x-preview & nemotron-3-ultra)
+        // Tier 1: OmniRoute Fast Models (nemotron-lighting & x-preview)
+        { provider: 'omniroute', model: 'nemotron-lighting', timeout: 5000 },
         { provider: 'omniroute', model: 'x-preview-f-free', timeout: 7000 },
-        { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 6000 },
-        // Tier 2: Nemotron Nano Super-Fast Pool (Ollama Primary -> OpenRouter Nano)
+        // Tier 2: Nemotron Nano / Lightning Pool (Ollama Primary -> OpenRouter)
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 5000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 8000 },
         // Tier 3: Fast Buffer Pool
         { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 8000 }
       ];
