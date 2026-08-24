@@ -473,7 +473,7 @@ ${certsOverview}
       const controller = this.currentAbortController || new AbortController();
       const timeout = setTimeout(() => {
         if (!this.isAborted) controller.abort();
-      }, 120000);
+      }, 180000);
       const apiEndpoint = (typeof window !== 'undefined' && window.location.hostname.includes('github.io'))
         ? 'https://raflyfirmansyah-portofolio.vercel.app/api/chat'
         : '/api/chat';
@@ -563,8 +563,8 @@ ${certsOverview}
 
       if (netErr && netErr.name === 'AbortError') {
         return [
-          `[TIMEOUT / 2 Menit]: Permintaan ke model AI melebihi batas waktu 2 menit.`,
-          `Model sedang memproses komputasi berat. Silakan coba kembali atau pilih model lain.`
+          `[TIMEOUT / 3 Menit]: Permintaan ke model AI melebihi batas waktu komputasi 3 menit.`,
+          `Model sedang memproses penalaran mendalam. Silakan coba kembali atau gunakan prompt yang lebih terarah.`
         ];
       }
 
