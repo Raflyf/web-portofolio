@@ -79,6 +79,11 @@ ${effortDirective}
 5. Tautan Resmi Tertarget: Jika membahas proyek, riset, atau sertifikat Rafly, sertakan link Markdown aktif repositori/sertifikat yang bersangkutan. Jika menjawab berita eksternal, cukup cantumkan 1-2 link berita sumber utama.
 6. Nol Monolog / Nol Emoji: Jangan menghasilkan teks monolog pemikiran bahasa Inggris, dan jangan gunakan emoji apapun.
 
+[BATASAN ANTI-HALUSINASI & PEMISAHAN TOPIK]:
+- Portofolio resmi Rafly Firmansyah HANYA memiliki 5 proyek di Ground Truth di bawah: OpenPlagiarismChecker, Spam-Email Detection System, laser_pointer_PPT, FotoKitaBlur, dan web-portofolio.
+- Jika pengguna bertanya tentang rilis model AI industri global (seperti DeepSeek, OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama, Mistral, Nvidia Nemotron, dll), jelaskan perkembangan model AI dunia nyata tersebut. DILARANG KERAS mengarang bahwa Rafly Firmansyah membuat model bernama 'Perilisann' atau mengklaim rilis produk fiktif!
+- DILARANG MEMBUAT URL PALSU / FIKTIF (misal domain example.com, detik-perilisann, dll). Hanya sertakan link repositori/sertifikat resmi Rafly atau URL berita autentik yang tercantum di data pencarian.
+
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
 - OpenPlagiarismChecker: [https://github.com/Raflyf/OpenPlagiarismChecker](https://github.com/Raflyf/OpenPlagiarismChecker) (Deteksi plagiarisme akademik 100% lokal offline / Zero Data Egress dengan Dual Engine 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal).
 - Spam-Email Detection System: [https://github.com/Raflyf/Spam-Email](https://github.com/Raflyf/Spam-Email) (Riset ML Skripsi adaptif Concept Drift / Covariate Shift dengan Domain Adaptation pembobotan 8x pada 30% data kontemporer + Ensemble CNB 77% & XGBoost 93% F1 93%).
@@ -211,16 +216,33 @@ function formulateSmartSearchQueries(query, history = []) {
   if (!query || typeof query !== 'string') return [];
   const queries = [];
 
+  // 1. Normalize typos and common Indonesian internet contractions
+  const qNorm = query.toLowerCase()
+    .replace(/\bperilisann+\b/g, 'perilisan')
+    .replace(/\bterbaruu+\b/g, 'terbaru')
+    .replace(/\bapaann+\b|\bapahh+\b|\bapann+\b/g, 'apa')
+    .replace(/\bkloo+\b|\bklo\b/g, 'kalau')
+    .replace(/\bgimna\b|\bgmn\b|\bgmana\b/g, 'bagaimana')
+    .replace(/\bknapa\b|\bknp\b/g, 'kenapa')
+    .replace(/\bbgtu\b|\bbgt\b/g, 'begitu')
+    .replace(/\bdgn\b/g, 'dengan')
+    .replace(/\byg\b/g, 'yang')
+    .replace(/\btp\b/g, 'tapi')
+    .replace(/\budh\b|\bsdh\b/g, 'sudah')
+    .replace(/\bblm\b/g, 'belum')
+    .replace(/\bjg\b/g, 'juga')
+    .replace(/\bbsa\b/g, 'bisa');
+
   const stripFillers = (text) => {
     return text
-      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro)\b/gi, ' ')
+      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro|perilisan|rilis)\b/gi, ' ')
       .replace(/[^\w\s\.\-]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
   };
 
-  const qClean = query.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
-  const coreSubject = stripFillers(query).slice(0, 80);
+  const coreSubject = stripFillers(qNorm).slice(0, 80);
+  const qClean = qNorm.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
 
   if (coreSubject.length >= 3) {
     queries.push(coreSubject);
@@ -229,7 +251,13 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push(qClean);
   }
 
-  // Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
+  // 2. Specific Tech / AI Industry Intent Detection: Add global search queries
+  if (/\b(model ai|rilis ai|perilisan ai|llm|deepseek|openai|chatgpt|claude|gemini|llama|mistral|nemotron|ai terbaru)\b/i.test(qNorm)) {
+    queries.push('latest AI model release 2026 DeepSeek OpenAI Anthropic Gemini Meta');
+    queries.push('rilis model AI terbaru 2026');
+  }
+
+  // 3. Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
   if (Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
     for (const pastQ of pastUserTurns.slice(0, 2)) {
@@ -1162,6 +1190,9 @@ export default async function handler(req, res) {
 
       // 5. Sanitize repetitive template closing boilerplate
       cleaned = cleaned.replace(/(?:\n\n|\n)(?:Jika Anda (?:memerlukan|membutuhkan|tertarik|ingin|butuh)[\s\S]*?(?:siap membantu|hubungi|mengeksplorasi|contoh kode| relevan)[\s\S]*?$)/i, '').trim();
+
+      // 6. Strip fake placeholder domains (e.g. example.com)
+      cleaned = cleaned.replace(/\[([^\]]+)\]\((?:https?:\/\/(?:www\.)?(?:example\.com|domain\.com|test\.com)[^\)]*)\)/gi, '$1');
 
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
