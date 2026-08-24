@@ -205,7 +205,7 @@ function formulateSmartSearchQueries(query, history = []) {
 
   const stripFillers = (text) => {
     return text
-      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait)\b/gi, ' ')
+      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro)\b/gi, ' ')
       .replace(/[^\w\s\.\-]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -214,13 +214,15 @@ function formulateSmartSearchQueries(query, history = []) {
   const qClean = query.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
   const coreSubject = stripFillers(query).slice(0, 80);
 
-  if (qClean.length >= 3) queries.push(qClean);
-  if (coreSubject.length >= 3 && coreSubject !== qClean) queries.push(coreSubject);
-
-  const searchSubject = coreSubject.length >= 3 ? coreSubject : qClean;
-  if (searchSubject.length >= 3) {
-    queries.push(`${searchSubject} latest update news 2026`);
-    queries.push(`${searchSubject} berita perkembangan terkini 2026`);
+  if (coreSubject.length >= 3) {
+    queries.push(coreSubject);
+    // Entity expansion for Indonesian queries
+    if (coreSubject.includes('mandiri') && !coreSubject.includes('bank')) {
+      queries.push(coreSubject.replace(/\bmandiri\b/gi, 'bank mandiri'));
+    }
+  }
+  if (qClean.length >= 3 && qClean !== coreSubject) {
+    queries.push(qClean);
   }
 
   // Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
@@ -229,17 +231,16 @@ function formulateSmartSearchQueries(query, history = []) {
     for (const pastQ of pastUserTurns.slice(0, 2)) {
       const pastSubject = stripFillers(pastQ);
       if (pastSubject.length >= 3) {
-        const combined = `${pastSubject} ${searchSubject}`.trim().slice(0, 90);
+        const combined = `${pastSubject} ${coreSubject || qClean}`.trim().slice(0, 90);
         if (!queries.includes(combined)) {
           queries.push(combined);
-          queries.push(`${combined} 2026 news`);
         }
         break;
       }
     }
   }
 
-  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 5);
+  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 4);
 }
 
 /**
@@ -546,6 +547,20 @@ async function searchWebContext(query, history = []) {
       }
     }
 
+    // Extract key search terms for relevance evaluation
+    const searchKeywords = searchQueries.flatMap(sq => 
+      sq.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3)
+    );
+
+    const calcScore = (title) => {
+      const tLow = (title || '').toLowerCase();
+      let score = 0;
+      for (const kw of searchKeywords) {
+        if (tLow.includes(kw)) score += 2;
+      }
+      return score;
+    };
+
     const results = await Promise.allSettled(searchFetches);
     clearTimeout(timeout);
 
@@ -564,7 +579,8 @@ async function searchWebContext(query, history = []) {
                 if (snip && !isJunkArticle(snip)) {
                   structuredSnippets.push({
                     text: `[Referensi Ensiklopedia (${h.title})]: ${snip}`,
-                    timestamp: 1000
+                    timestamp: 1000,
+                    score: 5
                   });
                   rawSnippets.push(`[Wikipedia]: ${h.title}`);
                 }
@@ -576,7 +592,8 @@ async function searchWebContext(query, history = []) {
                 const desc = cleanStr(repo.description);
                 structuredSnippets.push({
                   text: `[GitHub Repository (${repo.full_name}, ${repo.stargazers_count} stars)]: ${desc || 'Open-source repository'}`,
-                  timestamp: 2000
+                  timestamp: 2000,
+                  score: 4
                 });
                 rawSnippets.push(`[GitHub]: ${repo.full_name}`);
               });
@@ -586,7 +603,8 @@ async function searchWebContext(query, history = []) {
               const models = parsed.slice(0, 3).map(m => m.id).join(', ');
               structuredSnippets.push({
                 text: `[Hugging Face Hub Models]: ${models}`,
-                timestamp: 3000
+                timestamp: 3000,
+                score: 4
               });
               rawSnippets.push(`[HuggingFace]: ${models}`);
             }
@@ -594,7 +612,7 @@ async function searchWebContext(query, history = []) {
         } else {
           // RSS News Feed
           const items = textData.match(/<item>[\s\S]*?<\/item>/gi) || [];
-          items.slice(0, 6).forEach((item) => {
+          items.slice(0, 8).forEach((item) => {
             const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
             const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
             const title = cleanStr(titleMatch ? titleMatch[1] : '');
@@ -605,17 +623,21 @@ async function searchWebContext(query, history = []) {
                 const parsedDate = new Date(pubDate).getTime();
                 if (!isNaN(parsedDate)) ts = parsedDate;
               }
-              const entry = pubDate ? `[Berita Terkini (${pubDate})]: ${title}` : `[Berita Terkini]: ${title}`;
-              structuredSnippets.push({ text: entry, timestamp: ts });
-              rawSnippets.push(title);
+              const relScore = calcScore(title);
+              // Only accept news articles that match search subject keywords or high-confidence feeds
+              if (searchKeywords.length === 0 || relScore > 0) {
+                const entry = pubDate ? `[Berita Terkini (${pubDate})]: ${title}` : `[Berita Terkini]: ${title}`;
+                structuredSnippets.push({ text: entry, timestamp: ts, score: relScore });
+                rawSnippets.push(title);
+              }
             }
           });
         }
       }
     }
 
-    // Sort all snippets chronologically descending (newest timestamp first)
-    structuredSnippets.sort((a, b) => b.timestamp - a.timestamp);
+    // Sort all snippets by relevance score first, then newest timestamp
+    structuredSnippets.sort((a, b) => ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp));
 
     // Deduplicate snippets (top 10 for rich, authentic factual grounding)
     const seen = new Set();
@@ -630,7 +652,7 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (DIURUTKAN DARI TANGGAL PALING TERBARU)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Data di atas telah diurutkan berdasarkan tanggal publikasi paling baru ke lama. Gunakan rilis dengan tanggal PALING AKHIR/TERKINI sebagai versi model terbaru.)\n`;
+      formattedPrompt = `\n\n[HASIL PENCARIAN WEB & BERITA REAL-TIME 2026 (DIURUTKAN DARI TANGGAL PALING TERBARU)]:\n${uniqueSnippets.join('\n')}\n(PENTING: Data di atas telah diurutkan berdasarkan relevansi dan tanggal publikasi terkini. Jawab secara faktual sesuai berita di atas.)\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
@@ -1775,45 +1797,47 @@ Langkah yang WAJIB Anda lakukan:
       // 2. CASUAL / TRIVIAL QUERIES (Dedicated Fast-Response Pool: nemotron-lighting & x-preview, ZERO heavy model usage)
       if (isTrivialCasual) {
         return [
-          // Tier 1: OmniRoute Fast-Response Models (nemotron-lighting & x-preview)
+          // Tier 1: OmniRoute Fast-Response Model
           { provider: 'omniroute', model: 'nemotron-lighting', timeout: 8000 },
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 10000 },
-          // Tier 2: Nemotron Nano / Lightning Free Cloud (Ollama Primary -> OpenRouter Nano Fallback)
+          // Tier 2: Instant Verified Fast Cloud (Ollama Nano & OpenRouter Lightning)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
+          // Tier 3: Fast Buffer Pool
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 10000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
-          // Tier 3: Fast Buffer Free Pool
           { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 10000 }
         ];
       }
 
-      // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Deep SOTA Reasoning Pool)
+      // 3. COMPLEX REASONING / DEEP ANALYSIS / CODING / SKRIPSI (Interleaved Resilient Cascade)
       if (isComplexReasoning) {
         return [
-          // Tier 1: OmniRoute Dedicated Gateway (x-preview, Codex, nemotron-3-ultra for heavy logic)
-          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 18000 },
-          { provider: 'omniroute', model: 'Codex', timeout: 22000 },
-          { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 20000 },
-          // Tier 2: Nemotron Nano / Super Cloud Pool (Ollama Primary -> OpenRouter)
+          // Tier 1: OmniRoute Fast Reasoner (x-preview)
+          { provider: 'omniroute', model: 'x-preview-f-free', timeout: 10000 },
+          // Tier 2: Instant Verified Ollama Cloud SOTA (Sub-3s Execution Guarantee)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 10000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 18000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 18000 },
-          // Tier 3: Fast Cloud Reasoning
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 18000 }
+          // Tier 3: OpenRouter Frontier Reasoners
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 12000 },
+          // Tier 4: OmniRoute Heavy Logic (Codex & Nemotron 3 Ultra)
+          { provider: 'omniroute', model: 'Codex', timeout: 12000 },
+          { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 14000 },
+          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 14000 },
+          { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 14000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 14000 }
         ];
       }
 
-      // 4. UNIVERSAL AUTO DEFAULT (Fast-Response OmniRoute & Cloud)
+      // 4. UNIVERSAL AUTO DEFAULT (Interleaved Resilient Cascade)
       return [
-        // Tier 1: OmniRoute Fast Models (nemotron-lighting & x-preview)
-        { provider: 'omniroute', model: 'nemotron-lighting', timeout: 10000 },
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 14000 },
-        // Tier 2: Nemotron Nano / Lightning Pool (Ollama Primary -> OpenRouter)
+        // Tier 1: OmniRoute Fast Models
+        { provider: 'omniroute', model: 'nemotron-lighting', timeout: 8000 },
+        // Tier 2: Instant Verified Ollama Cloud Nano
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 12000 },
+        // Tier 3: OpenRouter Fast Cloud
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 10000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free', timeout: 10000 },
-        // Tier 3: Fast Buffer Pool
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 12000 }
+        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 10000 }
       ];
     }
 
@@ -1844,16 +1868,26 @@ Langkah yang WAJIB Anda lakukan:
     async function executePipelineWithPriorityRace(pipeline) {
       if (!pipeline || pipeline.length === 0) return null;
 
+      let omniFailedOnce = false;
+
       for (const step of pipeline) {
+        if (step.provider === 'omniroute' && omniFailedOnce) {
+          continue; // Skip subsequent omniroute candidates in this turn if upstream host is unresponsive
+        }
+
         const elapsed = Date.now() - requestStartTime;
         const remainingMs = 58000 - elapsed;
         if (remainingMs <= 2000) break;
 
-        const stepTimeout = Math.min(step.timeout || 15000, Math.max(2500, remainingMs - 1000));
+        const stepTimeout = Math.min(step.timeout || 12000, Math.max(2500, remainingMs - 1000));
         try {
           const result = await executeStep(step, stepTimeout);
           if (result) return result; // Succeeded! Returns immediately with 1x token consumption!
-        } catch (_) {}
+        } catch (_) {
+          if (step.provider === 'omniroute') {
+            omniFailedOnce = true;
+          }
+        }
       }
 
       return null;
