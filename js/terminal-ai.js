@@ -177,16 +177,15 @@ class TerminalAIEngine {
     };
   }
 
-  async fetchAIMemories() {
+  async fetchAIMemories(query = '') {
     try {
       const config = this.getSupabaseConfig();
       if (!config.url || !config.anonKey) return '';
 
-      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=15`;
+      const endpoint = `${config.url.replace(/\/$/, '')}/rest/v1/ai_memories?select=fact_text,created_at&order=created_at.desc&limit=30`;
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 2000);
       const res = await fetch(endpoint, {
-        method: 'GET',
         headers: {
           'apikey': config.anonKey,
           'Authorization': `Bearer ${config.anonKey}`,
@@ -197,17 +196,31 @@ class TerminalAIEngine {
       clearTimeout(timer);
       if (!res.ok) return '';
       const data = await res.json();
-      if (!data || data.length === 0) return '';
-      
-      const facts = data
-        .map(d => (d.fact_text || '').trim())
-        .filter(t => t.length > 5 && !t.startsWith('[Q&A Context]') && !t.includes(' ➔ '))
-        .slice(0, 8)
-        .map(t => `- ${t}`)
-        .join('\n');
+      if (!Array.isArray(data) || data.length === 0) return '';
 
-      if (!facts) return '';
-      return `\n\n[MEMORI JANGKA PANJANG AI (FAKTA YANG TELAH DIPELAJARI DARI PENGGUNA)]:\n${facts}\n(Gunakan fakta di atas sebagai wawasan tambahan jika relevan dengan pertanyaan saat ini.)`;
+      // Only inject memories that semantically match the current query
+      if (!query || typeof query !== 'string' || query.trim().length < 3) return '';
+      const STOP_WORDS = new Set([
+        'ini', 'itu', 'nya', 'yg', 'yang', 'dan', 'atau', 'di', 'ke', 'dari', 'bukan', 'apa',
+        'apakah', 'gimana', 'gimna', 'bagaimana', 'kenapa', 'mengapa', 'kalo', 'kalau', 'jika', 'ada',
+        'bisa', 'saya', 'kamu', 'anda', 'the', 'is', 'are', 'was', 'were', 'for', 'with',
+        'not', 'and', 'or', 'what', 'how', 'why', 'who', 'sih', 'dong', 'ya', 'kan', 'nih',
+        'halo', 'hai', 'pagi', 'siang', 'sore', 'malam', 'tes', 'test', 'berita', 'terbaru', 'kelanjutan'
+      ]);
+      const qWords = query.toLowerCase().split(/[\s,?.!]+/).filter(w => w.length >= 3 && !STOP_WORDS.has(w));
+      if (qWords.length === 0) return '';
+
+      const matched = data
+        .map(d => (d.fact_text || '').trim())
+        .filter(t => t.length > 8 && !t.startsWith('[Q&A Context]') && !t.includes(' ➔ '))
+        .filter(t => {
+          const tLow = t.toLowerCase();
+          return qWords.some(w => tLow.includes(w));
+        })
+        .slice(0, 4);
+
+      if (matched.length === 0) return '';
+      return `\n\n[MEMORI JANGKA PANJANG AI (RELEVAN DENGAN TOPIK INI)]:\n${matched.map(t => `- ${t}`).join('\n')}\n`;
     } catch (err) {
       return '';
     }
@@ -469,7 +482,7 @@ ${certsOverview}
 
     // 1. Primary Route: High-Speed Vercel Serverless Multi-API Cloud Gateway (/api/chat)
     try {
-      const memoryContext = await this.fetchAIMemories();
+      const memoryContext = await this.fetchAIMemories(cleanQuery);
       const controller = this.currentAbortController || new AbortController();
       const timeout = setTimeout(() => {
         if (!this.isAborted) controller.abort();
@@ -504,21 +517,12 @@ ${certsOverview}
       if (res.ok && data?.success && data?.response) {
         let finalResponse = data.response;
         
-        // Extract and Save Memory (Continuous RAG - User Learnings)
+        // Extract and Save Memory (Continuous RAG - Explicit User Teachings)
         const memoryMatch = finalResponse.match(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/i);
         if (memoryMatch && memoryMatch[1]) {
           const newFact = memoryMatch[1].trim();
           this.saveAIMemory(newFact);
           finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
-        }
-
-        // Automatically accumulate verified live web knowledge into long-term memory
-        if (Array.isArray(data.webMemories) && data.webMemories.length > 0) {
-          data.webMemories.forEach(mem => {
-            if (typeof mem === 'string' && mem.trim().length > 10) {
-              this.saveAIMemory(mem.trim());
-            }
-          });
         }
 
         // Record conversation turn for dynamic context (exclude error strings)
