@@ -468,6 +468,45 @@ body {
   box-shadow: 0 0 0 2px var(--accent-emerald-glow);
 }
 
+/* Section Group Filter Bar */
+.dash-section-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem 0.25rem 0.5rem;
+}
+
+.dash-section-bar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-ink);
+  letter-spacing: -0.01em;
+}
+
+.dash-section-bar-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--accent-emerald);
+  box-shadow: 0 0 10px var(--accent-emerald);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .dash-section-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+}
+
 /* ==========================================================================
    7. BENTO KPI METRICS GRID (5 CARDS)
    ========================================================================== */
@@ -475,7 +514,7 @@ body {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
-  margin: 1.75rem 0 1.25rem;
+  margin: 0 0 1.25rem;
 }
 
 .kpi-card {

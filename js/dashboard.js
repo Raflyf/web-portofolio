@@ -26,8 +26,10 @@ const LOCAL_STORAGE_KEY = "portfolio_telemetry_events";
 class DashboardApp {
   constructor() {
     this.events = [];
-    this.filteredEvents = [];
-    this.activeRange = '7d';
+    this.analyticsRange = '7d';
+    this.aiModelsRange = 'all';
+    this.ragMemoriesRange = 'all';
+    this.tableRange = '7d';
     this.charts = {};
     this.searchTerm = '';
     this.selectedEventType = 'all';
@@ -627,32 +629,36 @@ class DashboardApp {
     this.lastDataSignature = newSignature;
 
     this.events = deduplicated;
-    this.filterAndRender(isBackground);
+    this.filterAndRender();
   }
 
   // =========================================================================
-  // 6. FILTERING & AGGREGATION
+  // 6. FILTERING & AGGREGATION (Group-Level Independence)
   // =========================================================================
-  filterAndRender(isBackground = false) {
+  filterByRange(items, range) {
+    if (!Array.isArray(items) || !range || range === 'all') return items;
     const now = Date.now();
     let cutoff = 0;
+    if (range === 'today') cutoff = now - 24 * 60 * 60 * 1000;
+    else if (range === '7d') cutoff = now - 7 * 24 * 60 * 60 * 1000;
+    else if (range === '30d') cutoff = now - 30 * 24 * 60 * 60 * 1000;
 
-    if (this.activeRange === 'today') {
-      cutoff = now - 24 * 60 * 60 * 1000;
-    } else if (this.activeRange === '7d') {
-      cutoff = now - 7 * 24 * 60 * 60 * 1000;
-    } else if (this.activeRange === '30d') {
-      cutoff = now - 30 * 24 * 60 * 60 * 1000;
-    }
-
-    this.filteredEvents = this.events.filter(e => {
-      const time = new Date(e.created_at).getTime();
-      return cutoff === 0 || time >= cutoff;
+    if (cutoff === 0) return items;
+    return items.filter(item => {
+      const ts = new Date(item.created_at || 0).getTime();
+      return ts >= cutoff;
     });
+  }
 
-    this.renderKPIs();
-    this.renderCharts();
-    this.renderIntelligenceLists();
+  renderAnalyticsGroup() {
+    const analyticsEvents = this.filterByRange(this.events, this.analyticsRange);
+    this.renderKPIs(analyticsEvents);
+    this.renderCharts(analyticsEvents);
+    this.renderIntelligenceLists(analyticsEvents);
+  }
+
+  filterAndRender(isBackground = false) {
+    this.renderAnalyticsGroup();
     this.renderAllAIModelsMatrix();
     this.renderAIMemoryList();
     this.renderActivityTable();
@@ -661,12 +667,12 @@ class DashboardApp {
     }
   }
 
-  renderKPIs() {
-    const pageViews = this.filteredEvents.filter(e => e.event_type === 'page_view').length;
-    const uniqueSessions = new Set(this.filteredEvents.map(e => e.session_id)).size || (pageViews > 0 ? 1 : 0);
-    const linkClicks = this.filteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'cert_view' || e.event_type === 'project_view').length;
-    const contacts = this.filteredEvents.filter(e => e.event_target === 'whatsapp' || e.event_type === 'contact_submit').length;
-    const interactivity = (this.filteredEvents.length / Math.max(1, uniqueSessions)).toFixed(1);
+  renderKPIs(events = this.filterByRange(this.events, this.analyticsRange)) {
+    const pageViews = events.filter(e => e.event_type === 'page_view').length;
+    const uniqueSessions = new Set(events.map(e => e.session_id)).size || (pageViews > 0 ? 1 : 0);
+    const linkClicks = events.filter(e => e.event_type === 'link_click' || e.event_type === 'cert_view' || e.event_type === 'project_view').length;
+    const contacts = events.filter(e => e.event_target === 'whatsapp' || e.event_type === 'contact_submit').length;
+    const interactivity = (events.length / Math.max(1, uniqueSessions)).toFixed(1);
 
     const vEl = document.getElementById('kpi-views');
     const uEl = document.getElementById('kpi-visitors');
@@ -684,7 +690,7 @@ class DashboardApp {
   // =========================================================================
   // 7. CHART.JS VISUALIZATION RENDERING (HorizonX Adaptive Theme Engine)
   // =========================================================================
-  renderCharts() {
+  renderCharts(events = this.filterByRange(this.events, this.analyticsRange)) {
     if (!window.Chart) return;
 
     const isDark = this.currentTheme !== 'light';
@@ -704,14 +710,15 @@ class DashboardApp {
     // 1. Traffic Velocity Line Chart
     const trafficCanvas = document.getElementById('traffic-chart');
     if (trafficCanvas) {
+      const numDays = this.analyticsRange === 'today' ? 1 : (this.analyticsRange === '30d' ? 30 : (this.analyticsRange === 'all' ? 30 : 7));
       const dayBuckets = {};
-      for (let i = 6; i >= 0; i--) {
+      for (let i = numDays - 1; i >= 0; i--) {
         const d = new Date(Date.now() - i * 86400000);
         const key = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
         dayBuckets[key] = { views: 0, sessions: new Set() };
       }
 
-      this.filteredEvents.forEach(e => {
+      events.forEach(e => {
         const key = new Date(e.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
         if (dayBuckets[key]) {
           if (e.event_type === 'page_view') dayBuckets[key].views++;
@@ -742,8 +749,11 @@ class DashboardApp {
                 borderColor: emerald,
                 backgroundColor: emeraldDim,
                 fill: true,
-                tension: 0.35,
-                borderWidth: 2.5,
+                tension: 0.4,
+                borderWidth: 2,
+                pointBackgroundColor: emerald,
+                pointBorderColor: isDark ? '#07090e' : '#ffffff',
+                pointBorderWidth: 2,
                 pointRadius: 4,
                 pointHoverRadius: 6
               },
@@ -753,67 +763,84 @@ class DashboardApp {
                 borderColor: cyan,
                 backgroundColor: cyanDim,
                 fill: true,
-                tension: 0.35,
-                borderWidth: 2.5,
-                pointRadius: 4
+                tension: 0.4,
+                borderWidth: 2,
+                pointBackgroundColor: cyan,
+                pointBorderColor: isDark ? '#07090e' : '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
               }
             ]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: false,
-            plugins: { 
-              legend: { 
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: {
                 position: 'top',
-                labels: { boxWidth: 12, font: { weight: '600' } }
-              } 
+                align: 'end',
+                labels: {
+                  boxWidth: 10,
+                  boxHeight: 10,
+                  usePointStyle: false,
+                  padding: 15,
+                  color: textColor
+                }
+              },
+              tooltip: {
+                backgroundColor: isDark ? 'rgba(9, 14, 23, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                titleColor: isDark ? '#f8fafc' : '#0f172a',
+                bodyColor: textColor,
+                borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(15, 23, 42, 0.12)',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 8
+              }
             },
             scales: {
-              x: { grid: { color: gridColor } },
-              y: { grid: { color: gridColor }, beginAtZero: true }
+              x: { grid: { color: gridColor, drawBorder: false }, ticks: { color: textColor } },
+              y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: textColor, precision: 0 }, beginAtZero: true }
             }
           }
         });
       }
     }
 
-    // 2. Link & Project Interactions Bar Chart (9 Categories)
+    // 2. Link Clicks Bar Chart (9 Categories)
     const linksCanvas = document.getElementById('links-chart');
     if (linksCanvas) {
-      const counts = {
-        'WhatsApp': 0,
-        'GitHub': 0,
-        'Plagiarism': 0,
-        'Spam-Email': 0,
-        'Laser PPT': 0,
-        'FotoKita': 0,
-        'Portfolio': 0,
-        'Sertifikat': 0,
-        'Terminal': 0
+      const clickCats = {
+        'WhatsApp': 0, 'GitHub': 0, 'Plagiarism': 0, 'Spam-Email': 0,
+        'Laser PPT': 0, 'FotoKita': 0, 'Portfolio': 0, 'Sertifikat': 0, 'Terminal': 0
       };
 
-      this.filteredEvents.forEach(e => {
+      events.forEach(e => {
         const target = (e.event_target || '').toLowerCase();
-        const label = (e.event_label || '').toLowerCase();
-
-        if (target.includes('whatsapp') || label.includes('whatsapp')) counts['WhatsApp']++;
-        else if (target === 'github' || label.includes('github profile')) counts['GitHub']++;
-        else if (target.includes('plagiarism') || label.includes('plagiarism')) counts['Plagiarism']++;
-        else if (target.includes('spam') || label.includes('spam')) counts['Spam-Email']++;
-        else if (target.includes('laser') || label.includes('laser')) counts['Laser PPT']++;
-        else if (target.includes('fotokita') || label.includes('fotokita')) counts['FotoKita']++;
-        else if (target.includes('portofolio') || label.includes('portofolio')) counts['Portfolio']++;
-        else if (e.event_type === 'cert_view' || label.includes('sertifikat')) counts['Sertifikat']++;
-        else if (e.event_type === 'terminal_cmd' || e.event_type === 'ai_query_resolved' || label.includes('terminal')) counts['Terminal']++;
+        const type = (e.event_type || '').toLowerCase();
+        if (target.includes('whatsapp') || target.includes('chat_wa')) clickCats['WhatsApp']++;
+        else if (target.includes('github') || target.includes('repo')) clickCats['GitHub']++;
+        else if (target.includes('plagiarism') || target.includes('checker')) clickCats['Plagiarism']++;
+        else if (target.includes('spam') || target.includes('email')) clickCats['Spam-Email']++;
+        else if (target.includes('laser') || target.includes('pointer')) clickCats['Laser PPT']++;
+        else if (target.includes('fotokita') || target.includes('blur')) clickCats['FotoKita']++;
+        else if (target.includes('portofolio') || target.includes('portfolio')) clickCats['Portfolio']++;
+        else if (type === 'cert_view' || target.includes('cert')) clickCats['Sertifikat']++;
+        else if (type === 'terminal_cmd' || target.includes('terminal')) clickCats['Terminal']++;
       });
 
-      const linkLabels = Object.keys(counts);
-      const linkValues = Object.values(counts);
+      const barLabels = Object.keys(clickCats);
+      const barData = Object.values(clickCats);
+      const barPalette = [
+        'rgba(16, 185, 129, 0.85)', 'rgba(6, 182, 212, 0.85)', 'rgba(168, 85, 247, 0.85)',
+        'rgba(245, 158, 11, 0.85)', 'rgba(244, 63, 94, 0.85)', 'rgba(20, 184, 166, 0.85)',
+        'rgba(99, 102, 241, 0.85)', 'rgba(225, 29, 72, 0.85)', 'rgba(148, 163, 184, 0.85)'
+      ];
 
       if (this.charts.links && !themeChanged) {
-        this.charts.links.data.labels = linkLabels;
-        this.charts.links.data.datasets[0].data = linkValues;
+        this.charts.links.data.labels = barLabels;
+        this.charts.links.data.datasets[0].data = barData;
         this.charts.links.update('none');
       } else {
         if (this.charts.links) this.charts.links.destroy();
@@ -821,35 +848,33 @@ class DashboardApp {
         this.charts.links = new Chart(linksCtx, {
           type: 'bar',
           data: {
-            labels: linkLabels,
+            labels: barLabels,
             datasets: [{
               label: 'Total Klik',
-              data: linkValues,
-              backgroundColor: [
-                'rgba(16, 185, 129, 0.85)',
-                'rgba(6, 182, 212, 0.85)',
-                'rgba(168, 85, 247, 0.85)',
-                'rgba(245, 158, 11, 0.85)',
-                'rgba(236, 72, 153, 0.85)',
-                'rgba(20, 184, 166, 0.85)',
-                'rgba(99, 102, 241, 0.85)',
-                'rgba(244, 63, 94, 0.85)',
-                'rgba(148, 163, 184, 0.85)'
-              ],
-              borderRadius: 6
+              data: barData,
+              backgroundColor: barPalette,
+              borderRadius: 6,
+              borderSkipped: false
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: isDark ? 'rgba(9, 14, 23, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                titleColor: isDark ? '#f8fafc' : '#0f172a',
+                bodyColor: textColor,
+                borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(15, 23, 42, 0.12)',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 8
+              }
+            },
             scales: {
-              x: { 
-                grid: { display: false },
-                ticks: { font: { size: 10 } }
-              },
-              y: { grid: { color: gridColor }, beginAtZero: true }
+              x: { grid: { display: false }, ticks: { color: textColor, maxRotation: 25, minRotation: 25 } },
+              y: { grid: { color: gridColor, drawBorder: false }, ticks: { color: textColor, precision: 0 }, beginAtZero: true }
             }
           }
         });
@@ -860,7 +885,7 @@ class DashboardApp {
     const devicesCanvas = document.getElementById('devices-chart');
     if (devicesCanvas) {
       const deviceCounts = { Mobile: 0, Desktop: 0, Tablet: 0 };
-      this.filteredEvents.forEach(e => {
+      events.forEach(e => {
         const type = (e.device_type || 'desktop').toLowerCase();
         if (type.includes('mobile')) deviceCounts.Mobile++;
         else if (type.includes('tablet')) deviceCounts.Tablet++;
@@ -918,45 +943,44 @@ class DashboardApp {
     const combined = `${target} ${label}`.toLowerCase();
     if (combined.includes('bnsp') || combined.includes('analis') || combined.includes('program')) return 'BNSP: Analis Program';
     if (combined.includes('mikrotik') || combined.includes('mtcna')) return 'MikroTik MTCNA (Latvia)';
-    if (combined.includes('python') || combined.includes('pcap')) return 'Cisco Python PCAP (OpenEDG)';
-    if (combined.includes('blockchain') || combined.includes('cloud-blockchain')) return 'Seminar Cloud & Blockchain';
-    if (combined.includes('bootcamp') || combined.includes('sdns') || combined.includes('network-security')) return 'IT Bootcamp Network Security';
-    if (combined.includes('specialist') || combined.includes('cloud-specialist')) return 'Seminar Cloud Specialist';
-    if (combined.includes('bisnis') || combined.includes('google-profil') || combined.includes('dea')) return 'Kominfo DEA E-Commerce';
-    if (combined.includes('tailwind') || combined.includes('slicing')) return 'Workshop Slicing Tailwind';
-    if (combined.includes('simk') || combined.includes('simulasi')) return 'Harisenin Full-Stack SiM-K';
-    if (combined.includes('coding-camp') || combined.includes('javascript')) return 'Harisenin JavaScript Camp';
-    return target || label || 'Sertifikat Kompetensi';
+    if (combined.includes('cisco') || combined.includes('pcap') || combined.includes('python')) return 'Cisco Python PCAP (OpenEDG)';
+    if (combined.includes('kominfo') || combined.includes('dea') || combined.includes('commerce')) return 'Kominfo DEA E-Commerce';
+    if (combined.includes('harisenin') || combined.includes('javascript') || combined.includes('js')) return 'Harisenin JavaScript Camp';
+    if (combined.includes('seminar') && combined.includes('cloud')) return 'Seminar Cloud Specialist';
+    if (combined.includes('workshop') && combined.includes('tailwind')) return 'Workshop Slicing Tailwind';
+    if (combined.includes('blockchain')) return 'Seminar Cloud & Blockchain';
+    return label || target || 'Sertifikat Profesional';
   }
 
   normalizeProjectName(target = '', label = '') {
     const combined = `${target} ${label}`.toLowerCase();
-    if (combined.includes('plagiar') || combined.includes('openplagiarism')) return 'OpenPlagiarismChecker (NLP)';
+    if (combined.includes('plagiarism') || combined.includes('checker')) return 'OpenPlagiarismChecker (NLP)';
     if (combined.includes('spam') || combined.includes('email')) return 'Spam-Email-Classifier (ML)';
-    if (combined.includes('laser') || combined.includes('ppt') || combined.includes('pointer')) return 'Laser Pointer PPT (IoT/CV)';
-    if (combined.includes('foto') || combined.includes('blur') || combined.includes('kita')) return 'FotoKitaBlur (MediaPipe)';
-    if (combined.includes('porto') || combined.includes('landing') || combined.includes('web-portofolio')) return 'Web Portofolio (Vanilla Modern)';
-    return target || label || 'Repositori Riset';
+    if (combined.includes('laser') || combined.includes('pointer')) return 'Laser Pointer PPT (IoT/CV)';
+    if (combined.includes('fotokita') || combined.includes('blur')) return 'FotoKitaBlur (MediaPipe)';
+    if (combined.includes('ping') || combined.includes('test')) return 'ping_test';
+    if (combined.includes('portofolio') || combined.includes('portfolio') || combined.includes('web')) return 'Web Portofolio (Vanilla Modern)';
+    return target || label || 'Proyek Eksplorasi';
   }
 
   normalizeReferrer(ref = '') {
     const r = (ref || '').toLowerCase();
     if (r.includes('google')) return 'Google Search (Organik)';
     if (r.includes('github')) return 'GitHub (@Raflyf)';
+    if (r.includes('vercel')) return 'vercel.com';
     if (r.includes('whatsapp') || r.includes('wa.me')) return 'WhatsApp Web / Mobile';
-    if (r.includes('linkedin')) return 'LinkedIn Professional';
-    if (r.includes('instagram')) return 'Instagram';
-    if (r.includes('localhost') || r.includes('127.0.0.1')) return 'Local Dev Server';
+    if (r.includes('raflyfirmansyah-portofolio')) return 'raflyfirmansyah-portofolio.vercel.app';
+    if (r.includes('admin') || r.includes('portal')) return 'Admin Portal';
     if (r.includes('direct') || r.includes('bookmark') || !r) return 'Direct / Bookmark';
     return ref;
   }
 
-  renderIntelligenceLists() {
+  renderIntelligenceLists(events = this.filterByRange(this.events, this.analyticsRange)) {
     // 1. Project Exploration Leaderboard
     const projectListEl = document.getElementById('project-ranked-list');
     if (projectListEl) {
       const counts = {};
-      this.filteredEvents.filter(e => e.event_type === 'project_view' || (e.event_type === 'link_click' && e.event_target && !e.event_target.includes('wa'))).forEach(e => {
+      events.filter(e => e.event_type === 'project_view' || (e.event_type === 'link_click' && e.event_target && !e.event_target.includes('wa'))).forEach(e => {
         const unified = this.normalizeProjectName(e.event_target, e.event_label);
         counts[unified] = (counts[unified] || 0) + 1;
       });
@@ -996,7 +1020,7 @@ class DashboardApp {
     const certListEl = document.getElementById('cert-ranked-list');
     if (certListEl) {
       const certCounts = {};
-      this.filteredEvents.filter(e => e.event_type === 'cert_view').forEach(e => {
+      events.filter(e => e.event_type === 'cert_view').forEach(e => {
         const unifiedName = this.normalizeCertName(e.event_target, e.event_label);
         certCounts[unifiedName] = (certCounts[unifiedName] || 0) + 1;
       });
@@ -1035,7 +1059,7 @@ class DashboardApp {
     const refListEl = document.getElementById('referrer-ranked-list');
     if (refListEl) {
       const refCounts = {};
-      this.filteredEvents.forEach(e => {
+      events.forEach(e => {
         const unified = this.normalizeReferrer(e.referrer);
         refCounts[unified] = (refCounts[unified] || 0) + 1;
       });
@@ -1083,7 +1107,7 @@ class DashboardApp {
       id: 'auto-router',
       name: 'Auto Gateway Router',
       desc: 'Dynamic 6-Tier Cascade Failover (OmniRoute, Ollama, OpenRouter, OpenCode, MiniMax, Local Semantic)',
-      provider: 'SMART ROUTER & PRIMARY CASCADE',
+      provider: 'SMART CASCADE',
       badgeClass: 'badge-emerald',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
       matcher: (s) => s.includes('auto') || s.includes('router') || s.includes('gateway')
@@ -1092,18 +1116,18 @@ class DashboardApp {
     const INDIVIDUAL_MODELS = [
       {
         id: 'codex',
-        name: 'Codex (GPT-5.6 Terra)',
-        desc: 'Spesialis rekayasa software, arsitektur sistem besar, dan penalaran koding berat',
-        provider: 'TIER 1 OMNIROUTE',
+        name: 'Codex',
+        desc: 'Spesialis rekayasa software, arsitektur sistem besar, dan penalaran koding multi-model',
+        provider: 'OMNIROUTE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
         matcher: (s) => s.includes('codex') || s.includes('gpt-5') || s.includes('terra')
       },
       {
         id: 'antigravity',
-        name: 'Antigravity (Opus 4.6 Thinking)',
+        name: 'Antigravity',
         desc: 'Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah, dan telaah dokumen',
-        provider: 'TIER 1 OMNIROUTE',
+        provider: 'OMNIROUTE',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
         matcher: (s) => s.includes('antigravity') || s.includes('opus') || s.includes('claude')
@@ -1112,7 +1136,7 @@ class DashboardApp {
         id: 'x-preview',
         name: 'x-preview-f-free',
         desc: 'Engine penalaran dan koding presisi dari OpenCode berbasis prinsip YAGNI & inferensi cepat',
-        provider: 'TIER 1 & 4 ZEN',
+        provider: 'OPENCODE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
         matcher: (s) => s.includes('x-preview') || s.includes('preview-f')
@@ -1121,7 +1145,7 @@ class DashboardApp {
         id: 'vision-model',
         name: 'Vision-model (MiniMax-M3 / mimo)',
         desc: 'Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi',
-        provider: 'TIER 1 & 5 VISION',
+        provider: 'MINIMAX',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
         matcher: (s) => s.includes('vision') || s.includes('minimax') || s.includes('mimo')
@@ -1130,16 +1154,16 @@ class DashboardApp {
         id: 'nemotron-laguna',
         name: 'Nemotron Laguna S / Ultra 550B',
         desc: 'Frontier reasoning engine untuk analisis komparatif mendalam dan bedah arsitektur proyek riset',
-        provider: 'TIER 1 & 2 MOE',
+        provider: 'OLLAMA CLOUD',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
         matcher: (s) => s.includes('laguna') || s.includes('nemotron-3-ultra') || s.includes('550b') || s.includes('nemotron-laguna')
       },
       {
         id: 'ox-alpha',
-        name: 'Ox-Alpha (1M Frontier Reasoning)',
-        desc: 'Frontier reasoning & coding dengan jendela konteks 1 juta token di OpenRouter SOTA pool',
-        provider: 'TIER 3 OPENROUTER',
+        name: 'Ox-Alpha (1M Context)',
+        desc: 'Frontier reasoning & coding dengan jendela konteks 1 juta token di OpenCode/OpenRouter pool',
+        provider: 'OPENCODE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
         matcher: (s) => s.includes('ox-alpha') || s.includes('0x-alpha') || s.includes('stealth/ox-alpha') || s.includes('deepseek')
@@ -1148,7 +1172,7 @@ class DashboardApp {
         id: 'gemma4',
         name: 'Google Gemma 4 (31B Dense)',
         desc: 'Arsitektur dense berkecepatan tinggi dari Google untuk kueri teknis terarah di Ollama Cloud',
-        provider: 'TIER 2 OLLAMA',
+        provider: 'OLLAMA CLOUD',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>`,
         matcher: (s) => s.includes('gemma') || s.includes('gemma-4') || s.includes('gemma4')
@@ -1156,8 +1180,8 @@ class DashboardApp {
       {
         id: 'nemotron-super',
         name: 'Nvidia Nemotron 3 Super (120B)',
-        desc: 'Model penalaran dense 120B teroptimasi untuk latensi rendah di Ollama Cloud & OpenRouter',
-        provider: 'TIER 2 & 3 SOTA',
+        desc: 'Model penalaran dense 120B teroptimasi untuk latensi rendah di Ollama Cloud',
+        provider: 'OLLAMA CLOUD',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
         matcher: (s) => s.includes('nemotron-3-super') || s.includes('super:120b') || s.includes('120b')
@@ -1165,8 +1189,8 @@ class DashboardApp {
       {
         id: 'nemotron-nano',
         name: 'Nvidia Nemotron 3 Nano (30B)',
-        desc: 'Asisten responsif sub-detik untuk percakapan cepat dan ringkasan padat di Ollama & OpenRouter',
-        provider: 'TIER 2 & 3 FAST',
+        desc: 'Asisten responsif sub-detik untuk percakapan cepat dan ringkasan padat di Ollama Cloud',
+        provider: 'OLLAMA CLOUD',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
         matcher: (s) => s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || s.includes('30b')
@@ -1175,7 +1199,7 @@ class DashboardApp {
         id: 'liquid-lfm',
         name: 'LiquidAI LFM 2.5 (2.6B)',
         desc: 'Neural state-space model dinamis untuk streaming token instan sub-30ms di OpenRouter pool',
-        provider: 'TIER 3 DYNAMIC',
+        provider: 'OPENROUTER',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
         matcher: (s) => s.includes('liquid') || s.includes('lfm')
@@ -1184,7 +1208,7 @@ class DashboardApp {
         id: 'local-semantic',
         name: 'In-Browser Semantic Engine',
         desc: 'Engine pencarian pola sub-15ms lokal di peramban + Supabase Continuous RAG Memory saat offline',
-        provider: 'TIER 6 OFFLINE',
+        provider: 'LOCAL OFFLINE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`,
         matcher: (s) => s.includes('local_semantic') || s.includes('semantic engine') || s.includes('offline_rag')
@@ -1202,8 +1226,7 @@ class DashboardApp {
       modelLastUsed[m.id] = 0;
     });
 
-    // Always use complete all-time events pool (this.events) so historical accumulation is permanent and never decreases
-    const eventPool = this.events && this.events.length > 0 ? this.events : (this.filteredEvents || []);
+    const eventPool = this.filterByRange(this.events, this.aiModelsRange);
 
     eventPool.forEach(e => {
       const type = (e.event_type || '').toLowerCase();
@@ -1436,11 +1459,12 @@ class DashboardApp {
       return;
     }
 
-    const total = this.memories.length;
+    const filteredMemories = this.filterByRange(this.memories, this.ragMemoriesRange);
+    const total = filteredMemories.length;
     if (totalBadgeEl) totalBadgeEl.textContent = `${total} Fakta Aktif`;
 
     if (total === 0) {
-      listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;padding:0.5rem 0;">Belum ada memori baru yang tersimpan di cloud Supabase.</div>`;
+      listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;padding:0.5rem 0;">Tidak ada memori yang sesuai dengan rentang waktu filter.</div>`;
       if (paginationEl) paginationEl.innerHTML = '';
       return;
     }
@@ -1448,7 +1472,7 @@ class DashboardApp {
     const totalPages = Math.ceil(total / this.memoryPageSize);
     this.memoryCurrentPage = Math.min(this.memoryCurrentPage, totalPages) || 1;
     const start = (this.memoryCurrentPage - 1) * this.memoryPageSize;
-    const pageItems = this.memories.slice(start, start + this.memoryPageSize);
+    const pageItems = filteredMemories.slice(start, start + this.memoryPageSize);
 
     listEl.innerHTML = pageItems.map(m => {
       const timeStr = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
@@ -1485,7 +1509,7 @@ class DashboardApp {
     const paginationEl = document.getElementById('table-pagination');
     if (!tbody) return;
 
-    let filtered = this.filteredEvents;
+    let filtered = this.filterByRange(this.events, this.tableRange);
 
     if (this.selectedEventType !== 'all') {
       filtered = filtered.filter(e => e.event_type === this.selectedEventType);
@@ -1674,12 +1698,41 @@ class DashboardApp {
 
 
 
-    // Time Range Select
-    const rangeSelect = document.getElementById('dash-time-range');
-    if (rangeSelect) {
-      rangeSelect.addEventListener('change', (e) => {
-        this.activeRange = e.target.value;
-        this.filterAndRender();
+    // Group 1: Analytics & Metrics Time Filter
+    const analyticsFilter = document.getElementById('filter-group-analytics');
+    if (analyticsFilter) {
+      analyticsFilter.addEventListener('change', (e) => {
+        this.analyticsRange = e.target.value;
+        this.renderAnalyticsGroup();
+      });
+    }
+
+    // Group 2: AI Models Matrix Time Filter
+    const aiModelsFilter = document.getElementById('filter-group-ai-models');
+    if (aiModelsFilter) {
+      aiModelsFilter.addEventListener('change', (e) => {
+        this.aiModelsRange = e.target.value;
+        this.renderAllAIModelsMatrix();
+      });
+    }
+
+    // Group 3: AI RAG Memories Time Filter
+    const ragMemoriesFilter = document.getElementById('filter-group-rag-memories');
+    if (ragMemoriesFilter) {
+      ragMemoriesFilter.addEventListener('change', (e) => {
+        this.ragMemoriesRange = e.target.value;
+        this.memoryCurrentPage = 1;
+        this.renderAIMemoryList();
+      });
+    }
+
+    // Group 4: Activity Table Time Filter
+    const tableFilter = document.getElementById('filter-group-table');
+    if (tableFilter) {
+      tableFilter.addEventListener('change', (e) => {
+        this.tableRange = e.target.value;
+        this.tableCurrentPage = 1;
+        this.renderActivityTable();
       });
     }
 
@@ -1950,12 +2003,13 @@ class DashboardApp {
   // 15. CSV & JSON DATA EXPORTERS
   // =========================================================================
   exportCSV() {
-    if (!this.filteredEvents || this.filteredEvents.length === 0) {
+    const data = this.filterByRange(this.events, this.tableRange);
+    if (!data || data.length === 0) {
       alert('Tidak ada data untuk diekspor.');
       return;
     }
     const headers = ['created_at', 'event_type', 'event_target', 'event_label', 'device_type', 'session_id', 'referrer'];
-    const rows = this.filteredEvents.map(e => headers.map(h => `"${String(e[h] || '').replace(/"/g, '""')}"`).join(','));
+    const rows = data.map(e => headers.map(h => `"${String(e[h] || '').replace(/"/g, '""')}"`).join(','));
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -1967,11 +2021,12 @@ class DashboardApp {
   }
 
   exportJSON() {
-    if (!this.filteredEvents || this.filteredEvents.length === 0) {
+    const data = this.filterByRange(this.events, this.tableRange);
+    if (!data || data.length === 0) {
       alert('Tidak ada data untuk diekspor.');
       return;
     }
-    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(this.filteredEvents, null, 2));
+    const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
     const link = document.createElement('a');
     link.setAttribute('href', jsonStr);
     link.setAttribute('download', `rafly_portfolio_telemetry_${Date.now()}.json`);
