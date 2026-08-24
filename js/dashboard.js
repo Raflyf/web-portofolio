@@ -570,21 +570,15 @@ class DashboardApp {
       localEvents = [];
     }
 
-    // 2. Fetch remote Supabase events (Incremental Egress-Optimized Delta Fetching)
+    // 2. Fetch remote Supabase events (poll latest 250 rows in background, or 5000 on full load)
     let remoteEvents = [];
     const config = this.getSupabaseConfig();
     let isSupabaseConnected = false;
 
     if (config && config.url && config.anonKey) {
       try {
-        let endpoint = '';
-        if (isBackground && this.latestEventTimestamp) {
-          // Delta query: only rows newer than our latest known timestamp with full analytics fields
-          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&created_at=gt.${encodeURIComponent(this.latestEventTimestamp)}&order=created_at.desc&limit=100`;
-        } else {
-          // Comprehensive query: all essential telemetry fields up to 5000 rows
-          endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc&limit=5000`;
-        }
+        const fetchLimit = isBackground ? 250 : 5000;
+        const endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc&limit=${fetchLimit}`;
 
         const res = await fetch(endpoint, {
           headers: {
@@ -598,11 +592,7 @@ class DashboardApp {
           const incoming = await res.json();
           if (Array.isArray(incoming)) {
             isSupabaseConnected = true;
-            if (isBackground && this.latestEventTimestamp) {
-              if (incoming.length === 0 && localEvents.length <= this.events.length) {
-                // No new remote events and no new local events -> 0 DOM manipulation, 0 wasted egress!
-                return;
-              }
+            if (isBackground && this.events.length > 0) {
               remoteEvents = [...incoming, ...this.events];
             } else {
               remoteEvents = incoming;
@@ -640,7 +630,7 @@ class DashboardApp {
         seenIds.add(e.id);
       }
       const ts = new Date(e.created_at || 0).getTime();
-      const timeBucket = Math.floor(ts / 1500);
+      const timeBucket = Math.floor(ts / 2000);
       const sid = (e.session_id || 'sess').substring(0, 30);
       const type = (e.event_type || 'unknown').toLowerCase();
       const target = (e.event_target || '').toLowerCase().trim().substring(0, 50);
@@ -650,10 +640,6 @@ class DashboardApp {
         seenSignatures.add(signature);
         deduplicated.push(e);
       }
-    }
-
-    if (deduplicated.length > 0 && deduplicated[0].created_at) {
-      this.latestEventTimestamp = deduplicated[0].created_at;
     }
 
     this.events = deduplicated;
@@ -666,12 +652,22 @@ class DashboardApp {
       this.pollInterval = null;
     }
 
-    // High-efficiency polling every 4 seconds for live telemetry & AI model updates
+    this.checkOmniRouteRealtimeStatus();
+
+    let pollTick = 0;
+    // Realtime polling every 3 seconds for instant AI model counts & telemetry
     this.pollInterval = setInterval(() => {
       this.loadDashboardData(true);
-    }, 4000);
+      pollTick++;
+      if (pollTick % 2 === 0) {
+        this.checkOmniRouteRealtimeStatus();
+      }
+      if (pollTick % 8 === 0) {
+        this.fetchAIMemories(true);
+      }
+    }, 3000);
 
-    // Instant cross-tab sync when actions occur in other tabs
+    // Instant cross-tab sync: when an AI query runs in terminal tab, dashboard updates in 0ms!
     window.addEventListener('storage', (e) => {
       if (e.key === LOCAL_STORAGE_KEY) {
         this.loadDashboardData(true);
@@ -1714,22 +1710,6 @@ class DashboardApp {
       }
       if (headerTextEl) headerTextEl.textContent = 'OMNIROUTE: STANDBY';
     }
-  }
-
-  startRealtimePolling() {
-    if (this.pollInterval) clearInterval(this.pollInterval);
-    this.checkOmniRouteRealtimeStatus();
-    let pollTick = 0;
-    this.pollInterval = setInterval(() => {
-      this.loadDashboardData(true);
-      pollTick++;
-      if (pollTick % 2 === 0) {
-        this.checkOmniRouteRealtimeStatus();
-      }
-      if (pollTick % 8 === 0) {
-        this.fetchAIMemories(true);
-      }
-    }, 8000);
   }
 
   // =========================================================================
