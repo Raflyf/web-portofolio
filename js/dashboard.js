@@ -1152,8 +1152,13 @@ class DashboardApp {
 
     let totalAIQueries = 0;
     let autoRouterCount = 0;
+    const activeTerminalModel = (localStorage.getItem('ai_selected_model') || 'auto').toLowerCase();
     const modelCounts = {};
-    INDIVIDUAL_MODELS.forEach(m => { modelCounts[m.id] = 0; });
+    const modelLastUsed = {};
+    INDIVIDUAL_MODELS.forEach(m => { 
+      modelCounts[m.id] = 0; 
+      modelLastUsed[m.id] = 0;
+    });
 
     // Use full events list to capture all historical & real-time executions
     const eventPool = this.filteredEvents.length > 0 ? this.filteredEvents : this.events;
@@ -1163,6 +1168,7 @@ class DashboardApp {
       const target = (e.event_target || '').toLowerCase();
       const label = (e.event_label || '').toLowerCase();
       const combined = `${target} ${label} ${type}`;
+      const ts = new Date(e.created_at || 0).getTime();
 
       const isAIEvent = type === 'ai_query_resolved' ||
                         type === 'ai_chat' ||
@@ -1191,6 +1197,9 @@ class DashboardApp {
         for (const m of INDIVIDUAL_MODELS) {
           if (m.matcher(combined)) {
             modelCounts[m.id]++;
+            if (ts > modelLastUsed[m.id]) {
+              modelLastUsed[m.id] = ts;
+            }
             matched = true;
             break;
           }
@@ -1204,9 +1213,10 @@ class DashboardApp {
     if (totalCountEl) totalCountEl.textContent = `${totalAIQueries}x`;
 
     // 1. Render Featured Standalone Full-Width Card for Auto Gateway Router
+    const isAutoActive = activeTerminalModel === 'auto' || !activeTerminalModel;
     if (autoSlotEl) {
       autoSlotEl.innerHTML = `
-        <div class="ai-model-banner-card reveal-item">
+        <div class="ai-model-banner-card reveal-item ${isAutoActive ? 'is-terminal-active' : ''}">
           <div class="ai-banner-left">
             <div class="ai-banner-top">
               <div class="ai-model-icon-tag" style="color:var(--accent-emerald-text);font-size:0.82rem;">
@@ -1214,6 +1224,7 @@ class DashboardApp {
                 <span>${AUTO_MODEL.name}</span>
               </div>
               <span class="ai-model-status-pill ${AUTO_MODEL.badgeClass}">${AUTO_MODEL.provider}</span>
+              ${isAutoActive ? '<span class="ai-model-active-badge" style="position:static;"><span class="ai-active-pulse-dot"></span>AKTIF DI TERMINAL</span>' : ''}
             </div>
             <div class="ai-banner-title">${AUTO_MODEL.name} (Smart Inference Cascades)</div>
             <div class="ai-banner-desc">${AUTO_MODEL.desc}</div>
@@ -1226,19 +1237,38 @@ class DashboardApp {
       `;
     }
 
-    // 2. Dynamically sort individual models by execution count descending (Most Used on Top)
-    const sortedModels = [...INDIVIDUAL_MODELS].map(m => ({
-      ...m,
-      count: modelCounts[m.id] || 0
-    })).sort((a, b) => b.count - a.count);
+    // 2. Sort individual models: Currently active in terminal is ALWAYS TOP (#1), followed by most recently used
+    const sortedModels = [...INDIVIDUAL_MODELS].map(m => {
+      const isCurrentActive = activeTerminalModel !== 'auto' && m.matcher(activeTerminalModel);
+      return {
+        ...m,
+        count: modelCounts[m.id] || 0,
+        lastUsedAt: modelLastUsed[m.id] || 0,
+        isCurrentActive
+      };
+    }).sort((a, b) => {
+      // 1. If currently selected in terminal, immediately place at top
+      if (a.isCurrentActive && !b.isCurrentActive) return -1;
+      if (!a.isCurrentActive && b.isCurrentActive) return 1;
+      // 2. Sort by most recently used timestamp (latest used comes first)
+      if (b.lastUsedAt !== a.lastUsedAt) {
+        return b.lastUsedAt - a.lastUsedAt;
+      }
+      // 3. Fallback to total count
+      return b.count - a.count;
+    });
 
     // 3. Render Sorted Dynamic Grid
     if (gridEl) {
       gridEl.innerHTML = sortedModels.map((m, idx) => {
-        const rankBadge = `<span class="ai-model-rank-badge">#${idx + 1}</span>`;
+        const badge = m.isCurrentActive 
+          ? `<span class="ai-model-active-badge"><span class="ai-active-pulse-dot"></span>SEDANG DIPAKAI DI TERMINAL</span>`
+          : `<span class="ai-model-rank-badge">#${idx + 1}</span>`;
+        const activeCardClass = m.isCurrentActive ? 'is-terminal-active' : '';
+
         return `
-          <div class="ai-model-card reveal-item">
-            ${rankBadge}
+          <div class="ai-model-card reveal-item ${activeCardClass}">
+            ${badge}
             <div class="ai-model-top">
               <div class="ai-model-icon-tag">
                 ${m.icon}
