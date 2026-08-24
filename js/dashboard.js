@@ -615,14 +615,21 @@ class DashboardApp {
       }
     }
 
+    // Fast Signature Diff Check to prevent any UI flickering when data is identical
+    const newSignature = `${deduplicated.length}__${deduplicated[0]?.created_at || ''}__${deduplicated[0]?.id || ''}__${this.activeRange}`;
+    if (isBackground && this.lastDataSignature === newSignature) {
+      return; // 0 DOM manipulation if no new events
+    }
+    this.lastDataSignature = newSignature;
+
     this.events = deduplicated;
-    this.filterAndRender();
+    this.filterAndRender(isBackground);
   }
 
   // =========================================================================
   // 6. FILTERING & AGGREGATION
   // =========================================================================
-  filterAndRender() {
+  filterAndRender(isBackground = false) {
     const now = Date.now();
     let cutoff = 0;
 
@@ -645,7 +652,9 @@ class DashboardApp {
     this.renderAllAIModelsMatrix();
     this.renderAIMemoryList();
     this.renderActivityTable();
-    this.refreshScrollReveal();
+    if (!isBackground) {
+      this.refreshScrollReveal();
+    }
   }
 
   renderKPIs() {
@@ -686,12 +695,11 @@ class DashboardApp {
     Chart.defaults.font.family = "'JetBrains Mono', monospace";
     Chart.defaults.font.size = 11;
 
+    const themeChanged = this.chartsTheme !== this.currentTheme;
+
     // 1. Traffic Velocity Line Chart
     const trafficCanvas = document.getElementById('traffic-chart');
     if (trafficCanvas) {
-      const trafficCtx = trafficCanvas.getContext('2d');
-      if (this.charts.traffic) this.charts.traffic.destroy();
-
       const dayBuckets = {};
       for (let i = 6; i >= 0; i--) {
         const d = new Date(Date.now() - i * 86400000);
@@ -711,57 +719,64 @@ class DashboardApp {
       const viewsData = labels.map(k => dayBuckets[k].views);
       const visitorsData = labels.map(k => dayBuckets[k].sessions.size);
 
-      this.charts.traffic = new Chart(trafficCtx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Total Views',
-              data: viewsData,
-              borderColor: emerald,
-              backgroundColor: emeraldDim,
-              fill: true,
-              tension: 0.35,
-              borderWidth: 2.5,
-              pointRadius: 4,
-              pointHoverRadius: 6
-            },
-            {
-              label: 'Pengunjung Unik',
-              data: visitorsData,
-              borderColor: cyan,
-              backgroundColor: cyanDim,
-              fill: true,
-              tension: 0.35,
-              borderWidth: 2.5,
-              pointRadius: 4
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { 
-            legend: { 
-              position: 'top',
-              labels: { boxWidth: 12, font: { weight: '600' } }
-            } 
+      if (this.charts.traffic && !themeChanged) {
+        this.charts.traffic.data.labels = labels;
+        this.charts.traffic.data.datasets[0].data = viewsData;
+        this.charts.traffic.data.datasets[1].data = visitorsData;
+        this.charts.traffic.update('none');
+      } else {
+        if (this.charts.traffic) this.charts.traffic.destroy();
+        const trafficCtx = trafficCanvas.getContext('2d');
+        this.charts.traffic = new Chart(trafficCtx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Total Views',
+                data: viewsData,
+                borderColor: emerald,
+                backgroundColor: emeraldDim,
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2.5,
+                pointRadius: 4,
+                pointHoverRadius: 6
+              },
+              {
+                label: 'Pengunjung Unik',
+                data: visitorsData,
+                borderColor: cyan,
+                backgroundColor: cyanDim,
+                fill: true,
+                tension: 0.35,
+                borderWidth: 2.5,
+                pointRadius: 4
+              }
+            ]
           },
-          scales: {
-            x: { grid: { color: gridColor } },
-            y: { grid: { color: gridColor }, beginAtZero: true }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { 
+              legend: { 
+                position: 'top',
+                labels: { boxWidth: 12, font: { weight: '600' } }
+              } 
+            },
+            scales: {
+              x: { grid: { color: gridColor } },
+              y: { grid: { color: gridColor }, beginAtZero: true }
+            }
           }
-        }
-      });
+        });
+      }
     }
 
     // 2. Link & Project Interactions Bar Chart (9 Categories)
     const linksCanvas = document.getElementById('links-chart');
     if (linksCanvas) {
-      const linksCtx = linksCanvas.getContext('2d');
-      if (this.charts.links) this.charts.links.destroy();
-
       const counts = {
         'WhatsApp': 0,
         'GitHub': 0,
@@ -789,48 +804,57 @@ class DashboardApp {
         else if (e.event_type === 'terminal_cmd' || e.event_type === 'ai_query_resolved' || label.includes('terminal')) counts['Terminal']++;
       });
 
-      this.charts.links = new Chart(linksCtx, {
-        type: 'bar',
-        data: {
-          labels: Object.keys(counts),
-          datasets: [{
-            label: 'Total Klik',
-            data: Object.values(counts),
-            backgroundColor: [
-              'rgba(16, 185, 129, 0.85)',
-              'rgba(6, 182, 212, 0.85)',
-              'rgba(168, 85, 247, 0.85)',
-              'rgba(245, 158, 11, 0.85)',
-              'rgba(236, 72, 153, 0.85)',
-              'rgba(20, 184, 166, 0.85)',
-              'rgba(99, 102, 241, 0.85)',
-              'rgba(244, 63, 94, 0.85)',
-              'rgba(148, 163, 184, 0.85)'
-            ],
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { 
-              grid: { display: false },
-              ticks: { font: { size: 10 } }
-            },
-            y: { grid: { color: gridColor }, beginAtZero: true }
+      const linkLabels = Object.keys(counts);
+      const linkValues = Object.values(counts);
+
+      if (this.charts.links && !themeChanged) {
+        this.charts.links.data.labels = linkLabels;
+        this.charts.links.data.datasets[0].data = linkValues;
+        this.charts.links.update('none');
+      } else {
+        if (this.charts.links) this.charts.links.destroy();
+        const linksCtx = linksCanvas.getContext('2d');
+        this.charts.links = new Chart(linksCtx, {
+          type: 'bar',
+          data: {
+            labels: linkLabels,
+            datasets: [{
+              label: 'Total Klik',
+              data: linkValues,
+              backgroundColor: [
+                'rgba(16, 185, 129, 0.85)',
+                'rgba(6, 182, 212, 0.85)',
+                'rgba(168, 85, 247, 0.85)',
+                'rgba(245, 158, 11, 0.85)',
+                'rgba(236, 72, 153, 0.85)',
+                'rgba(20, 184, 166, 0.85)',
+                'rgba(99, 102, 241, 0.85)',
+                'rgba(244, 63, 94, 0.85)',
+                'rgba(148, 163, 184, 0.85)'
+              ],
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { 
+                grid: { display: false },
+                ticks: { font: { size: 10 } }
+              },
+              y: { grid: { color: gridColor }, beginAtZero: true }
+            }
           }
-        }
-      });
+        });
+      }
     }
 
     // 3. Platform & Device Ratio Doughnut Chart
     const devicesCanvas = document.getElementById('devices-chart');
     if (devicesCanvas) {
-      const devicesCtx = devicesCanvas.getContext('2d');
-      if (this.charts.devices) this.charts.devices.destroy();
-
       const deviceCounts = { Mobile: 0, Desktop: 0, Tablet: 0 };
       this.filteredEvents.forEach(e => {
         const type = (e.device_type || 'desktop').toLowerCase();
@@ -839,29 +863,41 @@ class DashboardApp {
         else deviceCounts.Desktop++;
       });
 
-      this.charts.devices = new Chart(devicesCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Mobile', 'Desktop', 'Tablet'],
-          datasets: [{
-            data: [deviceCounts.Mobile, deviceCounts.Desktop, deviceCounts.Tablet],
-            backgroundColor: [
-              'rgba(16, 185, 129, 0.85)',
-              'rgba(6, 182, 212, 0.85)',
-              'rgba(245, 158, 11, 0.85)'
-            ],
-            borderColor: isDark ? '#090e17' : '#ffffff',
-            borderWidth: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom' } },
-          cutout: '70%'
-        }
-      });
+      const deviceData = [deviceCounts.Mobile, deviceCounts.Desktop, deviceCounts.Tablet];
+
+      if (this.charts.devices && !themeChanged) {
+        this.charts.devices.data.datasets[0].data = deviceData;
+        this.charts.devices.update('none');
+      } else {
+        if (this.charts.devices) this.charts.devices.destroy();
+        const devicesCtx = devicesCanvas.getContext('2d');
+        this.charts.devices = new Chart(devicesCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Mobile', 'Desktop', 'Tablet'],
+            datasets: [{
+              data: deviceData,
+              backgroundColor: [
+                'rgba(16, 185, 129, 0.85)',
+                'rgba(6, 182, 212, 0.85)',
+                'rgba(245, 158, 11, 0.85)'
+              ],
+              borderColor: isDark ? '#090e17' : '#ffffff',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { legend: { position: 'bottom' } },
+            cutout: '70%'
+          }
+        });
+      }
     }
+
+    this.chartsTheme = this.currentTheme;
   }
 
   // =========================================================================
