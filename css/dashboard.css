@@ -220,9 +220,9 @@ body {
 }
 
 /* ==========================================================================
-   5. KINETIC SCROLL REVEAL (OPTICAL DE-BLUR & SPRING CURVE)
+   5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE (3D BLUR & SPRING CURVE)
    ========================================================================== */
-body.reveal-ready .reveal-item {
+.reveal-item {
   opacity: 0 !important;
   transform: perspective(1000px) translateY(44px) scale(0.96) !important;
   filter: blur(8px) !important;
@@ -232,18 +232,40 @@ body.reveal-ready .reveal-item {
   will-change: opacity, transform, filter;
 }
 
-body.reveal-ready .reveal-item.reveal-from-top {
+.reveal-item.reveal-from-top {
   transform: perspective(1000px) translateY(-44px) scale(0.96) !important;
 }
 
-body.reveal-ready .reveal-item.is-revealed {
+.reveal-item.is-revealed {
   opacity: 1 !important;
   transform: perspective(1000px) translateY(0) scale(1) !important;
   filter: blur(0px) !important;
 }
 
+/* Universal Instant Hover on Cards */
+@media (hover: hover) {
+  .kpi-card:hover,
+  .kpi-card.is-revealed:hover,
+  .chart-card:hover,
+  .chart-card.is-revealed:hover,
+  .intel-card:hover,
+  .intel-card.is-revealed:hover,
+  .ai-model-card:hover,
+  .ai-model-card.is-revealed:hover,
+  .ai-model-banner-card:hover,
+  .ai-model-banner-card.is-revealed:hover,
+  .omniroute-combo-tile:hover,
+  .omniroute-combo-tile.is-revealed:hover {
+    transform: translateY(-4px) !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.22s ease !important;
+    transition-delay: 0s !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  body.reveal-ready .reveal-item {
+  .reveal-item {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
@@ -1717,6 +1739,44 @@ body.reveal-ready .reveal-item.is-revealed {
 }
 
 @media (max-width: 768px) {
+  /* Mobile Performance Tuning: 60-120fps hardware acceleration & lighter blur */
+  .reveal-item {
+    transform: translateY(20px) scale(0.98) !important;
+    filter: none !important;
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    will-change: opacity, transform;
+  }
+
+  .reveal-item.reveal-from-top {
+    transform: translateY(-20px) scale(0.98) !important;
+  }
+
+  .reveal-item.is-revealed {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important;
+    filter: none !important;
+  }
+
+  .kpi-card,
+  .chart-card,
+  .intel-card,
+  .ai-model-card,
+  .ai-model-banner-card,
+  .omniroute-combo-tile,
+  .table-card,
+  .dash-header-card,
+  .dash-modal-card,
+  .pin-card {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  .ambient-blob {
+    filter: blur(40px) !important;
+    opacity: 0.2 !important;
+  }
+
   .dash-kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
