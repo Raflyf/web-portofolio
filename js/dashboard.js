@@ -148,8 +148,8 @@ class DashboardApp {
           }
         });
       }, {
-        rootMargin: '-30px 0px -40px 0px',
-        threshold: 0.08
+        rootMargin: '0px 0px -40px 0px',
+        threshold: 0.05
       });
 
       this.refreshScrollReveal();
@@ -161,7 +161,7 @@ class DashboardApp {
   refreshScrollReveal() {
     if (!this.scrollObserver) return;
     const items = document.querySelectorAll(
-      '.reveal-item, .kpi-card, .chart-card, .intel-card, .ai-model-card, .ai-model-banner-card, .omniroute-combo-tile, .omniroute-topology-card, .ai-models-matrix-card, .rag-memory-card, .table-card, .dash-header-card, .section-header-wrap'
+      '.kpi-card, .chart-card, .intel-card, .omniroute-topology-card, .ai-models-matrix-card, .table-card'
     );
     items.forEach(el => {
       el.classList.add('reveal-item');
@@ -1217,7 +1217,7 @@ class DashboardApp {
     const isAutoActive = activeTerminalModel === 'auto' || !activeTerminalModel;
     if (autoSlotEl) {
       autoSlotEl.innerHTML = `
-        <div class="ai-model-banner-card reveal-item ${isAutoActive ? 'is-terminal-active' : ''}">
+        <div class="ai-model-banner-card ${isAutoActive ? 'is-terminal-active' : ''}">
           <div class="ai-banner-left">
             <div class="ai-banner-top">
               <div class="ai-model-icon-tag" style="color:var(--accent-emerald-text);font-size:0.82rem;">
@@ -1268,7 +1268,7 @@ class DashboardApp {
         const activeCardClass = m.isCurrentActive ? 'is-terminal-active' : '';
 
         return `
-          <div class="ai-model-card reveal-item ${activeCardClass}">
+          <div class="ai-model-card ${activeCardClass}">
             ${badge}
             <div class="ai-model-top">
               <div class="ai-model-icon-tag">

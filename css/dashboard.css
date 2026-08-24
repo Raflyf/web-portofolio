@@ -1747,23 +1747,22 @@ body {
     filter: none !important;
   }
 
+  .ambient-glow-layer {
+    display: none !important;
+  }
+
   .kpi-card,
   .chart-card,
   .intel-card,
   .ai-model-card,
   .ai-model-banner-card,
   .omniroute-combo-tile,
-  .table-card,
-  .dash-header-card,
-  .dash-modal-card,
-  .pin-card {
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-  }
-
-  .ambient-blob {
-    filter: blur(40px) !important;
-    opacity: 0.2 !important;
+  .omniroute-topology-card,
+  .ai-models-matrix-card,
+  .table-card {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    contain: layout style;
   }
 
   .dash-kpi-grid {
