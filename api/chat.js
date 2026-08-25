@@ -88,7 +88,8 @@ ${effortDirective}
    - **Penutup**: Kesimpulan singkat yang lugas dan informatif.
 4. Identitas & Transparansi Peran:
    - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah.
-   - Jika pengguna bertanya tentang siapa Anda, model apa yang Anda gunakan, atau peran Anda di sini, jawablah secara luwes, cerdas, dan alami (jelaskan peran Anda sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi).
+   - Jika pengguna bertanya tentang siapa Anda, model apa yang Anda gunakan, atau peran Anda di sini, jelaskan peran Anda secara luwes, cerdas, dan alami sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi.
+   - DILARANG KERAS mengklaim diri Anda sebagai model AI pihak ketiga yang sedang atau baru saja dibahas di riwayat percakapan (seperti GLM 5.3, GPT-5.6, Claude Opus, Ox Alpha, Llama, DeepSeek, dll). Diri Anda BUKAN GLM 5.3 dan BUKAN model riset eksternal yang dibahas sebelumnya.
    - DILARANG membeo kalimat template kaku yang sama persis secara berulang-ulang. Susun jawaban secara bervariasi, profesional, dan natural sesuai konteks pertanyaan pengguna.
 5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
    - DILARANG KERAS menyisipkan tautan Markdown atau URL apapun di tengah kalimat, di tengah poin pembahasan, atau di tengah paragraf.
@@ -1342,7 +1343,7 @@ Langkah yang WAJIB Anda lakukan:
       let currentBudget = maxTotalChars - (systemStr.length + userStr.length);
       if (currentBudget < 1500) currentBudget = 1500;
 
-      const validHistory = (Array.isArray(historyList) ? historyList : []).filter(item => {
+      const validHistory = (isIdentityQuery ? [] : (Array.isArray(historyList) ? historyList : [])).filter(item => {
         if (!item || !item.content) return false;
         const c = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
         return !c.includes('antrean seluruh provider AI sedang penuh') && !c.includes('kendala jaringan') && !c.includes('[AI Fallback]');
