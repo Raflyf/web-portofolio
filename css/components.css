@@ -1702,8 +1702,9 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 .terminal-chips-bar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-xs);
-  padding: 0.6rem var(--space-md);
+  padding: 0.35rem var(--space-md);
   background-color: var(--surface-card);
   border-bottom: 1px solid var(--border-subtle);
 }
