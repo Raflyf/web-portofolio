@@ -77,15 +77,16 @@ ${effortDirective}
 
 [PANDUAN UTAMA]:
 1. Faktual & Relevan: Jawab berdasar data portofolio dan fakta pencarian web yang HANYA relevan dengan pertanyaan saat ini. DILARANG mencampuradukkan topik lain.
-2. Format Output Kontekstual:
-   - Untuk pertanyaan BERITA / PERISTIWA: Jelaskan dengan **narasi paragraf yang mengalir, runtut, dan alami** layaknya analisis berita profesional.
-   - Untuk pertanyaan PERBANDINGAN / BENCHMARK / TABEL DATA: Gunakan **tabel Markdown** yang ringkas, bersih, dan fokus pada substansi utama (Karakteristik, Keunggulan, Fokus Arsitektur, Status Benchmark). Wajib gunakan Bahasa Indonesia yang jernih dan mudah dipahami, BUKAN kutipan mentah judul bahasa Inggris.
-   - Untuk pertanyaan LISTING / ENUMERASI (seperti "proyek apa saja", "skills apa", "sertifikat apa", "ada apa di web ini"): Gunakan **bullet list ringkas** dengan nama proyek tebal + satu kalimat deskripsi singkat + link. JANGAN diceritakan panjang lebar satu per satu dalam paragraf.
-   - **DILARANG KERAS** membuat output berbentuk timeline log / daftar tanggal jam mentah (seperti "• 24 Agustus 2026 – 05:59 GMT:"). Satukan kronologi menjadi narasi terpadu.
-3. Struktur Jawaban Bersih & Mudah Dibaca:
-   - **Paragraf/Tabel Pembuka**: Ringkasan pokok peristiwa atau inti perbandingan (1-2 kalimat pengantar yang jelas).
-   - **Isi**: Duduk perkara naratif ATAU tabel perbandingan (pilih sesuai konteks pertanyaan).
-   - **Penutup**: Kesimpulan singkat yang lugas dan informatif.
+2. Format Output Kontekstual & Scannable (Anti Wall-of-Text):
+   - **DILARANG KERAS** menghasilkan satu paragraf panjang monoton yang padat (wall-of-text). Pengunjung web menyukai informasi yang ringkas, terstruktur, dan cepat dipahami dalam hitungan detik.
+   - Untuk pertanyaan BERITA / PERKEMBANGAN TERKINI: Sajikan dalam bentuk **3-4 Poin Sorotan Utama (Scannable Bullet List)**. Format setiap butir: - **[Topik / Headline Tebal]**: Penjelasan 1-2 kalimat padat mengenai esensi peristiwa dan dampaknya.
+   - Untuk pertanyaan PERBANDINGAN / BENCHMARK / TABEL DATA: Gunakan **tabel Markdown** yang ringkas, bersih, dan fokus pada substansi utama (Karakteristik, Keunggulan, Fokus Arsitektur, Status Benchmark). Wajib gunakan Bahasa Indonesia yang jernih dan komunikatif, BUKAN kutipan mentah judul bahasa Inggris.
+   - Untuk pertanyaan LISTING / ENUMERASI (seperti "proyek apa saja", "skills apa", "sertifikat apa", "ada apa di web ini"): Gunakan **bullet list ringkas** dengan nama proyek tebal + satu kalimat deskripsi singkat.
+   - **DILARANG KERAS** membuat output berbentuk timeline log / daftar tanggal jam mentah (seperti "• 24 Agustus 2026 – 05:59 GMT:").
+3. Struktur Jawaban Segar, Ringkas & Mudah Di-scan:
+   - **Kalimat Pengantar**: 1 kalimat pengantar singkat yang langsung menjawab inti pertanyaan.
+   - **Sorotan Utama**: Butir-butir poin tebal atau tabel perbandingan.
+   - **Kesimpulan / Quick Takeaway**: 1 kalimat penutup yang informatif.
 4. Identitas & Transparansi Peran:
    - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah.
    - Jika pengguna bertanya tentang siapa Anda, model apa yang Anda gunakan, atau peran Anda di sini, jelaskan peran Anda secara luwes, cerdas, dan alami sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi.
@@ -726,10 +727,11 @@ async function searchWebContext(query, history = []) {
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
       formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN BERITA TERKINI 2026]:\n${uniqueSnippets.join('\n')}\n\n[PANDUAN SINTESIS]:
-- Rangkum dan terjemahkan substansi berita ke dalam Bahasa Indonesia yang alami, bersih, dan mudah dipahami.
-- DILARANG KERAS mengutip mentah judul artikel dalam bahasa Inggris ke dalam sel tabel (seperti menulis 'Mentioned in "Best AI Chatbots..."'). Ekstrak poin informasinya secara langsung dalam bahasa Indonesia yang komunikatif.
-- Jangan mengarang angka benchmark atau metrik teknis palsu. Jika data skor benchmark tidak disebutkan di berita, tulis "Belum ada laporan skor resmi" atau "Data benchmark publik belum dirilis" secara ringkas dan wajar.
-- Sajikan penjelasan yang jernih, padat, dan bebas dari noise/meta-komentar sistem.\n`;
+- DILARANG KERAS menghasilkan satu paragraf panjang monoton yang padat (wall-of-text).
+- Sajikan informasi dalam bentuk 3-4 **Poin Sorotan Utama (Bullet Points)**: awali setiap butir dengan **[Topik Tebal]**: ikuti dengan 1-2 kalimat esensi fakta yang informatif dan mudah dibaca cepat.
+- DILARANG mengutip mentah judul artikel dalam bahasa Inggris. Ekstrak substansi informasinya secara langsung ke dalam Bahasa Indonesia yang komunikatif.
+- Jangan mengarang angka benchmark atau metrik teknis palsu. Jika tidak disebutkan, tulis "Belum ada data skor resmi".
+- Awali dengan 1 kalimat pengantar singkat dan akhiri dengan 1 kalimat kesimpulan/takeaway.\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
@@ -1252,6 +1254,12 @@ export default async function handler(req, res) {
       if (isIdentityQuery) {
         cleaned = cleaned.replace(/(?:model yang saya gunakan merupakan|saya adalah model)[^.\n]*(?:glm|gpt|claude|ox alpha|gemini)[^.\n]*[.]?/gi, 'Saya adalah AI Assistant & Developer Agent yang terintegrasi di website portofolio resmi Rafly Firmansyah.');
       }
+
+      // 3.7. Clean duplicate bullet dashes & normalize bold markdown
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*[\-\*•\s]*/gm, '$1**');
+      cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\*(?!\*)([^\n*]+)\*\*/gm, '$1**$2**');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*(?!\*)/gm, '$1**$2**');
 
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
       cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
