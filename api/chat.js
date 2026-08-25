@@ -78,7 +78,7 @@ ${effortDirective}
    - **Tanpa Basa-Basi**: Tanpa kata pengantar template dan tanpa monolog klise di akhir.
 4. Identitas: Jika ditanya "model apa kamu" atau "siapa kamu", jawab langsung dan singkat: "Saya AI Assistant di website portofolio Rafly Firmansyah, siap membantu mengeksplorasi proyek dan riset di sini!" Tidak perlu menyebut nama vendor atau nama model.
 5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
-   - DILARANG KERAS menyisipkan tautan Markdown `[GitHub](...)` atau URL apapun di tengah kalimat, di tengah poin pembahasan, atau di tengah paragraf.
+   - DILARANG KERAS menyisipkan tautan Markdown atau URL apapun di tengah kalimat, di tengah poin pembahasan, atau di tengah paragraf.
    - Selesaikan seluruh penjelasan, arsitektur, dan ringkasan teknis secara tuntas terlebih dahulu.
    - Seluruh link repositori GitHub, demo, atau verifikasi WAJIB diletakkan di BAGIAN PALING AKHIR JAWABAN di bawah baris pemisah, dengan format:
      
@@ -921,8 +921,8 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
   for (const token of allTokens) {
     if (token.startsWith('sk-or-v1-')) {
       if (!openrouter.includes(token)) {
-        // Prioritize verified high-speed active keys (e.g. sk-or-v1-9...)
-        if (token.startsWith('sk-or-v1-9') || token.startsWith('sk-or-v1-5')) {
+        // Prioritize verified active keys with remaining quota
+        if (token.startsWith('sk-or-v1-faaa') || token.startsWith('sk-or-v1-529')) {
           openrouter.unshift(token);
         } else {
           openrouter.push(token);
@@ -1262,7 +1262,7 @@ export default async function handler(req, res) {
         }
       }
 
-      cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
+      cleaned = cleaned.replace(/\n+Tautan Terkait:\s*$/i, '').replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
       }
@@ -1865,45 +1865,45 @@ Langkah yang WAJIB Anda lakukan:
         }
         if (t.includes('lightning') || t.includes('lighting')) {
           return [
-            { provider: 'omniroute', model: 'nemotron-lighting', timeout: 3500 },
+            { provider: 'omniroute', model: 'nemotron-lightning', timeout: 3500 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 15000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 18000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b', timeout: 12000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 }
           ];
         }
         if (t.includes('ultra') || t.includes('nemotron')) {
           return [
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 18000 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 },
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 },
+            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 }
           ];
         }
         if (t.includes('codex') || t.includes('antigravity')) {
           return [
             { provider: 'omniroute', model: t.includes('antigravity') ? 'Antigravity' : 'Codex', timeout: 4000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 20000 }
           ];
         }
         if (t.includes('minimax') || t.includes('m3')) {
           return [
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 25000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 18000 },
-            { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 20000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 20000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 20000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 }
           ];
         }
       }
 
-      // 2. CASUAL / TRIVIAL QUERIES (Dedicated Fast-Response Pool: nemotron-lighting & Ollama Nano, Sub-2s)
+      // 2. CASUAL / TRIVIAL QUERIES (Dedicated Fast-Response Pool: nemotron-lightning & Ollama Nano, Sub-2s)
       if (isTrivialCasual) {
         return [
-          { provider: 'omniroute', model: 'nemotron-lighting', timeout: 3000 },
+          { provider: 'omniroute', model: 'nemotron-lightning', timeout: 3000 },
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 12000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 },
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 15000 }
+          { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 }
         ];
       }
 
@@ -1912,20 +1912,20 @@ Langkah yang WAJIB Anda lakukan:
         return [
           { provider: 'omniroute', model: 'x-preview-f-free', timeout: 3500 },
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
-          { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 28000 },
           { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 28000 },
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 20000 },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 20000 },
           { provider: 'omniroute', model: 'Codex', timeout: 4000 }
         ];
       }
 
       // 4. UNIVERSAL AUTO DEFAULT (Interleaved Resilient Cascade with Live SOTA)
       return [
-        { provider: 'omniroute', model: 'nemotron-lighting', timeout: 3000 },
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 20000 },
-        { provider: 'openrouter', model: 'stealth/ox-alpha', timeout: 25000 },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 }
+        { provider: 'omniroute', model: 'nemotron-lightning', timeout: 3000 },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 15000 },
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 15000 }
       ];
     }
 
