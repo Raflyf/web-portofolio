@@ -59,10 +59,21 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   const dynamicTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
   return `Status: BAHASA INDONESIA. Waktu: ${dynamicDateStr}, ${dynamicTimeStr} WIB.
-Anda adalah AI Assistant Terminal Developer Lab di website portofolio resmi Rafly Firmansyah (@Raflyf).
+Anda adalah AI Assistant & Developer Agent di website portofolio resmi Rafly Firmansyah (@Raflyf).
 
 ${languageDirective}
 ${effortDirective}
+
+[SPESIALISASI DOMAIN & KAPABILITAS REKAYASA SISTEM]:
+1. Machine Learning & Data Stream Intelligence:
+   - Menguasai deteksi Concept Drift / Covariate Shift pada aliran data (metode Page-Hinkley Test, DDM, EDWIN, ADWIN).
+   - Menguasai pemrosesan NLP semantik: representasi vektor Multilingual SBERT 384-dimensi, Cosine Similarity, dan 5-word N-Gram Shingling exact match.
+   - Menguasai metrik statistik: Presisi, Recall, F1-Score (Ensemble CNB + XGBoost 93%), Confusion Matrix, dan evaluasi empiris model.
+2. Arsitektur Cloud, Backend & Keamanan Siber:
+   - Desain API RESTful/GraphQL performa tinggi, Database Indexing (B-Tree, GIN, vector search pgvector), dan token bucket rate limiting.
+   - Audit keamanan kode berstandar OWASP (pencegahan SQL Injection, XSS, sanitasi I/O, perlindungan secrets, dan CORS policies).
+3. Visualisasi Data & Perbandingan Benchmark:
+   - Jika pengguna meminta visualisasi perbandingan model atau benchmark skor, sajikan dalam bentuk tabel Markdown yang rapi atau format baris metrik visual berbasis karakter/tabel yang informatif.
 
 [PANDUAN UTAMA]:
 1. Faktual & Relevan: Jawab berdasar data portofolio dan fakta pencarian web yang HANYA relevan dengan pertanyaan saat ini. DILARANG mencampuradukkan topik lain.
@@ -1564,11 +1575,16 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
+const rateLimitedKeyCache = new Map();
+
     async function callOpenRouter(mName, tOut = 20000) {
       if (OPENROUTER_KEYS.length === 0) return null;
       const stepDeadline = Date.now() + tOut;
-      // Load-balance across all available OpenRouter keys with dynamic failover
-      const keysToTry = [...OPENROUTER_KEYS].sort(() => Math.random() - 0.5);
+      const now = Date.now();
+      // Filter out temporarily rate-limited keys and load-balance across active keys
+      let activeKeys = OPENROUTER_KEYS.filter(k => !rateLimitedKeyCache.has(k) || rateLimitedKeyCache.get(k) < now);
+      if (activeKeys.length === 0) activeKeys = OPENROUTER_KEYS; // Fallback if all are marked
+      const keysToTry = [...activeKeys].sort(() => Math.random() - 0.5);
 
       // Model-specific payload normalization (stealth/ox-alpha requires user-encapsulated instructions for sub-2s responses)
       const formattedMessages = (mName === 'stealth/ox-alpha')
@@ -1588,7 +1604,7 @@ Langkah yang WAJIB Anda lakukan:
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, 12000);
+        const perKeyTimeout = Math.min(remaining, 10000);
 
         try {
           const isReasoningModel = mName.toLowerCase().includes('reasoning') || mName.toLowerCase().includes('r1') || mName.toLowerCase().includes('thinking') || mName.toLowerCase().includes('qwq');
@@ -1625,6 +1641,9 @@ Langkah yang WAJIB Anda lakukan:
               return sendSuccess(content.trim(), mName, 'OpenRouter Cloud Pool');
             }
           } else if (res.status === 402 || res.status === 429) {
+            if (res.status === 429) {
+              rateLimitedKeyCache.set(orKey, Date.now() + 15 * 60 * 1000); // Cache 15 menit
+            }
             providerErrors.push(`OpenRouter ${mName} [Key #${OPENROUTER_KEYS.indexOf(orKey) + 1}]: HTTP ${res.status} (Rate limited / Quota exhausted, switching key)`);
             continue;
           } else {
@@ -1912,32 +1931,29 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       // 2. UNIVERSAL AUTO & ALL CATEGORIES (CASUAL, CODING, REASONING, RESEARCH, DEFAULT)
-      // Struktur Pipeline Interleaved Ultra-Fast SOTA (OpenRouter + OpenCode Zen Failover)
-      // Menjamin respon selalu sub-second dan langsung beralih ke provider aktif berikutnya dalam <8 detik jika upstream padat.
+      // Struktur Pipeline Interleaved Ultra-Fast SOTA (Sub-Second Response Guarantee)
       return [
-        // === 1. ULTRA-FAST LIGHTNING INFERENCE (<1s) ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 8000 },
+        // === 1. TIER UTAMA: ULTRA-FAST SOTA INFERENCE (<1s) ===
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 10000 },
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 15000 },
 
-        // === 2. ADVANCED SOTA REASONING & AGENTIC CODING ===
+        // === 2. TIER SOTA REASONING & CAPACITY EXPANSION ===
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 15000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
         { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 8000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 8000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 8000 },
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 12000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 12000 },
+        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 10000 },
 
-        // === 3. SOTA CLOUD FREE POOL FALLBACK ===
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 8000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 8000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 8000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 8000 },
-        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 8000 },
-
-        // === 4. OLLAMA CLOUD AI GATEWAY FALLBACK ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
-        { provider: 'ollama', model: 'minimax-m3', timeout: 8000 }
+        // === 3. TIER OLLAMA CLOUD GATEWAY FALLBACK ===
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 12000 },
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
+        { provider: 'ollama', model: 'minimax-m3', timeout: 12000 }
       ];
     }
 
