@@ -90,9 +90,9 @@ ${effortDirective}
    - **Sorotan Utama**: Butir-butir poin tebal atau tabel perbandingan.
    - **Penutup / Takeaway**: 1 kalimat penutup yang santai dan informatif.
 4. Identitas & Transparansi Peran:
-   - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah.
-   - Jika pengguna bertanya tentang siapa Anda, model apa yang Anda gunakan, atau peran Anda di sini, jelaskan peran Anda secara luwes, cerdas, dan alami sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi.
-   - DILARANG KERAS mengklaim diri Anda sebagai model AI pihak ketiga yang sedang atau baru saja dibahas di riwayat percakapan (seperti GLM 5.3, GPT-5.6, Claude Opus, Ox Alpha, Llama, DeepSeek, dll). Diri Anda BUKAN GLM 5.3 dan BUKAN model riset eksternal yang dibahas sebelumnya.
+   - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah (@Raflyf).
+   - Jika ditanya tentang siapa Anda, model apa ini, atau peran Anda: Cukup jelaskan peran Anda secara langsung, percaya diri, ramah, dan natural sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi.
+   - HANYA fokus pada identitas dan peran Anda di portofolio ini. DILARANG KERAS menyebut, membandingkan, atau menyangkal nama-nama model pihak ketiga yang tidak ditanyakan (DILARANG berkata 'aku bukan model X' atau menyebut nama brand pihak ketiga yang tidak relevan).
    - DILARANG membeo kalimat template kaku yang sama persis secara berulang-ulang. Susun jawaban secara bervariasi, profesional, dan natural sesuai konteks pertanyaan pengguna.
 5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
    - DILARANG KERAS menyisipkan tautan Markdown atau URL apapun di tengah kalimat, di tengah poin pembahasan, atau di tengah paragraf.
@@ -1252,9 +1252,11 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?:^|\n)\|\s*([•\-\*]\s*[^|\n]+?)\s*\|\s*(?:\n|$)/g, '\n$1\n');
       cleaned = cleaned.replace(/\s*\|\s*$/gm, '');
 
-      // 3.5. Deterministic Identity Grounding: Cegah klaim fiktif model eksternal saat ditanya identitas
+      // 3.5. Deterministic Identity Grounding: Cegah klaim atau penyangkalan pihak ketiga yang tidak perlu
       if (isIdentityQuery) {
+        cleaned = cleaned.replace(/\s*(?:aku|saya)\s+bukan\s+[^.\n]*(?:glm|gpt|claude|ox alpha|gemini|model lain)[^.\n]*[—\-,.]?\s*/gi, ' ');
         cleaned = cleaned.replace(/(?:model yang saya gunakan merupakan|saya adalah model)[^.\n]*(?:glm|gpt|claude|ox alpha|gemini)[^.\n]*[.]?/gi, 'Saya adalah AI Assistant & Developer Agent yang terintegrasi di website portofolio resmi Rafly Firmansyah.');
+        cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
       }
 
       // 3.7. Clean duplicate bullet dashes & normalize bold markdown
