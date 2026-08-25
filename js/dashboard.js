@@ -1209,96 +1209,213 @@ class DashboardApp {
     };
 
     const INDIVIDUAL_MODELS = [
+      // === TIER 1: OMNIROUTE DEDICATED MODELS ===
       {
-        id: 'nemotron-lightning',
-        name: 'Nemotron 3.5 Lightning',
-        desc: 'Model utama prioritas #1 (OmniRoute / OpenRouter / OpenCode) - Super kilat (~253ms) untuk percakapan umum, sapaan, dan Q&A',
-        provider: 'OMNIROUTE / OPENROUTER',
+        id: 'omni-nemotron-lightning',
+        name: 'Nemotron Lightning (OmniRoute)',
+        desc: 'Prioritas #1 OmniRoute - Fast-response sub-detik untuk percakapan umum & Q&A ringkas',
+        provider: 'OMNIROUTE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('lightning') || s.includes('lighting') || s.includes('nemotron-lightning')
+        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && (s.includes('lightning') || s.includes('lighting'))
       },
       {
-        id: 'nemotron-3-ultra',
-        name: 'Nemotron 3 Ultra (550B MoE)',
-        desc: 'Arsitektur MoE 550B kapasitas penuh untuk sintesis data komprehensif, konteks luas, dan penalaran teknis (OmniRoute / Ollama)',
-        provider: 'OMNIROUTE / OLLAMA',
+        id: 'omni-nemotron-ultra',
+        name: 'Nemotron 3 Ultra (OmniRoute)',
+        desc: 'Arsitektur MoE 550B kapasitas penuh untuk sintesis data komprehensif di gateway OmniRoute',
+        provider: 'OMNIROUTE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => s.includes('nemotron-3-ultra') || s.includes('ultra-550b') || s.includes('ultra-free') || s.includes('ultra')
+        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && (s.includes('ultra') || s.includes('nemotron-3-ultra'))
       },
       {
-        id: 'codex',
+        id: 'omni-codex',
         name: 'Codex (GPT-5.6 Terra)',
-        desc: 'Spesialis rekayasa software tingkat tinggi, analisis codebase, debugging, dan sintesis arsitektur kode (codex/gpt-5.6-terra)',
+        desc: 'Spesialis rekayasa software tingkat tinggi, analisis codebase, debugging, dan sintesis arsitektur kode di OmniRoute',
         provider: 'OMNIROUTE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
-        matcher: (s) => s.includes('codex') || s.includes('gpt-5') || s.includes('terra')
+        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok') || !s.includes('openrouter')) && (s.includes('codex') || s.includes('gpt-5') || s.includes('terra'))
       },
       {
-        id: 'antigravity',
+        id: 'omni-antigravity',
         name: 'Antigravity (Claude Opus Thinking)',
-        desc: 'Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah skripsi, dan telaah dokumen komprehensif',
+        desc: 'Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah skripsi, dan telaah dokumen komprehensif di OmniRoute',
         provider: 'OMNIROUTE',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => s.includes('antigravity') || s.includes('opus') || s.includes('claude')
+        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok') || !s.includes('openrouter')) && (s.includes('antigravity') || s.includes('opus') || s.includes('claude'))
       },
       {
-        id: 'vision-model',
-        name: 'Vision-model (MiniMax-M3 / mimo)',
-        desc: 'Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi (OmniRoute / MiniMax)',
-        provider: 'MINIMAX / VISION',
+        id: 'omni-vision',
+        name: 'Vision-model (OmniRoute)',
+        desc: 'Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi di OmniRoute',
+        provider: 'OMNIROUTE',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
-        matcher: (s) => s.includes('vision') || s.includes('minimax') || s.includes('mimo')
+        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && s.includes('vision')
       },
       {
-        id: 'nemotron-nano',
-        name: 'Nemotron 3 Nano (30B)',
-        desc: 'Model penalaran andal untuk ekstraksi konteks scraping berita real-time dan RAG memori di OpenRouter & Ollama Cloud',
-        provider: 'OPENROUTER / OLLAMA',
+        id: 'omni-x-preview',
+        name: 'x-preview-f-free (OmniRoute)',
+        desc: 'Engine preview inferensi cepat berbasis prinsip YAGNI di gateway OmniRoute',
+        provider: 'OMNIROUTE',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && (s.includes('x-preview') || s.includes('preview-f'))
+      },
+
+      // === TIER 2: OPENROUTER CLOUD MODELS ===
+      {
+        id: 'openrouter-nemotron-lightning',
+        name: 'Nemotron 3.5 Lightning (OpenRouter)',
+        desc: 'Model prioritas #1 OpenRouter Cloud (~253ms) untuk inferensi instan sub-detik',
+        provider: 'OPENROUTER',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('openrouter') && (s.includes('lightning') || s.includes('lighting'))
+      },
+      {
+        id: 'openrouter-nemotron-nano',
+        name: 'Nemotron 3 Nano Reasoning (OpenRouter)',
+        desc: 'Model penalaran dense 30B berkecepatan tinggi di OpenRouter Cloud Pool',
+        provider: 'OPENROUTER',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
-        matcher: (s) => s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || s.includes('30b')
+        matcher: (s) => (s.includes('openrouter') || !s.includes('ollama')) && (s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('30b-a3b') || s.includes('reasoning:free'))
       },
       {
-        id: 'deepseek',
-        name: 'DeepSeek Chat (V3)',
-        desc: 'Frontier Intelligence untuk logika koding multi-bahasa, perbandingan berita, dan analisis data di OpenRouter pool',
+        id: 'openrouter-free',
+        name: 'OpenRouter Free (Auto SOTA Pool)',
+        desc: 'Dynamic SOTA Free router yang otomatis memilih model gratis terbaik dengan latensi terendah',
+        provider: 'OPENROUTER',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free') && !s.includes('nemotron') && !s.includes('minimax'))
+      },
+      {
+        id: 'openrouter-deepseek',
+        name: 'DeepSeek Chat V3 (OpenRouter)',
+        desc: 'Frontier Intelligence untuk logika koding multi-bahasa dan riset data di OpenRouter',
         provider: 'OPENROUTER',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
         matcher: (s) => s.includes('deepseek')
       },
       {
-        id: 'openrouter-free',
-        name: 'OpenRouter Free (Auto Pool)',
-        desc: 'Dynamic SOTA Free router yang otomatis memilih model gratis terbaik dengan latensi terendah di OpenRouter',
+        id: 'openrouter-nemotron-super',
+        name: 'Nemotron 3 Super 120B (OpenRouter)',
+        desc: 'Model penalaran dense 120B teroptimasi untuk latensi rendah (~271ms) di OpenRouter',
         provider: 'OPENROUTER',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free'))
+        matcher: (s) => s.includes('openrouter') && (s.includes('super-120b') || s.includes('super:120b') || s.includes('a12b'))
       },
       {
-        id: 'nemotron-super',
-        name: 'Nemotron 3 Super (120B)',
-        desc: 'Model penalaran dense 120B teroptimasi untuk latensi rendah (~271ms) dan penalaran logika terarah di OpenRouter & Ollama Cloud',
-        provider: 'OPENROUTER / OLLAMA',
+        id: 'openrouter-nemotron-ultra',
+        name: 'Nemotron 3 Ultra 550B (OpenRouter)',
+        desc: 'Arsitektur MoE 550B parameter penuh untuk penalaran berat di OpenRouter',
+        provider: 'OPENROUTER',
         badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('super-120b') || s.includes('nemotron-3-super') || s.includes('super:120b') || s.includes('120b')
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
+        matcher: (s) => s.includes('openrouter') && (s.includes('ultra-550b') || s.includes('ultra:550b') || s.includes('a55b'))
       },
       {
-        id: 'x-preview',
-        name: 'x-preview-f-free',
-        desc: 'Engine preview eksperimental OpenCode untuk inferensi cepat dan evaluasi model baru berbasis prinsip YAGNI',
-        provider: 'OMNIROUTE / OPENCODE',
+        id: 'openrouter-minimax',
+        name: 'MiniMax M3 Free (OpenRouter)',
+        desc: 'Model multimodal untuk pemrosesan teks dan citra di OpenRouter',
+        provider: 'OPENROUTER',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+        matcher: (s) => s.includes('openrouter') && s.includes('minimax')
+      },
+      {
+        id: 'openrouter-laguna',
+        name: 'Poolside Laguna S 2.1 (OpenRouter)',
+        desc: 'Model penalaran perangkat lunak terarah di OpenRouter pool',
+        provider: 'OPENROUTER',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+        matcher: (s) => s.includes('laguna') || s.includes('poolside')
+      },
+
+      // === TIER 3: OLLAMA CLOUD MODELS ===
+      {
+        id: 'ollama-nemotron-nano',
+        name: 'Nemotron 3 Nano (Ollama Cloud)',
+        desc: 'Model penalaran 30B teroptimasi untuk query informatif dan Q&A di Ollama Cloud',
+        provider: 'OLLAMA CLOUD',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+        matcher: (s) => s.includes('ollama') && (s.includes('nano:30b') || s.includes('nano-30b') || s.includes('nemotron-3-nano') || s.includes('nano'))
+      },
+      {
+        id: 'ollama-nemotron-ultra',
+        name: 'Nemotron 3 Ultra (Ollama Cloud)',
+        desc: 'Model frontier reasoning di Ollama Cloud AI Gateway',
+        provider: 'OLLAMA CLOUD',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
+        matcher: (s) => s.includes('ollama') && s.includes('ultra')
+      },
+      {
+        id: 'ollama-nemotron-super',
+        name: 'Nemotron 3 Super (Ollama Cloud)',
+        desc: 'Model dense 120B teroptimasi untuk latensi rendah di Ollama Cloud',
+        provider: 'OLLAMA CLOUD',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('x-preview') || s.includes('preview-f')
+        matcher: (s) => s.includes('ollama') && s.includes('super')
       },
+      {
+        id: 'ollama-minimax',
+        name: 'MiniMax M3 (Ollama Cloud)',
+        desc: 'Multimodal vision and text model di Ollama Cloud Gateway',
+        provider: 'OLLAMA CLOUD',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+        matcher: (s) => s.includes('ollama') && s.includes('minimax')
+      },
+
+      // === TIER 4: OPENCODE ZEN DIRECT MODELS ===
+      {
+        id: 'opencode-nemotron-lightning',
+        name: 'Nemotron 3.5 Lightning (OpenCode)',
+        desc: 'Model super kilat via endpoint langsung OpenCode Zen API',
+        provider: 'OPENCODE',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('opencode') && (s.includes('lightning') || s.includes('lighting'))
+      },
+      {
+        id: 'opencode-nemotron-ultra',
+        name: 'Nemotron 3 Ultra Free (OpenCode)',
+        desc: 'Frontier reasoning engine via direct endpoint OpenCode Zen',
+        provider: 'OPENCODE',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
+        matcher: (s) => s.includes('opencode') && s.includes('ultra')
+      },
+      {
+        id: 'opencode-x-preview',
+        name: 'x-preview-f-free (OpenCode)',
+        desc: 'Engine penalaran dan koding presisi dari OpenCode Zen API',
+        provider: 'OPENCODE',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('opencode') && (s.includes('x-preview') || s.includes('preview-f'))
+      },
+      {
+        id: 'opencode-mimo',
+        name: 'Mimo v2.5 Free (OpenCode)',
+        desc: 'Model multimodal untuk analisis citra dan teks via OpenCode Zen API',
+        provider: 'OPENCODE',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+        matcher: (s) => s.includes('opencode') && (s.includes('mimo') || s.includes('multimodal'))
+      },
+
+      // === LOCAL OFFLINE ===
       {
         id: 'local-semantic',
         name: 'In-Browser Semantic Engine',
