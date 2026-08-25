@@ -1492,7 +1492,7 @@ Langkah yang WAJIB Anda lakukan:
               messages: openRouterMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig,
-              reasoning_effort: (effectiveEffort === 'low' ? 'medium' : 'high'),
+              reasoning_effort: mName.toLowerCase().includes('lightning') ? undefined : (effectiveEffort === 'low' ? 'medium' : 'high'),
               stream: false
             })
           }, remaining);
@@ -1532,12 +1532,15 @@ Langkah yang WAJIB Anda lakukan:
               return sendSuccess(content.trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
             } else if (content && isOmniErrorResponse(content)) {
               providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: upstream error — ${content.slice(0, 120)}`);
+              failedOmniEndpointsInRequest.add(target.normUrl);
             }
           } else if (res.status >= 400) {
             providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: HTTP ${res.status}`);
+            failedOmniEndpointsInRequest.add(target.normUrl);
           }
         } catch (err) {
           providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
+          failedOmniEndpointsInRequest.add(target.normUrl);
         }
       }
 
@@ -1569,6 +1572,9 @@ Langkah yang WAJIB Anda lakukan:
         if (remaining < 800) break;
 
         try {
+          const isReasoningModel = mName.toLowerCase().includes('reasoning') || mName.toLowerCase().includes('r1') || mName.toLowerCase().includes('thinking') || mName.toLowerCase().includes('qwq');
+          const isLightning = mName.toLowerCase().includes('lightning');
+
           const res = await fetchJsonWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -1582,10 +1588,7 @@ Langkah yang WAJIB Anda lakukan:
               messages: formattedMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig,
-              reasoning: { 
-                effort: (effectiveEffort === 'low' ? 'medium' : 'high'), 
-                max_tokens: (effectiveEffort === 'thinking' ? 32768 : (effectiveEffort === 'high' ? 16384 : 8192)) 
-              }
+              reasoning: (!isLightning && isReasoningModel) ? { effort: (effectiveEffort === 'low' ? 'medium' : 'high') } : undefined
             })
           }, remaining);
 
@@ -1627,6 +1630,7 @@ Langkah yang WAJIB Anda lakukan:
         if (remaining < 800) break;
 
         try {
+          const isLightning = cleanModelName.toLowerCase().includes('lightning');
           const res = await fetchJsonWithTimeout('https://opencode.ai/zen/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -1638,7 +1642,7 @@ Langkah yang WAJIB Anda lakukan:
               messages: openRouterMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig,
-              reasoning_effort: (effectiveEffort === 'low' ? 'medium' : 'high')
+              reasoning_effort: isLightning ? undefined : (effectiveEffort === 'low' ? 'medium' : 'high')
             })
           }, remaining);
 
