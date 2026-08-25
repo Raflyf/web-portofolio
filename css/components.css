@@ -2380,6 +2380,29 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   to { opacity: 1; transform: scale(1); }
 }
 
+.terminal-footer-disclaimer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.35rem 0.85rem;
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-align: center;
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+.terminal-footer-disclaimer svg {
+  flex-shrink: 0;
+  opacity: 0.75;
+  color: var(--accent-emerald);
+}
+
 /* ==========================================================================
    9. CONTACT SECTION & ACTIONS
    ========================================================================== */

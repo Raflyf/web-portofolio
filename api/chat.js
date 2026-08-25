@@ -1246,17 +1246,7 @@ export default async function handler(req, res) {
         cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
       }
 
-      // 7. Append automated disclaimer footer (Transparansi Real-Time & Anti-Hallucination Disclaimer)
-      // KONFLIK-4: Extended isSimpleGreeting to match multi-word identity/ack responses
-      const isSimpleGreeting = /^(halo|hai|hey|siang|pagi|malam|tes|test|ping|oke|ok|sip|makasih|terima kasih|sama-sama|saya ai|saya adalah ai|saya adalah asisten|saya siap|siap membantu)[.!? \w]*$/i.test(cleaned.trim().substring(0, 120));
-      // KONFLIK-7: Use exact line-start match for 'Catatan:' to avoid false-positive on inline 'satu catatan kecil:'
-      const hasDisclaimer = /^\s*(?:Catatan|Disclaimer|Peringatan):/mi.test(cleaned);
-      if (!isSimpleGreeting && !hasDisclaimer) {
-        const disclaimer = (sessionLanguage === 'en')
-          ? '\n\n---\n> *Catatan: Respons ini dihasilkan otomatis oleh AI. Informasi mungkin belum mencakup perkembangan paling mutakhir, sudah lawas, atau berpotensi mengandung halusinasi dan kekeliruan fakta.*'
-          : '\n\n---\n> *Catatan: Jawaban ini dihasilkan otomatis oleh AI. Informasi mungkin belum mencakup data paling mutakhir, sudah lawas, atau berpotensi mengandung halusinasi dan kekeliruan fakta.*';
-        cleaned = `${cleaned}${disclaimer}`;
-      }
+      // Disclaimer dipindahkan secara elegan ke UI terminal permanen (tidak disisipkan ke tiap bubble chat)
 
       if (res.headersSent) return true;
       const isSpecific = (model && model !== 'auto');
