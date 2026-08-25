@@ -1949,32 +1949,27 @@ const rateLimitedKeyCache = new Map();
       }
 
       // 2. UNIVERSAL AUTO & ALL CATEGORIES (CASUAL, CODING, REASONING, RESEARCH, DEFAULT)
-      // Struktur Pipeline Tercepat Sesuai Prioritas Pengguna:
-      // 1. Nemotron Lightning OpenRouter
-      // 2. Nemotron Nano OpenRouter
-      // 3. Nemotron Nano Ollama
-      // 4. Nemotron Lightning OpenCode
-      // 5. Nemotron Ultra/Nano OpenCode
-      // 6. Sisanya (Super 120B, Ultra 550B, DeepSeek, MiniMax, dll)
+      // Prioritas Utama: Nemotron Nano Cluster (OpenRouter ➔ Ollama ➔ OpenCode)
       return [
-        // === TIER UTAMA TERCEPAT (HIGH-SPEED LIGHTNING & NANO CLUSTER) ===
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 20000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 20000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 15000 },
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 12000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
+        // === TIER 1: PRIORITAS UTAMA ULTRA-FAST NEMOTRON NANO CLUSTER (<2s) ===
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 8000 },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 8000 },
 
-        // === TIER FALLBACK KAPASITAS BESAR & SOTA ALTERNATIF ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
+        // === TIER 2: MODEL CEPAT ALTERNATIF (LIGHTNING, MINIMAX, DEEPSEEK) ===
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 8000 },
         { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 8000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 10000 },
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 12000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 12000 },
-        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 10000 },
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
-        { provider: 'ollama', model: 'minimax-m3', timeout: 12000 }
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 8000 },
+
+        // === TIER 3: OPENCODE & OLLAMA HIGH-CAPACITY FALLBACKS ===
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 },
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 10000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 10000 },
+        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 8000 },
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 10000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 10000 },
+        { provider: 'ollama', model: 'minimax-m3', timeout: 10000 }
       ];
     }
 
