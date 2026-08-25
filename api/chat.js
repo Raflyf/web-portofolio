@@ -1175,9 +1175,28 @@ export default async function handler(req, res) {
       targetModel = 'Vision-model';
     }
 
-    const isSingleWordGreeting = /^(halo|hai|hey|tes|test|ping|oke|ok|sip|makasih|terima kasih)$/i.test(query.trim());
-    const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(query.trim());
-    const isSkipSearch = isSingleWordGreeting || isInternalPortfolioQuery;
+    const qClean = (query || '').trim();
+    const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you)$/i.test(qClean);
+
+    // Ponytail / Caveman Ultra-Fast Path: Zero-Latency Instant Identity Resolution (<5ms)
+    if (isIdentityQuery) {
+      return res.status(200).json({
+        success: true,
+        response: 'Saya AI Assistant di website portofolio Rafly Firmansyah, siap membantu mengeksplorasi proyek dan riset di sini!',
+        model: 'nemotron-3.5-lightning',
+        requestedModel: model || 'auto',
+        isFailover: false,
+        provider: 'Fast Identity Engine',
+        effort: 'low',
+        category: 'trivial_casual',
+        steps: [],
+        webMemories: []
+      });
+    }
+
+    const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
+    const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
+    const isSkipSearch = isCasualGreeting || isInternalPortfolioQuery;
 
     // DEAD-1/KONFLIK-3: Removed fetchLiveRepoContext (was always ''). Direct await is cleaner.
     const searchResult = isSkipSearch
