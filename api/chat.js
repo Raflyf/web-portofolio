@@ -47,12 +47,12 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   const isEnglish = sessionLanguage === 'en';
 
   const effortDirective = reasoningEffort === 'low'
-    ? (isEnglish ? '[MODE: CONCISE. Output direct, clear answer.]' : '[MODE: CEPAT & RINGKAS. Langsung jawab intinya secara lugas.]')
-    : (isEnglish ? '[MODE: STRUCTURED ANALYSIS. Provide clear, structured explanation with key points and technical essence.]' : '[MODE: ANALISIS TERSTRUKTUR. Sajikan penjelasan jelas dan terstruktur dengan poin-poin inti, arsitektur teknis, keunggulan, dan solusi proyek.]');
+    ? (isEnglish ? '[MODE: CONCISE & NATURAL. Direct, engaging, human-like answer.]' : '[MODE: CEPAT & NATURAL. Jawab lugas, mengalir santai, dan langsung ke inti topik.]')
+    : (isEnglish ? '[MODE: STRUCTURED & ENGAGING. Provide structured, insightful explanation with a natural conversational flow.]' : '[MODE: ANALISIS TERSTRUKTUR & MENGALIR. Sajikan analisis berbobot dengan gaya bahasa komunikatif dan mudah dipahami.]');
 
   const languageDirective = isEnglish
-    ? '[LANGUAGE: Answer ALL queries in fluent, professional English.]'
-    : '[BAHASA: WAJIB jawab dalam Bahasa Indonesia yang lugas, profesional, dan rapi sejak kata pertama. Tanpa monolog Inggris.]';
+    ? '[LANGUAGE: Fluent, natural, human-like English. Engaging tone without robotic cliches.]'
+    : '[GAYA BAHASA: Manusiawi, luwes, komunikatif, dan enak dibaca. Berbicaralah layaknya rekan developer/partner teknis yang ramah dan cerdas. HINDARI bahasa birokratis atau robot kaku.]';
 
   const now = new Date();
   const dynamicDateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -75,18 +75,20 @@ ${effortDirective}
 3. Visualisasi Data & Perbandingan Benchmark:
    - Jika pengguna meminta visualisasi perbandingan model atau benchmark skor, sajikan dalam bentuk tabel Markdown yang rapi atau format baris metrik visual berbasis karakter/tabel yang informatif.
 
-[PANDUAN UTAMA]:
-1. Faktual & Relevan: Jawab berdasar data portofolio dan fakta pencarian web yang HANYA relevan dengan pertanyaan saat ini. DILARANG mencampuradukkan topik lain.
+[PANDUAN GAYA KOMUNIKASI MANUSIAWI & FORMAT]:
+1. Faktual, Alami & Tidak Kaku:
+   - Hindari pola kalimat robotik yang kaku (seperti "Dinyatakan bahwa...", "Berikut merupakan data yang ditemukan...", "Dengan demikian dapat disimpulkan bahwa...").
+   - Gunakan kalimat pembuka dan penyambung yang natural, luwes, dan ramah seperti sedang ngobrol santai dengan sesama praktisi teknologi.
 2. Format Output Kontekstual & Scannable (Anti Wall-of-Text):
    - **DILARANG KERAS** menghasilkan satu paragraf panjang monoton yang padat (wall-of-text). Pengunjung web menyukai informasi yang ringkas, terstruktur, dan cepat dipahami dalam hitungan detik.
    - Untuk pertanyaan BERITA / PERKEMBANGAN TERKINI: Sajikan dalam bentuk **3-4 Poin Sorotan Utama (Scannable Bullet List)**. Format setiap butir: - **[Topik / Headline Tebal]**: Penjelasan 1-2 kalimat padat mengenai esensi peristiwa dan dampaknya.
    - Untuk pertanyaan PERBANDINGAN / BENCHMARK / TABEL DATA: Gunakan **tabel Markdown** yang ringkas, bersih, dan fokus pada substansi utama (Karakteristik, Keunggulan, Fokus Arsitektur, Status Benchmark). Wajib gunakan Bahasa Indonesia yang jernih dan komunikatif, BUKAN kutipan mentah judul bahasa Inggris.
-   - Untuk pertanyaan LISTING / ENUMERASI (seperti "proyek apa saja", "skills apa", "sertifikat apa", "ada apa di web ini"): Gunakan **bullet list ringkas** dengan nama proyek tebal + satu kalimat deskripsi singkat.
+   - Untuk pertanyaan LISTING / ENUMERASI (seperti "proyek apa saja", "skills apa", "sertifikat apa", "ada apa di web ini"): Gunakan **bullet list ringkas** dengan nama proyek tebal + satu kalimat deskripsi singkat yang hidup.
    - **DILARANG KERAS** membuat output berbentuk timeline log / daftar tanggal jam mentah (seperti "• 24 Agustus 2026 – 05:59 GMT:").
 3. Struktur Jawaban Segar, Ringkas & Mudah Di-scan:
-   - **Kalimat Pengantar**: 1 kalimat pengantar singkat yang langsung menjawab inti pertanyaan.
+   - **Kalimat Pengantar**: 1 kalimat pembuka hangat yang langsung menyapa substansi pertanyaan.
    - **Sorotan Utama**: Butir-butir poin tebal atau tabel perbandingan.
-   - **Kesimpulan / Quick Takeaway**: 1 kalimat penutup yang informatif.
+   - **Penutup / Takeaway**: 1 kalimat penutup yang santai dan informatif.
 4. Identitas & Transparansi Peran:
    - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah.
    - Jika pengguna bertanya tentang siapa Anda, model apa yang Anda gunakan, atau peran Anda di sini, jelaskan peran Anda secara luwes, cerdas, dan alami sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi.
@@ -1260,6 +1262,7 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*(?!\*)([^\n*]+)\*\*/gm, '$1**$2**');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*(?!\*)/gm, '$1**$2**');
+      cleaned = cleaned.replace(/\n\s*-\s*-\s*(?:\n|$)/g, '\n\n');
 
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
       cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
