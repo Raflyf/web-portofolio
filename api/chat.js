@@ -77,7 +77,13 @@ ${effortDirective}
    - **Penutup**: Kesimpulan singkat yang lugas dan informatif.
    - **Tanpa Basa-Basi**: Tanpa kata pengantar template dan tanpa monolog klise di akhir.
 4. Identitas: Jika ditanya "model apa kamu" atau "siapa kamu", jawab langsung dan singkat: "Saya AI Assistant di website portofolio Rafly Firmansyah, siap membantu mengeksplorasi proyek dan riset di sini!" Tidak perlu menyebut nama vendor atau nama model.
-5. Tautan Resmi Tertarget: Jika membahas proyek Rafly, sertakan link repositori/sertifikat resmi. Jika menjawab berita eksternal, cantumkan HANYA link yang benar-benar ada di data pencarian.
+5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
+   - DILARANG KERAS menyisipkan tautan Markdown `[GitHub](...)` atau URL apapun di tengah kalimat, di tengah poin pembahasan, atau di tengah paragraf.
+   - Selesaikan seluruh penjelasan, arsitektur, dan ringkasan teknis secara tuntas terlebih dahulu.
+   - Seluruh link repositori GitHub, demo, atau verifikasi WAJIB diletakkan di BAGIAN PALING AKHIR JAWABAN di bawah baris pemisah, dengan format:
+     
+     Tautan Terkait:
+     - [Nama Proyek / GitHub](https://github.com/...)
 6. Nol Monolog / Nol Emoji: Jangan menghasilkan teks monolog pemikiran bahasa Inggris, dan jangan gunakan emoji apapun.
 
 [BATASAN ANTI-HALUSINASI & PEMISAHAN TOPIK]:
@@ -88,15 +94,15 @@ ${effortDirective}
 - DILARANG MENGARANG ANGKA BENCHMARK SPESIFIK jika angka tersebut tidak tercantum di data pencarian.
 
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
-- **OpenPlagiarismChecker** – Deteksi plagiarisme akademik 100% lokal offline. Dual Engine: 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal. [GitHub](https://github.com/Raflyf/OpenPlagiarismChecker)
-- **Spam-Email Detection System** – ML Skripsi: adaptif Concept Drift/Covariate Shift, Domain Adaptation 8x pada 30% data kontemporer, Ensemble CNB 77% & XGBoost 93% F1. [GitHub](https://github.com/Raflyf/Spam-Email)
-- **laser_pointer_PPT** – Remote pointer PowerPoint nirsentuh via sensor gyroscope smartphone, WebSocket Flask-SocketIO + PyAutoGUI. [GitHub](https://github.com/Raflyf/laser_pointer_PPT)
-- **FotoKitaBlur** – Edge CV privasi wajah, deteksi gestur Peace Sign/V-Sign secara lokal via MediaPipe Tasks Vision + OpenCV. [GitHub](https://github.com/FotoKitaBlur)
-- **web-portofolio** – Landing page portofolio: Vanilla JS modular, OKLCH design system, Terminal AI, Supabase RAG memory. [GitHub](https://github.com/Raflyf/web-portofolio) | [Demo](https://raflyfirmansyah-portofolio.vercel.app/)
-- Sertifikat BNSP Analis Program (2025): No. Reg TIK.1241.04242 2025. [Verifikasi](https://bnsp.go.id)
-- Sertifikat MikroTik MTCNA (2025): No. 2502NA6383 (Riga, Latvia). [Verifikasi](https://mikrotik.com/certificates)
-- Sertifikat Cisco PCAP (2024): Cisco Networking Academy & OpenEDG Python Institute. [Verifikasi](https://www.netacad.com)
-- Kontak: [GitHub](https://github.com/Raflyf) | [Email](mailto:raflyfirmansyah02@gmail.com) | [WhatsApp](https://wa.me/628991333323)`;
+- **OpenPlagiarismChecker**: Deteksi plagiarisme akademik 100% lokal offline. Dual Engine: 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal. URL Repositori: https://github.com/Raflyf/OpenPlagiarismChecker
+- **Spam-Email Detection System**: ML Skripsi: adaptif Concept Drift/Covariate Shift, Domain Adaptation 8x pada 30% data kontemporer, Ensemble CNB 77% & XGBoost 93% F1. URL Repositori: https://github.com/Raflyf/Spam-Email
+- **laser_pointer_PPT**: Remote pointer PowerPoint nirsentuh via sensor gyroscope smartphone, WebSocket Flask-SocketIO + PyAutoGUI. URL Repositori: https://github.com/Raflyf/laser_pointer_PPT
+- **FotoKitaBlur**: Edge CV privasi wajah, deteksi gestur Peace Sign/V-Sign secara lokal via MediaPipe Tasks Vision + OpenCV. URL Repositori: https://github.com/FotoKitaBlur
+- **web-portofolio**: Landing page portofolio: Vanilla JS modular, OKLCH design system, Terminal AI, Supabase RAG memory. URL Repositori: https://github.com/Raflyf/web-portofolio (Demo: https://raflyfirmansyah-portofolio.vercel.app/)
+- Sertifikat BNSP Analis Program (2025): No. Reg TIK.1241.04242 2025. Verifikasi: https://bnsp.go.id
+- Sertifikat MikroTik MTCNA (2025): No. 2502NA6383 (Riga, Latvia). Verifikasi: https://mikrotik.com/certificates
+- Sertifikat Cisco PCAP (2024): Cisco Networking Academy & OpenEDG Python Institute. Verifikasi: https://www.netacad.com
+- Kontak: GitHub https://github.com/Raflyf | Email mailto:raflyfirmansyah02@gmail.com | WhatsApp https://wa.me/628991333323`;
 }
 
 async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
@@ -1241,12 +1247,25 @@ export default async function handler(req, res) {
         }
       });
 
+      // 7. Relocate inline links from the middle of prose paragraphs to the bottom
+      const hasInlineLinksInProse = /([a-zA-Z0-9\.\,\)])\s*(\[[^\]]+\]\(https?:\/\/[^)]+\))\s*([a-zA-Z0-9])/i.test(cleaned);
+      if (hasInlineLinksInProse && !cleaned.includes('Tautan Terkait:') && !cleaned.includes('Tautan Proyek:')) {
+        const extractedLinks = [];
+        cleaned = cleaned.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, (m, label, linkUrl) => {
+          extractedLinks.push(`- ${label}: [${linkUrl}](${linkUrl})`);
+          return ''; // Strip from the middle of sentence
+        });
+        cleaned = cleaned.replace(/[ \t]{2,}/g, ' ').replace(/\s*\.\s*\./g, '.').trim();
+        if (extractedLinks.length > 0) {
+          const uniqueLinks = Array.from(new Set(extractedLinks));
+          cleaned = `${cleaned}\n\nTautan Terkait:\n${uniqueLinks.join('\n')}`;
+        }
+      }
+
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
       }
-
-      // Disclaimer dipindahkan secara elegan ke UI terminal permanen (tidak disisipkan ke tiap bubble chat)
 
       if (res.headersSent) return true;
       const isSpecific = (model && model !== 'auto');
