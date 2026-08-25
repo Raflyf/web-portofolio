@@ -95,12 +95,9 @@ ${effortDirective}
    - HANYA fokus pada identitas dan peran Anda di portofolio ini. DILARANG KERAS menyebut, membandingkan, atau menyangkal nama-nama model pihak ketiga yang tidak ditanyakan (DILARANG berkata 'aku bukan model X' atau menyebut nama brand pihak ketiga yang tidak relevan).
    - DILARANG membeo kalimat template kaku yang sama persis secara berulang-ulang. Susun jawaban secara bervariasi, profesional, dan natural sesuai konteks pertanyaan pengguna.
 5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
-   - DILARANG KERAS menyisipkan tautan Markdown atau URL apapun di tengah kalimat, di tengah poin pembahasan, atau di tengah paragraf.
-   - Selesaikan seluruh penjelasan, arsitektur, dan ringkasan teknis secara tuntas terlebih dahulu.
-   - Seluruh link repositori GitHub, demo, atau verifikasi WAJIB diletakkan di BAGIAN PALING AKHIR JAWABAN di bawah baris pemisah, dengan format:
-     
-     Tautan Terkait:
-     - [Nama Proyek / GitHub](https://github.com/...)
+   - HANYA sertakan bagian "Tautan Terkait:" jika memang ada link URL nyata yang relevan untuk dibagikan (misalnya saat membahas proyek GitHub atau sumber artikel spesifik).
+   - Jika TIDAK ADA link yang perlu dibagikan (misalnya saat menjawab sapaan, identitas, atau diskusi topik umum), DILARANG KERAS menuliskan judul "Tautan Terkait:" atau catatan "(tidak ada tautan)". Cukup akhiri jawaban secara bersih dan natural.
+   - DILARANG menyisipkan tautan Markdown di tengah kalimat. Jika ada link, letakkan di baris paling akhir.
 6. Nol Monolog / Nol Emoji: Jangan menghasilkan teks monolog pemikiran bahasa Inggris, dan jangan gunakan emoji apapun.
 
 [BATASAN ANTI-HALUSINASI & PEMISAHAN TOPIK]:
@@ -1262,8 +1259,11 @@ export default async function handler(req, res) {
       // 3.7. Clean duplicate bullet dashes & normalize bold markdown
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*[\-\*•\s]*/gm, '$1**');
       cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\[([^\]\n]+)\](?:\*\*|:|\*\*:)?\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*(?!\*)([^\n*]+)\*\*/gm, '$1**$2**');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*(?!\*)/gm, '$1**$2**');
+      cleaned = cleaned.replace(/:\s*:\s*/g, ': ');
+      cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
       cleaned = cleaned.replace(/\n\s*-\s*-\s*(?:\n|$)/g, '\n\n');
 
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
@@ -1319,7 +1319,18 @@ export default async function handler(req, res) {
         }
       }
 
-      cleaned = cleaned.replace(/\n+Tautan Terkait:\s*$/i, '').replace(/^["']|["']$/g, '').trim();
+      // 8. Clean empty or bogus "Tautan Terkait:" headers
+      cleaned = cleaned.replace(/\n+Tautan Terkait:\s*(?:\([^)]*\)|tidak ada[^\n]*|none|n\/a|-*\s*)?$/i, '').trim();
+      cleaned = cleaned.replace(/\n+Tautan Terkait:\s*(?:\n|$)/gi, '').trim();
+      const tautanIndex = cleaned.indexOf('Tautan Terkait:');
+      if (tautanIndex !== -1) {
+        const afterTautan = cleaned.slice(tautanIndex + 'Tautan Terkait:'.length).trim();
+        if (!afterTautan || !/(?:\[[^\]]+\]|\bhttps?:\/\/|[-*•]\s*\S+)/.test(afterTautan)) {
+          cleaned = cleaned.slice(0, tautanIndex).trim();
+        }
+      }
+
+      cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
       }
