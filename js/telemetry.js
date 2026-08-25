@@ -84,12 +84,12 @@ class TelemetryEngine {
     // Enforce strict bounds to comply with Supabase RLS and DB schema
     const payload = {
       event_type: (eventType || 'unknown').toString().substring(0, 50),
-      event_target: (eventTarget || 'unknown').toString().substring(0, 140),
-      event_label: (eventLabel || eventTarget || '').toString().substring(0, 240),
+      event_target: (eventTarget || 'unknown').toString().substring(0, 150),   // KONFLIK-5: sync with DB RLS (150)
+      event_label: (eventLabel || eventTarget || '').toString().substring(0, 255), // KONFLIK-6: sync with DB RLS (255)
       device_type: (this.deviceType || 'desktop').toString().substring(0, 20),
       screen_resolution: (this.screenRes || '1920x1080').toString().substring(0, 30),
-      referrer: (referrerHost || 'Direct / Bookmark').toString().substring(0, 240),
-      session_id: (this.sessionId || 'sess_default').toString().substring(0, 60),
+      referrer: (referrerHost || 'Direct / Bookmark').toString().substring(0, 255), // sync with DB RLS (255)
+      session_id: (this.sessionId || 'sess_default').toString().substring(0, 64),   // sync with DB RLS (64)
       created_at: new Date().toISOString()
     };
 

@@ -17,3 +17,10 @@ ngrok_auth.md
 .system_generated/
 .agents/
 skills-lock.json
+
+# Local utility scripts (not part of Vercel deployment)
+generate_favicons.py
+prompt.md
+
+# Scratch / experimental workspace (ephemeral, not for production)
+scratch/

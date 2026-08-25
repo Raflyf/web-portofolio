@@ -1953,7 +1953,7 @@ class DashboardApp {
           await fetch('/api/admin-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'update_pin', new_pin: newPin })
+            body: JSON.stringify({ action: 'update_pin', new_pin: newPin, current_pin_hash: this.cloudPinHash || localStorage.getItem('dash_custom_pin_hash') })
           });
         } catch (_) {}
 

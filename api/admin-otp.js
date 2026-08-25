@@ -89,16 +89,18 @@ async function dispatchEmail(otpCode) {
     }
   }
 
-  // Fallback: Return success with code logged to server log
-  console.log(`[Admin OTP Security] Generated OTP for ${TARGET_EMAIL}: [${otpCode}] (Valid for 10 min)`);
-  return { dispatched: false, provider: 'cloud_log', note: 'Email provider credentials not configured, OTP securely logged to telemetry server.' };
+  // Fallback: Log only partial OTP (first 2 digits masked) — do NOT log plaintext OTP
+  const maskedOtp = otpCode.substring(0, 2) + '****';
+  console.warn(`[Admin OTP Security] OTP generated for ${TARGET_EMAIL.replace(/(.{3})(.*)(@.*)/, '$1***$3')}: ${maskedOtp} (Valid for 10 min — email provider not configured)`);
+  return { dispatched: false, provider: 'cloud_log', note: 'Email provider credentials not configured. OTP partially logged.' };
 }
 
 export default async function handler(req, res) {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS: Restrict to official portfolio origin only
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://raflyfirmansyah-portofolio.vercel.app';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Admin-Token');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -271,12 +273,32 @@ export default async function handler(req, res) {
     }
 
     // =========================================================================
-    // 4. DIRECT PIN UPDATE (FOR AUTHENTICATED SESSIONS)
+    // 4. DIRECT PIN UPDATE (REQUIRES VALID CURRENT PIN HASH VERIFICATION)
     // =========================================================================
     if (action === 'update_pin') {
+      // MINOR-6 Fix: Require current_pin_hash proof to prevent unauthorized PIN changes
+      const providedCurrentHash = String(body.current_pin_hash || '').trim();
       const newPin = String(body.new_pin || '').trim();
+
       if (!newPin || newPin.length < 4 || newPin.length > 8) {
         return res.status(400).json({ success: false, message: 'Master PIN baru harus terdiri dari 4-8 digit.' });
+      }
+
+      // Verify current PIN hash matches Supabase record before allowing update
+      if (!providedCurrentHash || providedCurrentHash.length !== 64) {
+        return res.status(403).json({ success: false, message: 'Verifikasi PIN aktif diperlukan untuk mengganti PIN.' });
+      }
+      try {
+        const verifyRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=pin_hash`, { method: 'GET', headers });
+        if (verifyRes.ok) {
+          const verifyData = await verifyRes.json();
+          const storedHash = verifyData?.[0]?.pin_hash || DEFAULT_PIN_HASH;
+          if (providedCurrentHash !== storedHash) {
+            return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
+          }
+        }
+      } catch (err) {
+        console.warn('[Admin OTP] PIN verification fetch failed:', err.message);
       }
 
       const newPinHash = hashValue(newPin);
