@@ -655,8 +655,10 @@ class DashboardApp {
     this.checkOmniRouteRealtimeStatus();
 
     let pollTick = 0;
-    // Realtime polling every 3 seconds for instant AI model counts & telemetry
-    this.pollInterval = setInterval(() => {
+    const runPoll = () => {
+      // Egress Saver: Stop polling completely when tab is hidden/minimized
+      if (document.hidden) return;
+
       this.loadDashboardData(true);
       pollTick++;
       if (pollTick % 2 === 0) {
@@ -665,7 +667,21 @@ class DashboardApp {
       if (pollTick % 8 === 0) {
         this.fetchAIMemories(true);
       }
-    }, 3000);
+    };
+
+    // Realtime polling loop
+    this.pollInterval = setInterval(runPoll, 3000);
+
+    // Immediately refresh data when user switches back to this tab
+    if (!this._visibilityListenerAttached) {
+      this._visibilityListenerAttached = true;
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          this.loadDashboardData(true);
+          this.checkOmniRouteRealtimeStatus();
+        }
+      });
+    }
 
     // Instant cross-tab sync: when an AI query runs in terminal tab, dashboard updates in 0ms!
     window.addEventListener('storage', (e) => {
