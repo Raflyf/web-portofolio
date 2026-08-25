@@ -1,12 +1,12 @@
 /**
  * ============================================================================
- * VERCEL SERVERLESS FUNCTION: /api/chat (v5.2.0)
+ * VERCEL SERVERLESS FUNCTION: /api/chat (v5.3.0)
  * Multi-Provider Intelligent AI Gateway for Rafly Firmansyah Portfolio Terminal
  * Features:
- * - ≡ƒîÉ Real-Time Web Search & Encyclopedic Knowledge (Live 2026 Context)
- * - ≡ƒû╝∩╕Å Multimodal Vision Recognition (Gemini 3.1 Flash / MiniMax M3 Vision)
- * - ≡ƒôä Document & PDF Analysis (Text & Code Ingestion)
- * - ΓÜí Smart Multi-Provider Cascade (OmniRoute, OpenCode, OpenRouter, Ollama Cloud, MiniMax)
+ * - Real-Time Web Search & Encyclopedic Knowledge (Live 2026 Context)
+ * - Multimodal Vision Recognition (Gemini 3.1 Flash / MiniMax M3 Vision)
+ * - Document & PDF Analysis (Text & Code Ingestion)
+ * - Smart Multi-Provider Cascade (OmniRoute, OpenCode, OpenRouter, Ollama Cloud, MiniMax)
  * ============================================================================
  */
 
@@ -299,7 +299,7 @@ function formulateSmartSearchQueries(query, history = []) {
     }
   }
 
-  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 6);
+  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 4); // PERF-4: cap at 4 (was 6) to limit RSS flood
 }
 
 /**
@@ -316,14 +316,8 @@ function isJunkArticle(title) {
   return junkWords.some(j => low.includes(j));
 }
 
-/**
- * Real-Time GitHub Live Repository Document Fetcher
- * Built-in ground truth is already embedded in buildSystemPrompt.
- * Only fetches live delta if explicitly needed.
- */
-async function fetchLiveRepoContext(query = '') {
-  return '';
-}
+// ponytail: fetchLiveRepoContext removed — was a no-op stub returning '' every call.
+// searchWebContext already covers all live web context needs.
 
 /**
  * Crawl4AI & Firecrawl Inspired Fit-Markdown & Semantic Content Extractor
@@ -525,7 +519,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2600);
+    const timeout = setTimeout(() => controller.abort(), 5000); // KONFLIK-1: 5000ms per DOCUMENTATION.md intent
 
     const structuredSnippets = [];
     const rawSnippets = [];
@@ -724,12 +718,8 @@ async function searchWebContext(query, history = []) {
   }
 }
 
-function pickAutoModel(query, hasImages = false, reasoningEffort = 'auto') {
-  if (hasImages) {
-    return 'openrouter/free';
-  }
-  return 'openrouter/free';
-}
+// ponytail: pickAutoModel removed — both branches returned identical 'openrouter/free' and function was never called.
+// Model routing is handled entirely by classifyQueryIntent + buildExecutionPipeline.
 
 function classifyQueryIntent(query = '', docAttachments = [], hasImages = false) {
   const q = String(query || '').trim().toLowerCase();
@@ -753,7 +743,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
       category: 'trivial_casual',
       isAnalysisOrComparison: false,
       effort: 'low',
-      omniCandidates: ['nemotron-lighting', 'nemotron-lightning', 'x-preview-f-free'],
+      omniCandidates: ['nemotron-lightning', 'x-preview-f-free'], // DEAD-3: removed typo 'nemotron-lighting'
       label: 'Casual Greeting & Quick Interaction (Nemotron Lightning)'
     };
   }
@@ -817,7 +807,7 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     category: isShortQuery ? 'trivial_casual' : 'basic_standard',
     isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
     effort: isShortQuery ? 'low' : 'medium',
-    omniCandidates: ['nemotron-lighting', 'nemotron-lightning', 'x-preview-f-free', 'nemotron-3-nano', 'deepseek/deepseek-chat'],
+    omniCandidates: ['nemotron-lightning', 'x-preview-f-free', 'nemotron-3-nano', 'deepseek/deepseek-chat'], // DEAD-3: removed typo 'nemotron-lighting'
     label: hasAnalysisOrComparisonKeywords ? 'Technical Synthesis (Nemotron Nano 30B)' : (isShortQuery ? 'Quick Interaction (Nemotron Lightning)' : 'Standard Q&A & Trivia (Nemotron Lightning)')
   };
 }
@@ -1177,13 +1167,11 @@ export default async function handler(req, res) {
     const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(query.trim());
     const isSkipSearch = isSingleWordGreeting || isInternalPortfolioQuery;
 
-    const [searchResult, liveRepoContext] = await Promise.all([
-      isSkipSearch
-        ? Promise.resolve({ formattedPrompt: '', rawSnippets: [] })
-        : searchWebContext(query, history),
-      fetchLiveRepoContext(query)
-    ]);
-    const webContext = `${liveRepoContext}${searchResult.formattedPrompt}`;
+    // DEAD-1/KONFLIK-3: Removed fetchLiveRepoContext (was always ''). Direct await is cleaner.
+    const searchResult = isSkipSearch
+      ? { formattedPrompt: '', rawSnippets: [] }
+      : await searchWebContext(query, history);
+    const webContext = searchResult.formattedPrompt;
     const webMemories = searchResult.rawSnippets || [];
 
     const sendSuccess = (content, modelName, providerName) => {
@@ -1259,8 +1247,11 @@ export default async function handler(req, res) {
       }
 
       // 7. Append automated disclaimer footer (Transparansi Real-Time & Anti-Hallucination Disclaimer)
-      const isSimpleGreeting = /^(halo|hai|hey|siang|pagi|malam|tes|test|ping|oke|ok|sip|makasih|terima kasih|sama-sama)[.! ]*$/i.test(cleaned.trim());
-      if (!isSimpleGreeting && !cleaned.includes('Catatan:') && !cleaned.includes('Disclaimer:')) {
+      // KONFLIK-4: Extended isSimpleGreeting to match multi-word identity/ack responses
+      const isSimpleGreeting = /^(halo|hai|hey|siang|pagi|malam|tes|test|ping|oke|ok|sip|makasih|terima kasih|sama-sama|saya ai|saya adalah ai|saya adalah asisten|saya siap|siap membantu)[.!? \w]*$/i.test(cleaned.trim().substring(0, 120));
+      // KONFLIK-7: Use exact line-start match for 'Catatan:' to avoid false-positive on inline 'satu catatan kecil:'
+      const hasDisclaimer = /^\s*(?:Catatan|Disclaimer|Peringatan):/mi.test(cleaned);
+      if (!isSimpleGreeting && !hasDisclaimer) {
         const disclaimer = (sessionLanguage === 'en')
           ? '\n\n---\n> *Catatan: Respons ini dihasilkan otomatis oleh AI. Informasi mungkin belum mencakup perkembangan paling mutakhir, sudah lawas, atau berpotensi mengandung halusinasi dan kekeliruan fakta.*'
           : '\n\n---\n> *Catatan: Jawaban ini dihasilkan otomatis oleh AI. Informasi mungkin belum mencakup data paling mutakhir, sudah lawas, atau berpotensi mengandung halusinasi dan kekeliruan fakta.*';

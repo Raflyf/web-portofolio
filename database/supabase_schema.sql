@@ -130,21 +130,33 @@ ON CONFLICT (id) DO UPDATE SET
 
 ALTER TABLE public.admin_auth_config ENABLE ROW LEVEL SECURITY;
 
+-- SELECT: Allow anon to read auth state (needed for cross-browser PIN sync)
 CREATE POLICY "Allow public anonymous read admin_auth_config"
 ON public.admin_auth_config
 FOR SELECT
 TO anon
 USING (true);
 
-CREATE POLICY "Allow public anonymous insert admin_auth_config"
-ON public.admin_auth_config
-FOR INSERT
-TO anon
-WITH CHECK (true);
+-- INSERT: Allow anon ONLY for initial seed (handled by ON CONFLICT above)
+-- UPDATE: REMOVED — anon MUST NOT update auth config directly.
+-- All mutations go through /api/admin-otp serverless function which validates OTP
+-- before writing. The function should use SUPABASE_SERVICE_ROLE_KEY for writes.
+-- Keeping anon UPDATE would allow any visitor to: reset lockout, change pin_hash, or bypass OTP.
 
-CREATE POLICY "Allow public anonymous update admin_auth_config"
-ON public.admin_auth_config
-FOR UPDATE
-TO anon
-USING (true);
+-- ============================================================================
+-- 7. PARTIAL INDEX: Optimize OMNIROUTE_TUNNEL lookup in ai_memories
+-- ============================================================================
+CREATE INDEX IF NOT EXISTS idx_memories_omniroute
+ON public.ai_memories (created_at DESC)
+WHERE fact_text LIKE '%[OMNIROUTE_TUNNEL%';
+
+-- ============================================================================
+-- 8. MAINTENANCE NOTE (pg_cron TTL — Optional but Recommended)
+-- ============================================================================
+-- To prevent unbounded growth of portfolio_telemetry, schedule a cleanup job:
+-- SELECT cron.schedule('telemetry-cleanup', '0 3 * * 0', $$
+--   DELETE FROM public.portfolio_telemetry WHERE created_at < NOW() - INTERVAL '90 days';
+-- $$);
+-- Requires pg_cron extension enabled in Supabase: Extensions > pg_cron
+
 
