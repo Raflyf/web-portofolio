@@ -83,8 +83,8 @@ ${effortDirective}
    - **DILARANG KERAS** menghasilkan satu paragraf panjang monoton yang padat (wall-of-text). Pengunjung web menyukai informasi yang ringkas, terstruktur, dan cepat dipahami dalam hitungan detik.
    - Untuk pertanyaan BERITA / PERKEMBANGAN TERKINI: Sajikan dalam bentuk **3-4 Poin Sorotan Utama (Scannable Bullet List)**. Format setiap butir: - **[Topik / Headline Tebal]**: Penjelasan 1-2 kalimat padat mengenai esensi peristiwa dan dampaknya.
    - Untuk pertanyaan PERBANDINGAN / BENCHMARK / TABEL DATA: Gunakan **tabel Markdown** yang ringkas, bersih, dan fokus pada substansi utama (Karakteristik, Keunggulan, Fokus Arsitektur, Status Benchmark). Wajib gunakan Bahasa Indonesia yang jernih dan komunikatif, BUKAN kutipan mentah judul bahasa Inggris.
-   - Untuk pertanyaan LISTING / ENUMERASI (seperti "proyek apa saja", "skills apa", "sertifikat apa", "ada apa di web ini"): Gunakan **bullet list ringkas** dengan nama proyek tebal + satu kalimat deskripsi singkat yang hidup.
-   - **DILARANG KERAS** membuat output berbentuk timeline log / daftar tanggal jam mentah (seperti "• 24 Agustus 2026 – 05:59 GMT:").
+   - Untuk pertanyaan LISTING / ENUMERASI / KEMAMPUAN (seperti "proyek apa saja", "skills apa", "kamu bisa apa", "ada apa di web ini"): Gunakan **bullet list ringkas** dengan nama topik tebal + satu kalimat deskripsi singkat yang hidup. Format: - **[Topik Tebal]**: Penjelasan 1 kalimat padat.
+   - **DILARANG KERAS** membuat spasi lebar artifisial, format kolom buatan, atau output timeline log mentah (seperti "• 24 Agustus 2026 – 05:59 GMT:").
 3. Struktur Jawaban Segar, Ringkas & Mudah Di-scan:
    - **Kalimat Pengantar**: 1 kalimat pembuka hangat yang langsung menyapa substansi pertanyaan.
    - **Sorotan Utama**: Butir-butir poin tebal atau tabel perbandingan.
@@ -1256,14 +1256,25 @@ export default async function handler(req, res) {
         cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
       }
 
+      // 3.65. Ensure each bullet point is on a separate line
+      cleaned = cleaned.replace(/([^\n])\s+[-•*]\s+\*\*/g, '$1\n- **');
+      cleaned = cleaned.replace(/([^\n])\s+[-•*]\s+\[/g, '$1\n- [');
+      cleaned = cleaned.replace(/([^\n])\s+•\s+/g, '$1\n- ');
+
       // 3.7. Clean duplicate bullet dashes & normalize bold markdown
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*[\-\*•\s]*/gm, '$1**');
       cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\[([^\]\n]+)\](?:\*\*|:|\*\*:)?\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*(?!\*)([^\n*]+)\*\*/gm, '$1**$2**');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*(?!\*)/gm, '$1**$2**');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)([^\n*:-]+)\*\s*-\s*/gm, '$1**$2**: ');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*\s*-\s*/gm, '$1**$2**: ');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*\s*:\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/:\s*:\s*/g, ': ');
       cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
+      cleaned = cleaned.replace(/\s*\*\s*-\s*/g, ' - ');
+      cleaned = cleaned.replace(/([^\n])\s{2,}([^\n])/g, '$1 $2');
+      cleaned = cleaned.replace(/([^\n])\s+((?:Semoga|Jika ada|Ada topik|Kalau ada|Silakan)\s+[^\n]+)$/i, '$1\n\n$2');
       cleaned = cleaned.replace(/\n\s*-\s*-\s*(?:\n|$)/g, '\n\n');
 
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
