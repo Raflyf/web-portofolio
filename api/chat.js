@@ -85,10 +85,11 @@ ${effortDirective}
    - Untuk pertanyaan PERBANDINGAN / BENCHMARK / TABEL DATA: Gunakan **tabel Markdown** yang ringkas, bersih, dan fokus pada substansi utama (Karakteristik, Keunggulan, Fokus Arsitektur, Status Benchmark). Wajib gunakan Bahasa Indonesia yang jernih dan komunikatif, BUKAN kutipan mentah judul bahasa Inggris.
    - Untuk pertanyaan LISTING / ENUMERASI / KEMAMPUAN (seperti "proyek apa saja", "skills apa", "kamu bisa apa", "ada apa di web ini"): Gunakan **bullet list ringkas** dengan nama topik tebal + satu kalimat deskripsi singkat yang hidup. Format: - **[Topik Tebal]**: Penjelasan 1 kalimat padat.
    - **DILARANG KERAS** membuat spasi lebar artifisial, format kolom buatan, atau output timeline log mentah (seperti "• 24 Agustus 2026 – 05:59 GMT:").
-3. Struktur Jawaban Segar, Ringkas & Mudah Di-scan:
-   - **Kalimat Pengantar**: 1 kalimat pembuka hangat yang langsung menyapa substansi pertanyaan.
+3. Struktur Jawaban Segar, Ringkas & Tanpa Sapaan Repetitif:
+   - **DILARANG KERAS mengawali setiap jawaban dengan 'Hai!' atau 'Halo!'**. Sapaan berulang di tengah percakapan terasa kaku seperti robot. Hanya ucapkan sapaan jika pengguna baru pertama kali menyapa.
+   - **Langsung ke Inti**: Buka jawaban langsung pada esensi topik yang ditanyakan secara luwes dan alami.
    - **Sorotan Utama**: Butir-butir poin tebal atau tabel perbandingan.
-   - **Penutup / Takeaway**: 1 kalimat penutup yang santai dan informatif.
+   - **Penutup / Takeaway**: 1 kalimat penutup yang santai dan informatif (jika diperlukan).
 4. Identitas & Transparansi Peran:
    - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah (@Raflyf).
    - Jika ditanya tentang siapa Anda, model apa ini, atau peran Anda: Cukup jelaskan peran Anda secara langsung, percaya diri, ramah, dan natural sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi.
@@ -1248,6 +1249,12 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?:^|\n)\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*(?:\n|$)/g, '\n### $1. $2\n');
       cleaned = cleaned.replace(/(?:^|\n)\|\s*([•\-\*]\s*[^|\n]+?)\s*\|\s*(?:\n|$)/g, '\n$1\n');
       cleaned = cleaned.replace(/\s*\|\s*$/gm, '');
+
+      // 3.4. Strip repetitive leading greetings on non-greeting queries
+      const isExplicitGreeting = /^(?:hai|halo|hei|hello|hi|hey|selamat\s+(?:pagi|siang|sore|malam)|assalamu[']?alaikum)\b/i.test((query || '').trim());
+      if (!isExplicitGreeting) {
+        cleaned = cleaned.replace(/^(?:Hai|Halo|Hei|Hello|Hi|Hey)[!,\s.-]+/i, '').trim();
+      }
 
       // 3.5. Deterministic Identity Grounding: Cegah klaim atau penyangkalan pihak ketiga yang tidak perlu
       if (isIdentityQuery) {
