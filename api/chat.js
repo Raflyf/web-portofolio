@@ -1685,7 +1685,7 @@ const rateLimitedKeyCache = new Map();
       for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, 12000);
+        const perKeyTimeout = Math.min(remaining, 20000);
 
         try {
           const isLightning = cleanModelName.toLowerCase().includes('lightning');
@@ -1698,7 +1698,7 @@ const rateLimitedKeyCache = new Map();
             body: JSON.stringify({
               model: cleanModelName,
               messages: openRouterMessages,
-              max_tokens: maxTokensConfig,
+              max_tokens: Math.max(maxTokensConfig || 1000, 1500),
               temperature: tempConfig,
               reasoning_effort: isLightning ? undefined : (effectiveEffort === 'low' ? 'medium' : 'high')
             })
@@ -1718,7 +1718,7 @@ const rateLimitedKeyCache = new Map();
             continue;
           }
         } catch (err) {
-          providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(ocKey) + 1}]: ${err.message}`);
+          providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(opKey) + 1}]: ${err.message}`);
           continue;
         }
       }
@@ -1958,11 +1958,11 @@ const rateLimitedKeyCache = new Map();
       // 6. Sisanya (Super 120B, Ultra 550B, DeepSeek, MiniMax, dll)
       return [
         // === TIER UTAMA TERCEPAT (HIGH-SPEED LIGHTNING & NANO CLUSTER) ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 10000 },
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 20000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 20000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 15000 },
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 12000 },
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 15000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 15000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 20000 },
 
         // === TIER FALLBACK KAPASITAS BESAR & SOTA ALTERNATIF ===
         { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
