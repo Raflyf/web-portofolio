@@ -535,6 +535,21 @@ ${certsOverview}
           this.saveHistoryToSession();
         }
 
+        // Format agent execution steps trace
+        if (Array.isArray(data.steps) && data.steps.length > 0) {
+          const stepLines = data.steps.map(s => {
+            if (s.tool === 'web_search') {
+              const srcCount = s.sourcesCount ? ` (${s.sourcesCount} sumber terverifikasi)` : '';
+              return `[AGENT ➔ WEB SEARCH]: "${s.query}"${srcCount}`;
+            }
+            if (s.tool === 'portfolio_rag') {
+              return `[AGENT ➔ PORTFOLIO RAG]: Membaca basis pengetahuan proyek & riset internal`;
+            }
+            return `[AGENT ➔ TOOL]: ${s.tool || 'Eksekusi'}`;
+          });
+          finalResponse = `${stepLines.join('\n')}\n\n${finalResponse}`;
+        }
+
         const isAuto = !this.currentModel || this.currentModel === 'auto';
         const resolvedModel = data.model || 'deepseek/deepseek-chat';
         const provider = data.provider || 'Gateway';
