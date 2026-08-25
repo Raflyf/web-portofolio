@@ -1952,8 +1952,8 @@ const rateLimitedKeyCache = new Map();
       // Prioritas Utama: Nemotron Nano Cluster (OpenRouter ➔ Ollama ➔ OpenCode)
       return [
         // === TIER 1: PRIORITAS UTAMA ULTRA-FAST NEMOTRON NANO CLUSTER (<2s) ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 8000 },
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 8000 },
         { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 8000 },
 
         // === TIER 2: MODEL CEPAT ALTERNATIF (LIGHTNING, MINIMAX, DEEPSEEK) ===
