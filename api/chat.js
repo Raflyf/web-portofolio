@@ -1380,17 +1380,17 @@ Langkah yang WAJIB Anda lakukan:
     }
 
     // Maximum token limits: Expanded to eliminate cut-offs and support exhaustive reasoning & coding outputs
-    // LOW: 2,048 tokens (~8.5k chars) - Complete, fast answers for quick chats / trivia
-    // MEDIUM: 4,096 tokens (~17k chars) - Standard Q&A, comprehensive explanations
-    // HIGH: 8,192 tokens (~34k chars) - Deep research, heavy coding, full architecture
-    // THINKING: 12,288 tokens (~50k chars) - Deep Chain-of-Thought reasoning & mathematical derivations
+    // LOW: 4,096 tokens (~17k chars) - Complete, deep answers for quick chats / trivia
+    // MEDIUM: 8,192 tokens (~34k chars) - Standard Q&A, comprehensive explanations with structured CoT
+    // HIGH: 16,384 tokens (~68k chars) - Deep research, heavy coding, full architecture synthesis
+    // THINKING: 32,768 tokens (~135k chars) - Exhaustive Chain-of-Thought reasoning & mathematical derivations
     const maxTokensConfig = (effectiveEffort === 'thinking')
-      ? 12288
+      ? 32768
       : (effectiveEffort === 'high'
-          ? 8192
+          ? 16384
           : (effectiveEffort === 'medium'
-              ? 4096
-              : (effectiveEffort === 'low' ? 2048 : 4096)));
+              ? 8192
+              : (effectiveEffort === 'low' ? 4096 : 8192)));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.35 : 0.25);
 
     // ========================================================================
@@ -1492,7 +1492,7 @@ Langkah yang WAJIB Anda lakukan:
               messages: openRouterMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig,
-              reasoning_effort: (effectiveEffort === 'thinking' ? 'high' : (effectiveEffort === 'high' ? 'medium' : undefined)),
+              reasoning_effort: (effectiveEffort === 'low' ? 'medium' : 'high'),
               stream: false
             })
           }, remaining);
@@ -1544,7 +1544,7 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenRouter(mName, tOut = 15000) {
+    async function callOpenRouter(mName, tOut = 20000) {
       if (OPENROUTER_KEYS.length === 0) return null;
       const stepDeadline = Date.now() + tOut;
       const keysToTry = OPENROUTER_KEYS.slice(0, 3);
@@ -1582,9 +1582,10 @@ Langkah yang WAJIB Anda lakukan:
               messages: formattedMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig,
-              reasoning: (effectiveEffort === 'thinking' || effectiveEffort === 'high')
-                ? { effort: effectiveEffort === 'thinking' ? 'high' : 'medium', max_tokens: effectiveEffort === 'thinking' ? 16384 : 8192 }
-                : undefined
+              reasoning: { 
+                effort: (effectiveEffort === 'low' ? 'medium' : 'high'), 
+                max_tokens: (effectiveEffort === 'thinking' ? 32768 : (effectiveEffort === 'high' ? 16384 : 8192)) 
+              }
             })
           }, remaining);
 
@@ -1615,13 +1616,13 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 15000) {
+    async function callOpenCode(mName, tOut = 20000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
       const stepDeadline = Date.now() + tOut;
-      const keysToTry = OPENCODE_KEYS.slice(0, 3);
+      const keysToTry = OPENCODE_KEYS.slice(0, 2);
 
-      for (const ocKey of keysToTry) {
+      for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
 
@@ -1630,14 +1631,14 @@ Langkah yang WAJIB Anda lakukan:
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${ocKey}`
+              'Authorization': `Bearer ${opKey}`
             },
             body: JSON.stringify({
               model: cleanModelName,
               messages: openRouterMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig,
-              reasoning_effort: (effectiveEffort === 'thinking' ? 'high' : (effectiveEffort === 'high' ? 'medium' : undefined))
+              reasoning_effort: (effectiveEffort === 'low' ? 'medium' : 'high')
             })
           }, remaining);
 
@@ -1824,17 +1825,17 @@ Langkah yang WAJIB Anda lakukan:
       if (hasImages || (model && model.toLowerCase().includes('vision'))) {
         return [
           // Tier 1: OmniRoute Dedicated Vision
-          { provider: 'omniroute', model: 'Vision-model', timeout: 8000 },
-          { provider: 'omniroute', model: 'nemotron-lightning', timeout: 8000 },
+          { provider: 'omniroute', model: 'Vision-model', timeout: 30000 },
+          { provider: 'omniroute', model: 'nemotron-lightning', timeout: 30000 },
           // Tier 2: OpenRouter Multimodal
-          { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 12000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 10000 },
+          { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 25000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 25000 },
           // Tier 3: Ollama Cloud Multimodal
-          { provider: 'ollama', model: 'minimax-m3', timeout: 15000 },
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 12000 },
+          { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
           // Tier 4: OpenCode Multimodal
-          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 12000 },
-          { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 10000 }
+          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 25000 },
+          { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 25000 }
         ];
       }
 
@@ -1843,45 +1844,45 @@ Langkah yang WAJIB Anda lakukan:
         const t = model.toLowerCase();
         if (t.includes('codex')) {
           return [
-            { provider: 'omniroute', model: 'Codex', timeout: 8000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 12000 },
-            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 10000 }
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 },
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
+            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 25000 }
           ];
         }
         if (t.includes('antigravity')) {
           return [
-            { provider: 'omniroute', model: 'Antigravity', timeout: 8000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 }
+            { provider: 'omniroute', model: 'Antigravity', timeout: 30000 },
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 }
           ];
         }
         if (t.includes('ultra') || t.includes('nemotron-3-ultra')) {
           return [
-            { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 8000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 }
+            { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 30000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 }
           ];
         }
         if (t.includes('x-preview') || t.includes('preview')) {
           return [
-            { provider: 'omniroute', model: 'x-preview-f-free', timeout: 8000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
-            { provider: 'opencode', model: 'x-preview-f-free', timeout: 10000 }
+            { provider: 'omniroute', model: 'x-preview-f-free', timeout: 30000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 25000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 25000 },
+            { provider: 'opencode', model: 'x-preview-f-free', timeout: 25000 }
           ];
         }
         if (t.includes('deepseek')) {
           return [
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 8000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 10000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 }
           ];
         }
       }
@@ -1894,34 +1895,34 @@ Langkah yang WAJIB Anda lakukan:
       // Tier 4: OpenCode (Utama: nemotron-lightning -> nemotron-ultra -> x-preview -> mimo)
       return [
         // === TIER 1: OMNIROUTE DEDICATED GATEWAY (JIKA AKTIF) ===
-        { provider: 'omniroute', model: 'nemotron-lightning', timeout: 25000 },
-        { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 25000 },
-        { provider: 'omniroute', model: 'Codex', timeout: 25000 },
-        { provider: 'omniroute', model: 'Antigravity', timeout: 25000 },
-        { provider: 'omniroute', model: 'Vision-model', timeout: 25000 },
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 25000 },
+        { provider: 'omniroute', model: 'nemotron-lightning', timeout: 30000 },
+        { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 30000 },
+        { provider: 'omniroute', model: 'Codex', timeout: 30000 },
+        { provider: 'omniroute', model: 'Antigravity', timeout: 30000 },
+        { provider: 'omniroute', model: 'Vision-model', timeout: 30000 },
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 30000 },
 
         // === TIER 2: OPENROUTER CLOUD FALLBACK ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 10000 },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 12000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 12000 },
-        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 10000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 25000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 25000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 25000 },
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 25000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 25000 },
+        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 25000 },
 
         // === TIER 3: OLLAMA CLOUD AI GATEWAY FALLBACK ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 12000 },
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 12000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 12000 },
-        { provider: 'ollama', model: 'minimax-m3', timeout: 15000 },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 25000 },
+        { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
 
         // === TIER 4: OPENCODE ZEN DIRECT API FALLBACK ===
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 10000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 12000 },
-        { provider: 'opencode', model: 'x-preview-f-free', timeout: 10000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 12000 }
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 25000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 },
+        { provider: 'opencode', model: 'x-preview-f-free', timeout: 25000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 25000 }
       ];
     }
 
