@@ -921,12 +921,7 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
   for (const token of allTokens) {
     if (token.startsWith('sk-or-v1-')) {
       if (!openrouter.includes(token)) {
-        // Prioritize verified active keys with remaining quota
-        if (token.startsWith('sk-or-v1-faaa') || token.startsWith('sk-or-v1-529')) {
-          openrouter.unshift(token);
-        } else {
-          openrouter.push(token);
-        }
+        openrouter.push(token);
       }
     } else if (token.startsWith('sk-cp-') || token.startsWith('sk-minimax-')) {
       if (!minimax.includes(token)) minimax.push(token);
@@ -1102,8 +1097,8 @@ export default async function handler(req, res) {
     const cleanCustomKey = typeof customKey === 'string' ? customKey.replace(/[\r\n]/g, '').trim().slice(0, 256) : '';
     const cleanCustomProvider = typeof customProvider === 'string' ? customProvider.replace(/[^a-zA-Z0-9_-]/g, '').trim().slice(0, 32) : '';
 
-    let rawOmniUrl  = (process.env.OMNIROUTE_URL || '');
-    let ngrokOmniUrl = (process.env.OMNIROUTE_NGROK_URL || '');
+    let rawOmniUrl  = (process.env.OMNIROUTE_URL || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1');
+    let ngrokOmniUrl = (process.env.OMNIROUTE_NGROK_URL || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1');
     let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1');
     
     // Always check Dynamic Tunnel from Supabase first if available
@@ -1899,12 +1894,12 @@ Langkah yang WAJIB Anda lakukan:
       // Tier 4: OpenCode (Utama: nemotron-lightning -> nemotron-ultra -> x-preview -> mimo)
       return [
         // === TIER 1: OMNIROUTE DEDICATED GATEWAY (JIKA AKTIF) ===
-        { provider: 'omniroute', model: 'nemotron-lightning', timeout: 8000 },
-        { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 8000 },
-        { provider: 'omniroute', model: 'Codex', timeout: 8000 },
-        { provider: 'omniroute', model: 'Antigravity', timeout: 8000 },
-        { provider: 'omniroute', model: 'Vision-model', timeout: 8000 },
-        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 8000 },
+        { provider: 'omniroute', model: 'nemotron-lightning', timeout: 25000 },
+        { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 25000 },
+        { provider: 'omniroute', model: 'Codex', timeout: 25000 },
+        { provider: 'omniroute', model: 'Antigravity', timeout: 25000 },
+        { provider: 'omniroute', model: 'Vision-model', timeout: 25000 },
+        { provider: 'omniroute', model: 'x-preview-f-free', timeout: 25000 },
 
         // === TIER 2: OPENROUTER CLOUD FALLBACK ===
         { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
