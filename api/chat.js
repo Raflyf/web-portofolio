@@ -1595,7 +1595,7 @@ Langkah yang WAJIB Anda lakukan:
 
 const rateLimitedKeyCache = new Map();
 
-    async function callOpenRouter(mName, tOut = 20000) {
+    async function callOpenRouter(mName, tOut = 45000) {
       if (OPENROUTER_KEYS.length === 0) return null;
       const stepDeadline = Date.now() + tOut;
       const now = Date.now();
@@ -1622,7 +1622,7 @@ const rateLimitedKeyCache = new Map();
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, 10000);
+        const perKeyTimeout = Math.min(remaining, 45000);
 
         try {
           const isReasoningModel = mName.toLowerCase().includes('reasoning') || mName.toLowerCase().includes('r1') || mName.toLowerCase().includes('thinking') || mName.toLowerCase().includes('qwq');
@@ -1676,7 +1676,7 @@ const rateLimitedKeyCache = new Map();
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 20000) {
+    async function callOpenCode(mName, tOut = 45000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
       const stepDeadline = Date.now() + tOut;
@@ -1685,7 +1685,7 @@ const rateLimitedKeyCache = new Map();
       for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, 20000);
+        const perKeyTimeout = Math.min(remaining, 45000);
 
         try {
           const isLightning = cleanModelName.toLowerCase().includes('lightning');
@@ -1725,7 +1725,7 @@ const rateLimitedKeyCache = new Map();
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 12000) {
+    async function callNvidiaNim(mName, tOut = 45000) {
       if (NVIDIA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^nvidia\//i, '');
       const stepDeadline = Date.now() + tOut;
@@ -1766,7 +1766,7 @@ const rateLimitedKeyCache = new Map();
       return null;
     }
 
-    async function callOllama(mName, tOut = 18000) {
+    async function callOllama(mName, tOut = 45000) {
       if (OLLAMA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^ollama\//i, '').replace(/:free$/i, '');
       const stepDeadline = Date.now() + tOut;
@@ -1887,16 +1887,16 @@ const rateLimitedKeyCache = new Map();
       if (hasImages || (model && model.toLowerCase().includes('vision'))) {
         return [
           // Tier 1: OpenRouter Multimodal
-          { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 25000 },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 25000 },
+          { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 45000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 45000 },
           // Tier 2: Ollama Cloud Multimodal
-          { provider: 'ollama', model: 'minimax-m3', timeout: 25000 },
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
+          { provider: 'ollama', model: 'minimax-m3', timeout: 45000 },
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
           // Tier 3: OpenCode Multimodal
-          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 25000 },
-          { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 25000 },
+          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
+          { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 },
           // Tier 4: OmniRoute Vision (Hanya jika manual atau fallback)
-          { provider: 'omniroute', model: 'Vision-model', timeout: 15000 }
+          { provider: 'omniroute', model: 'Vision-model', timeout: 30000 }
         ];
       }
 
@@ -1905,53 +1905,53 @@ const rateLimitedKeyCache = new Map();
         const t = model.toLowerCase();
         if (t.includes('codex')) {
           return [
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 25000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
-            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 25000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 15000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
+            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 }
           ];
         }
         if (t.includes('antigravity')) {
           return [
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 15000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 45000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
+            { provider: 'omniroute', model: 'Antigravity', timeout: 30000 }
           ];
         }
         if (t.includes('ultra') || t.includes('nemotron-3-ultra')) {
           return [
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 },
-            { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 15000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 45000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
+            { provider: 'omniroute', model: 'nemotron-3-ultra', timeout: 30000 }
           ];
         }
         if (t.includes('x-preview') || t.includes('preview')) {
           return [
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 25000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 25000 },
-            { provider: 'opencode', model: 'x-preview-f-free', timeout: 25000 },
-            { provider: 'omniroute', model: 'x-preview-f-free', timeout: 15000 }
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
+            { provider: 'opencode', model: 'x-preview-f-free', timeout: 45000 },
+            { provider: 'omniroute', model: 'x-preview-f-free', timeout: 30000 }
           ];
         }
         if (t.includes('deepseek')) {
           return [
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 15000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 45000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
+            { provider: 'omniroute', model: 'Codex', timeout: 30000 }
           ];
         }
       }
 
       // 2. UNIVERSAL AUTO & ALL CATEGORIES (CASUAL, CODING, REASONING, RESEARCH, DEFAULT)
       // Prioritas Utama: Nemotron Nano Cluster (Ollama ➔ OpenRouter ➔ OpenCode)
-      // Dynamic Step Timeout terkalibrasi sesuai panjang jawaban yang diharapkan (effort)
-      const baseTimeout = (effectiveEffort === 'low') ? 9000 : (effectiveEffort === 'medium' ? 16000 : 25000);
+      // Dynamic Step Timeout dinaikkan maksimal sesuai kapasitas serverless function
+      const baseTimeout = (effectiveEffort === 'low') ? 30000 : (effectiveEffort === 'medium' ? 45000 : 55000);
 
       return [
         // === TIER 1: PRIORITAS UTAMA ULTRA-FAST NEMOTRON NANO CLUSTER ===
@@ -2014,7 +2014,7 @@ const rateLimitedKeyCache = new Map();
         const remainingMs = 58000 - elapsed;
         if (remainingMs <= 2000) break;
 
-        const stepTimeout = Math.min(step.timeout || 20000, Math.max(2500, remainingMs - 1000));
+        const stepTimeout = Math.min(step.timeout || 45000, Math.max(5000, remainingMs - 1000));
         try {
           const result = await executeStep(step, stepTimeout);
           if (result) return result; // Succeeded! Returns immediately with 1x token consumption!
