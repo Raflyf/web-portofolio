@@ -1201,7 +1201,7 @@ class DashboardApp {
     const AUTO_MODEL = {
       id: 'auto-router',
       name: 'Auto Gateway Router',
-      desc: 'Dynamic 6-Tier Cascade Failover (OmniRoute, Ollama, OpenRouter, OpenCode, MiniMax, Local Semantic)',
+      desc: 'Dynamic 4-Tier Cascade Failover (OmniRoute, OpenRouter, Ollama Cloud, OpenCode Zen)',
       provider: 'SMART CASCADE',
       badgeClass: 'badge-emerald',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
@@ -1210,9 +1210,27 @@ class DashboardApp {
 
     const INDIVIDUAL_MODELS = [
       {
+        id: 'nemotron-lightning',
+        name: 'Nemotron 3.5 Lightning',
+        desc: 'Model utama prioritas #1 (OmniRoute / OpenRouter / OpenCode) - Super kilat (~253ms) untuk percakapan umum, sapaan, dan Q&A',
+        provider: 'OMNIROUTE / OPENROUTER',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('lightning') || s.includes('lighting') || s.includes('nemotron-lightning')
+      },
+      {
+        id: 'nemotron-3-ultra',
+        name: 'Nemotron 3 Ultra (550B MoE)',
+        desc: 'Arsitektur MoE 550B kapasitas penuh untuk sintesis data komprehensif, konteks luas, dan penalaran teknis (OmniRoute / Ollama)',
+        provider: 'OMNIROUTE / OLLAMA',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
+        matcher: (s) => s.includes('nemotron-3-ultra') || s.includes('ultra-550b') || s.includes('ultra-free') || s.includes('ultra')
+      },
+      {
         id: 'codex',
-        name: 'Codex',
-        desc: 'Spesialis rekayasa software, arsitektur sistem besar, dan penalaran koding multi-model',
+        name: 'Codex (GPT-5.6 Terra)',
+        desc: 'Spesialis rekayasa software tingkat tinggi, analisis codebase, debugging, dan sintesis arsitektur kode (codex/gpt-5.6-terra)',
         provider: 'OMNIROUTE',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
@@ -1220,93 +1238,66 @@ class DashboardApp {
       },
       {
         id: 'antigravity',
-        name: 'Antigravity',
-        desc: 'Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah, dan telaah dokumen',
+        name: 'Antigravity (Claude Opus Thinking)',
+        desc: 'Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah skripsi, dan telaah dokumen komprehensif',
         provider: 'OMNIROUTE',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
         matcher: (s) => s.includes('antigravity') || s.includes('opus') || s.includes('claude')
       },
       {
-        id: 'x-preview',
-        name: 'x-preview-f-free',
-        desc: 'Engine penalaran dan koding presisi dari OpenCode berbasis prinsip YAGNI & inferensi cepat',
-        provider: 'OPENCODE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('x-preview') || s.includes('preview-f')
-      },
-      {
         id: 'vision-model',
         name: 'Vision-model (MiniMax-M3 / mimo)',
-        desc: 'Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi',
-        provider: 'MINIMAX',
+        desc: 'Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi (OmniRoute / MiniMax)',
+        provider: 'MINIMAX / VISION',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
         matcher: (s) => s.includes('vision') || s.includes('minimax') || s.includes('mimo')
       },
       {
-        id: 'nemotron-lightning',
-        name: 'nemotron-lighting',
-        desc: 'Fast-response engine untuk percakapan kasual, sapaan cepat, dan trivia responsif sub-detik di OmniRoute (100 akun pool)',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('lightning') || s.includes('lighting') || s.includes('nemotron-lighting') || s.includes('nemotron-lightning')
-      },
-      {
-        id: 'ox-alpha',
-        name: 'Ox-Alpha (1M Context)',
-        desc: 'Frontier reasoning & coding dengan jendela konteks 1 juta token di OpenCode/OpenRouter pool',
-        provider: 'OPENCODE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => s.includes('ox-alpha') || s.includes('0x-alpha') || s.includes('stealth/ox-alpha')
+        id: 'nemotron-nano',
+        name: 'Nemotron 3 Nano (30B)',
+        desc: 'Model penalaran andal untuk ekstraksi konteks scraping berita real-time dan RAG memori di OpenRouter & Ollama Cloud',
+        provider: 'OPENROUTER / OLLAMA',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+        matcher: (s) => s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || s.includes('30b')
       },
       {
         id: 'deepseek',
         name: 'DeepSeek Chat (V3)',
-        desc: 'Model analitik cepat dari DeepSeek untuk kueri informasi, perbandingan, dan riset teks padat di OpenRouter pool',
+        desc: 'Frontier Intelligence untuk logika koding multi-bahasa, perbandingan berita, dan analisis data di OpenRouter pool',
         provider: 'OPENROUTER',
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`,
         matcher: (s) => s.includes('deepseek')
       },
       {
-        id: 'gemma4',
-        name: 'Google Gemma 4 (31B Dense)',
-        desc: 'Arsitektur dense berkecepatan tinggi dari Google untuk kueri teknis terarah di Ollama Cloud',
-        provider: 'OLLAMA CLOUD',
-        badgeClass: 'badge-cyan',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>`,
-        matcher: (s) => s.includes('gemma') || s.includes('gemma-4') || s.includes('gemma4')
+        id: 'openrouter-free',
+        name: 'OpenRouter Free (Auto Pool)',
+        desc: 'Dynamic SOTA Free router yang otomatis memilih model gratis terbaik dengan latensi terendah di OpenRouter',
+        provider: 'OPENROUTER',
+        badgeClass: 'badge-emerald',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
+        matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free'))
       },
       {
         id: 'nemotron-super',
-        name: 'Nvidia Nemotron 3 Super (120B)',
-        desc: 'Model penalaran dense 120B teroptimasi untuk latensi rendah di Ollama Cloud',
-        provider: 'OLLAMA CLOUD',
+        name: 'Nemotron 3 Super (120B)',
+        desc: 'Model penalaran dense 120B teroptimasi untuk latensi rendah (~271ms) dan penalaran logika terarah di OpenRouter & Ollama Cloud',
+        provider: 'OPENROUTER / OLLAMA',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('nemotron-3-super') || s.includes('super:120b') || s.includes('120b')
+        matcher: (s) => s.includes('super-120b') || s.includes('nemotron-3-super') || s.includes('super:120b') || s.includes('120b')
       },
       {
-        id: 'nemotron-nano',
-        name: 'Nvidia Nemotron 3 Nano (30B)',
-        desc: 'Model utama auto-router untuk semua kueri informatif, berita, dan Q&A - prioritas pertama di pipeline Ollama Cloud',
-        provider: 'OLLAMA CLOUD',
-        badgeClass: 'badge-cyan',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
-        matcher: (s) => s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || s.includes('30b')
-      },
-      {
-        id: 'liquid-lfm',
-        name: 'LiquidAI LFM 2.5 (2.6B)',
-        desc: 'Neural state-space model dinamis untuk streaming token instan sub-30ms di OpenRouter pool',
-        provider: 'OPENROUTER',
-        badgeClass: 'badge-cyan',
+        id: 'x-preview',
+        name: 'x-preview-f-free',
+        desc: 'Engine preview eksperimental OpenCode untuk inferensi cepat dan evaluasi model baru berbasis prinsip YAGNI',
+        provider: 'OMNIROUTE / OPENCODE',
+        badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('liquid') || s.includes('lfm')
+        matcher: (s) => s.includes('x-preview') || s.includes('preview-f')
       },
       {
         id: 'local-semantic',
@@ -1667,6 +1658,7 @@ class DashboardApp {
     let latencyText = '';
     let statusLabel = '';
     let headerStatusLabel = '';
+    const secretKey = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_secret_key') : null) || 'sk-7a9b51a264768e32-ca46a7-409c6979';
 
     // 1. Probe Primary Ngrok Tunnel
     const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
@@ -1679,7 +1671,11 @@ class DashboardApp {
         const t0 = performance.now();
         const res = await fetch(probeUrl, {
           method: 'GET',
-          headers: { 'ngrok-skip-browser-warning': 'true', 'Accept': 'application/json' },
+          headers: { 
+            'Authorization': `Bearer ${secretKey}`,
+            'ngrok-skip-browser-warning': 'true', 
+            'Accept': 'application/json' 
+          },
           signal: controller.signal
         });
         clearTimeout(timer);
@@ -1704,7 +1700,10 @@ class DashboardApp {
         const t0 = performance.now();
         const res = await fetch(probeUrl, {
           method: 'GET',
-          headers: { 'Accept': 'application/json' },
+          headers: { 
+            'Authorization': `Bearer ${secretKey}`,
+            'Accept': 'application/json' 
+          },
           signal: controller.signal
         });
         clearTimeout(timer);
