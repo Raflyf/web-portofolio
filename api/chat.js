@@ -1212,13 +1212,19 @@ export default async function handler(req, res) {
         .replace(/<\/?(?:div|p|span)[^>]*>/gi, '')
         .trim();
 
+      // 0. Guard against guardrail label-only output (e.g. "User Safety: safe\nResponse Safety: safe")
+      if (/^(?:User Safety:\s*\w+[\s\S]*?Response Safety:\s*\w+|Safety:\s*safe)$/i.test(cleaned) || cleaned.length < 5) {
+        return null;
+      }
+      cleaned = cleaned.replace(/^(?:User Safety:\s*\w+\s*\n*Response Safety:\s*\w+\s*\n*)+/i, '').trim();
+
       // 1. Check for explicit output markers like Thus: "..." or Response:
       const markerMatch = cleaned.match(/(?:Thus|Therefore|Response|Answer|Jawaban|In Indonesian|Output):\s*["']?([\s\S]+?)["']?$/i);
       if (markerMatch && markerMatch[1] && markerMatch[1].trim().length > 10) {
         cleaned = markerMatch[1].trim().replace(/^["']|["']$/g, '').trim();
       } else {
         // 2. Check for English reasoning monologue start
-        cleaned = cleaned.replace(/^(?:Here's (?:a )?(?:thinking process|breakdown|brief thinking)[\s\S]*?)(?=(?:\n\s*(?:[#\-*]|\d+\.|Berikut|Berdasarkan|Status|Informasi|Perilisan|Halo|Hai|Terima kasih|Dalam|Untuk|Pada)\b))/i, '').trim();
+        cleaned = cleaned.replace(/^(?:Here's (?:a )?(?:thinking process|breakdown|brief thinking)[\s\S]*?)(?=(?:\n\s*(?:[#\-*]|\d+\.|Berikut|Berdasarkan|Status|Informasi|Perilisan|Halo|Hai|Terima kasih|Dalam|Untuk|Pada|Ya|Tentu|Saya)\b))/i, '').trim();
         const reasoningKeywords = /^(?:Here's|Okay|First|Let me|I should|I need to|The user|Looking back|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Let's|Checking|So the user|The system message)\b/i;
         if (reasoningKeywords.test(cleaned)) {
           const indonesianMarker = /(?:(?:\n|\A)(?:Terima kasih|Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|Pada|[#|]|\d+\.)\s)/i;
@@ -1935,16 +1941,15 @@ const rateLimitedKeyCache = new Map();
       }
 
       // 2. UNIVERSAL AUTO & ALL CATEGORIES (CASUAL, CODING, REASONING, RESEARCH, DEFAULT)
-      // Struktur Pipeline Interleaved Ultra-Fast SOTA (Sub-Second Response Guarantee)
+      // Struktur Pipeline Interleaved Ultra-Fast SOTA (Dedicated Conversational Models Only)
       return [
-        // === 1. TIER UTAMA: ULTRA-FAST SOTA INFERENCE (<1s) ===
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 10000 },
+        // === 1. TIER UTAMA: DEDICATED SOTA CONVERSATIONAL MODELS (<1s) ===
         { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 10000 },
         { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 10000 },
         { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 15000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
 
         // === 2. TIER SOTA REASONING & CAPACITY EXPANSION ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 10000 },
         { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 15000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 10000 },
         { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 8000 },
