@@ -577,7 +577,7 @@ class DashboardApp {
 
     if (config && config.url && config.anonKey) {
       try {
-        const fetchLimit = isBackground ? 250 : 5000;
+        const fetchLimit = isBackground ? 30 : 5000; // Poin 3: hemat egress delta 30 baris
         const endpoint = `${config.url}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc&limit=${fetchLimit}`;
 
         const res = await fetch(endpoint, {
@@ -664,13 +664,13 @@ class DashboardApp {
       if (pollTick % 2 === 0) {
         this.checkOmniRouteRealtimeStatus();
       }
-      if (pollTick % 8 === 0) {
+      if (pollTick % 4 === 0) {
         this.fetchAIMemories(true);
       }
     };
 
-    // Realtime polling loop
-    this.pollInterval = setInterval(runPoll, 3000);
+    // Poin 2: Polling loop setiap 8 detik (hemat egress 62% saat tab aktif)
+    this.pollInterval = setInterval(runPoll, 8000);
 
     // Immediately refresh data when user switches back to this tab
     if (!this._visibilityListenerAttached) {
@@ -692,16 +692,33 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // 6. FILTERING & AGGREGATION (Group-Level Independence)
+  // 6. FILTERING & AGGREGATION (Kalender Lokal & Midnight 00:00 Reset)
   // =========================================================================
   filterByRange(items, range) {
     if (!Array.isArray(items) || !range || range === 'all') return items;
-    const now = Date.now();
+    
     let cutoff = 0;
-    if (range === 'today') cutoff = now - 24 * 60 * 60 * 1000;
-    else if (range === '7d') cutoff = now - 7 * 24 * 60 * 60 * 1000;
-    else if (range === '14d') cutoff = now - 14 * 24 * 60 * 60 * 1000;
-    else if (range === '30d') cutoff = now - 30 * 24 * 60 * 60 * 1000;
+    if (range === 'today') {
+      // Reset otomatis jam 00:00:00 tengah malam hari ini (Local Calendar Midnight)
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      cutoff = startOfToday.getTime();
+    } else if (range === '7d') {
+      const startOf7d = new Date();
+      startOf7d.setDate(startOf7d.getDate() - 6);
+      startOf7d.setHours(0, 0, 0, 0);
+      cutoff = startOf7d.getTime();
+    } else if (range === '14d') {
+      const startOf14d = new Date();
+      startOf14d.setDate(startOf14d.getDate() - 13);
+      startOf14d.setHours(0, 0, 0, 0);
+      cutoff = startOf14d.getTime();
+    } else if (range === '30d') {
+      const startOf30d = new Date();
+      startOf30d.setDate(startOf30d.getDate() - 29);
+      startOf30d.setHours(0, 0, 0, 0);
+      cutoff = startOf30d.getTime();
+    }
 
     if (cutoff === 0) return items;
     return items.filter(item => {
