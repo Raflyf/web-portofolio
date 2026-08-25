@@ -1267,22 +1267,22 @@ class DashboardApp {
 
       // === TIER 2: OPENROUTER CLOUD MODELS ===
       {
+        id: 'openrouter-nemotron-nano',
+        name: 'Nemotron 3 Nano Omni Reasoning (OpenRouter)',
+        desc: 'Prioritas #2 Auto Router - Model multimodal & penalaran CoT 30B di OpenRouter Cloud Pool',
+        provider: 'OPENROUTER',
+        badgeClass: 'badge-cyan',
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+        matcher: (s) => (s.includes('openrouter') || s.includes('omni')) && (s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('30b-a3b') || s.includes('reasoning:free'))
+      },
+      {
         id: 'openrouter-nemotron-lightning',
         name: 'Nemotron 3.5 Lightning (OpenRouter)',
-        desc: 'Model prioritas #1 OpenRouter Cloud (~253ms) untuk inferensi instan sub-detik',
+        desc: 'Model berkecepatan tinggi OpenRouter Cloud (~253ms) untuk inferensi instan sub-detik',
         provider: 'OPENROUTER',
         badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
         matcher: (s) => s.includes('openrouter') && (s.includes('lightning') || s.includes('lighting'))
-      },
-      {
-        id: 'openrouter-nemotron-nano',
-        name: 'Nemotron 3 Nano Reasoning (OpenRouter)',
-        desc: 'Model penalaran dense 30B berkecepatan tinggi di OpenRouter Cloud Pool',
-        provider: 'OPENROUTER',
-        badgeClass: 'badge-cyan',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
-        matcher: (s) => (s.includes('openrouter') || !s.includes('ollama')) && (s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('30b-a3b') || s.includes('reasoning:free'))
       },
       {
         id: 'openrouter-free',
@@ -1342,12 +1342,12 @@ class DashboardApp {
       // === TIER 3: OLLAMA CLOUD MODELS ===
       {
         id: 'ollama-nemotron-nano',
-        name: 'Nemotron 3 Nano (Ollama Cloud)',
-        desc: 'Model penalaran 30B teroptimasi untuk query informatif dan Q&A di Ollama Cloud',
+        name: 'Nemotron 3 Nano Biasa (Ollama Cloud)',
+        desc: 'Prioritas #1 Auto Router - Model text-to-text dense 30B inferensi instan (<4.5s) di Ollama Cloud Gateway',
         provider: 'OLLAMA CLOUD',
-        badgeClass: 'badge-cyan',
+        badgeClass: 'badge-emerald',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
-        matcher: (s) => s.includes('ollama') && (s.includes('nano:30b') || s.includes('nano-30b') || s.includes('nemotron-3-nano') || s.includes('nano'))
+        matcher: (s) => (s.includes('ollama') && (s.includes('nano:30b') || s.includes('nano-30b') || s.includes('nemotron-3-nano') || s.includes('nano'))) || s === 'nemotron-3-nano:30b' || s === 'nemotron-3-nano'
       },
       {
         id: 'ollama-nemotron-ultra',
