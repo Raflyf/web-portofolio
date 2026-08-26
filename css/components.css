@@ -725,8 +725,6 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   background: var(--glass-nested-bg);
   border: var(--glass-nested-border);
   border-radius: var(--radius-sm);
-  backdrop-filter: var(--glass-nested-blur);
-  -webkit-backdrop-filter: var(--glass-nested-blur);
   font-family: var(--font-mono);
   font-size: var(--fs-caption);
   color: var(--text-ink);
