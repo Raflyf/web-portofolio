@@ -201,8 +201,10 @@
       box-shadow: 0 6px 24px rgba(37, 211, 102, 0.6) !important;
     }
   </style>
-</head>
 <body>
+
+  <!-- HorizonX 3D Scroll-Morphing Background Canvas (Three.js WebGL Engine) -->
+  <canvas id="bg-morph-canvas" class="bg-morph-canvas" aria-hidden="true"></canvas>
 
   <!-- HorizonX Ambient Morphing Mesh & Kinetic Drifting Glow -->
   <div class="ambient-glow-layer" aria-hidden="true">
@@ -991,7 +993,13 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
+  <!-- Three.js WebGL Core Engine from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- HorizonX 3D Scroll-Morphing Background Script -->
+  <script src="js/bg-morph-canvas.js?v=10.493.0"></script>
+
   <!-- Main JavaScript Module (Cache-Busting for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=10.260.0"></script>
+  <script type="module" src="js/main.js?v=10.493.0"></script>
 </body>
 </html>

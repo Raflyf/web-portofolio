@@ -28,20 +28,22 @@ button, a, select, input, textarea {
 }
 
 :root {
-  --hx-bg: #090d12;
-  --hx-surface-dark: #0f141c;
-  --hx-surface-card: #131922;
-  --hx-surface-card-hover: #19212d;
+  --hx-bg: #080a11;
+  --hx-surface-dark: #0e121d;
+  --hx-surface-card: #121824;
+  --hx-surface-card-hover: #182030;
   --hx-border-card: rgba(255, 255, 255, 0.08);
-  --hx-border-glow: rgba(16, 185, 129, 0.35);
+  --hx-border-glow: rgba(99, 102, 241, 0.4);
   
   --hx-text-primary: #f8fafc;
   --hx-text-secondary: #94a3b8;
   --hx-text-muted: #64748b;
   
-  --hx-accent-emerald: #10b981;
-  --hx-accent-emerald-dim: rgba(16, 185, 129, 0.12);
-  --hx-accent-emerald-glow: rgba(16, 185, 129, 0.25);
+  --hx-accent-emerald: #6366f1; /* Mapped to Electric Indigo */
+  --hx-accent-emerald-dim: rgba(99, 102, 241, 0.14);
+  --hx-accent-emerald-glow: rgba(99, 102, 241, 0.35);
+  --hx-accent-cyan: #38bdf8;
+  --hx-accent-cyan-dim: rgba(56, 189, 248, 0.14);
 
   --hx-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --hx-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -53,15 +55,16 @@ button, a, select, input, textarea {
   --hx-surface-card: #ffffff;
   --hx-surface-card-hover: #f1f5f9;
   --hx-border-card: rgba(15, 23, 42, 0.09);
-  --hx-border-glow: rgba(16, 185, 129, 0.4);
+  --hx-border-glow: rgba(99, 102, 241, 0.45);
   
   --hx-text-primary: #0f172a;
   --hx-text-secondary: #475569;
   --hx-text-muted: #64748b;
   
-  --hx-accent-emerald: #059669;
-  --hx-accent-emerald-dim: rgba(5, 150, 105, 0.1);
-  --hx-accent-emerald-glow: rgba(5, 150, 105, 0.2);
+  --hx-accent-emerald: #4f46e5;
+  --hx-accent-emerald-dim: rgba(79, 70, 229, 0.12);
+  --hx-accent-emerald-glow: rgba(79, 70, 229, 0.25);
+  --hx-accent-cyan: #0284c7;
 }
 
 /* ==========================================================================
