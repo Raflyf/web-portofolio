@@ -1648,23 +1648,25 @@ html.is-admin-authenticated .pin-gateway-overlay {
 }
 
 .pin-card {
-  background: linear-gradient(135deg, rgba(14, 20, 34, 0.78) 0%, rgba(8, 12, 22, 0.84) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 16, 30, 0.55) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.48) !important;
   border-radius: var(--radius-xl);
   padding: 2.25rem;
   width: 100%;
   max-width: 440px;
   text-align: center;
-  box-shadow: 0 32px 80px -10px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.75), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.40), 0 0 40px rgba(16, 185, 129, 0.15) !important;
   position: relative;
-  backdrop-filter: var(--glass-overlay-blur);
-  -webkit-backdrop-filter: var(--glass-overlay-blur);
+  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
 }
 
 [data-theme="light"] .pin-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(245, 247, 250, 0.74) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.90);
-  box-shadow: 0 28px 72px -10px rgba(15, 23, 42, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 248, 252, 0.50) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1) !important;
   color: #0f172a;
 }
 
@@ -1817,22 +1819,24 @@ html.is-admin-authenticated .pin-gateway-overlay {
 }
 
 .dash-modal-card {
-  background: linear-gradient(135deg, rgba(14, 20, 34, 0.80) 0%, rgba(8, 12, 22, 0.86) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 16, 30, 0.55) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.48) !important;
   border-radius: var(--radius-xl);
   padding: 1.85rem;
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 32px 80px -10px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.75), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.40), 0 0 40px rgba(99, 102, 241, 0.12) !important;
   position: relative;
-  backdrop-filter: var(--glass-overlay-blur);
-  -webkit-backdrop-filter: var(--glass-overlay-blur);
+  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
 }
 
 [data-theme="light"] .dash-modal-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(245, 247, 250, 0.74) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.90);
-  box-shadow: 0 28px 72px -10px rgba(15, 23, 42, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 248, 252, 0.50) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1) !important;
   color: #0f172a;
 }
 

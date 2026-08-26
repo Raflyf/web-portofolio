@@ -1357,15 +1357,16 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   position: relative;
   width: 92%;
   max-width: 580px;
-  background: linear-gradient(135deg, rgba(13, 20, 36, 0.78) 0%, rgba(8, 12, 22, 0.84) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  box-shadow: 0 28px 64px -10px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.20), 0 0 20px rgba(6, 182, 212, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 16, 30, 0.55) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.48) !important;
+  border-radius: 16px;
+  box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.75), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.40), 0 0 30px rgba(6, 182, 212, 0.15) !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  backdrop-filter: var(--glass-overlay-blur);
-  -webkit-backdrop-filter: var(--glass-overlay-blur);
+  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
   z-index: 2;
 }
 
@@ -1572,13 +1573,16 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 
 /* Light Mode Overrides for Conversation History Modal */
 [data-theme="light"] .convo-history-backdrop {
-  background: rgba(15, 23, 42, 0.40);
+  background: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 [data-theme="light"] .convo-history-panel {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(245, 247, 250, 0.76) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.90);
-  box-shadow: 0 24px 60px -10px rgba(15, 23, 42, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 30px rgba(16, 185, 129, 0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 248, 252, 0.50) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1) !important;
   color: #0f172a;
 }
 
@@ -2796,15 +2800,10 @@ body.modal-open {
   position: fixed;
   inset: 0;
   margin: auto;
-  border: 1px solid var(--accent-emerald);
-  border-radius: var(--radius-lg);
-  background-color: var(--code-bg);
-  color: var(--text-body);
   padding: 0;
   max-width: min(96vw, 1060px);
   width: min(96vw, 1060px);
   max-height: 90vh;
-  box-shadow: 0 24px 64px oklch(0 0 0 / 0.85), 0 0 35px var(--accent-emerald-glow);
   z-index: var(--z-modal);
   overflow: hidden;
   display: flex;
@@ -2816,20 +2815,8 @@ body.modal-open {
   display: none;
 }
 
-.terminal-modal-dialog[open] {
-  animation: modalScaleIn var(--duration-fast) var(--ease-spring) forwards;
-}
-
-.terminal-modal-dialog::backdrop {
-  background-color: rgba(5, 10, 15, 0.85);
-  backdrop-filter: var(--glass-backdrop-blur);
-  -webkit-backdrop-filter: var(--glass-backdrop-blur);
-}
-
 .terminal-modal-header {
-  background-color: var(--bg-secondary);
   padding: 0.65rem var(--space-md);
-  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2853,6 +2840,7 @@ body.modal-open {
   min-height: 0;
   padding: 0;
   overscroll-behavior: contain;
+  background: transparent;
 }
 
 .terminal-modal-slot .terminal-card {
@@ -2861,6 +2849,7 @@ body.modal-open {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -2874,6 +2863,7 @@ body.modal-open {
   max-height: calc(90vh - 170px);
   overflow-y: auto;
   overscroll-behavior: contain;
+  background: transparent !important;
 }
 
 /* ==========================================================================
@@ -2884,15 +2874,10 @@ body.modal-open {
   position: fixed;
   inset: 0;
   margin: auto;
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
-  background-color: var(--surface-card);
-  color: var(--text-body);
   padding: 0;
   max-width: 680px;
   width: min(92vw, 680px);
   max-height: 85vh;
-  box-shadow: 0 24px 64px oklch(0 0 0 / 0.6), 0 0 1px oklch(1 0 0 / 0.1);
   z-index: var(--z-modal);
   overflow: hidden;
   display: flex;
@@ -2903,30 +2888,8 @@ body.modal-open {
   display: none;
 }
 
-.modal-dialog[open] {
-  animation: modalScaleIn var(--duration-fast) var(--ease-spring) forwards;
-}
-
-@keyframes modalScaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96) translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.modal-dialog::backdrop {
-  background-color: oklch(0.05 0.01 250 / 0.75);
-  backdrop-filter: var(--glass-backdrop-blur);
-  -webkit-backdrop-filter: var(--glass-backdrop-blur);
-}
-
 .modal-header {
   padding: var(--space-lg);
-  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2951,7 +2914,7 @@ body.modal-open {
 
 .modal-close-btn:hover {
   color: var(--text-ink);
-  background-color: var(--bg-secondary);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .modal-body {
@@ -2963,6 +2926,7 @@ body.modal-open {
   gap: var(--space-md);
   scrollbar-width: thin;
   scrollbar-color: oklch(0.35 0.02 240) transparent;
+  background: transparent;
 }
 
 .modal-body::-webkit-scrollbar {

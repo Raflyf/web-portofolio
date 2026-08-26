@@ -753,12 +753,14 @@ body {
 .modal-dialog,
 .terminal-modal-dialog {
   border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  background: linear-gradient(135deg, rgba(13, 20, 36, 0.78) 0%, rgba(8, 12, 22, 0.84) 100%) !important;
-  backdrop-filter: var(--glass-overlay-blur) !important;
-  -webkit-backdrop-filter: var(--glass-overlay-blur) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.48) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.30) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 16, 30, 0.55) 100%) !important;
+  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
   color: var(--hx-text-primary) !important;
-  box-shadow: 0 32px 96px -12px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 0 1px rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.75), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.40), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.25), 0 0 40px rgba(99, 102, 241, 0.12) !important;
   transform-origin: center center;
   transition: border-color 0.25s ease, box-shadow 0.25s ease !important;
   will-change: transform, opacity;
@@ -766,18 +768,19 @@ body {
 
 [data-theme="light"] .modal-dialog,
 [data-theme="light"] .terminal-modal-dialog {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(245, 247, 250, 0.72) 100%) !important;
-  backdrop-filter: var(--glass-overlay-blur) !important;
-  -webkit-backdrop-filter: var(--glass-overlay-blur) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 248, 252, 0.50) 100%) !important;
+  backdrop-filter: blur(28px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
   color: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.90) !important;
-  box-shadow: 0 28px 80px -12px rgba(15, 23, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 1px rgba(15, 23, 42, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 1px rgba(15, 23, 42, 0.08) !important;
 }
 
 .modal-header,
 .terminal-modal-header {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 [data-theme="light"] .modal-header,
@@ -786,16 +789,52 @@ body {
   border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
 }
 
-.terminal-modal-slot .terminal-card {
+.modal-body,
+#project-modal-body,
+#cert-modal-body {
   background: transparent !important;
+  background-color: transparent !important;
+}
+
+.terminal-modal-slot,
+.terminal-modal-slot .terminal-card,
+.terminal-modal-slot .terminal-body,
+.terminal-modal-slot .terminal-header {
+  background: transparent !important;
+  background-color: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-.terminal-modal-slot .terminal-body {
-  background: transparent !important;
+.terminal-modal-slot .terminal-input-bar {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.terminal-modal-slot .terminal-quick-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.terminal-modal-slot .chat-msg.chat-msg--assistant {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.terminal-modal-slot .chat-msg.chat-msg--user {
+  background: rgba(16, 185, 129, 0.18) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
 }
 
 .modal-dialog[open]:not(.is-closing),
@@ -835,13 +874,17 @@ body {
 
 .modal-dialog::backdrop,
 .terminal-modal-dialog::backdrop {
-  background: rgba(4, 7, 14, 0.68) !important;
+  background: rgba(3, 7, 18, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
   animation: backdropFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 [data-theme="light"] .modal-dialog::backdrop,
 [data-theme="light"] .terminal-modal-dialog::backdrop {
-  background: rgba(15, 23, 42, 0.38) !important;
+  background: rgba(15, 23, 42, 0.25) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
 }
 
 .modal-dialog.is-closing::backdrop,
