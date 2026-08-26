@@ -72,17 +72,17 @@
   --radius-full: 9999px;
 
   /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content) */
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 16, 30, 0.55) 100%);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.22);
-  --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.48);
-  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.30);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(13, 19, 33, 0.85) 60%, rgba(9, 14, 26, 0.92) 100%);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.18);
+  --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.50);
+  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.32);
   --glass-card-blur: blur(28px) saturate(200%) contrast(105%);
-  --glass-card-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.75), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.40), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.25), 0 0 40px rgba(99, 102, 241, 0.12);
+  --glass-card-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.85), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.30), 0 0 32px rgba(99, 102, 241, 0.15);
   --glass-card-radius: 20px;
   
-  --glass-nested-bg: rgba(255, 255, 255, 0.06);
-  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.16);
-  --glass-nested-blur: blur(12px) saturate(180%);
+  --glass-nested-bg: rgba(255, 255, 255, 0.08);
+  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.18);
+  --glass-nested-blur: blur(16px) saturate(180%);
   --glass-nested-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 
   --glass-overlay-blur: blur(28px) saturate(200%) contrast(105%);

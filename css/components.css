@@ -887,27 +887,25 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  padding: 1.65rem 1.5rem;
+  padding: 1.75rem 1.6rem;
   border-radius: 20px;
-  background: var(--glass-card-bg);
-  border: var(--glass-card-border);
-  border-top: var(--glass-card-border-top);
-  border-left: var(--glass-card-border-left);
-  backdrop-filter: var(--glass-card-blur);
-  -webkit-backdrop-filter: var(--glass-card-blur);
-  box-shadow: var(--glass-card-shadow);
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: var(--glass-card-blur) !important;
+  -webkit-backdrop-filter: var(--glass-card-blur) !important;
+  border: var(--glass-card-border) !important;
+  border-top: var(--glass-card-border-top) !important;
+  border-left: var(--glass-card-border-left) !important;
+  box-shadow: var(--glass-card-shadow) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s ease !important;
-  filter: none !important;
-  -webkit-filter: none !important;
 }
 
 .project-card:hover {
   transform: translateY(-5px) !important;
-  border-color: rgba(99, 102, 241, 0.50) !important;
-  border-top-color: rgba(255, 255, 255, 0.75) !important;
-  box-shadow: 0 40px 96px -16px rgba(0, 0, 0, 0.85), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.60), 0 0 40px rgba(99, 102, 241, 0.25) !important;
+  border-color: rgba(99, 102, 241, 0.55) !important;
+  border-top-color: rgba(255, 255, 255, 0.80) !important;
+  box-shadow: 0 40px 96px -16px rgba(0, 0, 0, 0.90), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.65), 0 0 40px rgba(99, 102, 241, 0.28) !important;
 }
 
 .project-card__top {
@@ -937,7 +935,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   gap: var(--space-sm);
   margin-top: auto;
   padding-top: var(--space-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 [data-theme="light"] .project-card__actions {
@@ -948,18 +946,18 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.05rem;
   border-radius: var(--radius-md);
-  background: var(--glass-nested-bg);
-  border: var(--glass-nested-border);
-  backdrop-filter: var(--glass-nested-blur);
-  -webkit-backdrop-filter: var(--glass-nested-blur);
-  box-shadow: var(--glass-nested-shadow);
+  background: var(--glass-nested-bg) !important;
+  border: var(--glass-nested-border) !important;
+  backdrop-filter: var(--glass-nested-blur) !important;
+  -webkit-backdrop-filter: var(--glass-nested-blur) !important;
+  box-shadow: var(--glass-nested-shadow) !important;
   font-size: var(--fs-body-sm);
   font-weight: 600;
   color: var(--text-ink);
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease !important;
 }
 
 .btn-project-detail:hover {
@@ -984,27 +982,25 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  padding: 1.65rem 1.5rem;
+  padding: 1.75rem 1.6rem;
   border-radius: 20px;
-  background: var(--glass-card-bg);
-  border: var(--glass-card-border);
-  border-top: var(--glass-card-border-top);
-  border-left: var(--glass-card-border-left);
-  backdrop-filter: var(--glass-card-blur);
-  -webkit-backdrop-filter: var(--glass-card-blur);
-  box-shadow: var(--glass-card-shadow);
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: var(--glass-card-blur) !important;
+  -webkit-backdrop-filter: var(--glass-card-blur) !important;
+  border: var(--glass-card-border) !important;
+  border-top: var(--glass-card-border-top) !important;
+  border-left: var(--glass-card-border-left) !important;
+  box-shadow: var(--glass-card-shadow) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s ease !important;
-  filter: none !important;
-  -webkit-filter: none !important;
 }
 
 .certificate-card:hover {
   transform: translateY(-5px) !important;
-  border-color: rgba(99, 102, 241, 0.50) !important;
-  border-top-color: rgba(255, 255, 255, 0.75) !important;
-  box-shadow: 0 40px 96px -16px rgba(0, 0, 0, 0.85), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.60), 0 0 40px rgba(99, 102, 241, 0.25) !important;
+  border-color: rgba(99, 102, 241, 0.55) !important;
+  border-top-color: rgba(255, 255, 255, 0.80) !important;
+  box-shadow: 0 40px 96px -16px rgba(0, 0, 0, 0.90), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.65), 0 0 40px rgba(99, 102, 241, 0.28) !important;
 }
 
 .cert-card__top {
