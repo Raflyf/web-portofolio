@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.260.0';
-import { telemetry } from './telemetry.js?v=10.260.0';
-import { terminalAI } from './terminal-ai.js?v=10.260.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.261.0';
+import { telemetry } from './telemetry.js?v=10.261.0';
+import { terminalAI } from './terminal-ai.js?v=10.261.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -1067,8 +1067,9 @@ export function initTerminal() {
       const payloadDesc = typeof parsedPayload === 'object' 
         ? (parsedPayload.title || parsedPayload.name || parsedPayload.section || 'Terkonfirmasi')
         : parsedPayload;
+      const safePayloadDesc = escapeHtml(String(payloadDesc || ''));
 
-      return `\n<div class="chat-action-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>⚡ [Aksi Web Terlaksana]: ${label}${payloadDesc ? ` (${payloadDesc})` : ''}</span></div>\n`;
+      return `\n<div class="chat-action-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> <span>⚡ [Aksi Web Terlaksana]: ${label}${safePayloadDesc ? ` (${safePayloadDesc})` : ''}</span></div>\n`;
     });
   }
 
@@ -1262,7 +1263,7 @@ export function initTerminal() {
 
     let attachHtml = '';
     if (attachments.length > 0) {
-      const items = attachments.map(a => `<span class="chat-attach-badge">${a.isImage ? '🖼️' : '📄'} ${a.name}</span>`).join(' ');
+      const items = attachments.map(a => `<span class="chat-attach-badge">${a.isImage ? '🖼️' : '📄'} ${escapeHtml(a.name)}</span>`).join(' ');
       attachHtml = `<div class="chat-msg__attachments">${items}</div>`;
     }
 

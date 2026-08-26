@@ -89,8 +89,8 @@ button, a, select, input, textarea {
   z-index: 100 !important;
   width: 100% !important;
   background: rgba(9, 13, 18, 0.85) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
+  backdrop-filter: var(--glass-overlay-blur) !important;
+  -webkit-backdrop-filter: var(--glass-overlay-blur) !important;
   border-bottom: 1px solid var(--hx-border-card) !important;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
@@ -341,8 +341,8 @@ body {
   border: 1px solid var(--hx-border-card);
   box-shadow: 0 24px 70px -15px rgba(0, 0, 0, 0.45);
   padding: 1.5rem 1.75rem 1.75rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -647,8 +647,8 @@ body {
   border-radius: 9999px;
   background: var(--glass-nested-bg);
   border: var(--glass-nested-border);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
   color: var(--hx-text-primary);
   font-size: 0.88rem;
   font-weight: 600;
@@ -814,8 +814,8 @@ body {
 .modal-dialog::backdrop,
 .terminal-modal-dialog::backdrop {
   background: rgba(4, 7, 12, 0.55) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
+  backdrop-filter: var(--glass-backdrop-blur) !important;
+  -webkit-backdrop-filter: var(--glass-backdrop-blur) !important;
   animation: backdropFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
@@ -965,8 +965,8 @@ body {
   right: 0 !important;
   min-width: 175px !important;
   background: rgba(14, 20, 29, 0.98) !important;
-  backdrop-filter: blur(24px) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
+  backdrop-filter: var(--glass-overlay-blur) !important;
+  -webkit-backdrop-filter: var(--glass-overlay-blur) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 12px !important;
   padding: 6px !important;
@@ -1122,8 +1122,8 @@ body {
 .dash-status-pill {
   background: var(--glass-nested-bg) !important;
   border: var(--glass-nested-border) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: var(--glass-nested-blur) !important;
+  -webkit-backdrop-filter: var(--glass-nested-blur) !important;
 }
 
 .showcase-card {
@@ -1260,8 +1260,8 @@ body {
     right: 0 !important;
     width: 100vw !important;
     background: rgba(10, 15, 24, 0.98) !important;
-    backdrop-filter: blur(28px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+    backdrop-filter: var(--glass-overlay-blur) !important;
+    -webkit-backdrop-filter: var(--glass-overlay-blur) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-top: none !important;
     border-left: none !important;

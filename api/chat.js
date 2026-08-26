@@ -993,11 +993,20 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
 }
 
 export default async function handler(req, res) {
-  // Dynamic Standard-Compliant CORS Headers
-  const origin = req.headers.origin || '*';
+  // CORS: allowlist eksplisit — jangan pernah echo origin arbitrer dengan credentials
+  const ALLOWED_ORIGINS = [
+    process.env.ALLOWED_ORIGIN,
+    'https://raflyfirmansyah-portofolio.vercel.app',
+    'http://localhost:3877',
+    'http://localhost:3000',
+    'http://127.0.0.1:3877',
+    'http://127.0.0.1:3000'
+  ].filter(Boolean);
+  const requestOrigin = req.headers.origin || '';
+  const origin = ALLOWED_ORIGINS.includes(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0];
   res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'

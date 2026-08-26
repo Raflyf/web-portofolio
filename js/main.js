@@ -11,9 +11,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.260.0';
-import { initTerminal } from './terminal.js?v=10.260.0';
-import { telemetry } from './telemetry.js?v=10.260.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.261.0';
+import { initTerminal } from './terminal.js?v=10.261.0';
+import { telemetry } from './telemetry.js?v=10.261.0';
 
 document.addEventListener('DOMContentLoaded', () => {
   telemetry.init();
@@ -1415,6 +1415,99 @@ function initHorizonXEffects() {
     }, { passive: true });
   }
 }
+
+// ==========================================================================
+// PORTFOLIO AGENT API (dipanggil oleh parseAndExecuteActionTags di terminal.js)
+// Mengeksekusi [ACTION:...] directive dari AI ke aksi DOM yang nyata.
+// ==========================================================================
+const AGENT_ALLOWED_SECTIONS = ['hero', 'about', 'skills', 'projects', 'certificates', 'experience', 'lab', 'contact'];
+const AGENT_ALLOWED_URL_HOSTS = ['github.com', 'raflyfirmansyah-portofolio.vercel.app', 'wa.me', 'bnsp.go.id', 'mikrotik.com', 'netacad.com'];
+
+function agentScrollToSection(sectionId) {
+  const id = AGENT_ALLOWED_SECTIONS.includes(String(sectionId || '').toLowerCase())
+    ? String(sectionId).toLowerCase()
+    : '';
+  if (!id) return false;
+  const el = document.getElementById(id);
+  if (!el) return false;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  return true;
+}
+
+function agentSafeOpenUrl(rawUrl) {
+  try {
+    const url = new URL(String(rawUrl || ''), window.location.origin);
+    if (url.protocol !== 'https:') return false;
+    if (!AGENT_ALLOWED_URL_HOSTS.includes(url.hostname)) return false;
+    window.open(url.href, '_blank', 'noopener,noreferrer');
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+window.portfolioAgent = {
+  executeAction(actionType, payload) {
+    const p = payload || {};
+    switch (actionType) {
+      case 'OPEN_PROJECT': {
+        const key = String(p.id || p.title || p.name || '').toLowerCase();
+        const project = PROJECTS_DATA.find((pr) =>
+          String(pr.id || '').toLowerCase() === key ||
+          String(pr.title || '').toLowerCase() === key ||
+          key.length > 3 && String(pr.title || '').toLowerCase().includes(key)
+        );
+        if (project) {
+          agentScrollToSection('projects');
+          openProjectModal(project);
+          return true;
+        }
+        return agentScrollToSection('projects');
+      }
+      case 'OPEN_CERTIFICATE': {
+        const key = String(p.id || p.title || p.name || '').toLowerCase();
+        const cert = CERTIFICATES_DATA.find((c) =>
+          String(c.title || '').toLowerCase() === key ||
+          key.length > 3 && String(c.title || '').toLowerCase().includes(key)
+        );
+        if (cert) {
+          agentScrollToSection('certificates');
+          openCertModal(cert);
+          return true;
+        }
+        return agentScrollToSection('certificates');
+      }
+      case 'FILL_CONTACT': {
+        agentScrollToSection('contact');
+        const form = document.getElementById('contact-form');
+        if (!form) return false;
+        const nameInput = form.querySelector('#contact-name');
+        const messageInput = form.querySelector('#contact-message');
+        if (p.name && nameInput && !nameInput.value) nameInput.value = String(p.name).slice(0, 100);
+        if (p.message && messageInput && !messageInput.value) messageInput.value = String(p.message).slice(0, 500);
+        return true;
+      }
+      case 'NAVIGATE':
+        return agentScrollToSection(p.section || p.target || p.id);
+      case 'OPEN_URL':
+        return agentSafeOpenUrl(p.url || p.link);
+      case 'OPEN_GITHUB':
+        return agentSafeOpenUrl(p.url || `https://github.com/Raflyf${p.repo ? '/' + String(p.repo).replace(/^\/+/, '') : ''}`);
+      case 'TOGGLE_THEME': {
+        const btn = document.getElementById('theme-toggle-btn');
+        if (btn) { btn.click(); return true; }
+        return false;
+      }
+      case 'COPY_EMAIL': {
+        const btn = document.getElementById('copy-email-btn');
+        if (btn) { btn.click(); return true; }
+        return false;
+      }
+      default:
+        return false;
+    }
+  }
+};
 
 
 

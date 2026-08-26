@@ -9,8 +9,43 @@
 import crypto from 'crypto';
 
 const PIN_SALT = 'rafly_telemetry_salt';
-const DEFAULT_PIN_HASH = 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c'; // PIN 080402
+const DEFAULT_PIN_HASH = 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c';
 const TARGET_EMAIL = 'raflyfirmansyah02@gmail.com';
+
+// OTP verification attempt limiter (per instance; defense-in-depth di atas lockout Supabase)
+const otpAttemptCache = new Map();
+const OTP_MAX_ATTEMPTS = 5;
+const OTP_ATTEMPT_WINDOW_MS = 10 * 60 * 1000;
+
+function isOtpBlocked(ip) {
+  const now = Date.now();
+  const rec = otpAttemptCache.get(ip);
+  if (!rec) return false;
+  if (now - rec.start > OTP_ATTEMPT_WINDOW_MS) {
+    otpAttemptCache.delete(ip);
+    return false;
+  }
+  return rec.count >= OTP_MAX_ATTEMPTS;
+}
+
+function recordOtpFailure(ip) {
+  const now = Date.now();
+  const rec = otpAttemptCache.get(ip);
+  if (!rec || now - rec.start > OTP_ATTEMPT_WINDOW_MS) {
+    otpAttemptCache.set(ip, { count: 1, start: now });
+  } else {
+    rec.count += 1;
+  }
+  if (otpAttemptCache.size > 2000) {
+    for (const [k, v] of otpAttemptCache.entries()) {
+      if (now - v.start > OTP_ATTEMPT_WINDOW_MS) otpAttemptCache.delete(k);
+    }
+  }
+}
+
+function clearOtpAttempts(ip) {
+  otpAttemptCache.delete(ip);
+}
 
 const SUPABASE_DEFAULT_URL = 'https://rphyzcqwpkxtzllvymss.supabase.co';
 const SUPABASE_DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
@@ -113,6 +148,7 @@ export default async function handler(req, res) {
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
+  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown-client';
 
   try {
     const body = req.method === 'POST' ? (typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {}) : req.query || {};
@@ -160,13 +196,14 @@ export default async function handler(req, res) {
     // 2. SEND OTP CODE TO EMAIL
     // =========================================================================
     if (action === 'send_otp') {
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpCode = crypto.randomInt(100000, 1000000).toString();
       const otpHash = hashValue(otpCode);
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
       // Upsert to Supabase
+      let otpSaved = false;
       try {
-        await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+        const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
           method: 'POST',
           headers: {
             ...headers,
@@ -179,12 +216,21 @@ export default async function handler(req, res) {
             updated_at: new Date().toISOString()
           })
         });
+        otpSaved = saveRes.ok;
+        if (!otpSaved) console.warn('[Admin OTP] Supabase OTP save rejected:', saveRes.status);
       } catch (err) {
         console.warn('[Admin OTP] Supabase OTP save error:', err.message);
       }
 
       // Dispatch Email
       const emailResult = await dispatchEmail(otpCode);
+
+      if (!otpSaved) {
+        return res.status(502).json({
+          success: false,
+          message: 'Gagal menyimpan OTP ke gateway keamanan cloud. Coba lagi beberapa saat.'
+        });
+      }
 
       return res.status(200).json({
         success: true,
@@ -200,6 +246,9 @@ export default async function handler(req, res) {
     // 3. VERIFY OTP & RESET PIN
     // =========================================================================
     if (action === 'verify_otp_and_reset_pin') {
+      if (isOtpBlocked(clientIp)) {
+        return res.status(429).json({ success: false, message: 'Terlalu banyak percobaan OTP gagal. Minta kode baru atau coba lagi nanti.' });
+      }
       const enteredOtp = String(body.otp_code || '').trim();
       const newPin = String(body.new_pin || '').trim();
 
@@ -238,8 +287,10 @@ export default async function handler(req, res) {
 
       // If OTP matches, update master PIN and reset all lockouts
       if (isValidOtp) {
+        clearOtpAttempts(clientIp);
+        let pinSaved = false;
         try {
-          await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+          const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
             method: 'POST',
             headers: {
               ...headers,
@@ -255,8 +306,17 @@ export default async function handler(req, res) {
               updated_at: new Date().toISOString()
             })
           });
+          pinSaved = saveRes.ok;
+          if (!pinSaved) console.warn('[Admin OTP] Supabase pin update rejected:', saveRes.status);
         } catch (err) {
           console.warn('[Admin OTP] Supabase pin update error:', err.message);
+        }
+
+        if (!pinSaved) {
+          return res.status(502).json({
+            success: false,
+            message: 'OTP valid namun gagal menyimpan PIN baru ke cloud. Coba lagi.'
+          });
         }
 
         return res.status(200).json({
@@ -265,6 +325,7 @@ export default async function handler(req, res) {
           new_pin_hash: newPinHash
         });
       } else {
+        recordOtpFailure(clientIp);
         return res.status(400).json({
           success: false,
           message: 'Kode OTP tidak cocok atau sudah kadaluwarsa. Silakan minta kode OTP baru.'
@@ -290,21 +351,24 @@ export default async function handler(req, res) {
       }
       try {
         const verifyRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=pin_hash`, { method: 'GET', headers });
-        if (verifyRes.ok) {
-          const verifyData = await verifyRes.json();
-          const storedHash = verifyData?.[0]?.pin_hash || DEFAULT_PIN_HASH;
-          if (providedCurrentHash !== storedHash) {
-            return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
-          }
+        if (!verifyRes.ok) {
+          return res.status(502).json({ success: false, message: 'Gagal memverifikasi status keamanan di cloud.' });
+        }
+        const verifyData = await verifyRes.json();
+        const storedHash = verifyData?.[0]?.pin_hash || DEFAULT_PIN_HASH;
+        if (providedCurrentHash !== storedHash) {
+          return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
         }
       } catch (err) {
         console.warn('[Admin OTP] PIN verification fetch failed:', err.message);
+        return res.status(502).json({ success: false, message: 'Gagal menghubungi gateway keamanan cloud.' });
       }
 
       const newPinHash = hashValue(newPin);
 
+      let directPinSaved = false;
       try {
-        await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+        const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
           method: 'POST',
           headers: {
             ...headers,
@@ -318,8 +382,14 @@ export default async function handler(req, res) {
             updated_at: new Date().toISOString()
           })
         });
+        directPinSaved = saveRes.ok;
+        if (!directPinSaved) console.warn('[Admin OTP] Supabase direct pin update rejected:', saveRes.status);
       } catch (err) {
         console.warn('[Admin OTP] Supabase direct pin update error:', err.message);
+      }
+
+      if (!directPinSaved) {
+        return res.status(502).json({ success: false, message: 'Gagal menyimpan PIN baru ke Supabase Cloud.' });
       }
 
       return res.status(200).json({
@@ -333,8 +403,28 @@ export default async function handler(req, res) {
     // 5. RESET LOCKOUT
     // =========================================================================
     if (action === 'reset_lockout') {
+      // Wajib bukti hash PIN aktif — tanpa ini siapa pun bisa menolkan lockout brute-force
+      const providedCurrentHash = String(body.current_pin_hash || '').trim();
+      if (!providedCurrentHash || providedCurrentHash.length !== 64) {
+        return res.status(403).json({ success: false, message: 'Verifikasi PIN aktif diperlukan untuk mereset lockout.' });
+      }
       try {
-        await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+        const verifyRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=pin_hash`, { method: 'GET', headers });
+        if (!verifyRes.ok) {
+          return res.status(502).json({ success: false, message: 'Gagal memverifikasi status keamanan di cloud.' });
+        }
+        const verifyData = await verifyRes.json();
+        const storedHash = verifyData?.[0]?.pin_hash || DEFAULT_PIN_HASH;
+        if (providedCurrentHash !== storedHash) {
+          return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
+        }
+      } catch (err) {
+        console.warn('[Admin OTP] Lockout verification fetch failed:', err.message);
+        return res.status(502).json({ success: false, message: 'Gagal menghubungi gateway keamanan cloud.' });
+      }
+      let lockoutSaved = false;
+      try {
+        const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
           method: 'POST',
           headers: {
             ...headers,
@@ -347,8 +437,14 @@ export default async function handler(req, res) {
             updated_at: new Date().toISOString()
           })
         });
+        lockoutSaved = saveRes.ok;
+        if (!lockoutSaved) console.warn('[Admin OTP] Reset lockout Supabase rejected:', saveRes.status);
       } catch (err) {
         console.warn('[Admin OTP] Reset lockout Supabase error:', err.message);
+      }
+
+      if (!lockoutSaved) {
+        return res.status(502).json({ success: false, message: 'Gagal mereset status penguncian di cloud.' });
       }
 
       return res.status(200).json({

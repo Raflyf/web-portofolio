@@ -5,7 +5,7 @@
              Reveal, Specular Rim Glow, Sliding Window Pagination, Dual-Theme WCAG AA
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+/* Font dimuat via <link> di dashboard.html (hindari double-fetch) */
 
 /* ==========================================================================
    1. COLOR TOKENS & SYSTEM VARIABLES (DARK THEME DEFAULT)
@@ -345,8 +345,8 @@ body {
   top: 0;
   z-index: 50;
   background: rgba(7, 9, 14, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
   border-bottom: 1px solid var(--border-card);
   padding: 0.9rem 0;
   transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -566,8 +566,8 @@ h1, h2, h3, h4, h5, h6,
   right: 0;
   min-width: 145px;
   background: linear-gradient(145deg, rgba(14, 20, 32, 0.98) 0%, rgba(9, 13, 22, 0.98) 100%);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-md);
   padding: 0.35rem;
@@ -1625,8 +1625,8 @@ h1, h2, h3, h4, h5, h6,
   position: fixed;
   inset: 0;
   background: rgba(7, 9, 14, 0.94);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -1786,8 +1786,8 @@ html.is-admin-authenticated .pin-gateway-overlay {
   position: fixed;
   inset: 0;
   background: rgba(7, 9, 14, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
   z-index: 1100;
   display: none;
   align-items: center;
@@ -2095,8 +2095,8 @@ input.pin-input.text-left:focus {
     width: 100vw;
     background: #090e17;
     background-color: #090e17;
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    backdrop-filter: var(--glass-overlay-blur);
+    -webkit-backdrop-filter: var(--glass-overlay-blur);
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 0 0 20px 20px;
     padding: 1.25rem 1.25rem 1.5rem;

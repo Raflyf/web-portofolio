@@ -31,9 +31,13 @@
     return;
   }
 
-  function initMorphBackground() {
+  function initMorphBackground(attempt = 0) {
     if (typeof THREE === 'undefined') {
-      setTimeout(initMorphBackground, 100);
+      if (attempt < 50) {
+        setTimeout(() => initMorphBackground(attempt + 1), 100);
+      } else {
+        console.warn('[3D Background] Three.js failed to load; background disabled.');
+      }
       return;
     }
 
@@ -186,18 +190,25 @@
       
       pointLight1.color.setHex(colorPrimary);
       pointLight2.color.setHex(colorSecondary);
+
+      if (prefersReducedMotion) renderer.render(scene, camera);
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     // Animation Loop
     let clock = new THREE.Clock();
-    
+
+    // prefers-reduced-motion: render satu frame statis, tanpa loop animasi
+    if (prefersReducedMotion) {
+      renderer.render(scene, camera);
+      return;
+    }
+
     function animate() {
       requestAnimationFrame(animate);
 
       if (!isTabVisible) return;
 
-      const delta = clock.getDelta();
       const elapsedTime = clock.getElapsedTime();
 
       // Smooth interpolation for scroll & mouse
