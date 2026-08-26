@@ -4,7 +4,7 @@
    WCAG 2.2 AA Contrast Verified (All text contrast >= 4.5:1, Headings >= 8:1)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import url('./transitions.css');
 
 :root {
@@ -41,8 +41,8 @@
   --badge-bg: oklch(0.20 0.022 250);
   --code-bg: oklch(0.10 0.015 250);
 
-  /* Fonts */
-  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Aesthetic Modern Tech Fonts */
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 
@@ -284,11 +284,28 @@ img, svg {
   width: fit-content;
 }
 
+/* Typography - High-Character Display Headings & Titles */
+h1, h2, h3, h4, h5, h6,
+.section-title,
+.hero-title,
+.hero-name,
+.card-title,
+.project-card-title,
+.cert-card-title,
+.skill-category-title,
+.timeline-title,
+.nav-logo,
+.brand-name,
+.terminal-header-title,
+.modal-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
 .section-title {
   font-size: var(--fs-h2);
   color: var(--text-heading);
   font-weight: 800;
-  letter-spacing: -0.025em;
   line-height: 1.2;
 }
 

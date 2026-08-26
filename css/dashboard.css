@@ -5,7 +5,7 @@
              Reveal, Specular Rim Glow, Sliding Window Pagination, Dual-Theme WCAG AA
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 /* ==========================================================================
    1. COLOR TOKENS & SYSTEM VARIABLES (DARK THEME DEFAULT)
@@ -60,6 +60,7 @@
   --accent-purple-glow: rgba(168, 85, 247, 0.28);
 
   /* Font System */
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
@@ -332,11 +333,23 @@ body {
   gap: 0.75rem;
 }
 
+/* Typography - Display Headings & Brand */
+h1, h2, h3, h4, h5, h6,
+.dash-brand-title,
+.chart-title,
+.intel-card-header h3,
+.panel-header h2,
+.panel-header h3,
+.modal-header h3,
+.omniroute-rule-card-title,
+.dash-modal-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
 .dash-brand-title {
-  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 1.05rem;
-  letter-spacing: -0.02em;
   color: var(--text-ink);
   text-decoration: none;
   display: inline-flex;
