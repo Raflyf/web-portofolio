@@ -27,15 +27,16 @@ button, a, select, input, textarea {
   touch-action: manipulation;
 }
 
-/* High-Performance Subtree Containment (Skips layout/paint calculation for offscreen sections during FCP) */
+/* Explicit Subtree Visibility (Ensures backdrop-filter samples WebGL canvas across all sections) */
+#about,
 #skills,
 #projects,
 #certificates,
 #experience,
 #lab,
 #contact {
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 650px;
+  contain: none !important;
+  content-visibility: visible !important;
 }
 
 :root {
@@ -603,8 +604,6 @@ body {
   position: relative;
   width: 100%;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
   padding: 0.4rem 0;
   margin-bottom: 0.85rem;
   display: flex;
@@ -655,19 +654,24 @@ body {
   gap: 0.6rem;
   padding: 0.55rem 1.15rem;
   border-radius: 9999px;
-  background: var(--glass-nested-bg);
-  border: var(--glass-nested-border);
-  backdrop-filter: var(--glass-nested-blur);
-  -webkit-backdrop-filter: var(--glass-nested-blur);
+  background: var(--glass-card-bg) !important;
+  backdrop-filter: var(--glass-card-blur) !important;
+  -webkit-backdrop-filter: var(--glass-card-blur) !important;
+  border: var(--glass-card-border) !important;
+  border-top: var(--glass-card-border-top) !important;
+  border-left: var(--glass-card-border-left) !important;
+  box-shadow: var(--glass-card-shadow) !important;
   color: var(--hx-text-primary);
   font-size: 0.88rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .marquee-badge:hover {
-  border-color: rgba(99, 102, 241, 0.5);
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-2px);
+}
   transform: translateY(-2px);
   background: rgba(99, 102, 241, 0.15);
 }
