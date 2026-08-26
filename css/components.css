@@ -14,8 +14,8 @@
   width: 100%;
   z-index: var(--z-sticky);
   background-color: var(--surface-overlay);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
   border-bottom: 1px solid var(--border-subtle);
   transition: border-color var(--duration-fast) var(--ease-smooth-out),
               background-color var(--duration-fast) var(--ease-smooth-out);
@@ -166,8 +166,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
     left: 0;
     width: 100%;
     background-color: var(--surface-overlay);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: var(--glass-overlay-blur);
+    -webkit-backdrop-filter: var(--glass-overlay-blur);
     border-bottom: 1px solid var(--border-card);
     padding: 1.25rem var(--container-pad);
     flex-direction: column;
@@ -683,8 +683,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   background: var(--glass-nested-bg);
   border: var(--glass-nested-border);
   border-radius: var(--radius-md);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
   font-family: var(--font-mono);
   font-size: var(--fs-caption);
   color: var(--text-body);
@@ -713,8 +713,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   background: var(--glass-nested-bg);
   border: var(--glass-nested-border);
   border-radius: var(--radius-sm);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
   font-family: var(--font-mono);
   font-size: var(--fs-caption);
   color: var(--text-ink);
@@ -921,8 +921,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   border-radius: var(--radius-md);
   background: var(--glass-nested-bg);
   border: var(--glass-nested-border);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
   font-size: var(--fs-body-sm);
   font-weight: 600;
   color: var(--text-ink);
@@ -1022,8 +1022,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   border-radius: var(--radius-md);
   background: var(--glass-nested-bg);
   border: var(--glass-nested-border);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
   font-size: var(--fs-body-sm);
   font-weight: 600;
   color: var(--text-ink);
@@ -1351,8 +1351,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   width: 100%;
   height: 100%;
   background: rgba(2, 6, 23, 0.78);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--glass-backdrop-blur);
+  -webkit-backdrop-filter: var(--glass-backdrop-blur);
 }
 
 .convo-history-panel {
@@ -1366,8 +1366,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
   z-index: 2;
 }
 
@@ -1656,7 +1656,7 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   border: 1px solid var(--border-card);
   border-radius: var(--radius-sm);
   background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--glass-nested-blur);
 }
 
 .terminal-table {
@@ -1992,8 +1992,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   color: #ffffff;
   max-width: min(88%, 620px);
   padding: 0.65rem 1rem;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
 }
 
 .chat-msg--user .chat-msg__author {
@@ -2015,8 +2015,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   max-width: 98%;
   width: 100%;
   padding: 0.85rem 1.15rem;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
 }
 
 .chat-msg--ai .chat-msg__author {
@@ -2523,8 +2523,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   border-radius: var(--radius-md);
   border: var(--glass-nested-border);
   background: var(--glass-nested-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
   color: var(--text-ink);
   font-size: var(--fs-body);
   font-family: inherit;
@@ -2640,8 +2640,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   transform: translateY(16px);
   transition: opacity var(--duration-fast) var(--ease-smooth-out),
               transform var(--duration-fast) var(--ease-smooth-out);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
   max-width: calc(100vw - 4rem);
 }
 
@@ -2710,8 +2710,8 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   z-index: var(--z-sticky);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-smooth-out);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: var(--glass-nested-blur);
+  -webkit-backdrop-filter: var(--glass-nested-blur);
 }
 
 .floating-terminal-btn:hover {
@@ -2824,8 +2824,8 @@ body.modal-open {
 
 .terminal-modal-dialog::backdrop {
   background-color: rgba(5, 10, 15, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-backdrop-blur);
+  -webkit-backdrop-filter: var(--glass-backdrop-blur);
 }
 
 .terminal-modal-header {
@@ -2922,8 +2922,8 @@ body.modal-open {
 
 .modal-dialog::backdrop {
   background-color: oklch(0.05 0.01 250 / 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--glass-backdrop-blur);
+  -webkit-backdrop-filter: var(--glass-backdrop-blur);
 }
 
 .modal-header {

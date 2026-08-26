@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.admin_auth_config (
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Seed initial master PIN "080402" hash
+-- Seed initial master PIN hash (nilai awal; WAJIB dirotasi via dashboard setelah deploy)
 INSERT INTO public.admin_auth_config (id, pin_hash, lockout_attempts, locked_until)
 VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', 0, NULL)
 ON CONFLICT (id) DO UPDATE SET

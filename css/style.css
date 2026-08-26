@@ -4,7 +4,7 @@
    WCAG 2.2 AA Contrast Verified (All text contrast >= 4.5:1, Headings >= 8:1)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* Font dimuat via <link rel="stylesheet"> + preconnect di HTML (hindari double-fetch @import) */
 @import url('./transitions.css');
 
 :root {
@@ -111,6 +111,11 @@
   --glass-nested-bg: rgba(255, 255, 255, 0.05);
   --glass-nested-border: 1px solid rgba(255, 255, 255, 0.10);
 
+  /* Unified glass blur tiers: nested < card < overlay */
+  --glass-nested-blur: blur(8px) saturate(160%);
+  --glass-overlay-blur: blur(24px) saturate(180%);
+  --glass-backdrop-blur: blur(8px);
+
   /* Semantic z-index scale */
   --z-base: 1;
   --z-sticky: 100;
@@ -171,6 +176,10 @@ html[data-theme="light"] {
 
   --glass-nested-bg: rgba(255, 255, 255, 0.40);
   --glass-nested-border: 1px solid rgba(255, 255, 255, 0.60);
+
+  --glass-nested-blur: blur(8px) saturate(160%);
+  --glass-overlay-blur: blur(24px) saturate(180%);
+  --glass-backdrop-blur: blur(8px);
 }
 
 /* ==========================================================================
@@ -430,8 +439,8 @@ h1, h2, h3, h4, h5, h6,
     left: 0;
     width: 100vw;
     background-color: var(--surface-overlay);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: var(--glass-overlay-blur);
+    -webkit-backdrop-filter: var(--glass-overlay-blur);
     border-bottom: 1px solid var(--border-card);
     padding: 1.25rem var(--container-pad);
     flex-direction: column;
