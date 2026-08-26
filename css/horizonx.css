@@ -669,11 +669,10 @@ body {
 }
 
 .marquee-badge:hover {
-  border-color: rgba(99, 102, 241, 0.5) !important;
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  border-top-color: rgba(255, 255, 255, 0.8) !important;
   transform: translateY(-2px);
-}
-  transform: translateY(-2px);
-  background: rgba(99, 102, 241, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
 .marquee-badge-dot {
