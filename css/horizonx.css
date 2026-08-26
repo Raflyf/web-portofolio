@@ -89,16 +89,18 @@ button, a, select, input, textarea {
   right: 0 !important;
   z-index: 100 !important;
   width: 100% !important;
-  background: rgba(9, 13, 18, 0.85) !important;
-  backdrop-filter: var(--glass-overlay-blur) !important;
-  -webkit-backdrop-filter: var(--glass-overlay-blur) !important;
-  border-bottom: 1px solid var(--hx-border-card) !important;
-  transition: background 0.3s ease, border-color 0.3s ease;
+  background: linear-gradient(180deg, rgba(13, 19, 33, 0.82) 0%, rgba(9, 14, 26, 0.90) 100%) !important;
+  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 [data-theme="light"] .site-header {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(245, 248, 252, 0.75) 100%) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.10) !important;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 body {
