@@ -134,22 +134,15 @@
     const particleField = new THREE.Points(particleGeometry, particleMaterial);
     scene.add(particleField);
 
-    // Dynamic Scroll & Mouse Interaction State
+    // Dynamic Scroll State (Scroll-Driven Only — No Mouse Parallax)
     let scrollProgress = 0;
     let targetScrollProgress = 0;
-    let mouseX = 0, mouseY = 0;
-    let targetMouseX = 0, targetMouseY = 0;
     let isTabVisible = !document.hidden;
 
     // Window Listeners
     function onScroll() {
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       targetScrollProgress = docHeight > 0 ? Math.max(0, Math.min(1, window.scrollY / docHeight)) : 0;
-    }
-
-    function onMouseMove(e) {
-      targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-      targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
     }
 
     function onResize() {
@@ -166,7 +159,6 @@
     });
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
     onResize();
     onScroll();
@@ -191,7 +183,7 @@
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-    // Animation Loop — always-on (no reduced-motion bailout; performance via DPR cap & adaptive geometry)
+    // Animation Loop — always-on (Motion driven strictly by scroll progress & auto-rotation)
     let clock = new THREE.Clock();
 
     function animate() {
@@ -201,22 +193,20 @@
 
       const elapsedTime = clock.getElapsedTime();
 
-      // Smooth interpolation for scroll & mouse
+      // Smooth interpolation for scroll progress
       scrollProgress += (targetScrollProgress - scrollProgress) * 0.08;
-      mouseX += (targetMouseX - mouseX) * 0.06;
-      mouseY += (targetMouseY - mouseY) * 0.06;
 
-      // 3D PowerPoint-Style Morph Transformations mapped to Scroll Progress:
+      // 3D PowerPoint-Style Morph Transformations mapped strictly to Scroll Progress:
       const morphAngle = scrollProgress * Math.PI * 4;
       const morphScale = 1.0 + Math.sin(scrollProgress * Math.PI * 2) * 0.35;
       
-      // Main Mesh PPT-Morph Dynamic Transforms
-      mainMesh.rotation.x = elapsedTime * 0.25 + scrollProgress * 5.2 + mouseY * 0.4;
-      mainMesh.rotation.y = elapsedTime * 0.35 + scrollProgress * 7.5 + mouseX * 0.4;
+      // Main Mesh PPT-Morph Dynamic Transforms (Scroll-Only)
+      mainMesh.rotation.x = elapsedTime * 0.25 + scrollProgress * 5.2;
+      mainMesh.rotation.y = elapsedTime * 0.35 + scrollProgress * 7.5;
       mainMesh.rotation.z = Math.sin(morphAngle * 0.5) * 0.8;
       
-      mainMesh.position.x = Math.sin(scrollProgress * Math.PI * 2) * 14 + mouseX * 2.5;
-      mainMesh.position.y = Math.cos(scrollProgress * Math.PI * 2.5) * 8 - (scrollProgress - 0.5) * 16 - mouseY * 2.5;
+      mainMesh.position.x = Math.sin(scrollProgress * Math.PI * 2) * 14;
+      mainMesh.position.y = Math.cos(scrollProgress * Math.PI * 2.5) * 8 - (scrollProgress - 0.5) * 16;
       mainMesh.position.z = -5 + Math.sin(scrollProgress * Math.PI * 3) * 10;
       
       mainMesh.scale.set(morphScale, morphScale, morphScale);
