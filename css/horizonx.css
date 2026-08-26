@@ -702,16 +702,14 @@ body {
    ========================================================================== */
 .reveal-item {
   opacity: 0 !important;
-  transform: perspective(1000px) translateY(44px) scale(0.96) !important;
-  filter: blur(8px) !important;
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-              filter 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  will-change: opacity, transform, filter;
+  transform: perspective(1000px) translateY(32px) scale(0.98) !important;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: opacity, transform;
 }
 
 .reveal-item.reveal-from-top {
-  transform: perspective(1000px) translateY(-44px) scale(0.96) !important;
+  transform: perspective(1000px) translateY(-32px) scale(0.98) !important;
 }
 
 .reveal-item.is-revealed {

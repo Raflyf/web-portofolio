@@ -595,7 +595,7 @@ function renderProjects(category) {
 
   projectsToRender.forEach((project) => {
     const card = document.createElement('article');
-    card.className = 'project-card reveal-item';
+    card.className = 'project-card';
     card.setAttribute('tabindex', '0');
 
     const topWrap = document.createElement('div');
@@ -697,7 +697,7 @@ function renderCertificates(category) {
 
   filtered.forEach((cert) => {
     const card = document.createElement('article');
-    card.className = 'certificate-card reveal-item';
+    card.className = 'certificate-card';
 
     const topWrap = document.createElement('div');
     topWrap.className = 'cert-card__top';
