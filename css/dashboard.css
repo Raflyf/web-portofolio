@@ -72,17 +72,17 @@
   --radius-full: 9999px;
 
   /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content) */
-  --glass-card-bg: rgba(14, 20, 34, 0.80);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.10);
-  --glass-card-border-top: 1px solid rgba(255, 255, 255, 0.22);
-  --glass-card-border-left: 1px solid rgba(255, 255, 255, 0.14);
-  --glass-card-blur: blur(20px);
-  --glass-card-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(13, 19, 33, 0.85) 60%, rgba(9, 14, 26, 0.92) 100%);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.18);
+  --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.50);
+  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.32);
+  --glass-card-blur: blur(28px) saturate(200%) contrast(105%);
+  --glass-card-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.85), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.30), 0 0 32px rgba(99, 102, 241, 0.15);
   --glass-card-radius: 20px;
   
-  --glass-nested-bg: rgba(255, 255, 255, 0.06);
-  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.12);
-  --glass-nested-blur: blur(12px);
+  --glass-nested-bg: rgba(255, 255, 255, 0.08);
+  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.18);
+  --glass-nested-blur: blur(16px) saturate(180%);
   --glass-nested-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 
   --glass-overlay-blur: blur(28px) saturate(200%) contrast(105%);
@@ -139,14 +139,14 @@ html[data-theme="light"],
   --shadow-card-hover: 0 20px 44px rgba(15, 23, 42, 0.12), 0 0 20px rgba(79, 70, 229, 0.18);
   --shadow-modal: 0 28px 56px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1);
 
-  --glass-card-bg: rgba(255, 255, 255, 0.85);
-  --glass-card-border: 1px solid rgba(15, 23, 42, 0.08);
-  --glass-card-border-top: 1px solid rgba(255, 255, 255, 0.95);
-  --glass-card-border-left: 1px solid rgba(255, 255, 255, 0.90);
-  --glass-card-blur: blur(20px);
-  --glass-card-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 248, 252, 0.50) 100%);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.85);
+  --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 1);
+  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.90);
+  --glass-card-blur: blur(28px) saturate(200%);
+  --glass-card-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 1px rgba(15, 23, 42, 0.08);
   --glass-card-radius: 20px;
-  
+
   --glass-nested-bg: rgba(0, 0, 0, 0.04);
   --glass-nested-border: 1px solid rgba(0, 0, 0, 0.08);
   --glass-nested-blur: blur(12px);
@@ -2000,21 +2000,28 @@ input.pin-input.text-left:focus {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--surface-card);
-  border: 1px solid var(--border-highlight);
-  color: var(--text-heading);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(13, 19, 33, 0.82) 60%, rgba(9, 14, 26, 0.92) 100%) !important;
+  backdrop-filter: blur(20px) saturate(200%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(200%) contrast(105%) !important;
+  border: 1px solid rgba(129, 140, 248, 0.45) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.65) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.40) !important;
+  color: #a5b4fc;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.60), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.45), 0 0 20px rgba(99, 102, 241, 0.25) !important;
   opacity: 0;
   visibility: hidden;
   transform: translateY(10px);
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--duration-fast) var(--ease-smooth-out),
+              background var(--duration-fast) var(--ease-smooth-out),
+              border-color var(--duration-fast) var(--ease-smooth-out),
+              box-shadow var(--duration-fast) var(--ease-smooth-out) !important;
   z-index: 90;
 }
 
@@ -2025,11 +2032,12 @@ input.pin-input.text-left:focus {
 }
 
 .floating-back-to-top:hover {
-  background: var(--accent-emerald);
-  color: #04140b;
-  border-color: var(--accent-emerald);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 28px var(--accent-emerald-glow);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.40) 0%, rgba(13, 19, 33, 0.88) 100%) !important;
+  border-color: rgba(165, 180, 252, 0.80) !important;
+  border-top-color: rgba(255, 255, 255, 0.90) !important;
+  color: #ffffff;
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.75), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.65), 0 0 28px rgba(99, 102, 241, 0.50) !important;
 }
 
 /* ==========================================================================
