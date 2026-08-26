@@ -570,9 +570,14 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .pillar-card {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  border: var(--glass-card-border);
+  border-top: var(--glass-card-border-top);
+  border-left: var(--glass-card-border-left);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border-radius: var(--glass-card-radius);
+  box-shadow: var(--glass-card-shadow);
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
@@ -581,9 +586,9 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .pillar-card:hover {
-  border-color: var(--border-highlight);
-  background-color: var(--surface-card-hover);
-  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.45);
+  border-top-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-4px);
 }
 
 .pillar-icon {
@@ -607,34 +612,39 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 .pillar-desc {
   font-size: var(--fs-body-sm);
   color: var(--text-muted);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 /* ==========================================================================
-   4. BENTO SKILLS GRID (Asymmetric 12-Column Architecture)
+   5. BENTO SKILLS GRID
    ========================================================================== */
 
-.skills-bento-grid {
+.bento-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: var(--space-md);
 }
 
 .bento-tile {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  border: var(--glass-card-border);
+  border-top: var(--glass-card-border-top);
+  border-left: var(--glass-card-border-left);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border-radius: var(--glass-card-radius);
+  box-shadow: var(--glass-card-shadow);
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  transition: border-color var(--duration-fast) var(--ease-smooth-out),
-              background-color var(--duration-fast) var(--ease-smooth-out);
+  transition: all var(--duration-fast) var(--ease-smooth-out);
 }
 
 .bento-tile:hover {
-  border-color: var(--border-highlight);
-  background-color: var(--surface-card-hover);
+  border-color: rgba(99, 102, 241, 0.45);
+  border-top-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-4px);
 }
 
 .bento-tile--col-7 { grid-column: span 7; }
@@ -871,9 +881,14 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .project-card {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  border: var(--glass-card-border);
+  border-top: var(--glass-card-border-top);
+  border-left: var(--glass-card-border-left);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border-radius: var(--glass-card-radius);
+  box-shadow: var(--glass-card-shadow);
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
@@ -882,9 +897,9 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .project-card:hover {
-  border-color: var(--border-highlight);
-  background-color: var(--surface-card-hover);
-  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.45);
+  border-top-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-4px);
 }
 
 .project-card__top {
@@ -946,9 +961,14 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .certificate-card {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  border: var(--glass-card-border);
+  border-top: var(--glass-card-border-top);
+  border-left: var(--glass-card-border-left);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border-radius: var(--glass-card-radius);
+  box-shadow: var(--glass-card-shadow);
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
@@ -957,9 +977,9 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .certificate-card:hover {
-  border-color: var(--border-highlight);
-  background-color: var(--surface-card-hover);
-  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.45);
+  border-top-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-4px);
 }
 
 .cert-card__top {
@@ -2441,9 +2461,14 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .contact-method-card {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  border: var(--glass-card-border);
+  border-top: var(--glass-card-border-top);
+  border-left: var(--glass-card-border-left);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border-radius: var(--glass-card-radius);
+  box-shadow: var(--glass-card-shadow);
   padding: var(--space-lg);
   display: flex;
   align-items: center;
@@ -2453,8 +2478,9 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 .contact-method-card:hover {
-  border-color: var(--border-highlight);
-  background-color: var(--surface-card-hover);
+  border-color: rgba(99, 102, 241, 0.45);
+  border-top-color: rgba(255, 255, 255, 0.65);
+  transform: translateY(-4px);
 }
 
 .contact-method-info {
@@ -2498,9 +2524,14 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 
 /* Contact Form */
 .contact-form {
-  background-color: var(--surface-card);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  border: var(--glass-card-border);
+  border-top: var(--glass-card-border-top);
+  border-left: var(--glass-card-border-left);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border-radius: var(--glass-card-radius);
+  box-shadow: var(--glass-card-shadow);
   padding: var(--space-xl);
   display: flex;
   flex-direction: column;
