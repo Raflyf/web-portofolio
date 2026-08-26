@@ -1106,7 +1106,7 @@ body {
   }
 }
 
-/* Universal 3D Translucent Glassmorphism (Calibrated Depth & Opacity Standard across Main Page & Dashboard) */
+/* Universal 3D Translucent Glassmorphism (True Liquid Frosted Glass iOS / VisionOS Standard across Main Page & Dashboard) */
 .hero-showcase-canvas,
 .pillar-card,
 .bento-tile,
@@ -1126,11 +1126,18 @@ body {
 .omniroute-combo-tile,
 .omniroute-topology-card,
 .ai-models-matrix-card,
-.table-card {
+.table-card,
+.pin-card,
+.dash-modal-card,
+.nav-container,
+.dash-section-bar,
+.marquee-container {
   background: var(--glass-card-bg) !important;
   backdrop-filter: var(--glass-card-blur) !important;
   -webkit-backdrop-filter: var(--glass-card-blur) !important;
   border: var(--glass-card-border) !important;
+  border-top: var(--glass-card-border-top) !important;
+  border-left: var(--glass-card-border-left) !important;
   border-radius: var(--glass-card-radius) !important;
   box-shadow: var(--glass-card-shadow) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
@@ -1142,6 +1149,14 @@ body {
 /* CRITICAL: Kill filter compositing layer on glass cards so backdrop-filter can render.
    Without this, the .reveal-item filter: blur(8px) -> none transition creates a filter
    compositing layer in Chromium that permanently blocks backdrop-filter sampling. */
+.hero-showcase-canvas,
+.pillar-card,
+.bento-tile,
+.terminal-card,
+.contact-method-card,
+.contact-form,
+.stats-strip,
+.timeline-item .timeline-content,
 .project-card,
 .project-card.reveal-item,
 .project-card.reveal-item.is-revealed,
@@ -1151,16 +1166,25 @@ body {
 .project-spotlight-card,
 .project-spotlight-card.reveal-item,
 .project-spotlight-card.reveal-item.is-revealed,
-.timeline-item .timeline-content,
 .timeline-item .timeline-content.reveal-item,
 .timeline-item .timeline-content.reveal-item.is-revealed,
+.kpi-card,
+.chart-card,
+.intel-card,
+.ai-model-card,
+.ai-model-banner-card,
+.omniroute-combo-tile,
+.omniroute-topology-card,
+.ai-models-matrix-card,
+.table-card,
+.pin-card,
+.dash-modal-card,
 .marquee-container,
 .marquee-container.reveal-item,
 .marquee-container.reveal-item.is-revealed,
 .modal-dialog,
 .terminal-modal-dialog,
-.convo-history-panel,
-.dash-modal-card {
+.convo-history-panel {
   filter: none !important;
   -webkit-filter: none !important;
 }
@@ -1191,16 +1215,22 @@ body {
 .ranked-num-badge,
 .omniroute-preset-box,
 .custom-select-trigger,
-.dash-status-pill {
+.dash-status-pill,
+.stat-box,
+.terminal-quick-btn,
+.convo-search-box,
+.table-search-box,
+.dash-filter-btn,
+.custom-dropdown-btn {
   background: var(--glass-nested-bg) !important;
   border: var(--glass-nested-border) !important;
   backdrop-filter: var(--glass-nested-blur) !important;
   -webkit-backdrop-filter: var(--glass-nested-blur) !important;
+  box-shadow: var(--glass-nested-shadow) !important;
 }
 
 .showcase-card {
   border-radius: 16px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s ease,
               box-shadow 0.25s ease !important;
@@ -1209,7 +1239,8 @@ body {
 .showcase-card:hover {
   transform: translateY(-4px) !important;
   border-color: rgba(99, 102, 241, 0.5) !important;
-  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.45), 0 0 16px rgba(99, 102, 241, 0.25) !important;
+  border-top-color: rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.65), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.50), 0 0 24px rgba(99, 102, 241, 0.30) !important;
 }
 
 @media (hover: hover) {
@@ -1218,10 +1249,17 @@ body {
   .certificate-card:hover,
   .pillar-card:hover,
   .bento-tile:hover,
-  .contact-method-card:hover {
+  .contact-method-card:hover,
+  .kpi-card:hover,
+  .chart-card:hover,
+  .intel-card:hover,
+  .ai-model-card:hover,
+  .omniroute-combo-tile:hover,
+  .table-card:hover {
     transform: translateY(-4px) !important;
     border-color: rgba(99, 102, 241, 0.45) !important;
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 20px 44px -8px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(99, 102, 241, 0.25) !important;
+    border-top-color: rgba(255, 255, 255, 0.65) !important;
+    box-shadow: 0 40px 96px -16px rgba(0, 0, 0, 0.85), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.60), 0 0 40px rgba(99, 102, 241, 0.22) !important;
     transition-delay: 0s !important;
   }
 
@@ -1230,8 +1268,16 @@ body {
   [data-theme="light"] .certificate-card:hover,
   [data-theme="light"] .pillar-card:hover,
   [data-theme="light"] .bento-tile:hover,
-  [data-theme="light"] .contact-method-card:hover {
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 16px 34px -8px rgba(15, 23, 42, 0.15), 0 0 18px -2px rgba(99, 102, 241, 0.18) !important;
+  [data-theme="light"] .contact-method-card:hover,
+  [data-theme="light"] .kpi-card:hover,
+  [data-theme="light"] .chart-card:hover,
+  [data-theme="light"] .intel-card:hover,
+  [data-theme="light"] .ai-model-card:hover,
+  [data-theme="light"] .omniroute-combo-tile:hover,
+  [data-theme="light"] .table-card:hover {
+    border-color: rgba(99, 102, 241, 0.45) !important;
+    border-top-color: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 32px 70px -10px rgba(15, 23, 42, 0.18), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 24px rgba(99, 102, 241, 0.15) !important;
     transition-delay: 0s !important;
   }
 }

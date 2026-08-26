@@ -101,19 +101,22 @@
   --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.5);
   --shadow-glow: 0 0 24px var(--accent-indigo-glow);
 
-  /* Master Harmonized Glassmorphism Tokens (Perfect Translucent 3D Depth & Zero Opacity Drift) */
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.022) 100%), rgba(10, 15, 26, 0.72);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.16);
-  --glass-card-blur: blur(22px) saturate(180%);
-  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.14) inset, 0 16px 36px -8px rgba(0, 0, 0, 0.65), 0 2px 6px -1px rgba(0, 0, 0, 0.35);
+  /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content) */
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 16, 30, 0.55) 100%);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.22);
+  --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.48);
+  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.30);
+  --glass-card-blur: blur(28px) saturate(200%) contrast(105%);
+  --glass-card-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.75), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.40), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.25), 0 0 40px rgba(99, 102, 241, 0.12);
   --glass-card-radius: 20px;
   
-  --glass-nested-bg: rgba(255, 255, 255, 0.12);
-  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.10);
+  --glass-nested-bg: rgba(255, 255, 255, 0.06);
+  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.16);
+  --glass-nested-blur: blur(12px) saturate(180%);
+  --glass-nested-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 
-  /* Unified glass blur tiers: nested < card < overlay — calibrated for visible frost */
-  --glass-nested-blur: blur(14px) saturate(160%);
-  --glass-overlay-blur: blur(24px) saturate(180%);
+  /* Unified glass blur tiers: nested < card < overlay */
+  --glass-overlay-blur: blur(28px) saturate(200%) contrast(105%);
   --glass-backdrop-blur: blur(8px);
 
   /* Semantic z-index scale */
@@ -126,7 +129,7 @@
   --z-skip-link: 1000;
 }
 
-/* Light Mode Overrides (Apple-Grade Frosted Glassmorphism) */
+/* Light Mode Overrides (Apple-Grade True Frosted Glassmorphism) */
 html[data-theme="light"] {
   --bg-primary: #f8fafc;
   --bg-secondary: rgba(241, 245, 249, 0.7);
@@ -169,16 +172,20 @@ html[data-theme="light"] {
   --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.10);
   --shadow-glow: 0 0 16px rgba(67, 56, 202, 0.2);
 
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(248, 250, 252, 0.35) 100%), rgba(255, 255, 255, 0.48);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 248, 252, 0.50) 100%);
   --glass-card-border: 1px solid rgba(255, 255, 255, 0.85);
-  --glass-card-blur: blur(22px) saturate(180%);
-  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.95) inset, 0 12px 30px -6px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 1);
+  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.90);
+  --glass-card-blur: blur(28px) saturate(200%);
+  --glass-card-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 1px rgba(15, 23, 42, 0.08);
+  --glass-card-radius: 20px;
   
-  --glass-nested-bg: rgba(255, 255, 255, 0.40);
-  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.60);
+  --glass-nested-bg: rgba(0, 0, 0, 0.04);
+  --glass-nested-border: 1px solid rgba(0, 0, 0, 0.08);
+  --glass-nested-blur: blur(12px);
+  --glass-nested-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
-  --glass-nested-blur: blur(14px) saturate(160%);
-  --glass-overlay-blur: blur(24px) saturate(180%);
+  --glass-overlay-blur: blur(28px) saturate(200%);
   --glass-backdrop-blur: blur(8px);
 }
 
