@@ -1862,6 +1862,37 @@ html.is-admin-authenticated .pin-gateway-overlay {
   margin-bottom: 0.35rem;
 }
 
+.modal-input,
+.dash-form-input,
+.modal-form input.pin-input.text-left,
+input.pin-input.text-left {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  background: var(--surface-input) !important;
+  border: 1px solid var(--border-card) !important;
+  padding: 0.65rem 0.85rem !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--text-ink) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.84rem !important;
+  text-align: left !important;
+  letter-spacing: normal !important;
+  line-height: 1.4 !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.modal-input:focus,
+.dash-form-input:focus,
+.modal-form input.pin-input.text-left:focus,
+input.pin-input.text-left:focus {
+  border-color: var(--accent-emerald) !important;
+  box-shadow: 0 0 0 3px var(--accent-emerald-glow) !important;
+}
+
 /* OmniRoute Presets Box */
 .omniroute-preset-box {
   background: var(--surface-badge);
