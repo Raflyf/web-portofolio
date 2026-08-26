@@ -215,10 +215,9 @@ html {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   opacity: 0.85;
-  will-change: transform;
   transition: opacity var(--duration-medium) var(--ease-smooth-out);
 }
 
@@ -241,6 +240,16 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: color var(--duration-medium) var(--ease-smooth-out);
+  position: relative;
+}
+
+main,
+.site-header,
+.site-footer,
+.section,
+.container {
+  position: relative;
+  z-index: 1;
 }
 
 /* Skip to main content (WCAG 2.4.1) */
