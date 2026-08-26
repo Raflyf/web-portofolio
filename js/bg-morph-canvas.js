@@ -40,17 +40,19 @@
     const canvas = document.getElementById('bg-morph-canvas');
     if (!canvas) return;
 
-    // Prefers-reduced-motion check
+    // Prefers-reduced-motion check & Device Tier Detection
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.innerWidth <= 768;
+    const maxDPR = isMobile ? 1.2 : 1.5;
 
-    // Renderer
+    // Renderer with optimized Pixel Ratio cap to prevent 4K/Retina GPU overload
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       alpha: true,
-      antialias: true,
+      antialias: !isMobile,
       powerPreference: 'high-performance'
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDPR));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     // Scene & Camera
@@ -75,8 +77,10 @@
     pointLight2.position.set(-15, -12, 12);
     scene.add(pointLight2);
 
-    // 1. Primary 3D Morphing Torus-Knot Wireframe Structure
-    const mainGeometry = new THREE.TorusKnotGeometry(9, 2.6, 120, 24, 2, 3);
+    // 1. Primary 3D Morphing Torus-Knot Wireframe Structure (Adaptive Density)
+    const tubularSegments = isMobile ? 80 : 120;
+    const radialSegments = isMobile ? 18 : 24;
+    const mainGeometry = new THREE.TorusKnotGeometry(9, 2.6, tubularSegments, radialSegments, 2, 3);
     const mainMaterial = new THREE.MeshStandardMaterial({
       color: colorPrimary,
       wireframe: true,
@@ -89,7 +93,7 @@
     scene.add(mainMesh);
 
     // 2. Secondary Floating Outer Geometry Ring (Morph Companion)
-    const ringGeometry = new THREE.IcosahedronGeometry(14, 2);
+    const ringGeometry = new THREE.IcosahedronGeometry(14, isMobile ? 1 : 2);
     const ringMaterial = new THREE.MeshStandardMaterial({
       color: colorSecondary,
       wireframe: true,
@@ -101,8 +105,8 @@
     const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
     scene.add(ringMesh);
 
-    // 3. 3D Particle Constellation Depth Field
-    const particleCount = prefersReducedMotion ? 250 : 800;
+    // 3. 3D Particle Constellation Depth Field (Optimized Particle Budget)
+    const particleCount = prefersReducedMotion ? 120 : (isMobile ? 320 : 700);
     const particleGeometry = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
     const particleScales = new Float32Array(particleCount);
@@ -147,6 +151,9 @@
     }
 
     function onResize() {
+      const mobile = window.innerWidth <= 768;
+      const dpr = mobile ? 1.2 : 1.5;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dpr));
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);

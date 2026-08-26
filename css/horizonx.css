@@ -27,6 +27,17 @@ button, a, select, input, textarea {
   touch-action: manipulation;
 }
 
+/* High-Performance Subtree Containment (Skips layout/paint calculation for offscreen sections during FCP) */
+#skills,
+#projects,
+#certificates,
+#experience,
+#lab,
+#contact {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 650px;
+}
+
 :root {
   --hx-bg: #080a11;
   --hx-surface-dark: #0e121d;
@@ -1210,9 +1221,15 @@ body {
   .certificate-card,
   .bento-tile,
   .pillar-card,
-  .terminal-card {
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+  .terminal-card,
+  .timeline-item .timeline-content,
+  .contact-method-card,
+  .contact-form,
+  .kpi-card,
+  .chart-card,
+  .intel-card {
+    backdrop-filter: blur(8px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(160%) !important;
   }
 
   /* Mobile Navigation Menu Redesign (High Contrast & Solid Opaque Backdrop) */

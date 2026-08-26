@@ -1353,31 +1353,65 @@ function initScrollSpy() {
 }
 
 /* ==========================================================================
-   HORIZONX INTERACTION & MOTION SPOTLIGHT ENGINE
+   HORIZONX INTERACTION & MOTION SPOTLIGHT ENGINE (RAF-Optimized)
    ========================================================================== */
 function initHorizonXEffects() {
-  // 1. Mouse Spotlight & Hover Physics for Showcase & Bento Cards
+  // 1. Mouse Spotlight & Hover Physics for Showcase & Bento Cards (RAF Throttled to eliminate reflow thrashing)
   const cards = document.querySelectorAll('.showcase-card, .bento-tile, .project-card-link, .certificate-card, .pillar-card, .contact-method-card, .contact-form');
   cards.forEach(card => {
+    let rect = null;
+    let rafId = null;
+
+    card.addEventListener('mouseenter', () => {
+      rect = card.getBoundingClientRect();
+    }, { passive: true });
+
     card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      card.style.setProperty('--mouse-x', `${x}px`);
-      card.style.setProperty('--mouse-y', `${y}px`);
-    });
+      if (!rect) rect = card.getBoundingClientRect();
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          if (rect) {
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+          }
+          rafId = null;
+        });
+      }
+    }, { passive: true });
+
+    card.addEventListener('mouseleave', () => {
+      rect = null;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    }, { passive: true });
   });
 
-  // 2. Parallax Drift on Ambient Background Blobs on Mouse Movement
+  // 2. Parallax Drift on Ambient Background Blobs on Mouse Movement (RAF Throttled)
   const blobs = document.querySelectorAll('.ambient-blob');
   if (blobs.length > 0) {
+    let blobRafId = null;
     window.addEventListener('mousemove', (e) => {
-      const mouseX = (e.clientX / window.innerWidth - 0.5) * 35;
-      const mouseY = (e.clientY / window.innerHeight - 0.5) * 35;
-      blobs.forEach((blob, index) => {
-        const factor = (index + 1) * 0.45;
-        blob.style.transform = `translate(${mouseX * factor}px, ${mouseY * factor}px)`;
-      });
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+
+      if (!blobRafId) {
+        blobRafId = requestAnimationFrame(() => {
+          const mouseX = (clientX / window.innerWidth - 0.5) * 35;
+          const mouseY = (clientY / window.innerHeight - 0.5) * 35;
+          blobs.forEach((blob, index) => {
+            const factor = (index + 1) * 0.45;
+            blob.style.transform = `translate(${mouseX * factor}px, ${mouseY * factor}px)`;
+          });
+          blobRafId = null;
+        });
+      }
     }, { passive: true });
   }
 }
