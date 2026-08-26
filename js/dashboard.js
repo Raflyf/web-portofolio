@@ -253,14 +253,16 @@ class DashboardApp {
       this.refreshScrollReveal();
     };
 
-    // Check existing valid session (24-hour auto expiry)
+    // Session-only auth: WAJIB input PIN setiap buka tab baru / reload setelah tutup tab.
+    // Hapus sisa sesi persisten lama (24h localStorage) agar tidak auto-login.
+    try { localStorage.removeItem(SESSION_AUTH_KEY); } catch (_) {}
     let session = null;
     try {
-      const raw = localStorage.getItem(SESSION_AUTH_KEY) || sessionStorage.getItem(SESSION_AUTH_KEY);
+      const raw = sessionStorage.getItem(SESSION_AUTH_KEY);
       if (raw) session = JSON.parse(raw);
     } catch (_) {}
 
-    if (session && session.auth && (Date.now() - session.timestamp < 24 * 60 * 60 * 1000)) {
+    if (session && session.auth) {
       postAuthBootstrap();
       return;
     } else {
@@ -329,9 +331,8 @@ class DashboardApp {
                         (inputHash === DEFAULT_PIN_HASH);
 
         if (isMatch) {
-          // Success: Save to both localStorage and sessionStorage (24-hour persistent admin session)
+          // Success: simpan HANYA di sessionStorage — tutup tab = sesi hilang, buka ulang wajib PIN lagi.
           const sessionPayload = JSON.stringify({ auth: true, timestamp: Date.now() });
-          localStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
           sessionStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
           document.documentElement.classList.add('is-admin-authenticated');
           localStorage.removeItem(LOCKOUT_KEY);
