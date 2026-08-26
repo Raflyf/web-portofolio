@@ -1334,12 +1334,12 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 }
 
 @keyframes convoFadeOut {
-  from { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
-  to { opacity: 0; transform: translateY(-16px) scale(0.94); filter: blur(4px); }
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-16px) scale(0.94); }
 }
 
 .convo-history-modal.is-closing .convo-history-backdrop {
-  animation: backdropFadeOut 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) ease forwards !important;
+  animation: backdropFadeOut 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) ease forwards !important;
 }
 
 .convo-history-backdrop {
@@ -1350,19 +1350,17 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   bottom: 0;
   width: 100%;
   height: 100%;
-  background: rgba(2, 6, 23, 0.78);
-  backdrop-filter: var(--glass-backdrop-blur);
-  -webkit-backdrop-filter: var(--glass-backdrop-blur);
+  background: rgba(2, 6, 23, 0.72);
 }
 
 .convo-history-panel {
   position: relative;
   width: 92%;
   max-width: 580px;
-  background: rgba(15, 23, 42, 0.97);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 20px rgba(6, 182, 212, 0.1);
+  background: linear-gradient(135deg, rgba(13, 20, 36, 0.78) 0%, rgba(8, 12, 22, 0.84) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 28px 64px -10px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.20), 0 0 20px rgba(6, 182, 212, 0.12);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1574,13 +1572,13 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 
 /* Light Mode Overrides for Conversation History Modal */
 [data-theme="light"] .convo-history-backdrop {
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.40);
 }
 
 [data-theme="light"] .convo-history-panel {
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(15, 23, 42, 0.15);
-  box-shadow: 0 24px 60px -10px rgba(15, 23, 42, 0.25), 0 0 30px rgba(16, 185, 129, 0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(245, 247, 250, 0.76) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.90);
+  box-shadow: 0 24px 60px -10px rgba(15, 23, 42, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.95), 0 0 30px rgba(16, 185, 129, 0.1);
   color: #0f172a;
 }
 

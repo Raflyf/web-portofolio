@@ -983,7 +983,8 @@ function openCertModal(cert) {
 
     const metaBox = document.createElement('div');
     metaBox.style.padding = '1rem';
-    metaBox.style.backgroundColor = 'var(--bg-secondary)';
+    metaBox.style.backgroundColor = 'rgba(255, 255, 255, 0.04)';
+    metaBox.style.border = '1px solid rgba(255, 255, 255, 0.10)';
     metaBox.style.borderRadius = 'var(--radius-md)';
     metaBox.style.display = 'flex';
     metaBox.style.flexDirection = 'column';
