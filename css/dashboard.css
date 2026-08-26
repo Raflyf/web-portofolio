@@ -308,15 +308,17 @@ body {
   }
 }
 
+/* Always-On Motion — reveal & ambient blobs persist even with OS reduced-motion (lightweight perf only via DPR/geometry cap) */
 @media (prefers-reduced-motion: reduce) {
   .reveal-item {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
-    transition: none !important;
+    transition: inherit !important;
+    animation: inherit !important;
   }
   .ambient-blob {
-    animation: none !important;
+    animation: inherit !important;
   }
 }
 

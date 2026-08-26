@@ -7,7 +7,7 @@
  *  - Interactive 3D Mouse Parallax with Spring Damping
  *  - Dark/Light Dynamic Theme Adaptation
  *  - GPU-Throttled Performance (Paused on Hidden Tab, 60fps Target)
- *  - WCAG 2.2 AA & prefers-reduced-motion Strict Compliance
+ *  - Always-On Kinetic Motion (OS Battery Saver override — smooth scroll, reveal & 3D persist)
  * ============================================================================
  */
 
@@ -44,8 +44,7 @@
     const canvas = document.getElementById('bg-morph-canvas');
     if (!canvas) return;
 
-    // Prefers-reduced-motion check & Device Tier Detection
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Device Tier Detection (motion always-on — ignore OS reduced-motion per design intent)
     const isMobile = window.innerWidth <= 768;
     const maxDPR = isMobile ? 1.2 : 1.5;
 
@@ -109,8 +108,8 @@
     const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
     scene.add(ringMesh);
 
-    // 3. 3D Particle Constellation Depth Field (Optimized Particle Budget)
-    const particleCount = prefersReducedMotion ? 120 : (isMobile ? 320 : 700);
+    // 3. 3D Particle Constellation Depth Field (Optimized Particle Budget — full count even on reduced-motion for parity)
+    const particleCount = isMobile ? 320 : 700;
     const particleGeometry = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
     const particleScales = new Float32Array(particleCount);
@@ -149,7 +148,6 @@
     }
 
     function onMouseMove(e) {
-      if (prefersReducedMotion) return;
       targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
       targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
     }
@@ -190,19 +188,11 @@
       
       pointLight1.color.setHex(colorPrimary);
       pointLight2.color.setHex(colorSecondary);
-
-      if (prefersReducedMotion) renderer.render(scene, camera);
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-    // Animation Loop
+    // Animation Loop — always-on (no reduced-motion bailout; performance via DPR cap & adaptive geometry)
     let clock = new THREE.Clock();
-
-    // prefers-reduced-motion: render satu frame statis, tanpa loop animasi
-    if (prefersReducedMotion) {
-      renderer.render(scene, camera);
-      return;
-    }
 
     function animate() {
       requestAnimationFrame(animate);
