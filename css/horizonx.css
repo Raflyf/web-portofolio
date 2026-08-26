@@ -634,8 +634,10 @@ body {
   gap: 0.6rem;
   padding: 0.55rem 1.15rem;
   border-radius: 9999px;
-  background: var(--hx-surface-card);
-  border: 1px solid var(--hx-border-card);
+  background: var(--glass-nested-bg);
+  border: var(--glass-nested-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--hx-text-primary);
   font-size: 0.88rem;
   font-weight: 600;
@@ -644,15 +646,16 @@ body {
 }
 
 .marquee-badge:hover {
-  border-color: var(--hx-accent-emerald);
+  border-color: rgba(99, 102, 241, 0.5);
   transform: translateY(-2px);
+  background: rgba(99, 102, 241, 0.15);
 }
 
 .marquee-badge-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--hx-accent-emerald);
+  background: #818cf8;
 }
 
 /* Dynamic Tab Content Transition Engine */
