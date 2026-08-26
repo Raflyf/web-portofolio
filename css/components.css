@@ -2989,10 +2989,16 @@ body.modal-open {
    ========================================================================== */
 
 .site-footer {
-  border-top: 1px solid var(--border-subtle);
-  background-color: var(--bg-secondary);
-  padding-block: var(--space-2xl);
-  margin-top: var(--space-4xl);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  padding-block: 1.25rem;
+  margin-top: 3.5rem;
+}
+
+[data-theme="light"] .site-footer {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .footer-grid {
@@ -3000,11 +3006,10 @@ body.modal-open {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
 .footer-copy {
   font-size: var(--fs-body-sm);
   color: var(--text-muted);
-
 }
