@@ -55,7 +55,7 @@
 
     // Scene & Camera
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth, window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 32;
 
     // Colors
@@ -159,6 +159,7 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
+    onResize();
     onScroll();
 
     // Theme Switcher Sync
