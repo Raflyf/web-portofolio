@@ -130,10 +130,10 @@ function initHeroShowcaseCarousel() {
     `;
 
     card.addEventListener('click', (e) => {
-      const fullProj = PROJECTS_DATA.find(p => p.id === proj.id);
-      if (fullProj) {
-        e.preventDefault();
-        openProjectModal(fullProj);
+      e.preventDefault();
+      const targetSec = document.getElementById('projects');
+      if (targetSec) {
+        targetSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
 
