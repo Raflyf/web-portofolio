@@ -90,12 +90,12 @@ ${effortDirective}
    - **Langsung ke Inti**: Buka jawaban langsung pada esensi topik yang ditanyakan secara luwes dan alami.
    - **Sorotan Utama**: Butir-butir poin tebal atau tabel perbandingan.
    - **Penutup / Takeaway**: 1 kalimat penutup yang santai dan informatif (jika diperlukan).
-4. Identitas Diri & Transparansi Model:
+4. Identitas & Peran Asisten:
    - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah (@Raflyf).
-   - Mesin komputasi yang saat ini aktif menggerakkan Anda adalah: **${activeModelName}** [Mode Effort: ${reasoningEffort.toUpperCase()}].
-   - Jika pengguna bertanya tentang siapa Anda, model apa ini, atau peran Anda (misalnya: "model apa kamu", "siapa kamu", "who are you"): Jawab secara langsung, ramah, dan percaya diri bahwa Anda adalah AI Assistant portofolio Rafly Firmansyah yang saat ini dijalankan oleh model **${activeModelName}**, siap membantu eksplorasi riset skripsi/ML, arsitektur kode 5 repositori GitHub, kredensial sertifikasi (BNSP, MikroTik, Cisco), dan diskusi teknis.
+   - JANGAN menyebutkan nama model teknis backend internal (seperti Nemotron, Llama, GPT, dsb) kepada pengunjung. Cukup perkenalkan diri Anda secara alami, ramah, dan profesional sebagai asisten AI portofolio Rafly.
+   - Jika pengguna bertanya tentang siapa Anda, model apa ini, atau peran Anda (misalnya: "model apa kamu", "siapa kamu", "who are you"): Jawab secara luwes, ramah, komunikatif, dan DINAMIS (DILARANG menggunakan template kaku yang sama persis). Jelaskan peran Anda dalam membantu eksplorasi riset skripsi/ML Rafly (Concept Drift & Deteksi Plagiarisme), membedah arsitektur kode 5 repositori GitHub, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), atau mendiskusikan topik rekayasa perangkat lunak.
    - DILARANG KERAS menganggap pertanyaan "model apa kamu" sebagai permintaan mencari atau membuat daftar model AI eksternal (DILARANG membuat bullet list GLM, Llama, Mistral, Gemini, dsb)!
-   - HANYA fokus pada identitas dan peran Anda di portofolio ini. DILARANG KERAS membeo kalimat template kaku yang sama persis secara berulang-ulang.
+   - HANYA fokus pada peran Anda di portofolio ini. Susun jawaban secara mengalir alami dan kontekstual.
 5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
    - HANYA sertakan bagian "Tautan Terkait:" jika memang ada link URL nyata yang relevan untuk dibagikan (misalnya saat membahas proyek GitHub atau sumber artikel spesifik).
    - Jika TIDAK ADA link yang perlu dibagikan (misalnya saat menjawab sapaan, identitas, atau diskusi topik umum), DILARANG KERAS menuliskan judul "Tautan Terkait:" atau catatan "(tidak ada tautan)". Cukup akhiri jawaban secara bersih dan natural.
@@ -1269,16 +1269,15 @@ export default async function handler(req, res) {
         cleaned = cleaned.replace(/^(?:Hai|Halo|Hei|Hello|Hi|Hey)[!,\s.-]+/i, '').trim();
       }
 
-      // 3.5. Deterministic Identity Grounding: Cegah klaim atau penyangkalan pihak ketiga yang tidak perlu
+      // 3.5. Deterministic Identity Grounding: Cegah klaim pihak ketiga dan hilangkan dump nama model teknis
       if (isIdentityQuery) {
         const isHallucinatedModelList = /(?:glm|llama\s*3|mistral\s*7b|gemini\s*1\.5|model[- ]model ini tersedia|z\.ai|zhipu)/i.test(cleaned) || cleaned.includes('MODEL APA KAMU') || cleaned.length < 25;
         if (isHallucinatedModelList) {
-          const modelDisplay = modelName || targetModel || 'Nemotron-3-Nano-30B';
-          const effortDisplay = (effectiveEffort || 'low').toUpperCase();
-          cleaned = `Saya adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah (@Raflyf).\n\nSaat ini sesi percakapan Anda terhubung dan ditenagai langsung oleh model **${modelDisplay}** [Effort: ${effortDisplay}].\n\nSaya siap membantu Anda dalam:\n- **Riset & Skripsi AI/ML**: Membedah riset deteksi plagiarisme (OpenPlagiarismChecker) dan mitigasi Concept Drift (Spam-Email Detection System).\n- **Arsitektur Repositori GitHub**: Menjelajahi implementasi kode 5 repositori open-source resmi Rafly.\n- **Kredensial Sertifikasi**: Memvalidasi sertifikasi kompetensi BNSP Analis Program, MikroTik MTCNA, dan Cisco Python PCAP.\n\nSilakan tanyakan topik teknis atau proyek yang ingin Anda diskusikan!`;
+          cleaned = `Saya adalah AI Assistant & Developer Agent resmi di website portofolio Rafly Firmansyah (@Raflyf).\n\nSaya siap membantu Anda mengeksplorasi riset skripsi & machine learning Rafly (mitigasi Concept Drift pada deteksi spam & N-Gram SBERT plagiarisme), membedah arsitektur kode 5 repositori GitHub, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), atau berdiskusi seputar rekayasa sistem.\n\nAda topik atau proyek yang ingin Anda tanyakan?`;
         } else {
           cleaned = cleaned.replace(/\s*(?:aku|saya)\s+bukan\s+[^.\n]*(?:glm|gpt|claude|ox alpha|gemini|model lain)[^.\n]*[—\-,.]?\s*/gi, ' ');
           cleaned = cleaned.replace(/(?:model yang saya gunakan merupakan|saya adalah model)[^.\n]*(?:glm|gpt|claude|ox alpha|gemini)[^.\n]*[.]?/gi, 'Saya adalah AI Assistant & Developer Agent yang terintegrasi di website portofolio resmi Rafly Firmansyah.');
+          cleaned = cleaned.replace(/(?:ditenagai oleh model|dijalankan oleh model|menggunakan model)\s+[*_]*[a-zA-Z0-9\-\:\/]+[*_]*/gi, 'siap membantu Anda');
           cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
         }
       }
