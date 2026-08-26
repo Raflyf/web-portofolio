@@ -1030,7 +1030,7 @@ body {
   }
 }
 
-/* Universal 3D Translucent Glassmorphism (Calibrated Depth & Opacity Standard) */
+/* Universal 3D Translucent Glassmorphism (Calibrated Depth & Opacity Standard across Main Page & Dashboard) */
 .project-card,
 .project-spotlight-card,
 .hero-showcase-canvas,
@@ -1041,7 +1041,16 @@ body {
 .contact-method-card,
 .contact-form,
 .stats-strip,
-.timeline-item .timeline-content {
+.timeline-item .timeline-content,
+.kpi-card,
+.chart-card,
+.intel-card,
+.ai-model-card,
+.ai-model-banner-card,
+.omniroute-combo-tile,
+.omniroute-topology-card,
+.ai-models-matrix-card,
+.table-card {
   background: var(--glass-card-bg) !important;
   backdrop-filter: var(--glass-card-blur) !important;
   -webkit-backdrop-filter: var(--glass-card-blur) !important;
@@ -1054,12 +1063,28 @@ body {
               background 0.25s ease !important;
 }
 
-/* Nested Glass Cards (Inside Canvas / Bento / Containers to prevent dark stacking) */
-.showcase-card {
+/* Universal Nested Glass Components (Pills, Strips, Badges, Buttons - Zero Dark Opacity Compounding) */
+.showcase-card,
+.tech-pill,
+.bento-pipeline-strip,
+.btn-project-detail,
+.btn-cert-view,
+.marquee-badge,
+.spotlight-db-pill,
+.spotlight-preview-panel,
+.telemetry-feature-block,
+.telemetry-row,
+.ranked-num-badge,
+.omniroute-preset-box,
+.custom-select-trigger,
+.dash-status-pill {
   background: var(--glass-nested-bg) !important;
   border: var(--glass-nested-border) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.showcase-card {
   border-radius: 16px !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
