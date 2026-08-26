@@ -17,16 +17,17 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/dashboard.css?v=10.519.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=10.520.0">
 
-  <!-- Immediate Zero-Flicker Admin Authentication Pre-Check -->
+  <!-- Immediate Zero-Flicker Admin Authentication Pre-Check (Session-Only Auth) -->
   <script>
     (function() {
       try {
-        var s = localStorage.getItem('dash_admin_auth_session') || sessionStorage.getItem('dash_admin_auth_session');
+        localStorage.removeItem('dash_admin_auth_session');
+        var s = sessionStorage.getItem('dash_admin_auth_session');
         if (s) {
           var p = JSON.parse(s);
-          if (p && p.auth && (Date.now() - p.timestamp < 24 * 60 * 60 * 1000)) {
+          if (p && p.auth) {
             document.documentElement.classList.add('is-admin-authenticated');
           }
         }
@@ -720,7 +721,7 @@
 
   <!-- Three.js Engine from Cloudflare CDN for 3D Morph Background -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/bg-morph-canvas.js?v=10.519.0"></script>
-  <script src="js/dashboard.js?v=10.519.0"></script>
+  <script src="js/bg-morph-canvas.js?v=10.520.0"></script>
+  <script src="js/dashboard.js?v=10.520.0"></script>
 </body>
 </html>
