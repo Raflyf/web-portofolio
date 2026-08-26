@@ -90,11 +90,12 @@ ${effortDirective}
    - **Langsung ke Inti**: Buka jawaban langsung pada esensi topik yang ditanyakan secara luwes dan alami.
    - **Sorotan Utama**: Butir-butir poin tebal atau tabel perbandingan.
    - **Penutup / Takeaway**: 1 kalimat penutup yang santai dan informatif (jika diperlukan).
-4. Identitas & Transparansi Peran:
+4. Identitas Diri & Transparansi Model:
    - Anda adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah (@Raflyf).
-   - Jika ditanya tentang siapa Anda, model apa ini, atau peran Anda: Cukup jelaskan peran Anda secara langsung, percaya diri, ramah, dan natural sebagai asisten cerdas berbasis Large Language Model di platform portofolio Rafly yang siap membantu eksplorasi teknis, membedah arsitektur kode, menganalisis riset ML & Concept Drift, audit keamanan, atau berdiskusi teknologi.
-   - HANYA fokus pada identitas dan peran Anda di portofolio ini. DILARANG KERAS menyebut, membandingkan, atau menyangkal nama-nama model pihak ketiga yang tidak ditanyakan (DILARANG berkata 'aku bukan model X' atau menyebut nama brand pihak ketiga yang tidak relevan).
-   - DILARANG membeo kalimat template kaku yang sama persis secara berulang-ulang. Susun jawaban secara bervariasi, profesional, dan natural sesuai konteks pertanyaan pengguna.
+   - Mesin komputasi yang saat ini aktif menggerakkan Anda adalah: **${activeModelName}** [Mode Effort: ${reasoningEffort.toUpperCase()}].
+   - Jika pengguna bertanya tentang siapa Anda, model apa ini, atau peran Anda (misalnya: "model apa kamu", "siapa kamu", "who are you"): Jawab secara langsung, ramah, dan percaya diri bahwa Anda adalah AI Assistant portofolio Rafly Firmansyah yang saat ini dijalankan oleh model **${activeModelName}**, siap membantu eksplorasi riset skripsi/ML, arsitektur kode 5 repositori GitHub, kredensial sertifikasi (BNSP, MikroTik, Cisco), dan diskusi teknis.
+   - DILARANG KERAS menganggap pertanyaan "model apa kamu" sebagai permintaan mencari atau membuat daftar model AI eksternal (DILARANG membuat bullet list GLM, Llama, Mistral, Gemini, dsb)!
+   - HANYA fokus pada identitas dan peran Anda di portofolio ini. DILARANG KERAS membeo kalimat template kaku yang sama persis secara berulang-ulang.
 5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
    - HANYA sertakan bagian "Tautan Terkait:" jika memang ada link URL nyata yang relevan untuk dibagikan (misalnya saat membahas proyek GitHub atau sumber artikel spesifik).
    - Jika TIDAK ADA link yang perlu dibagikan (misalnya saat menjawab sapaan, identitas, atau diskusi topik umum), DILARANG KERAS menuliskan judul "Tautan Terkait:" atau catatan "(tidak ada tautan)". Cukup akhiri jawaban secara bersih dan natural.
@@ -757,15 +758,27 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
-  // 0. Casual greetings, identity questions, acknowledgments, simple chit-chat
-  const isCasualOrClosing = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(q);
+  // 0A. Direct Identity & Model Queries (Who are you / What model is this)
+  const isIdentity = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda)$/i.test(q);
+  if (isIdentity) {
+    return {
+      category: 'identity',
+      isAnalysisOrComparison: false,
+      effort: 'low',
+      omniCandidates: ['Antigravity', 'Codex', 'x-preview-f-free', 'nemotron-3-nano'],
+      label: 'AI Assistant Identity & Model Transparency'
+    };
+  }
+
+  // 0B. Casual greetings, acknowledgments, simple chit-chat
+  const isCasualOrClosing = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(q);
   
   if (isCasualOrClosing) {
     return {
       category: 'trivial_casual',
       isAnalysisOrComparison: false,
       effort: 'low',
-      omniCandidates: ['nemotron-lightning', 'x-preview-f-free'], // DEAD-3: removed typo 'nemotron-lighting'
+      omniCandidates: ['nemotron-lightning', 'x-preview-f-free'],
       label: 'Casual Greeting & Quick Interaction (Nemotron Lightning)'
     };
   }
@@ -1181,7 +1194,7 @@ export default async function handler(req, res) {
     }
 
     const qClean = (query || '').trim();
-    const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you)$/i.test(qClean);
+    const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda)$/i.test(qClean);
     const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
     const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
     const isSkipSearch = isIdentityQuery || isCasualGreeting || isInternalPortfolioQuery;
@@ -1258,9 +1271,16 @@ export default async function handler(req, res) {
 
       // 3.5. Deterministic Identity Grounding: Cegah klaim atau penyangkalan pihak ketiga yang tidak perlu
       if (isIdentityQuery) {
-        cleaned = cleaned.replace(/\s*(?:aku|saya)\s+bukan\s+[^.\n]*(?:glm|gpt|claude|ox alpha|gemini|model lain)[^.\n]*[—\-,.]?\s*/gi, ' ');
-        cleaned = cleaned.replace(/(?:model yang saya gunakan merupakan|saya adalah model)[^.\n]*(?:glm|gpt|claude|ox alpha|gemini)[^.\n]*[.]?/gi, 'Saya adalah AI Assistant & Developer Agent yang terintegrasi di website portofolio resmi Rafly Firmansyah.');
-        cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+        const isHallucinatedModelList = /(?:glm|llama\s*3|mistral\s*7b|gemini\s*1\.5|model[- ]model ini tersedia|z\.ai|zhipu)/i.test(cleaned) || cleaned.includes('MODEL APA KAMU') || cleaned.length < 25;
+        if (isHallucinatedModelList) {
+          const modelDisplay = modelName || targetModel || 'Nemotron-3-Nano-30B';
+          const effortDisplay = (effectiveEffort || 'low').toUpperCase();
+          cleaned = `Saya adalah AI Assistant & Developer Agent interaktif di website portofolio resmi Rafly Firmansyah (@Raflyf).\n\nSaat ini sesi percakapan Anda terhubung dan ditenagai langsung oleh model **${modelDisplay}** [Effort: ${effortDisplay}].\n\nSaya siap membantu Anda dalam:\n- **Riset & Skripsi AI/ML**: Membedah riset deteksi plagiarisme (OpenPlagiarismChecker) dan mitigasi Concept Drift (Spam-Email Detection System).\n- **Arsitektur Repositori GitHub**: Menjelajahi implementasi kode 5 repositori open-source resmi Rafly.\n- **Kredensial Sertifikasi**: Memvalidasi sertifikasi kompetensi BNSP Analis Program, MikroTik MTCNA, dan Cisco Python PCAP.\n\nSilakan tanyakan topik teknis atau proyek yang ingin Anda diskusikan!`;
+        } else {
+          cleaned = cleaned.replace(/\s*(?:aku|saya)\s+bukan\s+[^.\n]*(?:glm|gpt|claude|ox alpha|gemini|model lain)[^.\n]*[—\-,.]?\s*/gi, ' ');
+          cleaned = cleaned.replace(/(?:model yang saya gunakan merupakan|saya adalah model)[^.\n]*(?:glm|gpt|claude|ox alpha|gemini)[^.\n]*[.]?/gi, 'Saya adalah AI Assistant & Developer Agent yang terintegrasi di website portofolio resmi Rafly Firmansyah.');
+          cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+        }
       }
 
       // 3.65. Ensure each bullet point is on a separate line
