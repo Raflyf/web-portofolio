@@ -605,8 +605,18 @@ body {
   overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
-  padding: 0.5rem 0;
+  padding: 0.4rem 0;
+  margin-bottom: 0.85rem;
   display: flex;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.marquee-container--bottom {
+  margin-bottom: 2.25rem !important;
 }
 
 .marquee-track {
@@ -1130,8 +1140,7 @@ body {
 .pin-card,
 .dash-modal-card,
 .nav-container,
-.dash-section-bar,
-.marquee-container {
+.dash-section-bar {
   background: var(--glass-card-bg) !important;
   backdrop-filter: var(--glass-card-blur) !important;
   -webkit-backdrop-filter: var(--glass-card-blur) !important;
