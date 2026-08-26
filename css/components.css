@@ -2511,17 +2511,21 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 .form-textarea {
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-card);
-  background-color: var(--bg-secondary);
+  border: var(--glass-nested-border);
+  background: var(--glass-nested-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--text-ink);
   font-size: var(--fs-body);
   font-family: inherit;
-  transition: border-color var(--duration-fast) var(--ease-smooth-out);
+  transition: border-color var(--duration-fast) var(--ease-smooth-out),
+              box-shadow var(--duration-fast) var(--ease-smooth-out);
 }
 
 .form-input:focus,
 .form-textarea:focus {
-  border-color: var(--accent-emerald);
+  border-color: var(--accent-indigo);
+  box-shadow: 0 0 0 2px var(--accent-indigo-dim);
   outline: none;
 }
 
