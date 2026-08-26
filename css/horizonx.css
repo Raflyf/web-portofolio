@@ -841,6 +841,7 @@ body {
   100% { opacity: 0; }
 }
 
+/* Always-On Motion — modal open/close animations persist even with OS reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .modal-dialog[open],
   .terminal-modal-dialog[open],
@@ -850,8 +851,8 @@ body {
   .terminal-modal-dialog::backdrop,
   .modal-dialog.is-closing::backdrop,
   .terminal-modal-dialog.is-closing::backdrop {
-    animation: none !important;
-    transition: none !important;
+    animation: inherit !important;
+    transition: inherit !important;
   }
 }
 

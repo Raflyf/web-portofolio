@@ -37,9 +37,9 @@
   --blur-large: 12px;
 }
 
-/* Reduced Motion Override - Safely preserve marquee and essential fluid transitions */
+/* Always-On Motion Override — smooth scroll & marquee persist even when OS Battery Saver / reduced-motion is on */
 @media (prefers-reduced-motion: reduce) {
   html {
-    scroll-behavior: auto !important;
+    scroll-behavior: smooth !important;
   }
 }
