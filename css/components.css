@@ -2802,7 +2802,27 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
 
 .floating-terminal-btn:hover .floating-terminal-pulse {
   background-color: #ffffff;
-  box-shadow: 0 0 12px #ffffff;
+[data-theme="light"] .floating-back-to-top,
+[data-theme="light"] .floating-terminal-btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(241, 245, 249, 0.70) 100%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 1) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+  color: #4338ca !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 16px rgba(67, 56, 202, 0.15) !important;
+}
+
+[data-theme="light"] .floating-back-to-top:hover,
+[data-theme="light"] .floating-terminal-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(224, 231, 255, 0.85) 100%) !important;
+  border-color: rgba(67, 56, 202, 0.45) !important;
+  color: #312e81 !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14), inset 0 1.5px 2px 0 rgba(255, 255, 255, 1), 0 0 24px rgba(67, 56, 202, 0.30) !important;
+}
+
+[data-theme="light"] .floating-terminal-pulse {
+  background-color: #4338ca !important;
+  box-shadow: 0 0 8px rgba(67, 56, 202, 0.6) !important;
 }
 
 @keyframes terminalPulse {
