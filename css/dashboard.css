@@ -665,37 +665,28 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .kpi-card {
-  background: linear-gradient(145deg, rgba(16, 24, 38, 0.75) 0%, rgba(10, 15, 24, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-radius);
   padding: 1.25rem 1.15rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-card-shadow);
   position: relative;
   overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
 }
 
 [data-theme="light"] .kpi-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
-}
-
-.kpi-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.4), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background: var(--glass-card-bg);
 }
 
 .kpi-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(16, 185, 129, 0.35);
-  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 20px 44px -8px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(99, 102, 241, 0.25);
 }
 
 .kpi-card:hover::before {
@@ -767,23 +758,26 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .chart-card {
-  background: linear-gradient(145deg, rgba(16, 24, 38, 0.75) 0%, rgba(10, 15, 24, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-radius);
   padding: 1.35rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-card-shadow);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
 }
 
 [data-theme="light"] .chart-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  background: var(--glass-card-bg);
 }
 
 .chart-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(16, 185, 129, 0.3);
-  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 20px 44px -8px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(99, 102, 241, 0.25);
 }
 
 .chart-card-header {
@@ -828,23 +822,26 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .intel-card {
-  background: linear-gradient(145deg, rgba(16, 24, 38, 0.75) 0%, rgba(10, 15, 24, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-radius);
   padding: 1.25rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-card-shadow);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
 }
 
 [data-theme="light"] .intel-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  background: var(--glass-card-bg);
 }
 
 .intel-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(16, 185, 129, 0.3);
-  box-shadow: var(--shadow-card-hover);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 20px 44px -8px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(99, 102, 241, 0.25);
 }
 
 .ranked-list {
@@ -921,18 +918,18 @@ h1, h2, h3, h4, h5, h6,
    10. OMNIROUTE DEDICATED TOPOLOGY & FAILOVER CASSETTE
    ========================================================================== */
 .omniroute-topology-card {
-  background: linear-gradient(145deg, rgba(16, 24, 38, 0.75) 0%, rgba(10, 15, 24, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-radius);
   padding: 1.35rem;
   margin-bottom: 1rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-card-shadow);
 }
 
 [data-theme="light"] .omniroute-topology-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  background: var(--glass-card-bg);
 }
 
 .omniroute-header-wrap {
@@ -1135,18 +1132,18 @@ h1, h2, h3, h4, h5, h6,
    11. AI MODELS COMPREHENSIVE COUNT MATRIX & MEMORY RAG
    ========================================================================== */
 .ai-models-matrix-card {
-  background: linear-gradient(145deg, rgba(16, 24, 38, 0.75) 0%, rgba(10, 15, 24, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-radius);
   padding: 1.35rem;
   margin-bottom: 1rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-card-shadow);
 }
 
 [data-theme="light"] .ai-models-matrix-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  background: var(--glass-card-bg);
 }
 
 .ai-matrix-total-badge {
@@ -1393,18 +1390,18 @@ h1, h2, h3, h4, h5, h6,
    11. DATA TABLE & SEARCH CONTROLS (Zero OS Clashing)
    ========================================================================== */
 .table-card {
-  background: linear-gradient(145deg, rgba(16, 24, 38, 0.75) 0%, rgba(10, 15, 24, 0.85) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-radius);
   padding: 1.5rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-card-shadow);
   margin-bottom: 1.5rem;
 }
 
 [data-theme="light"] .table-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  background: var(--glass-card-bg);
 }
 
 .table-header-row {
