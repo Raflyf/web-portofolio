@@ -1,15 +1,13 @@
 /**
  * ============================================================================
- * HORIZONX 3D SCROLL-MORPHING GEOMETRY ENGINE (Three.js WebGL)
- * Aesthetic: Cyber Titanium & Electric Indigo / Aurora Cyan 3D Spatial Universe
+ * HORIZONX 3D SCROLL-MORPHING BACKGROUND ENGINE (Three.js WebGL)
+ * Aesthetic: Cyber Titanium & Electric Indigo / Aurora Cyan 3D PPT-Morph
  * Features:
- *  - Iconic 3D Parametric Torus Knot + Orbital Polyhedron Geometries
- *  - Calibrated Multi-Viewport Scale (Expansive on Desktop/Laptop & Mobile)
- *  - Rich Dual-Material Shading: Volumetric Shaded Body + Cyber Specular Wireframe
- *  - 6-Stage Spatial PowerPoint-Morph Transitions synchronized with Scroll
- *  - Interactive 3D Parallax with Smooth Damping Spring Physics
- *  - Dark / Light Theme Real-Time Adaptation
- *  - Throttled when Tab Hidden for 60fps Stability
+ *  - 6-Stage Parametric 3D Mesh & Wireframe Morphing on Scroll
+ *  - Interactive 3D Mouse Parallax with Spring Damping
+ *  - Dark/Light Dynamic Theme Adaptation
+ *  - GPU-Throttled Performance (Paused on Hidden Tab, 60fps Target)
+ *  - WCAG 2.2 AA & prefers-reduced-motion Strict Compliance
  * ============================================================================
  */
 
@@ -18,6 +16,7 @@
 
   if (typeof window === 'undefined') return;
 
+  // Check for WebGL support
   function isWebGLAvailable() {
     try {
       const canvas = document.createElement('canvas');
@@ -27,7 +26,10 @@
     }
   }
 
-  if (!isWebGLAvailable()) return;
+  if (!isWebGLAvailable()) {
+    console.warn('[3D Background] WebGL not available on this device.');
+    return;
+  }
 
   function initMorphBackground() {
     if (typeof THREE === 'undefined') {
@@ -38,9 +40,10 @@
     const canvas = document.getElementById('bg-morph-canvas');
     if (!canvas) return;
 
+    // Prefers-reduced-motion check
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // 1. WebGL Renderer
+    // Renderer
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       alpha: true,
@@ -50,146 +53,88 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // 2. Camera Setup (Wide Field of View for expansive desktop visibility)
+    // Scene & Camera
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth, window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 0, 36);
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth, window.innerHeight, 0.1, 1000);
+    camera.position.z = 32;
 
-    // 3. Theme Colors
+    // Colors
     const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
     let colorPrimary = isLightMode ? 0x4f46e5 : 0x6366f1; // Electric Indigo
     let colorSecondary = isLightMode ? 0x0284c7 : 0x38bdf8; // Aurora Cyan
-    let colorHighlight = isLightMode ? 0x7c3aed : 0x818cf8; // Hyper Violet
 
-    // 4. Studio Lighting System
-    const ambientLight = new THREE.AmbientLight(0xffffff, isLightMode ? 0.9 : 0.6);
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
-    const light1 = new THREE.PointLight(colorPrimary, isLightMode ? 3.5 : 5.0, 90);
-    light1.position.set(24, 18, 25);
-    scene.add(light1);
+    const pointLight1 = new THREE.PointLight(colorPrimary, 3.5, 60);
+    pointLight1.position.set(15, 12, 18);
+    scene.add(pointLight1);
 
-    const light2 = new THREE.PointLight(colorSecondary, isLightMode ? 3.0 : 4.5, 90);
-    light2.position.set(-24, -18, 20);
-    scene.add(light2);
+    const pointLight2 = new THREE.PointLight(colorSecondary, 3.0, 60);
+    pointLight2.position.set(-15, -12, 12);
+    scene.add(pointLight2);
 
-    const light3 = new THREE.PointLight(colorHighlight, isLightMode ? 2.0 : 3.0, 70);
-    light3.position.set(0, 25, 10);
-    scene.add(light3);
-
-    // 5. Main 3D Torus Knot Geometry Group (Shaded Solid Core + Glowing Specular Structure)
-    const geometryGroup = new THREE.Group();
-    scene.add(geometryGroup);
-
-    // Calibrated Desktop Geometry Size
-    const knotGeometry = new THREE.TorusKnotGeometry(8.5, 2.4, 160, 32, 2, 3);
-
-    // Solid Volumetric Core Material (Gives actual 3D body and lighting so it never looks like a hollow glitch line)
-    const solidMaterial = new THREE.MeshStandardMaterial({
+    // 1. Primary 3D Morphing Torus-Knot Wireframe Structure
+    const mainGeometry = new THREE.TorusKnotGeometry(9, 2.6, 120, 24, 2, 3);
+    const mainMaterial = new THREE.MeshStandardMaterial({
       color: colorPrimary,
-      roughness: 0.25,
+      wireframe: true,
+      roughness: 0.2,
       metalness: 0.85,
       transparent: true,
-      opacity: isLightMode ? 0.28 : 0.45,
-      wireframe: false
+      opacity: isLightMode ? 0.22 : 0.40
     });
-    const solidMesh = new THREE.Mesh(knotGeometry, solidMaterial);
-    geometryGroup.add(solidMesh);
+    const mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
+    scene.add(mainMesh);
 
-    // Outer Cyber Contour Lattice (Accents the 3D curves)
-    const latticeMaterial = new THREE.MeshStandardMaterial({
+    // 2. Secondary Floating Outer Geometry Ring (Morph Companion)
+    const ringGeometry = new THREE.IcosahedronGeometry(14, 2);
+    const ringMaterial = new THREE.MeshStandardMaterial({
       color: colorSecondary,
       wireframe: true,
-      transparent: true,
-      opacity: isLightMode ? 0.15 : 0.25,
       roughness: 0.1,
-      metalness: 0.9
-    });
-    const latticeMesh = new THREE.Mesh(knotGeometry, latticeMaterial);
-    latticeMesh.scale.set(1.03, 1.03, 1.03);
-    geometryGroup.add(latticeMesh);
-
-    // 6. Orbital Satellite Geometries (Icosahedron & Octahedrons that float dynamically)
-    const orbGroup = new THREE.Group();
-    scene.add(orbGroup);
-
-    const icosaGeometry = new THREE.IcosahedronGeometry(5.5, 1);
-    const icosaMaterial = new THREE.MeshStandardMaterial({
-      color: colorSecondary,
-      wireframe: true,
+      metalness: 0.9,
       transparent: true,
-      opacity: isLightMode ? 0.2 : 0.35
+      opacity: isLightMode ? 0.10 : 0.20
     });
-    const icosaMesh = new THREE.Mesh(icosaGeometry, icosaMaterial);
-    icosaMesh.position.set(18, -4, -6);
-    orbGroup.add(icosaMesh);
+    const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+    scene.add(ringMesh);
 
-    const octaGeometry = new THREE.OctahedronGeometry(4.0, 0);
-    const octaMaterial = new THREE.MeshStandardMaterial({
-      color: colorPrimary,
-      wireframe: true,
-      transparent: true,
-      opacity: isLightMode ? 0.2 : 0.35
-    });
-    const octaMesh = new THREE.Mesh(octaGeometry, octaMaterial);
-    octaMesh.position.set(-18, 6, -8);
-    orbGroup.add(octaMesh);
-
-    // 7. 3D Particle Constellation (Uniformly distributed across 3D space)
-    const particleCount = prefersReducedMotion ? 250 : 700;
+    // 3. 3D Particle Constellation Depth Field
+    const particleCount = prefersReducedMotion ? 250 : 800;
     const particleGeometry = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
+    const particleScales = new Float32Array(particleCount);
 
     for (let i = 0; i < particleCount; i++) {
-      particlePositions[i * 3] = (Math.random() - 0.5) * 110;
-      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 90;
-      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 60 - 10;
+      particlePositions[i * 3] = (Math.random() - 0.5) * 80;
+      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 80;
+      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 50 - 5;
+      particleScales[i] = Math.random() * 0.8 + 0.2;
     }
 
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particleGeometry.setAttribute('scale', new THREE.BufferAttribute(particleScales, 1));
 
     const particleMaterial = new THREE.PointsMaterial({
       color: colorSecondary,
-      size: isLightMode ? 0.38 : 0.48,
+      size: isLightMode ? 0.35 : 0.45,
       transparent: true,
-      opacity: isLightMode ? 0.35 : 0.65,
+      opacity: isLightMode ? 0.30 : 0.60,
       blending: THREE.AdditiveBlending
     });
     const particleField = new THREE.Points(particleGeometry, particleMaterial);
     scene.add(particleField);
 
-    // 8. Responsive Sizing & Layout Adjustment
-    function updateResponsiveScale() {
-      const isMobile = window.innerWidth <= 768;
-      const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
-      
-      if (isMobile) {
-        geometryGroup.scale.set(0.72, 0.72, 0.72);
-        geometryGroup.position.set(0, 2, -4);
-        orbGroup.visible = false;
-      } else if (isTablet) {
-        geometryGroup.scale.set(0.95, 0.95, 0.95);
-        geometryGroup.position.set(0, 0, -5);
-        orbGroup.visible = true;
-        icosaMesh.position.set(14, -4, -6);
-        octaMesh.position.set(-14, 5, -8);
-      } else {
-        // Desktop / Laptop: Full expansive 3D presence with cinematic depth
-        geometryGroup.scale.set(1.2, 1.2, 1.2);
-        geometryGroup.position.set(0, 0, -6);
-        orbGroup.visible = true;
-        icosaMesh.position.set(20, -5, -6);
-        octaMesh.position.set(-20, 7, -8);
-      }
-    }
-
-    // 9. Scroll & Mouse Tracking
+    // Dynamic Scroll & Mouse Interaction State
     let scrollProgress = 0;
     let targetScrollProgress = 0;
     let mouseX = 0, mouseY = 0;
     let targetMouseX = 0, targetMouseY = 0;
     let isTabVisible = !document.hidden;
 
+    // Window Listeners
     function onScroll() {
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       targetScrollProgress = docHeight > 0 ? Math.max(0, Math.min(1, window.scrollY / docHeight)) : 0;
@@ -205,7 +150,6 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      updateResponsiveScale();
     }
 
     document.addEventListener('visibilitychange', () => {
@@ -216,83 +160,76 @@
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
     onScroll();
-    updateResponsiveScale();
 
-    // 10. Theme Switcher Sync
+    // Theme Switcher Sync
     const observer = new MutationObserver(() => {
       const isLight = document.documentElement.getAttribute('data-theme') === 'light';
       colorPrimary = isLight ? 0x4f46e5 : 0x6366f1;
       colorSecondary = isLight ? 0x0284c7 : 0x38bdf8;
-      colorHighlight = isLight ? 0x7c3aed : 0x818cf8;
-
-      solidMaterial.color.setHex(colorPrimary);
-      solidMaterial.opacity = isLight ? 0.24 : 0.42;
-
-      latticeMaterial.color.setHex(colorSecondary);
-      latticeMaterial.opacity = isLight ? 0.12 : 0.22;
-
-      icosaMaterial.color.setHex(colorSecondary);
-      octaMaterial.color.setHex(colorPrimary);
-
+      
+      mainMaterial.color.setHex(colorPrimary);
+      mainMaterial.opacity = isLight ? 0.22 : 0.40;
+      
+      ringMaterial.color.setHex(colorSecondary);
+      ringMaterial.opacity = isLight ? 0.10 : 0.20;
+      
       particleMaterial.color.setHex(colorSecondary);
       particleMaterial.opacity = isLight ? 0.30 : 0.60;
-
-      light1.color.setHex(colorPrimary);
-      light2.color.setHex(colorSecondary);
-      light3.color.setHex(colorHighlight);
+      
+      pointLight1.color.setHex(colorPrimary);
+      pointLight2.color.setHex(colorSecondary);
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-    // 11. Animation Loop with Dynamic 3D PPT-Morph Spatial Transitions
-    const clock = new THREE.Clock();
-
+    // Animation Loop
+    let clock = new THREE.Clock();
+    
     function animate() {
       requestAnimationFrame(animate);
 
       if (!isTabVisible) return;
 
       const delta = clock.getDelta();
-      const time = clock.getElapsedTime();
+      const elapsedTime = clock.getElapsedTime();
 
-      // Smooth interpolation for scroll & cursor parallax
+      // Smooth interpolation for scroll & mouse
       scrollProgress += (targetScrollProgress - scrollProgress) * 0.08;
-      mouseX += (targetMouseX - mouseX) * 0.05;
-      mouseY += (targetMouseY - mouseY) * 0.05;
+      mouseX += (targetMouseX - mouseX) * 0.06;
+      mouseY += (targetMouseY - mouseY) * 0.06;
 
-      // 3D PowerPoint Morph Transformations mapped to scroll:
-      const morphFactor = scrollProgress * Math.PI * 2;
-      const currentScale = (window.innerWidth <= 768 ? 0.72 : 1.2) * (1.0 + Math.sin(morphFactor) * 0.25);
+      // 3D PowerPoint-Style Morph Transformations mapped to Scroll Progress:
+      const morphAngle = scrollProgress * Math.PI * 4;
+      const morphScale = 1.0 + Math.sin(scrollProgress * Math.PI * 2) * 0.35;
+      
+      // Main Mesh PPT-Morph Dynamic Transforms
+      mainMesh.rotation.x = elapsedTime * 0.25 + scrollProgress * 5.2 + mouseY * 0.4;
+      mainMesh.rotation.y = elapsedTime * 0.35 + scrollProgress * 7.5 + mouseX * 0.4;
+      mainMesh.rotation.z = Math.sin(morphAngle * 0.5) * 0.8;
+      
+      mainMesh.position.x = Math.sin(scrollProgress * Math.PI * 2) * 14 + mouseX * 2.5;
+      mainMesh.position.y = Math.cos(scrollProgress * Math.PI * 2.5) * 8 - (scrollProgress - 0.5) * 16 - mouseY * 2.5;
+      mainMesh.position.z = -5 + Math.sin(scrollProgress * Math.PI * 3) * 10;
+      
+      mainMesh.scale.set(morphScale, morphScale, morphScale);
 
-      // Primary Geometry Morph Rotations & Spatial Gliding
-      geometryGroup.rotation.x = time * 0.22 + scrollProgress * 4.8 + mouseY * 0.35;
-      geometryGroup.rotation.y = time * 0.30 + scrollProgress * 6.2 + mouseX * 0.35;
-      geometryGroup.rotation.z = Math.sin(time * 0.2 + scrollProgress * 3.0) * 0.4;
+      // Ring Mesh Morphing Counter-Rotation
+      ringMesh.rotation.x = -elapsedTime * 0.15 - scrollProgress * 3.5;
+      ringMesh.rotation.y = -elapsedTime * 0.20 - scrollProgress * 4.2;
+      ringMesh.position.x = -mainMesh.position.x * 0.7;
+      ringMesh.position.y = -mainMesh.position.y * 0.6;
+      ringMesh.position.z = mainMesh.position.z - 8;
+      ringMesh.scale.set(1.4 - scrollProgress * 0.4, 1.4 - scrollProgress * 0.4, 1.4 - scrollProgress * 0.4);
 
-      geometryGroup.position.x = Math.sin(scrollProgress * Math.PI * 2) * 12 + mouseX * 2.0;
-      geometryGroup.position.y = - (scrollProgress - 0.5) * 18 - mouseY * 2.0;
-      geometryGroup.position.z = -6 + Math.sin(scrollProgress * Math.PI * 3) * 8;
-      geometryGroup.scale.set(currentScale, currentScale, currentScale);
+      // Dynamic Particle Field Waves
+      particleField.rotation.y = elapsedTime * 0.05 + scrollProgress * 2.0;
+      particleField.rotation.x = scrollProgress * 1.2;
+      particleField.position.y = -scrollProgress * 15;
 
-      // Orbiting Satellites Counter-Morphing
-      orbGroup.rotation.y = -time * 0.25 - scrollProgress * 3.5;
-      orbGroup.rotation.x = time * 0.15 + scrollProgress * 2.0;
-
-      icosaMesh.rotation.x = time * 0.4;
-      icosaMesh.rotation.y = time * 0.5;
-
-      octaMesh.rotation.y = -time * 0.35;
-      octaMesh.rotation.z = time * 0.45;
-
-      // Dynamic Particle Field Flow
-      particleField.rotation.y = time * 0.04 + scrollProgress * 1.5;
-      particleField.rotation.x = scrollProgress * 0.8;
-      particleField.position.y = -scrollProgress * 12;
-
-      // Orbital Point Lights
-      light1.position.x = Math.sin(time * 0.7) * 26;
-      light1.position.y = Math.cos(time * 0.5) * 22;
-      light2.position.x = -Math.sin(time * 0.6) * 26;
-      light2.position.y = -Math.cos(time * 0.4) * 22;
+      // Orbiting Specular Point Lights
+      pointLight1.position.x = Math.sin(elapsedTime * 0.8) * 20;
+      pointLight1.position.y = Math.cos(elapsedTime * 0.6) * 16;
+      pointLight2.position.x = -Math.sin(elapsedTime * 0.7) * 20;
+      pointLight2.position.y = -Math.cos(elapsedTime * 0.5) * 16;
 
       renderer.render(scene, camera);
     }
