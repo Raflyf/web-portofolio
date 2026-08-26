@@ -164,13 +164,13 @@ html[data-theme="light"] {
   --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.10);
   --shadow-glow: 0 0 16px rgba(67, 56, 202, 0.2);
 
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(248, 250, 252, 0.58) 100%), rgba(255, 255, 255, 0.68);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.90);
-  --glass-card-blur: blur(20px) saturate(180%);
-  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 14px 32px -6px rgba(15, 23, 42, 0.09), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.50) 0%, rgba(248, 250, 252, 0.30) 100%), rgba(255, 255, 255, 0.40);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.85);
+  --glass-card-blur: blur(18px) saturate(180%);
+  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.95) inset, 0 12px 30px -6px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 
-  --glass-nested-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.70) 0%, rgba(241, 245, 249, 0.50) 100%), rgba(255, 255, 255, 0.55);
-  --glass-nested-border: 1px solid rgba(15, 23, 42, 0.08);
+  --glass-nested-bg: rgba(255, 255, 255, 0.40);
+  --glass-nested-border: 1px solid rgba(255, 255, 255, 0.60);
 }
 
 /* ==========================================================================
