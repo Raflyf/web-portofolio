@@ -1040,6 +1040,9 @@ body {
 .contact-form,
 .stats-strip,
 .timeline-item .timeline-content,
+.project-card,
+.certificate-card,
+.project-spotlight-card,
 .kpi-card,
 .chart-card,
 .intel-card,
@@ -1061,37 +1064,34 @@ body {
               background 0.25s ease !important;
 }
 
-/* Bespoke Rich Frosted Glassmorphism for Project & Certificate Cards */
+/* CRITICAL: Kill filter compositing layer on glass cards so backdrop-filter can render.
+   Without this, the .reveal-item filter: blur(8px) -> none transition creates a filter
+   compositing layer in Chromium that permanently blocks backdrop-filter sampling. */
 .project-card,
+.project-card.reveal-item,
+.project-card.reveal-item.is-revealed,
 .certificate-card,
-.project-spotlight-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 40%, rgba(13, 19, 32, 0.72) 100%) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.30) !important;
-  border-radius: 20px !important;
-  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.18),
-              inset 0 0 20px 0 rgba(255, 255, 255, 0.02),
-              0 16px 36px -8px rgba(0, 0, 0, 0.65),
-              0 2px 6px -1px rgba(0, 0, 0, 0.3) !important;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.25s ease,
-              background 0.25s ease !important;
+.certificate-card.reveal-item,
+.certificate-card.reveal-item.is-revealed,
+.project-spotlight-card,
+.project-spotlight-card.reveal-item,
+.project-spotlight-card.reveal-item.is-revealed,
+.timeline-item .timeline-content,
+.timeline-item .timeline-content.reveal-item,
+.timeline-item .timeline-content.reveal-item.is-revealed {
+  filter: none !important;
+  -webkit-filter: none !important;
 }
 
-[data-theme="light"] .project-card,
-[data-theme="light"] .certificate-card,
-[data-theme="light"] .project-spotlight-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.55) 50%, rgba(241, 245, 249, 0.65) 100%) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.90) !important;
-  border-top: 1px solid rgba(255, 255, 255, 1) !important;
-  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 1),
-              0 14px 34px -6px rgba(15, 23, 42, 0.10),
-              0 2px 6px -1px rgba(15, 23, 42, 0.04) !important;
+/* Override will-change and transition on glass cards: exclude filter from the list
+   so the browser never allocates a filter compositing layer for these elements */
+.project-card.reveal-item,
+.certificate-card.reveal-item,
+.project-spotlight-card.reveal-item,
+.timeline-item .timeline-content.reveal-item {
+  will-change: opacity, transform !important;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 /* Universal Nested Glass Components (Pills, Strips, Badges, Buttons - Zero Dark Opacity Compounding) */
