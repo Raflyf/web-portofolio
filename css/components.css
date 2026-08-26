@@ -619,10 +619,12 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
    5. BENTO SKILLS GRID
    ========================================================================== */
 
+.skills-bento-grid,
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  gap: var(--space-md);
+  gap: var(--space-lg);
+  margin-top: 0.5rem;
 }
 
 .bento-tile {
