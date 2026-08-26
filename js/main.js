@@ -133,7 +133,18 @@ function initHeroShowcaseCarousel() {
       e.preventDefault();
       const targetSec = document.getElementById('projects');
       if (targetSec) {
-        targetSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const headerOffset = 80;
+        const elementPosition = targetSec.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + (window.scrollY || window.pageYOffset) - headerOffset;
+        smoothScrollTo(offsetPosition, 1050);
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+          if (link.getAttribute('href') === '#projects') {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
       }
     });
 
@@ -1431,7 +1442,10 @@ function agentScrollToSection(sectionId) {
   if (!id) return false;
   const el = document.getElementById(id);
   if (!el) return false;
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const headerOffset = 80;
+  const elementPosition = el.getBoundingClientRect().top;
+  const offsetPosition = elementPosition + (window.scrollY || window.pageYOffset) - headerOffset;
+  smoothScrollTo(offsetPosition, 1050);
   return true;
 }
 
