@@ -1090,7 +1090,10 @@ body {
 .project-spotlight-card.reveal-item.is-revealed,
 .timeline-item .timeline-content,
 .timeline-item .timeline-content.reveal-item,
-.timeline-item .timeline-content.reveal-item.is-revealed {
+.timeline-item .timeline-content.reveal-item.is-revealed,
+.marquee-container,
+.marquee-container.reveal-item,
+.marquee-container.reveal-item.is-revealed {
   filter: none !important;
   -webkit-filter: none !important;
 }
@@ -1100,7 +1103,8 @@ body {
 .project-card.reveal-item,
 .certificate-card.reveal-item,
 .project-spotlight-card.reveal-item,
-.timeline-item .timeline-content.reveal-item {
+.timeline-item .timeline-content.reveal-item,
+.marquee-container.reveal-item {
   will-change: opacity, transform !important;
   transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) !important;

@@ -102,17 +102,17 @@
   --shadow-glow: 0 0 24px var(--accent-indigo-glow);
 
   /* Master Harmonized Glassmorphism Tokens (Perfect Translucent 3D Depth & Zero Opacity Drift) */
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%), rgba(10, 15, 26, 0.55);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.12);
-  --glass-card-blur: blur(18px) saturate(180%);
-  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.10) inset, 0 16px 36px -8px rgba(0, 0, 0, 0.6), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.022) 100%), rgba(10, 15, 26, 0.72);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.16);
+  --glass-card-blur: blur(22px) saturate(180%);
+  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.14) inset, 0 16px 36px -8px rgba(0, 0, 0, 0.65), 0 2px 6px -1px rgba(0, 0, 0, 0.35);
   --glass-card-radius: 20px;
   
-  --glass-nested-bg: rgba(255, 255, 255, 0.05);
+  --glass-nested-bg: rgba(255, 255, 255, 0.12);
   --glass-nested-border: 1px solid rgba(255, 255, 255, 0.10);
 
-  /* Unified glass blur tiers: nested < card < overlay */
-  --glass-nested-blur: blur(8px) saturate(160%);
+  /* Unified glass blur tiers: nested < card < overlay — calibrated for visible frost */
+  --glass-nested-blur: blur(14px) saturate(160%);
   --glass-overlay-blur: blur(24px) saturate(180%);
   --glass-backdrop-blur: blur(8px);
 
@@ -169,15 +169,15 @@ html[data-theme="light"] {
   --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.10);
   --shadow-glow: 0 0 16px rgba(67, 56, 202, 0.2);
 
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.50) 0%, rgba(248, 250, 252, 0.30) 100%), rgba(255, 255, 255, 0.40);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(248, 250, 252, 0.35) 100%), rgba(255, 255, 255, 0.48);
   --glass-card-border: 1px solid rgba(255, 255, 255, 0.85);
-  --glass-card-blur: blur(18px) saturate(180%);
+  --glass-card-blur: blur(22px) saturate(180%);
   --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.95) inset, 0 12px 30px -6px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-
+  
   --glass-nested-bg: rgba(255, 255, 255, 0.40);
   --glass-nested-border: 1px solid rgba(255, 255, 255, 0.60);
 
-  --glass-nested-blur: blur(8px) saturate(160%);
+  --glass-nested-blur: blur(14px) saturate(160%);
   --glass-overlay-blur: blur(24px) saturate(180%);
   --glass-backdrop-blur: blur(8px);
 }
