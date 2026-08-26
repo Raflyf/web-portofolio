@@ -39,6 +39,9 @@
 </head>
 <body>
 
+  <!-- HorizonX 3D Scroll Morphing Background Canvas -->
+  <canvas id="bg-morph-canvas" class="bg-morph-canvas" aria-hidden="true"></canvas>
+
   <!-- =========================================================================
        HORIZONX AMBIENT MORPHING MESH & KINETIC DRIFTING GLOW
        ========================================================================= -->
@@ -715,6 +718,9 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script src="js/dashboard.js?v=10.466.0"></script>
+  <!-- Three.js Engine from Cloudflare CDN for 3D Morph Background -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/bg-morph-canvas.js?v=10.499.0"></script>
+  <script src="js/dashboard.js?v=10.499.0"></script>
 </body>
 </html>
