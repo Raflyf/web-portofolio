@@ -264,13 +264,17 @@ body {
   gap: 0.65rem;
   padding: 0.85rem 1.95rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95) 0%, rgba(79, 70, 229, 0.9) 100%);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.45) 0%, rgba(79, 70, 229, 0.30) 100%), rgba(99, 102, 241, 0.25) !important;
+  backdrop-filter: blur(20px) saturate(190%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) contrast(105%) !important;
   color: #ffffff;
   font-weight: 600;
   font-size: 0.98rem;
   text-decoration: none;
-  border: 1px solid rgba(165, 180, 252, 0.55);
-  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(165, 180, 252, 0.45) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.65) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.40) !important;
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.35), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.50), 0 0 20px rgba(99, 102, 241, 0.25) !important;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
@@ -282,9 +286,10 @@ body {
 
 .btn-motif-primary:hover {
   transform: translateY(-3px) scale(1.02);
-  background: linear-gradient(135deg, rgba(129, 140, 248, 1) 0%, rgba(99, 102, 241, 1) 100%);
-  border-color: rgba(199, 210, 254, 0.85);
-  box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.55), inset 0 1px 2px 0 rgba(255, 255, 255, 0.6);
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.65) 0%, rgba(99, 102, 241, 0.45) 100%), rgba(99, 102, 241, 0.40) !important;
+  border-color: rgba(224, 231, 255, 0.85) !important;
+  border-top-color: rgba(255, 255, 255, 0.90) !important;
+  box-shadow: 0 14px 44px 0 rgba(99, 102, 241, 0.55), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70), 0 0 30px rgba(99, 102, 241, 0.40) !important;
   color: #ffffff;
 }
 
@@ -294,13 +299,17 @@ body {
   gap: 0.65rem;
   padding: 0.85rem 1.95rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), #131b26;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(13, 19, 33, 0.80) 60%, rgba(9, 14, 26, 0.90) 100%) !important;
+  backdrop-filter: blur(20px) saturate(190%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) contrast(105%) !important;
   color: var(--hx-text-primary);
   font-weight: 600;
   font-size: 0.98rem;
   text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.50) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.32) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.50), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.45), 0 0 20px rgba(99, 102, 241, 0.12) !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s ease,
@@ -310,24 +319,25 @@ body {
 }
 
 .btn-motif-secondary:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%), #162232;
-  border-color: rgba(129, 140, 248, 0.5);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45), 0 0 25px rgba(99, 102, 241, 0.25), inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.30) 0%, rgba(255, 255, 255, 0.08) 25%, rgba(13, 19, 33, 0.85) 100%) !important;
+  border-color: rgba(129, 140, 248, 0.55) !important;
+  border-top-color: rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 14px 40px 0 rgba(0, 0, 0, 0.65), 0 0 30px rgba(99, 102, 241, 0.30), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.60) !important;
   transform: translateY(-3px) scale(1.02);
   color: #ffffff;
 }
 
 [data-theme="light"] .btn-motif-primary {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95) 0%, rgba(79, 70, 229, 0.9) 100%);
-  border: 1px solid rgba(79, 70, 229, 0.9);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.90) 0%, rgba(79, 70, 229, 0.85) 100%) !important;
+  border: 1px solid rgba(79, 70, 229, 0.9) !important;
   color: #ffffff;
 }
 
 [data-theme="light"] .btn-motif-secondary {
-  background: rgba(241, 245, 249, 0.92);
-  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(241, 245, 249, 0.70) 100%) !important;
+  border: 1px solid rgba(15, 23, 42, 0.14) !important;
   color: #0f172a;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
 }
 
 /* ==========================================================================
