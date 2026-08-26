@@ -80,54 +80,51 @@ button, a, select, input, textarea {
 }
 
 /* ==========================================================================
-   1. SEAMLESS TOP FIXED NAVBAR (IMMUNE TO MODAL SCROLL LOCKS)
+   1. SEAMLESS TOP FIXED NAVBAR (SLIM, COMPACT & EDGE-TO-EDGE LIQUID FROSTED GLASS)
    ========================================================================== */
 .site-header {
   position: fixed !important;
-  top: 1rem !important;
+  top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 100 !important;
   width: 100% !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  pointer-events: none !important;
-  display: flex !important;
-  justify-content: center !important;
-  padding: 0 1.25rem !important;
+  z-index: 100 !important;
+  background: linear-gradient(180deg, rgba(13, 19, 33, 0.88) 0%, rgba(9, 14, 26, 0.92) 100%) !important;
+  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 [data-theme="light"] .site-header {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 248, 252, 0.85) 100%) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), inset 0 -1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 body {
-  padding-top: 5.5rem !important;
+  padding-top: 3.75rem !important;
 }
 
 .nav-container {
-  pointer-events: auto !important;
-  max-width: 1160px !important;
   width: 100% !important;
+  max-width: 1200px !important;
   margin: 0 auto !important;
-  padding: 0.65rem 1.35rem !important;
-  border-radius: 9999px !important;
-  background: var(--glass-card-bg) !important;
-  backdrop-filter: var(--glass-card-blur) !important;
-  -webkit-backdrop-filter: var(--glass-card-blur) !important;
-  border: var(--glass-card-border) !important;
-  border-top: var(--glass-card-border-top) !important;
-  border-left: var(--glass-card-border-left) !important;
-  box-shadow: var(--glass-card-shadow) !important;
+  padding: 0 1.5rem !important;
+  height: 3.75rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 1.5rem !important;
+  gap: 1rem !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .brand-logo {
@@ -1484,22 +1481,23 @@ body {
 
   /* Mobile Navigation Menu Redesign (High Contrast & Solid Opaque Backdrop) */
   .site-header {
-    top: 0.65rem !important;
-    padding: 0 0.85rem !important;
+    top: 0 !important;
+    padding: 0 !important;
   }
 
   .nav-container {
-    padding: 0.45rem 1rem !important;
-    border-radius: 9999px !important;
+    padding: 0 1rem !important;
+    height: 3.5rem !important;
+    border-radius: 0 !important;
   }
 
   .mobile-nav-toggle {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-    border-radius: 12px !important;
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    border-radius: 10px !important;
     background: rgba(255, 255, 255, 0.06) !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
     color: var(--hx-text-primary) !important;
@@ -1515,7 +1513,7 @@ body {
   .nav-menu {
     display: none !important;
     position: fixed !important;
-    top: 4.65rem !important;
+    top: 3.5rem !important;
     left: 0 !important;
     right: 0 !important;
     width: 100vw !important;

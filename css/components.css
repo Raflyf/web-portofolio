@@ -9,29 +9,26 @@
 
 .site-header {
   position: fixed;
-  top: 1rem;
+  top: 0;
   left: 0;
   width: 100%;
   z-index: var(--z-sticky);
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: none;
-  box-shadow: none;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  padding: 0 1.25rem;
+  background-color: var(--surface-overlay);
+  backdrop-filter: var(--glass-overlay-blur);
+  -webkit-backdrop-filter: var(--glass-overlay-blur);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0;
 }
 
 .nav-container {
-  pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 1160px;
+  max-width: 1200px;
   margin: 0 auto;
+  height: 3.75rem;
+  padding: 0 var(--space-md);
 }
 
 .brand-logo {
