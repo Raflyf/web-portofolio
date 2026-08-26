@@ -252,13 +252,13 @@ body {
   gap: 0.65rem;
   padding: 0.85rem 1.95rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.42) 0%, rgba(5, 150, 105, 0.28) 100%), #0d3829;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95) 0%, rgba(79, 70, 229, 0.9) 100%);
   color: #ffffff;
   font-weight: 600;
   font-size: 0.98rem;
   text-decoration: none;
-  border: 1px solid rgba(52, 211, 153, 0.55);
-  box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.25), inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(165, 180, 252, 0.55);
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.4);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
@@ -270,9 +270,9 @@ body {
 
 .btn-motif-primary:hover {
   transform: translateY(-3px) scale(1.02);
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.55) 0%, rgba(5, 150, 105, 0.35) 100%), #0f4432;
-  border-color: rgba(52, 211, 153, 0.85);
-  box-shadow: 0 12px 40px 0 rgba(16, 185, 129, 0.45), inset 0 1px 2px 0 rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, rgba(129, 140, 248, 1) 0%, rgba(99, 102, 241, 1) 100%);
+  border-color: rgba(199, 210, 254, 0.85);
+  box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.55), inset 0 1px 2px 0 rgba(255, 255, 255, 0.6);
   color: #ffffff;
 }
 
@@ -298,16 +298,16 @@ body {
 }
 
 .btn-motif-secondary:hover {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%), #162232;
-  border-color: rgba(52, 211, 153, 0.5);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45), 0 0 25px rgba(16, 185, 129, 0.25), inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(255, 255, 255, 0.08) 100%), #162232;
+  border-color: rgba(129, 140, 248, 0.5);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45), 0 0 25px rgba(99, 102, 241, 0.25), inset 0 1px 2px 0 rgba(255, 255, 255, 0.35);
   transform: translateY(-3px) scale(1.02);
   color: #ffffff;
 }
 
 [data-theme="light"] .btn-motif-primary {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.88) 0%, rgba(5, 150, 105, 0.78) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.9);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95) 0%, rgba(79, 70, 229, 0.9) 100%);
+  border: 1px solid rgba(79, 70, 229, 0.9);
   color: #ffffff;
 }
 
@@ -426,7 +426,7 @@ body {
 
 .showcase-dots span:nth-child(1) { background: #ef4444; }
 .showcase-dots span:nth-child(2) { background: #f59e0b; }
-.showcase-dots span:nth-child(3) { background: #10b981; }
+.showcase-dots span:nth-child(3) { background: #6366f1; }
 
 .showcase-carousel-viewport {
   position: relative;
@@ -928,7 +928,7 @@ body {
 .custom-dropdown-btn:focus,
 .custom-dropdown-btn[aria-expanded="true"] {
   border-color: var(--hx-accent-emerald) !important;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3) !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.35) !important;
 }
 
 .custom-dropdown-btn svg {
@@ -976,7 +976,7 @@ body {
 }
 
 .custom-dropdown-menu li:hover {
-  background: rgba(16, 185, 129, 0.15) !important;
+  background: rgba(99, 102, 241, 0.15) !important;
   color: var(--hx-accent-emerald) !important;
 }
 
@@ -1076,8 +1076,8 @@ body {
   .bento-tile:hover,
   .contact-method-card:hover {
     transform: translateY(-4px) !important;
-    border-color: rgba(16, 185, 129, 0.45) !important;
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 18px 40px -8px rgba(0, 0, 0, 0.55), 0 0 20px -2px rgba(16, 185, 129, 0.2) !important;
+    border-color: rgba(99, 102, 241, 0.45) !important;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.2) inset, 0 18px 40px -8px rgba(0, 0, 0, 0.55), 0 0 20px -2px rgba(99, 102, 241, 0.22) !important;
     transition-delay: 0s !important;
   }
 
@@ -1088,7 +1088,7 @@ body {
   [data-theme="light"] .pillar-card:hover,
   [data-theme="light"] .bento-tile:hover,
   [data-theme="light"] .contact-method-card:hover {
-    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 16px 34px -8px rgba(15, 23, 42, 0.15), 0 0 18px -2px rgba(16, 185, 129, 0.15) !important;
+    box-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 16px 34px -8px rgba(15, 23, 42, 0.15), 0 0 18px -2px rgba(99, 102, 241, 0.18) !important;
     transition-delay: 0s !important;
   }
 }
@@ -1233,15 +1233,15 @@ body {
   .nav-link:hover,
   .nav-link:focus {
     color: #ffffff !important;
-    background: rgba(16, 185, 129, 0.15) !important;
-    border-color: rgba(52, 211, 153, 0.4) !important;
+    background: rgba(99, 102, 241, 0.18) !important;
+    border-color: rgba(129, 140, 248, 0.4) !important;
   }
 
   .nav-link.active {
     color: #ffffff !important;
     background: var(--hx-accent-emerald) !important;
     border-color: var(--hx-accent-emerald) !important;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4) !important;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
   }
 
   html[data-theme="light"] .nav-link,
@@ -1256,19 +1256,19 @@ body {
   html[data-theme="light"] .nav-link:focus,
   [data-theme="light"] .nav-link:hover,
   [data-theme="light"] .nav-link:focus {
-    color: #047857 !important;
-    background: #ecfdf5 !important;
-    background-color: #ecfdf5 !important;
-    border-color: rgba(16, 185, 129, 0.4) !important;
+    color: #4338ca !important;
+    background: #eef2ff !important;
+    background-color: #eef2ff !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
   }
 
   html[data-theme="light"] .nav-link.active,
   [data-theme="light"] .nav-link.active {
     color: #ffffff !important;
-    background: #10b981 !important;
-    background-color: #10b981 !important;
-    border-color: #10b981 !important;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    background: #4f46e5 !important;
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
   }
 }
 
@@ -1421,7 +1421,7 @@ body {
     width: 2.85rem !important;
     height: 2.85rem !important;
     z-index: 9999 !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 16px rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 16px rgba(99, 102, 241, 0.35) !important;
   }
 
   .floating-back-to-top {

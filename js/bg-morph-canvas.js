@@ -1,13 +1,14 @@
 /**
  * ============================================================================
  * HORIZONX 3D SCROLL-MORPHING BACKGROUND ENGINE (Three.js WebGL)
- * Aesthetic: Cyber Titanium & Electric Indigo / Aurora Cyan 3D PPT-Morph
+ * Aesthetic: Cyber Titanium, Electric Indigo & Aurora Cyan 3D Fluid Morph
  * Features:
- *  - 6-Stage Parametric 3D Mesh & Wireframe Morphing on Scroll
- *  - Interactive 3D Mouse Parallax with Spring Damping
- *  - Dark/Light Dynamic Theme Adaptation
- *  - GPU-Throttled Performance (Paused on Hidden Tab, 60fps Target)
- *  - WCAG 2.2 AA & prefers-reduced-motion Strict Compliance
+ *  - Organic 3D Fluid Wave Ribbon & Smooth Parametric Surface (Zero Wireframe Noise)
+ *  - Responsive Multi-Resolution Adaptability (Optimized for Laptop & Mobile)
+ *  - Dynamic 6-Stage Spatial Morphing synchronized with Scroll Progress
+ *  - Interactive 3D Parallax with Smooth Mouse Spring Physics
+ *  - Dark & Light Theme Harmonious Color Adaptation
+ *  - GPU Efficient (Throttles when Tab Hidden, 60fps Target)
  * ============================================================================
  */
 
@@ -16,7 +17,6 @@
 
   if (typeof window === 'undefined') return;
 
-  // Check for WebGL support
   function isWebGLAvailable() {
     try {
       const canvas = document.createElement('canvas');
@@ -26,10 +26,7 @@
     }
   }
 
-  if (!isWebGLAvailable()) {
-    console.warn('[3D Background] WebGL not available on this device.');
-    return;
-  }
+  if (!isWebGLAvailable()) return;
 
   function initMorphBackground() {
     if (typeof THREE === 'undefined') {
@@ -40,10 +37,9 @@
     const canvas = document.getElementById('bg-morph-canvas');
     if (!canvas) return;
 
-    // Prefers-reduced-motion check
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Renderer
+    // 1. Renderer Setup
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       alpha: true,
@@ -53,88 +49,84 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Scene & Camera
+    // 2. Scene & Camera
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, window.innerWidth, window.innerHeight, 0.1, 1000);
-    camera.position.z = 32;
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth, window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 30);
 
-    // Colors
+    // 3. Theme Colors
     const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
-    let colorPrimary = isLightMode ? 0x4f46e5 : 0x6366f1; // Electric Indigo
-    let colorSecondary = isLightMode ? 0x0284c7 : 0x38bdf8; // Aurora Cyan
+    let colorIndigo = isLightMode ? 0x4f46e5 : 0x6366f1;
+    let colorCyan = isLightMode ? 0x0284c7 : 0x38bdf8;
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    // 4. Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, isLightMode ? 0.8 : 0.5);
     scene.add(ambientLight);
 
-    const pointLight1 = new THREE.PointLight(colorPrimary, 3.5, 60);
-    pointLight1.position.set(15, 12, 18);
-    scene.add(pointLight1);
+    const light1 = new THREE.PointLight(colorIndigo, isLightMode ? 3.0 : 4.5, 80);
+    light1.position.set(20, 15, 20);
+    scene.add(light1);
 
-    const pointLight2 = new THREE.PointLight(colorSecondary, 3.0, 60);
-    pointLight2.position.set(-15, -12, 12);
-    scene.add(pointLight2);
+    const light2 = new THREE.PointLight(colorCyan, isLightMode ? 2.5 : 4.0, 80);
+    light2.position.set(-20, -15, 15);
+    scene.add(light2);
 
-    // 1. Primary 3D Morphing Torus-Knot Wireframe Structure
-    const mainGeometry = new THREE.TorusKnotGeometry(9, 2.6, 120, 24, 2, 3);
-    const mainMaterial = new THREE.MeshStandardMaterial({
-      color: colorPrimary,
-      wireframe: true,
-      roughness: 0.2,
-      metalness: 0.85,
+    // 5. Smooth 3D Fluid Parametric Wave Mesh (No harsh wireframes)
+    // Large wide plane positioned elegantly in background depth
+    const gridX = 48;
+    const gridY = 36;
+    const waveGeometry = new THREE.PlaneGeometry(80, 50, gridX, gridY);
+    
+    // Store base positions for dynamic wave morphing
+    const posAttribute = waveGeometry.attributes.position;
+    const basePositions = new Float32Array(posAttribute.array);
+
+    const waveMaterial = new THREE.MeshStandardMaterial({
+      color: colorIndigo,
+      roughness: 0.35,
+      metalness: 0.8,
       transparent: true,
-      opacity: isLightMode ? 0.22 : 0.40
+      opacity: isLightMode ? 0.18 : 0.32,
+      side: THREE.DoubleSide,
+      flatShading: false
     });
-    const mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
-    scene.add(mainMesh);
 
-    // 2. Secondary Floating Outer Geometry Ring (Morph Companion)
-    const ringGeometry = new THREE.IcosahedronGeometry(14, 2);
-    const ringMaterial = new THREE.MeshStandardMaterial({
-      color: colorSecondary,
-      wireframe: true,
-      roughness: 0.1,
-      metalness: 0.9,
-      transparent: true,
-      opacity: isLightMode ? 0.10 : 0.20
-    });
-    const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-    scene.add(ringMesh);
+    const waveMesh = new THREE.Mesh(waveGeometry, waveMaterial);
+    waveMesh.rotation.x = -Math.PI * 0.28;
+    waveMesh.position.set(0, -6, -8);
+    scene.add(waveMesh);
 
-    // 3. 3D Particle Constellation Depth Field
-    const particleCount = prefersReducedMotion ? 250 : 800;
+    // 6. Secondary Floating Cosmic Particle Field (Dispersed uniformly across screen)
+    const particleCount = prefersReducedMotion ? 200 : 600;
     const particleGeometry = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
-    const particleScales = new Float32Array(particleCount);
 
     for (let i = 0; i < particleCount; i++) {
-      particlePositions[i * 3] = (Math.random() - 0.5) * 80;
+      particlePositions[i * 3] = (Math.random() - 0.5) * 100;
       particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 80;
       particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 50 - 5;
-      particleScales[i] = Math.random() * 0.8 + 0.2;
     }
 
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    particleGeometry.setAttribute('scale', new THREE.BufferAttribute(particleScales, 1));
 
     const particleMaterial = new THREE.PointsMaterial({
-      color: colorSecondary,
-      size: isLightMode ? 0.35 : 0.45,
+      color: colorCyan,
+      size: isLightMode ? 0.4 : 0.55,
       transparent: true,
-      opacity: isLightMode ? 0.30 : 0.60,
+      opacity: isLightMode ? 0.3 : 0.6,
       blending: THREE.AdditiveBlending
     });
-    const particleField = new THREE.Points(particleGeometry, particleMaterial);
-    scene.add(particleField);
 
-    // Dynamic Scroll & Mouse Interaction State
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particles);
+
+    // 7. Scroll & Mouse Tracking
     let scrollProgress = 0;
     let targetScrollProgress = 0;
     let mouseX = 0, mouseY = 0;
     let targetMouseX = 0, targetMouseY = 0;
     let isTabVisible = !document.hidden;
 
-    // Window Listeners
     function onScroll() {
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       targetScrollProgress = docHeight > 0 ? Math.max(0, Math.min(1, window.scrollY / docHeight)) : 0;
@@ -164,72 +156,70 @@
     // Theme Switcher Sync
     const observer = new MutationObserver(() => {
       const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      colorPrimary = isLight ? 0x4f46e5 : 0x6366f1;
-      colorSecondary = isLight ? 0x0284c7 : 0x38bdf8;
+      colorIndigo = isLight ? 0x4f46e5 : 0x6366f1;
+      colorCyan = isLight ? 0x0284c7 : 0x38bdf8;
+
+      waveMaterial.color.setHex(colorIndigo);
+      waveMaterial.opacity = isLight ? 0.16 : 0.30;
       
-      mainMaterial.color.setHex(colorPrimary);
-      mainMaterial.opacity = isLight ? 0.22 : 0.40;
-      
-      ringMaterial.color.setHex(colorSecondary);
-      ringMaterial.opacity = isLight ? 0.10 : 0.20;
-      
-      particleMaterial.color.setHex(colorSecondary);
-      particleMaterial.opacity = isLight ? 0.30 : 0.60;
-      
-      pointLight1.color.setHex(colorPrimary);
-      pointLight2.color.setHex(colorSecondary);
+      particleMaterial.color.setHex(colorCyan);
+      particleMaterial.opacity = isLight ? 0.28 : 0.55;
+
+      light1.color.setHex(colorIndigo);
+      light2.color.setHex(colorCyan);
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
     // Animation Loop
-    let clock = new THREE.Clock();
-    
+    const clock = new THREE.Clock();
+
     function animate() {
       requestAnimationFrame(animate);
 
       if (!isTabVisible) return;
 
       const delta = clock.getDelta();
-      const elapsedTime = clock.getElapsedTime();
+      const time = clock.getElapsedTime();
 
-      // Smooth interpolation for scroll & mouse
+      // Smooth interpolation
       scrollProgress += (targetScrollProgress - scrollProgress) * 0.08;
-      mouseX += (targetMouseX - mouseX) * 0.06;
-      mouseY += (targetMouseY - mouseY) * 0.06;
+      mouseX += (targetMouseX - mouseX) * 0.05;
+      mouseY += (targetMouseY - mouseY) * 0.05;
 
-      // 3D PowerPoint-Style Morph Transformations mapped to Scroll Progress:
-      const morphAngle = scrollProgress * Math.PI * 4;
-      const morphScale = 1.0 + Math.sin(scrollProgress * Math.PI * 2) * 0.35;
-      
-      // Main Mesh PPT-Morph Dynamic Transforms
-      mainMesh.rotation.x = elapsedTime * 0.25 + scrollProgress * 5.2 + mouseY * 0.4;
-      mainMesh.rotation.y = elapsedTime * 0.35 + scrollProgress * 7.5 + mouseX * 0.4;
-      mainMesh.rotation.z = Math.sin(morphAngle * 0.5) * 0.8;
-      
-      mainMesh.position.x = Math.sin(scrollProgress * Math.PI * 2) * 14 + mouseX * 2.5;
-      mainMesh.position.y = Math.cos(scrollProgress * Math.PI * 2.5) * 8 - (scrollProgress - 0.5) * 16 - mouseY * 2.5;
-      mainMesh.position.z = -5 + Math.sin(scrollProgress * Math.PI * 3) * 10;
-      
-      mainMesh.scale.set(morphScale, morphScale, morphScale);
+      // Dynamic 3D Wave Morphing on Scroll (PPT-Morph Style Surface Waves)
+      const positions = posAttribute.array;
+      const waveFreq = 0.12 + scrollProgress * 0.08;
+      const waveSpeed = prefersReducedMotion ? 0.2 : 0.9;
+      const morphHeight = 3.5 + Math.sin(scrollProgress * Math.PI) * 2.5;
 
-      // Ring Mesh Morphing Counter-Rotation
-      ringMesh.rotation.x = -elapsedTime * 0.15 - scrollProgress * 3.5;
-      ringMesh.rotation.y = -elapsedTime * 0.20 - scrollProgress * 4.2;
-      ringMesh.position.x = -mainMesh.position.x * 0.7;
-      ringMesh.position.y = -mainMesh.position.y * 0.6;
-      ringMesh.position.z = mainMesh.position.z - 8;
-      ringMesh.scale.set(1.4 - scrollProgress * 0.4, 1.4 - scrollProgress * 0.4, 1.4 - scrollProgress * 0.4);
+      for (let i = 0; i < positions.length; i += 3) {
+        const x = basePositions[i];
+        const y = basePositions[i + 1];
+        
+        // Multi-frequency sinusoidal wave formula
+        const zWave = Math.sin(x * waveFreq + time * waveSpeed) * Math.cos(y * waveFreq + time * waveSpeed * 0.8) * morphHeight
+                    + Math.sin((x + y) * 0.08 + time * 0.5) * 1.5;
+        
+        positions[i + 2] = zWave;
+      }
+      posAttribute.needsUpdate = true;
+      waveGeometry.computeVertexNormals();
 
-      // Dynamic Particle Field Waves
-      particleField.rotation.y = elapsedTime * 0.05 + scrollProgress * 2.0;
-      particleField.rotation.x = scrollProgress * 1.2;
-      particleField.position.y = -scrollProgress * 15;
+      // Smooth 3D Mesh Spatial Transforms
+      waveMesh.rotation.z = Math.sin(time * 0.15) * 0.05 + (scrollProgress - 0.5) * 0.4 + mouseX * 0.08;
+      waveMesh.rotation.x = -Math.PI * 0.28 + (scrollProgress - 0.5) * 0.35 - mouseY * 0.08;
+      waveMesh.position.y = -6 - (scrollProgress - 0.5) * 12;
+      waveMesh.position.x = mouseX * 2.0;
+
+      // Particle Drift
+      particles.rotation.y = time * 0.03 + scrollProgress * 0.5;
+      particles.position.y = -scrollProgress * 10;
 
       // Orbiting Specular Point Lights
-      pointLight1.position.x = Math.sin(elapsedTime * 0.8) * 20;
-      pointLight1.position.y = Math.cos(elapsedTime * 0.6) * 16;
-      pointLight2.position.x = -Math.sin(elapsedTime * 0.7) * 20;
-      pointLight2.position.y = -Math.cos(elapsedTime * 0.5) * 16;
+      light1.position.x = Math.sin(time * 0.6) * 25;
+      light1.position.y = Math.cos(time * 0.4) * 20;
+      light2.position.x = -Math.sin(time * 0.5) * 25;
+      light2.position.y = -Math.cos(time * 0.3) * 20;
 
       renderer.render(scene, camera);
     }
