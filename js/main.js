@@ -1292,7 +1292,7 @@ function observeElementForScrollReveal(el) {
 function refreshScrollReveal() {
   if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
-    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .hero-showcase-canvas, .section-header, .about-bio, .pillar-card, .marquee-container, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-content, .terminal-card, .contact-method-card, .contact-form, .site-footer, .stats-strip'
+    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .hero-showcase-canvas, .section-header, .about-bio, .pillar-card, .marquee-container, .bento-tile, .filter-bar, .project-card, .certificate-card, .timeline-content, .terminal-card, .contact-method-card, .contact-form, .stats-strip'
   );
 
   revealElements.forEach(el => {

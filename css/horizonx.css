@@ -722,13 +722,17 @@ body {
   }
 }
 
-/* Terminal & Chat Isolation: Inner terminal content must never inherit page scroll blur/perspective */
+/* Terminal, Footer & Chat Isolation: Footer must always stay docked without 3D float/delay */
+.site-footer,
+.site-footer.reveal-item,
 .terminal-modal-dialog .terminal-card,
 .terminal-modal-dialog .reveal-item,
 .terminal-card .chat-msg,
 .terminal-body .chat-msg,
 .chat-msg {
+  transform: none !important;
   filter: none !important;
+  opacity: 1 !important;
 }
 
 /* ==========================================================================
