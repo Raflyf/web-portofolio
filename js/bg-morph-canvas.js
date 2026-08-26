@@ -60,18 +60,18 @@
 
     // Colors
     const isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
-    let colorPrimary = isLightMode ? 0x4f46e5 : 0x6366f1; // Electric Indigo
+    let colorPrimary = isLightMode ? 0x4338ca : 0x6366f1; // Deep Indigo in Light Mode for contrast
     let colorSecondary = isLightMode ? 0x0284c7 : 0x38bdf8; // Aurora Cyan
 
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, isLightMode ? 0.8 : 0.6);
     scene.add(ambientLight);
 
-    const pointLight1 = new THREE.PointLight(colorPrimary, 3.5, 60);
+    const pointLight1 = new THREE.PointLight(colorPrimary, isLightMode ? 4.5 : 3.5, 60);
     pointLight1.position.set(15, 12, 18);
     scene.add(pointLight1);
 
-    const pointLight2 = new THREE.PointLight(colorSecondary, 3.0, 60);
+    const pointLight2 = new THREE.PointLight(colorSecondary, isLightMode ? 3.8 : 3.0, 60);
     pointLight2.position.set(-15, -12, 12);
     scene.add(pointLight2);
 
@@ -83,7 +83,7 @@
       roughness: 0.2,
       metalness: 0.85,
       transparent: true,
-      opacity: isLightMode ? 0.22 : 0.40
+      opacity: isLightMode ? 0.42 : 0.40
     });
     const mainMesh = new THREE.Mesh(mainGeometry, mainMaterial);
     scene.add(mainMesh);
@@ -96,7 +96,7 @@
       roughness: 0.1,
       metalness: 0.9,
       transparent: true,
-      opacity: isLightMode ? 0.10 : 0.20
+      opacity: isLightMode ? 0.22 : 0.20
     });
     const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
     scene.add(ringMesh);
@@ -165,17 +165,17 @@
     // Theme Switcher Sync
     const observer = new MutationObserver(() => {
       const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      colorPrimary = isLight ? 0x4f46e5 : 0x6366f1;
+      colorPrimary = isLight ? 0x4338ca : 0x6366f1;
       colorSecondary = isLight ? 0x0284c7 : 0x38bdf8;
       
       mainMaterial.color.setHex(colorPrimary);
-      mainMaterial.opacity = isLight ? 0.22 : 0.40;
+      mainMaterial.opacity = isLight ? 0.42 : 0.40;
       
       ringMaterial.color.setHex(colorSecondary);
-      ringMaterial.opacity = isLight ? 0.10 : 0.20;
+      ringMaterial.opacity = isLight ? 0.22 : 0.20;
       
       particleMaterial.color.setHex(colorSecondary);
-      particleMaterial.opacity = isLight ? 0.30 : 0.60;
+      particleMaterial.opacity = isLight ? 0.55 : 0.60;
       
       pointLight1.color.setHex(colorPrimary);
       pointLight2.color.setHex(colorSecondary);

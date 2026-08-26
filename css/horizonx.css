@@ -51,9 +51,9 @@ button, a, select, input, textarea {
 
 [data-theme="light"] {
   --hx-bg: #f8fafc;
-  --hx-surface-dark: #ffffff;
-  --hx-surface-card: #ffffff;
-  --hx-surface-card-hover: #f1f5f9;
+  --hx-surface-dark: rgba(255, 255, 255, 0.75);
+  --hx-surface-card: var(--glass-card-bg);
+  --hx-surface-card-hover: rgba(255, 255, 255, 0.90);
   --hx-border-card: rgba(15, 23, 42, 0.09);
   --hx-border-glow: rgba(99, 102, 241, 0.45);
   
@@ -61,9 +61,9 @@ button, a, select, input, textarea {
   --hx-text-secondary: #475569;
   --hx-text-muted: #64748b;
   
-  --hx-accent-emerald: #4f46e5;
-  --hx-accent-emerald-dim: rgba(79, 70, 229, 0.12);
-  --hx-accent-emerald-glow: rgba(79, 70, 229, 0.25);
+  --hx-accent-emerald: #4338ca;
+  --hx-accent-emerald-dim: rgba(67, 56, 202, 0.12);
+  --hx-accent-emerald-glow: rgba(67, 56, 202, 0.25);
   --hx-accent-cyan: #0284c7;
 }
 

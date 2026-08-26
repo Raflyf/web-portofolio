@@ -94,11 +94,11 @@ html[data-theme="light"],
 [data-theme="light"] {
   --bg-base: #f4f6fb;
   --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-elevated: #eef2f6;
+  --bg-secondary: rgba(248, 250, 252, 0.7);
+  --bg-elevated: rgba(238, 242, 246, 0.7);
 
-  --surface-card: rgba(255, 255, 255, 0.9);
-  --surface-card-hover: rgba(255, 255, 255, 1);
+  --surface-card: rgba(255, 255, 255, 0.75);
+  --surface-card-hover: rgba(255, 255, 255, 0.90);
   --surface-overlay: rgba(255, 255, 255, 0.95);
   --surface-badge: rgba(15, 23, 42, 0.05);
   --surface-input: #ffffff;
@@ -114,10 +114,10 @@ html[data-theme="light"],
   --text-muted: #64748b;
   --text-dim: #94a3b8;
 
-  --accent-emerald: #4f46e5;
-  --accent-emerald-dim: rgba(79, 70, 229, 0.12);
-  --accent-emerald-glow: rgba(79, 70, 229, 0.22);
-  --accent-emerald-text: #4f46e5;
+  --accent-emerald: #4338ca;
+  --accent-emerald-dim: rgba(67, 56, 202, 0.12);
+  --accent-emerald-glow: rgba(67, 56, 202, 0.22);
+  --accent-emerald-text: #4338ca;
 
   --accent-cyan: #0284c7;
   --accent-cyan-dim: rgba(2, 132, 199, 0.12);
@@ -132,12 +132,12 @@ html[data-theme="light"],
   --shadow-card-hover: 0 20px 44px rgba(15, 23, 42, 0.12), 0 0 20px rgba(79, 70, 229, 0.18);
   --shadow-modal: 0 28px 56px rgba(15, 23, 42, 0.2), inset 0 1px 0 rgba(255, 255, 255, 1);
 
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.85) 100%);
-  --glass-card-border: 1px solid rgba(15, 23, 42, 0.09);
-  --glass-card-blur: blur(20px) saturate(160%);
-  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.95) inset, 0 14px 30px -6px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(248, 250, 252, 0.58) 100%), rgba(255, 255, 255, 0.68);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.90);
+  --glass-card-blur: blur(20px) saturate(180%);
+  --glass-card-shadow: 0 1px 0 0 rgba(255, 255, 255, 1) inset, 0 14px 32px -6px rgba(15, 23, 42, 0.09), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 
-  --glass-nested-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(241, 245, 249, 0.70) 100%);
+  --glass-nested-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.70) 0%, rgba(241, 245, 249, 0.50) 100%), rgba(255, 255, 255, 0.55);
   --glass-nested-border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
@@ -156,7 +156,7 @@ html[data-theme="light"],
 }
 
 [data-theme="light"] .bg-morph-canvas {
-  opacity: 0.50;
+  opacity: 0.75;
 }
 
 /* ==========================================================================
@@ -169,11 +169,12 @@ html[data-theme="light"],
 }
 
 html {
+  background-color: var(--bg-base);
   scroll-behavior: auto !important;
 }
 
 body {
-  background-color: var(--bg-base);
+  background-color: transparent !important;
   color: var(--text-body);
   font-family: var(--font-sans);
   min-height: 100vh;
