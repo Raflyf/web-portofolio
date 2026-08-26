@@ -102,10 +102,10 @@
   --shadow-glow: 0 0 24px var(--accent-indigo-glow);
 
   /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content) */
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 16, 30, 0.55) 100%);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.22);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(10, 15, 28, 0.75) 100%), rgba(9, 14, 26, 0.82);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.20);
   --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.48);
-  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.30);
+  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.28);
   --glass-card-blur: blur(28px) saturate(200%) contrast(105%);
   --glass-card-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.75), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.40), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.25), 0 0 40px rgba(99, 102, 241, 0.12);
   --glass-card-radius: 20px;
@@ -172,10 +172,10 @@ html[data-theme="light"] {
   --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.10);
   --shadow-glow: 0 0 16px rgba(67, 56, 202, 0.2);
 
-  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(245, 248, 252, 0.50) 100%);
-  --glass-card-border: 1px solid rgba(255, 255, 255, 0.85);
+  --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 248, 252, 0.60) 100%), rgba(255, 255, 255, 0.78);
+  --glass-card-border: 1px solid rgba(255, 255, 255, 0.90);
   --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 1);
-  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.90);
+  --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.95);
   --glass-card-blur: blur(28px) saturate(200%);
   --glass-card-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 1px rgba(15, 23, 42, 0.08);
   --glass-card-radius: 20px;
