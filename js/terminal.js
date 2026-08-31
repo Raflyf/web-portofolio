@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.261.0';
-import { telemetry } from './telemetry.js?v=10.261.0';
-import { terminalAI } from './terminal-ai.js?v=10.261.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.544.0';
+import { telemetry } from './telemetry.js?v=10.544.0';
+import { terminalAI } from './terminal-ai.js?v=10.544.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -151,6 +151,23 @@ export function initTerminal() {
       localStorage.setItem('ai_selected_effort', chosen);
       syncCustomEffortUI(chosen);
       appendLine(`[Mode AI] Effort diatur ke: ${effortText}`);
+      appendLine("");
+    });
+  }
+
+  // Restore saved model selection & wire the native model select (same handler as CLI `model <nama>`)
+  if (modelSelect) {
+    const savedModel = localStorage.getItem('ai_selected_model') || 'auto';
+    modelSelect.value = savedModel;
+    terminalAI.setModel(savedModel);
+
+    modelSelect.addEventListener('change', () => {
+      const chosen = modelSelect.value;
+      if (!chosen) return;
+      terminalAI.setModel(chosen);
+      localStorage.setItem('ai_selected_model', chosen);
+      const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || chosen;
+      appendLine(`[AI Model Manager] Model aktif berhasil diubah ke: ${modelText}`);
       appendLine("");
     });
   }
@@ -637,6 +654,26 @@ export function initTerminal() {
     });
   }
 
+  // Lazy-load PDF.js on first PDF attachment (removed from the critical path in index.html)
+  let pdfjsLoadPromise = null;
+  function ensurePdfJsLoaded() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfjsLoadPromise) {
+      pdfjsLoadPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.async = true;
+        s.onload = () => resolve(window.pdfjsLib);
+        s.onerror = () => {
+          pdfjsLoadPromise = null;
+          reject(new Error('PDF.js gagal dimuat'));
+        };
+        document.head.appendChild(s);
+      });
+    }
+    return pdfjsLoadPromise;
+  }
+
   async function processIncomingFiles(fileList) {
     const files = Array.from(fileList || []);
     if (files.length === 0) return;
@@ -662,6 +699,13 @@ export function initTerminal() {
         try {
           const arrayBuffer = await file.arrayBuffer();
           let extractedText = '';
+
+          // Lazily inject PDF.js the first time a PDF is attached
+          try {
+            await ensurePdfJsLoaded();
+          } catch (_) {
+            console.warn('PDF.js gagal dimuat; fallback ke teks placeholder.');
+          }
 
           if (window.pdfjsLib) {
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -813,7 +857,7 @@ export function initTerminal() {
       "  clear        - Membersihkan riwayat layar terminal",
       "",
       "PINTASAN MODEL AI:",
-      "  - Ketik 'models' untuk melihat semua model dari 7 provider aktif.",
+      "  - Ketik 'models' untuk melihat semua model dari berbagai provider AI aktif.",
       "  - Ketik 'model <nama>' (misal: model codex / model auto) untuk berganti model.",
       "",
       "FITUR MULTIMODAL v5.2:",
@@ -838,13 +882,14 @@ export function initTerminal() {
       "   - nemotron-3-super (120B CoT | Reasoning Architecture)",
       "",
       "3. OpenRouter Modern SOTA Pool (openrouter.ai | Tier 3):",
-      "   - stealth/ox-alpha (Ox Alpha | 1M Context Frontier SOTA Reasoning & Coding)",
       "   - deepseek/deepseek-chat (DeepSeek V3 | Fast Analytical)",
       "   - nvidia/nemotron-3.5-lightning:free (1M Context | Sub-8s)",
       "   - nvidia/nemotron-3-super-120b-a12b:free (120B MoE)",
       "   - nvidia/nemotron-3-nano-30b-a3b:free (30B Fast)",
       "   - nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free (Vision Multimodal)",
-      "   - liquid/lfm-2.5-2.6b:free (2.6B Dynamic Sub-2s)",
+      "   - nvidia/nemotron-3-ultra-550b-a55b:free (Ultra Reasoning)",
+      "   - minimax/minimax-m3:free (Frontier Multimodal Vision)",
+      "   - poolside/laguna-s-2.1:free (Laguna S 2.1)",
       "   - openrouter/free (Universal SOTA Auto Router)",
       "",
       "4. OpenCode Zen Cloud Pool (opencode.ai | Tier 4):",
@@ -933,27 +978,30 @@ export function initTerminal() {
       "Status     : Sesi lokal aktif. Riwayat obrolan dienkapsulasi khusus untuk perangkat browser ini."
     ],
     github: () => {
+      let success = false;
       if (typeof window !== 'undefined' && window.portfolioAgent) {
-        window.portfolioAgent.openUrl(DEVELOPER_PROFILE.github);
+        success = window.portfolioAgent.executeAction('OPEN_URL', { url: DEVELOPER_PROFILE.github });
       }
-      return [
-        "[AKSI WEB]: Membuka profil GitHub resmi Rafly Firmansyah...",
-        `-> Tautan: ${DEVELOPER_PROFILE.github}`
-      ];
+      return success
+        ? [
+            "[AKSI WEB]: Membuka profil GitHub resmi Rafly Firmansyah...",
+            `-> Tautan: ${DEVELOPER_PROFILE.github}`
+          ]
+        : ["[AKSI WEB]: Gagal membuka profil GitHub."];
     },
     theme: () => {
+      let success = false;
       if (typeof window !== 'undefined' && window.portfolioAgent) {
-        const res = window.portfolioAgent.toggleTheme();
-        return [res.message || "Tema berhasil diubah."];
+        success = window.portfolioAgent.executeAction('TOGGLE_THEME', {});
       }
-      return ["Gagal mengubah tema."];
+      return [success ? "Tema berhasil diganti." : "Gagal mengganti tema."];
     },
     copyemail: () => {
+      let success = false;
       if (typeof window !== 'undefined' && window.portfolioAgent) {
-        const res = window.portfolioAgent.copyEmail();
-        return [res.message || "Email berhasil disalin ke clipboard."];
+        success = window.portfolioAgent.executeAction('COPY_EMAIL', {});
       }
-      return ["Email: raflyfirmansyah02@gmail.com"];
+      return [success ? "Email berhasil disalin ke clipboard." : "Gagal menyalin email."];
     },
     aistatus: () => terminalAI.getStatus(),
     clearkey: () => terminalAI.clearKey(),
@@ -1252,10 +1300,6 @@ export function initTerminal() {
     return content;
   }
 
-  function formatMarkdownText(raw) {
-    return formatMarkdownFull(raw);
-  }
-
   function appendUserBubble(userText, attachments = [], customTime = null, shouldSave = true) {
     const time = customTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const msgEl = document.createElement('div');
@@ -1276,7 +1320,7 @@ export function initTerminal() {
           </span>
           <span class="chat-msg__time">${time}</span>
         </div>
-        <div class="chat-msg__text">${formatMarkdownText(userText || '[Lampiran Dokumen/Gambar]')}</div>
+        <div class="chat-msg__text">${formatMarkdownFull(userText || '[Lampiran Dokumen/Gambar]')}</div>
         ${attachHtml}
       </div>
     `;
@@ -1378,7 +1422,7 @@ export function initTerminal() {
       const cmdText = document.createTextNode(' ' + userCmd);
       lineEl.appendChild(cmdText);
     } else {
-      lineEl.innerHTML = formatMarkdownText(text);
+      lineEl.innerHTML = formatMarkdownFull(text);
     }
 
     const container = targetContainer || terminalBody;
@@ -1546,43 +1590,57 @@ export function initTerminal() {
     if (currentAttachments.length === 0 && COMMAND_REGISTRY[cmdLower]) {
       telemetry.logEvent('terminal_cmd', cmdLower, `Perintah Terminal: ${cmdLower}`);
       const aiContainer = createAIBubbleContainer('System Engine');
-      const outputLines = COMMAND_REGISTRY[cmdLower]();
-      outputLines.forEach(line => appendLine(line, false, '', false, aiContainer));
+      try {
+        const outputLines = COMMAND_REGISTRY[cmdLower]();
+        outputLines.forEach(line => appendLine(line, false, '', false, aiContainer));
+      } catch (cmdErr) {
+        console.warn('Terminal command error:', cmdErr);
+        appendLine('⚠️ [Sistem] Perintah gagal dieksekusi. Silakan coba lagi.', false, '', false, aiContainer);
+      }
       return;
     }
 
-    // Direct Web Agent Command Triggers
+    // Direct Web Agent Command Triggers (natural-language aliases for [ACTION:...] tags)
     if (currentAttachments.length === 0 && window.portfolioAgent) {
-      if (/^(buka\s+github|open\s+github|github\s+rafly|link\s+github)$/i.test(cmdLower)) {
+      try {
+        if (/^(buka\s+github|open\s+github|github\s+rafly|link\s+github)$/i.test(cmdLower)) {
+          const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+          const ok = window.portfolioAgent.executeAction('OPEN_GITHUB', { repo: '' });
+          appendLine(ok
+            ? `⚡ [Aksi Web Terlaksana]: Membuka profil GitHub resmi Rafly Firmansyah (https://github.com/Raflyf)`
+            : `⚡ [Aksi Web Gagal]: Tidak dapat membuka GitHub`, false, '', false, aiContainer);
+          return;
+        }
+        if (/^(ganti\s+tema|ubah\s+tema|toggle\s+theme|mode\s+gelap|mode\s+terang)$/i.test(cmdLower)) {
+          const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+          const ok = window.portfolioAgent.executeAction('TOGGLE_THEME', {});
+          appendLine(`⚡ [Aksi Web Terlaksana]: ${ok ? 'Tema berhasil diganti.' : 'Gagal mengganti tema.'}`, false, '', false, aiContainer);
+          return;
+        }
+        if (/^(salin\s+email|copy\s+email)$/i.test(cmdLower)) {
+          const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+          const ok = window.portfolioAgent.executeAction('COPY_EMAIL', {});
+          appendLine(`⚡ [Aksi Web Terlaksana]: ${ok ? 'Email berhasil disalin ke clipboard.' : 'Gagal menyalin email.'}`, false, '', false, aiContainer);
+          return;
+        }
+        const openProjMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:proyek|project|repo)\s+(.+)$/i);
+        if (openProjMatch && openProjMatch[1]) {
+          const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+          const ok = window.portfolioAgent.executeAction('OPEN_PROJECT', { title: openProjMatch[1] });
+          appendLine(`⚡ [Aksi Web Terlaksana]: ${ok ? `Membuka detail proyek: ${openProjMatch[1]}` : `Tidak menemukan proyek: ${openProjMatch[1]}`}`, false, '', false, aiContainer);
+          return;
+        }
+        const openCertMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:sertifikat|sertif|cert|kredensial)\s+(.+)$/i);
+        if (openCertMatch && openCertMatch[1]) {
+          const aiContainer = createAIBubbleContainer('Web Interaction Agent');
+          const ok = window.portfolioAgent.executeAction('OPEN_CERTIFICATE', { title: openCertMatch[1] });
+          appendLine(`⚡ [Aksi Web Terlaksana]: ${ok ? `Membuka kredensial sertifikat: ${openCertMatch[1]}` : `Tidak menemukan sertifikat: ${openCertMatch[1]}`}`, false, '', false, aiContainer);
+          return;
+        }
+      } catch (agentErr) {
+        console.warn('Web agent command error:', agentErr);
         const aiContainer = createAIBubbleContainer('Web Interaction Agent');
-        window.portfolioAgent.openUrl(DEVELOPER_PROFILE.github);
-        appendLine(`⚡ [Aksi Web Terlaksana]: Membuka profil GitHub resmi Rafly Firmansyah (https://github.com/Raflyf)`, false, '', false, aiContainer);
-        return;
-      }
-      if (/^(ganti\s+tema|ubah\s+tema|toggle\s+theme|mode\s+gelap|mode\s+terang)$/i.test(cmdLower)) {
-        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
-        const res = window.portfolioAgent.toggleTheme();
-        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
-        return;
-      }
-      if (/^(salin\s+email|copy\s+email)$/i.test(cmdLower)) {
-        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
-        const res = window.portfolioAgent.copyEmail();
-        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
-        return;
-      }
-      const openProjMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:proyek|project|repo)\s+(.+)$/i);
-      if (openProjMatch && openProjMatch[1]) {
-        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
-        const res = window.portfolioAgent.openProject(openProjMatch[1]);
-        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
-        return;
-      }
-      const openCertMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:sertifikat|sertif|cert|kredensial)\s+(.+)$/i);
-      if (openCertMatch && openCertMatch[1]) {
-        const aiContainer = createAIBubbleContainer('Web Interaction Agent');
-        const res = window.portfolioAgent.openCertificate(openCertMatch[1]);
-        appendLine(`⚡ [Aksi Web Terlaksana]: ${res.message}`, false, '', false, aiContainer);
+        appendLine('⚠️ [Aksi Web] Terjadi kesalahan saat mengeksekusi aksi. Silakan coba lagi.', false, '', false, aiContainer);
         return;
       }
     }

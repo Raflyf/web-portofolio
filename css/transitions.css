@@ -37,9 +37,15 @@
   --blur-large: 12px;
 }
 
-/* Always-On Motion Override — smooth scroll & marquee persist even when OS Battery Saver / reduced-motion is on */
+/* WCAG 2.2 — Honor OS reduced-motion: collapse all non-essential animation/transition durations
+   (smooth scroll becomes instant; marquees, reveals and hover transitions become instant state changes). */
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: smooth !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

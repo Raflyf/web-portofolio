@@ -7,6 +7,7 @@ node_modules/
 npm-debug.log*
 
 # Environment & Secrets (NEVER COMMIT PRODUCTION SECRETS)
+# Covers .env.local via `.env.*` AND `*.local` (both patterns below)
 .env
 .env.*
 !.env.example

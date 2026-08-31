@@ -40,9 +40,7 @@ export const PROJECTS_DATA = [
     techStack: ["Python", "Flask", "PyTorch", "Sentence-Transformers", "N-Gram", "Web Scraping"],
     githubUrl: "https://github.com/Raflyf/OpenPlagiarismChecker",
     demoUrl: null,
-    stars: 4,
-    license: "MIT",
-    year: "2026"
+    stars: 4
   },
   {
     id: "spam-email-classifier",
@@ -62,9 +60,7 @@ export const PROJECTS_DATA = [
     techStack: ["Python", "Scikit-Learn", "XGBoost", "Flask", "Pandas", "Chart.js"],
     githubUrl: "https://github.com/Raflyf/Spam-Email",
     demoUrl: null,
-    stars: 3,
-    license: "Open Source",
-    year: "2026"
+    stars: 3
   },
   {
     id: "laser-pointer-ppt",
@@ -83,9 +79,7 @@ export const PROJECTS_DATA = [
     techStack: ["Python", "Flask-SocketIO", "PyAutoGUI", "WebSockets", "JavaScript DeviceOrientation"],
     githubUrl: "https://github.com/Raflyf/laser_pointer_PPT",
     demoUrl: null,
-    stars: 1,
-    license: "Open Source",
-    year: "2026"
+    stars: 1
   },
   {
     id: "fotokita-blur",
@@ -104,9 +98,7 @@ export const PROJECTS_DATA = [
     techStack: ["JavaScript", "MediaPipe Vision", "OpenCV", "Flask", "WebRTC"],
     githubUrl: "https://github.com/Raflyf/FotoKitaBlur",
     demoUrl: null,
-    stars: 0,
-    license: "Open Source",
-    year: "2026"
+    stars: 0
   },
   {
     id: "web-portofolio",
@@ -126,9 +118,7 @@ export const PROJECTS_DATA = [
     techStack: ["JavaScript (ES6+)", "HTML5 Semantic", "CSS3 / OKLCH", "GitHub Pages", "Responsive UI"],
     githubUrl: "https://github.com/Raflyf/web-portofolio",
     demoUrl: "https://raflyfirmansyah-portofolio.vercel.app/",
-    stars: 1,
-    license: "MIT",
-    year: "2026"
+    stars: 1
   }
 ];
 
@@ -147,16 +137,13 @@ export const CERTIFICATES_DATA = [
     categoryLabel: "Software Engineering / BNSP",
     date: "15 Sep 2025",
     credentialId: "62010 2514 0005487 2025",
-    serialNumber: "14371590",
-    regNumber: "TIK.1241.04242 2025",
     verificationUrl: "https://bnsp.go.id",
     pdfUrl: "certificates/bnsp-analis-program.pdf",
     images: [
-      "certificates/images/bnsp-analis-program-1.png",
-      "certificates/images/bnsp-analis-program-2.png"
+      "certificates/images/bnsp-analis-program-1.webp",
+      "certificates/images/bnsp-analis-program-2.webp"
     ],
-    imageUrl: "certificates/images/bnsp-analis-program-1.png",
-    pageCount: 2,
+    imageUrl: "certificates/images/bnsp-analis-program-1.webp",
     description: "Sertifikasi Kompetensi Nasional resmi dari Badan Nasional Sertifikasi Profesi (BNSP) bidang Pengembang Perangkat Lunak (Software Development) kualifikasi Analis Program (Program Analyst). Memvalidasi 10 unit kompetensi standar industri mencakup analisis skalabilitas perangkat lunak, SQL, akses basis data, implementasi algoritma pemrograman, dokumentasi kode, debugging, profiling, code review, pengujian unit, dan pengujian integrasi program.",
     skillsGained: [
       "Analisis Skalabilitas",
@@ -178,9 +165,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "2502NA6383",
     verificationUrl: "https://mikrotik.com/certificates",
     pdfUrl: "certificates/mikrotik-mtcna-2025.pdf",
-    images: ["certificates/images/mikrotik-mtcna-2025.png"],
-    imageUrl: "certificates/images/mikrotik-mtcna-2025.png",
-    pageCount: 1,
+    images: ["certificates/images/mikrotik-mtcna-2025.webp"],
+    imageUrl: "certificates/images/mikrotik-mtcna-2025.webp",
     description: "Sertifikasi internasional resmi MikroTik Network Associate yang memvalidasi kompetensi konfigurasi jaringan, routing, firewall security, bandwidth management, wireless networking, dan tunnel interface.",
     skillsGained: ["MikroTik RouterOS", "Network Routing", "Firewall & Security", "Bandwidth Queues", "Wireless & Tunnels"]
   },
@@ -196,9 +182,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "CISCO-OPENEDG-PCAP-2024",
     verificationUrl: "https://www.netacad.com",
     pdfUrl: "certificates/python-essentials-pcap-cisco.pdf",
-    images: ["certificates/images/python-essentials-pcap-cisco.png"],
-    imageUrl: "certificates/images/python-essentials-pcap-cisco.png",
-    pageCount: 1,
+    images: ["certificates/images/python-essentials-pcap-cisco.webp"],
+    imageUrl: "certificates/images/python-essentials-pcap-cisco.webp",
     description: "Penguasaan konsep universal pemrograman, sintaks & semantik Python 3, manipulasi struktur data dan algoritma, penanganan eksepsi, pemrograman berorientasi objek (OOP), pemrosesan teks dan berkas biner, serta generator dan closures.",
     skillsGained: ["Python 3", "Data Structures", "Algorithms", "OOP", "File Processing", "Generators & Closures"]
   },
@@ -214,9 +199,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "UBSI-FTI-CC-BC-2024",
     verificationUrl: "https://www.bsi.ac.id",
     pdfUrl: "certificates/seminar-cloud-computing-blockchain-ubsi.pdf",
-    images: ["certificates/images/seminar-cloud-computing-blockchain-ubsi.png"],
-    imageUrl: "certificates/images/seminar-cloud-computing-blockchain-ubsi.png",
-    pageCount: 1,
+    images: ["certificates/images/seminar-cloud-computing-blockchain-ubsi.webp"],
+    imageUrl: "certificates/images/seminar-cloud-computing-blockchain-ubsi.webp",
     description: "Pemahaman arsitektur komputasi awan modern (Cloud Computing Infrastructure), desentralisasi sistem Blockchain, konsensus terdistribusi, dan implementasi teknologi awan pada skala industri.",
     skillsGained: ["Cloud Computing", "Blockchain Architecture", "Distributed Systems", "Cloud Infrastructure"]
   },
@@ -232,9 +216,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "UBSI-BOOTCAMP-SDNS-2024",
     verificationUrl: "https://www.bsi.ac.id",
     pdfUrl: "certificates/bootcamp-software-dev-network-security.pdf",
-    images: ["certificates/images/bootcamp-software-dev-network-security.png"],
-    imageUrl: "certificates/images/bootcamp-software-dev-network-security.png",
-    pageCount: 1,
+    images: ["certificates/images/bootcamp-software-dev-network-security.webp"],
+    imageUrl: "certificates/images/bootcamp-software-dev-network-security.webp",
     description: "Pelatihan intensif (Workshop 2.5 jam, Project 7 jam, Presentasi 3 jam) mengenai rekayasa perangkat lunak terintegrasi, mitigasi kerentanan keamanan jaringan, serta penyusunan dan presentasi proyek teknis.",
     skillsGained: ["Software Development", "Network Security", "Project Execution", "Technical Presentation"]
   },
@@ -250,9 +233,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "UBSI-FTI-CCS-2023",
     verificationUrl: "https://www.bsi.ac.id",
     pdfUrl: "certificates/seminar-cloud-computing-specialist.pdf",
-    images: ["certificates/images/seminar-cloud-computing-specialist.png"],
-    imageUrl: "certificates/images/seminar-cloud-computing-specialist.png",
-    pageCount: 1,
+    images: ["certificates/images/seminar-cloud-computing-specialist.webp"],
+    imageUrl: "certificates/images/seminar-cloud-computing-specialist.webp",
     description: "Pendalaman jalur spesialisasi komputasi awan, perencanaan infrastruktur server scalable, deployment aplikasi, serta standar kompetensi cloud engineer di industri.",
     skillsGained: ["Cloud Specialist Roadmap", "Server Infrastructure", "Scalability", "DevOps Fundamentals"]
   },
@@ -269,11 +251,10 @@ export const CERTIFICATES_DATA = [
     verificationUrl: "https://digitalent.kominfo.go.id",
     pdfUrl: "certificates/google-profil-bisnis-ecommerce-kominfo.pdf",
     images: [
-      "certificates/images/google-profil-bisnis-ecommerce-kominfo-1.png",
-      "certificates/images/google-profil-bisnis-ecommerce-kominfo-2.png"
+      "certificates/images/google-profil-bisnis-ecommerce-kominfo-1.webp",
+      "certificates/images/google-profil-bisnis-ecommerce-kominfo-2.webp"
     ],
-    imageUrl: "certificates/images/google-profil-bisnis-ecommerce-kominfo-1.png",
-    pageCount: 2,
+    imageUrl: "certificates/images/google-profil-bisnis-ecommerce-kominfo-1.webp",
     description: "Pelatihan resmi standardisasi digital presence, optimasi Google Business profile, integrasi platform e-commerce, dan strategi visibilitas digital (Sertifikat & Transkrip Materi).",
     skillsGained: ["Digital Presence", "Google Business Profile", "E-Commerce Integration", "SEO Basics"]
   },
@@ -289,9 +270,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "UBSI-HIMASI-TAILWIND-2023",
     verificationUrl: "https://www.bsi.ac.id",
     pdfUrl: "certificates/workshop-slicing-ui-tailwind.pdf",
-    images: ["certificates/images/workshop-slicing-ui-tailwind.png"],
-    imageUrl: "certificates/images/workshop-slicing-ui-tailwind.png",
-    pageCount: 1,
+    images: ["certificates/images/workshop-slicing-ui-tailwind.webp"],
+    imageUrl: "certificates/images/workshop-slicing-ui-tailwind.webp",
     description: "Praktek pembuatan antarmuka pengguna responsif (UI Slicing), implementasi utility-first CSS, standardisasi layout modern, dan transisi elemen antarmuka.",
     skillsGained: ["UI Slicing", "Tailwind CSS", "Responsive Layouts", "Modern Frontend"]
   },
@@ -307,9 +287,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "HARISENIN-SIMK-FSW-2023",
     verificationUrl: "https://harisenin.com",
     pdfUrl: "certificates/simulasi-kerja-fullstack-harisenin.pdf",
-    images: ["certificates/images/simulasi-kerja-fullstack-harisenin.png"],
-    imageUrl: "certificates/images/simulasi-kerja-fullstack-harisenin.png",
-    pageCount: 1,
+    images: ["certificates/images/simulasi-kerja-fullstack-harisenin.webp"],
+    imageUrl: "certificates/images/simulasi-kerja-fullstack-harisenin.webp",
     description: "Simulasi kerja intensif peran Full-Stack Web Developer, arsitektur client-server, kolaborasi git workflow, dan implementasi endpoint API terstruktur.",
     skillsGained: ["Full-Stack Workflow", "Client-Server Architecture", "Git Collaboration", "Web APIs"]
   },
@@ -325,9 +304,8 @@ export const CERTIFICATES_DATA = [
     credentialId: "HARISENIN-CC-JS-2023",
     verificationUrl: "https://harisenin.com",
     pdfUrl: "certificates/coding-camp-javascript-harisenin.pdf",
-    images: ["certificates/images/coding-camp-javascript-harisenin.png"],
-    imageUrl: "certificates/images/coding-camp-javascript-harisenin.png",
-    pageCount: 1,
+    images: ["certificates/images/coding-camp-javascript-harisenin.webp"],
+    imageUrl: "certificates/images/coding-camp-javascript-harisenin.webp",
     description: "Dasar-dasar logika pemrograman JavaScript, manipulasi DOM interaktif, penanganan event peramban, dan asynchronous JavaScript.",
     skillsGained: ["JavaScript Fundamentals", "DOM Manipulation", "Event Handling", "Async JS"]
   }

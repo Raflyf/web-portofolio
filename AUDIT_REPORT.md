@@ -221,3 +221,44 @@ Build verify: `node --check` OK untuk 5 file JS. Live verify post-fix (http://lo
 *Evidence artefak:* `git diff --stat` 11 file 316+/97-; `node --check` 5 file OK; live `http://localhost:3877/index.html` computed-style & functional test lolos; `git status --short` bersih pre-audit.
 
 *Aturan kepatuhan:* Seluruh edit presisi bedah (context-bound, surgical), verifikasi sebelum asersi, update dokumentasi & push sebagai restore point (AGENTS.md §6), nol emoji, nol basa-basi.
+
+
+---
+
+# RESOLVED — v10.544.0 Audit Fix Release
+
+Diterbitkan 2026-08-31, baseline `checkpoint-pre-audit-fix` (`4ed3019`). Seluruh item audit berikut dari laporan v10.516.0 dituntaskan pada rilis ini. Item yang tidak tersentuh tetap tercantum dan ditandai **STILL OPEN**.
+
+## Checklist resolusi (referensi item §10 / §11 laporan asli)
+
+- [x] **§2 CRITICAL — aksi AI mati total** (item 1): `portfolioAgent` phantom dihapus; seluruh pemanggilan ditulis ulang ke `executeAction` + `try/catch` pada perintah. **RESOLVED** (objek portfolioAgent lama dibuang total).
+- [x] **§2 HIGH — cabang fail-open di admin-otp** (item 16 `update_pin`): `update_pin` kini mengirim `current_pin_hash` yang benar dan fail-closed. **RESOLVED**.
+- [x] **§2 MEDIUM — retry loop tak berbatas** (item 18 `bg-morph-canvas.js:34`): diganti lazy-inject Three.js dengan gate `prefers-reduced-motion`. **RESOLVED** (superset dari cap-50 v10.516.0).
+- [x] **§2 MEDIUM — dead code `delta`** (item 20): dihapus. **RESOLVED**.
+- [x] **§3 UI — unifikasi glass token** (item 7-10): sticky header beralih dari `backdrop-filter: blur()` ke background near-opaque; `.stats-strip`, `.project-card-link`, `.scroll-progress-bar` (duplikat) dihapus. **RESOLVED**.
+- [x] **§4 CRITICAL — hardcoded secret & plaintext PIN** (item 11): `DEFAULT_PIN_HASH` dihapus; `admin_auth_config` tidak lagi memiliki policy anon apa pun; seed memakai `ON CONFLICT DO NOTHING` (tidak me-reset PIN). **RESOLVED** (arsitektural, bukan hanya komentar).
+- [x] **§4 CRITICAL — OTP brute-force tanpa limiter** (item 12-13): limiter OTP dipersistenkan di DB (`otp_attempts`/`otp_blocked_until`), bukan lagi cache in-memory. **RESOLVED**.
+- [x] **§4 CRITICAL — `reset_lockout` tanpa auth** (item 14): kini wajib bukti PIN (`current_pin_hash`) + memanggil API. **RESOLVED**.
+- [x] **§4 CRITICAL — anon SELECT mengekspos hash** (debt P1 §11): semua policy anon pada `admin_auth_config` dicabut; write pindah ke `SUPABASE_SERVICE_ROLE_KEY`; dashboard tidak lagi mengakses tabel secara langsung (eksklusif via `/api/admin-otp`). **RESOLVED**.
+- [x] **§4 HIGH — CORS echo origin** (item 17): allowlist + `Vary: Origin` sudah ada sejak v10.516.0; `ALLOWED_ORIGIN` kini didokumentasikan di `.env.example`. **RESOLVED**.
+- [x] **§4 HIGH — XSS via innerHTML** (item 2-3): dipertahankan & diverifikasi. **RESOLVED** (sejak v10.516.0).
+- [x] **§6 env fallback hardcode** (debt §11 P2): `.env.example` kini mencantumkan seluruh env var (termasuk `SUPABASE_SERVICE_ROLE_KEY`, `AI_KEYS`, `EMAILJS_*`, `RESEND_API_KEY`, `ALLOWED_ORIGIN`). **RESOLVED** (dokumentasi; sentralisasi modul config tetap note).
+- [x] **§7 double-fetch font** (item 21-22): sudah dihapus sejak v10.516.0. **RESOLVED**.
+- [x] **§7 WebGL reduced-motion** (item 19): `prefers-reduced-motion` kini benar-benar dihormati (lazy-inject; kontras dengan override v10.517.0 yang dibatalkan rilis ini). **RESOLVED**.
+- [x] **§7 cache-busting manual** (item 24): disatukan ke `10.544.0` — sekaligus membunuh double telemetry singleton. **RESOLVED**.
+- [x] **§7 minor debt batching telemetri** (debt §11 P2): polling dashboard kini delta-render + `requestIdleCallback`. **RESOLVED** (pendekatan sisi-dashboard; batch sisi-send tetap note).
+- [x] **§9 ngrok URL hardcode** (debt §11 P2): URL tunnel dipindah ke env / konfigurasi; default `OMNIROUTE_KEY` diperbaiki sehingga panduan no-keys aktif. **RESOLVED**.
+- [x] **§5/§8 sisanya**: `prefers-reduced-motion` WCAG dihormati; hero clock + carousel pause saat tab hidden. **RESOLVED**.
+
+### Aset & performa (di luar item audit asli, dituntaskan rilis ini)
+- Sertifikat PNG → WebP: 47.5MB → 1.8MB (−96%).
+- `Cache-Control: immutable` di `vercel.json` + `netlify.toml`.
+- Three.js lazy-inject gate motion; PDF.js lazy-load saat attach pertama; ~600+ baris dead code dihapus (`fetchSseWithEarlyReturn`, cabang stealth/ox-alpha, 4 method mati `terminal-ai.js`, entri local-semantic, field `data.js` tak terpakai, CSS mati, duplikasi inertia-wheel/smoothScrollTo dashboard).
+
+### STILL OPEN (dari laporan asli)
+- **§4 LOW — CSP `unsafe-inline`** (debt §11 P2): migrasi ke nonce/hash CSP tahap 2. **STILL OPEN**.
+- **§5 database — anon SELECT `portfolio_telemetry`/`ai_memories`**: `security definer` view + `service_role` read. **STILL OPEN**.
+- **§5 rekomendasi** — enable `pg_cron` TTL 90 hari pada `portfolio_telemetry` (note opsional sudah ada di schema). **STILL OPEN**.
+- **§6 — split `api/chat.js` 2128-baris** modul (debt §11 P3, cold-start). **STILL OPEN**.
+- **§8 a11y minor** — label/autocomplete form (pre-existing). **STILL OPEN**.
+- **§4 — migrasi `SHA-256(salt)` → `argon2id`/`bcrypt`** dengan salt acak per-row (debt §11 P1). **STILL OPEN**.

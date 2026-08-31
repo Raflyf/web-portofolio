@@ -118,30 +118,24 @@ CREATE TABLE IF NOT EXISTS public.admin_auth_config (
     locked_until TIMESTAMPTZ,
     otp_code_hash TEXT,
     otp_expires_at TIMESTAMPTZ,
+    otp_attempts INT DEFAULT 0,
+    otp_blocked_until TIMESTAMPTZ,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Seed initial master PIN hash (nilai awal; WAJIB dirotasi via dashboard setelah deploy)
+-- M10: DO NOTHING — re-running the schema must NEVER overwrite a PIN the owner already set.
 INSERT INTO public.admin_auth_config (id, pin_hash, lockout_attempts, locked_until)
 VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', 0, NULL)
-ON CONFLICT (id) DO UPDATE SET
-    pin_hash = EXCLUDED.pin_hash,
-    updated_at = timezone('utc'::text, now());
+ON CONFLICT (id) DO NOTHING;
 
 ALTER TABLE public.admin_auth_config ENABLE ROW LEVEL SECURITY;
 
--- SELECT: Allow anon to read auth state (needed for cross-browser PIN sync)
-CREATE POLICY "Allow public anonymous read admin_auth_config"
-ON public.admin_auth_config
-FOR SELECT
-TO anon
-USING (true);
-
--- INSERT: Allow anon ONLY for initial seed (handled by ON CONFLICT above)
--- UPDATE: REMOVED — anon MUST NOT update auth config directly.
--- All mutations go through /api/admin-otp serverless function which validates OTP
--- before writing. The function should use SUPABASE_SERVICE_ROLE_KEY for writes.
--- Keeping anon UPDATE would allow any visitor to: reset lockout, change pin_hash, or bypass OTP.
+-- C4 (SECURITY): NO anon policies on admin_auth_config at all.
+-- The table stores pin_hash + otp_code_hash, so anon SELECT is revoked (P1 debt).
+-- The ONLY way to read or mutate this table is via the /api/admin-otp serverless
+-- function, which authenticates with SUPABASE_SERVICE_ROLE_KEY (server-side only,
+-- never exposed to the client). No anon INSERT/UPDATE/DELETE policies exist.
 
 -- ============================================================================
 -- 7. PARTIAL INDEX: Optimize OMNIROUTE_TUNNEL lookup in ai_memories

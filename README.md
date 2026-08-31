@@ -131,6 +131,7 @@ npx vercel dev
 ## Konfigurasi Environment Variables (Vercel)
 
 Untuk mengaktifkan fitur AI Gateway dan Telemetri Analitik secara penuh di lingkungan produksi, tambahkan variabel lingkungan berikut pada dashboard Vercel (**Project Settings -> Environment Variables**):
+> **Audit Fix (v10.544.0):** `SUPABASE_SERVICE_ROLE_KEY` **wajib** diisi. Sejak rilis ini, seluruh penulisan tabel `admin_auth_config` (OTP & reset PIN) hanya dilakukan serverless function `/api/admin-otp` menggunakan service role key — tabel tidak lagi memiliki policy anon apa pun. Tanpa key ini, fitur OTP dan PIN-reset tidak berfungsi.
 
 | Nama Variabel | Deskripsi |
 |---|---|
@@ -141,6 +142,15 @@ Untuk mengaktifkan fitur AI Gateway dan Telemetri Analitik secara penuh di lingk
 | `NVIDIA_API_KEY` | Kunci API penyedia model evaluasi tambahan |
 | `MINIMAX_API_KEY` | Kunci API penyedia model multimodal/vision |
 | `OLLAMA_CLOUD_API_KEY` | Kunci API penyedia model inferensi cloud |
+| `NVIDIA_API_KEYS` | Kumpulan kunci NVIDIA NIM cadangan |
+| `AI_KEYS` | (Opsional) Daftar kunci API terpadu, dipisahkan koma/baris baru; server mengklasifikasikan otomatis per provider |
+| `SUPABASE_SERVICE_ROLE_KEY` | **WAJIB** — service role key server-side untuk tulis `admin_auth_config` (OTP/PIN-reset). Jangan pernah diekspos ke client |
+| `EMAILJS_SERVICE_ID` | Service ID EmailJS untuk notifikasi OTP |
+| `EMAILJS_TEMPLATE_ID` | Template ID EmailJS untuk notifikasi OTP |
+| `EMAILJS_PUBLIC_KEY` | Public key EmailJS untuk notifikasi OTP |
+| `EMAILJS_PRIVATE_KEY` | Private key EmailJS untuk notifikasi OTP |
+| `RESEND_API_KEY` | Kunci API Resend (alternatif pengiriman email OTP) |
+| `ALLOWED_ORIGIN` | Origin resmi yang diizinkan pada CORS allowlist (contoh `https://raflyfirmansyah-portofolio.vercel.app`) |
 | `SUPABASE_URL` | Endpoint REST project Supabase (RAG & Telemetri) |
 | `SUPABASE_ANON_KEY` | Anonymous client key Supabase dengan kebijakan RLS |
 
