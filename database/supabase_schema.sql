@@ -123,6 +123,10 @@ CREATE TABLE IF NOT EXISTS public.admin_auth_config (
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Pastikan kolom baru tersedia jika tabel sudah pernah dibuat sebelumnya
+ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS otp_attempts INT DEFAULT 0;
+ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS otp_blocked_until TIMESTAMPTZ;
+
 -- Seed initial master PIN hash (nilai awal; WAJIB dirotasi via dashboard setelah deploy)
 -- M10: DO NOTHING — re-running the schema must NEVER overwrite a PIN the owner already set.
 INSERT INTO public.admin_auth_config (id, pin_hash, lockout_attempts, locked_until)
