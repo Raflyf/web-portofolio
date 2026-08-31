@@ -85,6 +85,29 @@ class DashboardApp {
     this.initBackToTopButton();
   }
 
+  showToast(message, type = 'success', duration = 4000) {
+    const toast = document.getElementById('dash-toast');
+    if (!toast) return;
+
+    let iconSvg = '';
+    if (type === 'success') {
+      iconSvg = `<svg class="dash-toast-icon text-emerald" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+    } else if (type === 'error') {
+      iconSvg = `<svg class="dash-toast-icon text-rose" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+    } else {
+      iconSvg = `<svg class="dash-toast-icon text-cyan" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+    }
+
+    toast.className = `dash-toast toast--${type}`;
+    toast.innerHTML = `${iconSvg}<span class="dash-toast-msg">${message}</span>`;
+    toast.classList.add('is-visible');
+
+    if (this._toastTimer) clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => {
+      toast.classList.remove('is-visible');
+    }, duration);
+  }
+
   // =========================================================================
   // 1. THEME CONTROLLER (Full HorizonX Dark & Light Synchronization)
   // =========================================================================
@@ -558,10 +581,14 @@ class DashboardApp {
             closeModal();
             const overlay = document.getElementById('pin-gateway');
             if (overlay) overlay.style.display = 'none';
+            document.documentElement.classList.add('is-admin-authenticated');
+            this.initScrollReveal();
+            this.initInertiaSmoothWheel();
+            this.checkOmniRouteRealtimeStatus();
             this.loadDashboardData();
             this.startRealtimePolling();
             this.refreshScrollReveal();
-            alert('Master PIN berhasil direset! Anda langsung masuk ke Observability Dashboard.');
+            this.showToast('Master PIN berhasil direset! Anda langsung masuk ke Observability Dashboard.', 'success');
           } else {
             throw new Error(data.message || 'Kode OTP tidak valid atau kadaluwarsa.');
           }
@@ -2168,7 +2195,7 @@ class DashboardApp {
         e.preventDefault();
         const newPin = document.getElementById('new-pin-input').value.trim();
         if (newPin.length < 4 || newPin.length > 8) {
-          alert('Master PIN harus terdiri dari 4-8 digit.');
+          this.showToast('Master PIN harus terdiri dari 4-8 digit.', 'error');
           return;
         }
         // M7: capture the CURRENT hash BEFORE computing the new one — otherwise the
@@ -2195,7 +2222,7 @@ class DashboardApp {
         // path and it authenticates with SUPABASE_SERVICE_ROLE_KEY server-side.
 
         changePinModal.classList.remove('is-open');
-        alert('Master PIN berhasil diperbarui dan disinkronkan ke Supabase Cloud.');
+        this.showToast('Master PIN berhasil diperbarui dan disinkronkan ke Supabase Cloud.', 'success');
       });
     }
 
@@ -2238,7 +2265,7 @@ class DashboardApp {
   exportCSV() {
     const data = this.filterByRange(this.events, this.tableRange);
     if (!data || data.length === 0) {
-      alert('Tidak ada data untuk diekspor.');
+      this.showToast('Tidak ada data untuk diekspor.', 'info');
       return;
     }
     const headers = ['created_at', 'event_type', 'event_target', 'event_label', 'device_type', 'session_id', 'referrer'];
@@ -2256,7 +2283,7 @@ class DashboardApp {
   exportJSON() {
     const data = this.filterByRange(this.events, this.tableRange);
     if (!data || data.length === 0) {
-      alert('Tidak ada data untuk diekspor.');
+      this.showToast('Tidak ada data untuk diekspor.', 'info');
       return;
     }
     const jsonStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data, null, 2));
