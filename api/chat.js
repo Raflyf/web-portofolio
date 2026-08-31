@@ -1390,6 +1390,8 @@ Langkah yang WAJIB Anda lakukan:
     // PROVIDER CALLER WRAPPERS
     // ========================================================================
 
+    const isSpecificManual = !!(model && model !== 'auto' && model !== 'default' && model !== 'cascade');
+
     async function callOpenRouter(mName, tOut = 45000) {
       if (OPENROUTER_KEYS.length === 0) return null;
       const stepDeadline = Date.now() + tOut;
@@ -1397,14 +1399,14 @@ Langkah yang WAJIB Anda lakukan:
       // Filter out temporarily rate-limited keys and load-balance across active keys
       let activeKeys = OPENROUTER_KEYS.filter(k => !rateLimitedKeyCache.has(k) || rateLimitedKeyCache.get(k) < now);
       if (activeKeys.length === 0) activeKeys = OPENROUTER_KEYS; // Fallback if all are marked
-      const keysToTry = [...activeKeys].sort(() => Math.random() - 0.5);
+      const keysToTry = isSpecificManual ? [...activeKeys].sort(() => Math.random() - 0.5) : [...activeKeys].sort(() => Math.random() - 0.5).slice(0, 2);
 
       const formattedMessages = openRouterMessages;
 
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, 45000);
+        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 12000);
 
         try {
           const isReasoningModel = mName.toLowerCase().includes('reasoning') || mName.toLowerCase().includes('r1') || mName.toLowerCase().includes('thinking') || mName.toLowerCase().includes('qwq');
@@ -1430,6 +1432,7 @@ Langkah yang WAJIB Anda lakukan:
           if (res.ok) {
             if (res.data?.error) {
               providerErrors.push(`OpenRouter ${mName}: ${res.data.error.message || 'Error'}`);
+              if (!isSpecificManual) break; // Model error, advance cascade
               continue;
             }
             const msg = res.data?.choices?.[0]?.message;
@@ -1448,10 +1451,14 @@ Langkah yang WAJIB Anda lakukan:
             continue;
           } else {
             providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            if (!isSpecificManual) break; // Server/model issue, advance cascade
             continue;
           }
         } catch (err) {
           providerErrors.push(`OpenRouter ${mName} [Key #${OPENROUTER_KEYS.indexOf(orKey) + 1}]: ${err.message}`);
+          if (!isSpecificManual && (err.name === 'AbortError' || err.message.includes('Timeout') || err.message.includes('abort'))) {
+            break; // Timed out on this model, advance immediately to next model in cascade
+          }
           continue;
         }
       }
@@ -1462,12 +1469,12 @@ Langkah yang WAJIB Anda lakukan:
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
       const stepDeadline = Date.now() + tOut;
-      const keysToTry = [...OPENCODE_KEYS].sort(() => Math.random() - 0.5);
+      const keysToTry = isSpecificManual ? [...OPENCODE_KEYS].sort(() => Math.random() - 0.5) : [...OPENCODE_KEYS].sort(() => Math.random() - 0.5).slice(0, 2);
 
       for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, 45000);
+        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 12000);
 
         try {
           const isLightning = cleanModelName.toLowerCase().includes('lightning');
@@ -1497,10 +1504,14 @@ Langkah yang WAJIB Anda lakukan:
             }
           } else {
             providerErrors.push(`OpenCode Zen ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            if (!isSpecificManual) break;
             continue;
           }
         } catch (err) {
           providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(opKey) + 1}]: ${err.message}`);
+          if (!isSpecificManual && (err.name === 'AbortError' || err.message.includes('Timeout') || err.message.includes('abort'))) {
+            break;
+          }
           continue;
         }
       }
@@ -1736,11 +1747,11 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 }
           ];
         }
-        if (t === 'x-preview' || t.includes('preview')) {
+        if (t === 'opencode-laguna' || t.includes('laguna')) {
           return [
-            { provider: 'opencode', model: 'x-preview-f-free', timeout: 45000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 }
+            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 }
           ];
         }
         if (t === 'mimo' || t.includes('mimo')) {
@@ -1787,10 +1798,11 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'ollama', model: 'minimax-m3', timeout: 45000 }
           ];
         }
-        if (t.includes('laguna')) {
+        if (t === 'cohere-code' || t.includes('cohere') || t.includes('north-mini')) {
           return [
-            { provider: 'openrouter', model: 'poolside/laguna-xs-2.1:free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 }
+            { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 45000 },
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
+            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 }
           ];
         }
         if (t.includes('codex') || t.includes('coding')) {
@@ -1798,7 +1810,7 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
             { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
+            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 },
             { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
           ];
         }
@@ -1833,23 +1845,19 @@ Langkah yang WAJIB Anda lakukan:
         { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: baseTimeout },
 
         // === TIER 2: MODEL AKTIF TERVERIFIKASI CEPAT & HIGH CAPACITY (BACKUP) ===
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: baseTimeout },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: baseTimeout },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: baseTimeout },
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: baseTimeout },
         { provider: 'opencode', model: 'mimo-v2.5-free', timeout: baseTimeout },
         { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'poolside/laguna-xs-2.1:free', timeout: baseTimeout },
         { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: baseTimeout },
         { provider: 'openrouter', model: 'openrouter/free', timeout: baseTimeout },
         { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: baseTimeout },
         { provider: 'ollama', model: 'nemotron-3-super', timeout: baseTimeout },
-        { provider: 'minimax', model: 'abab6.5s-chat', timeout: 15000 },
-        { provider: 'minimax', model: 'MiniMax-Text-01', timeout: 15000 },
-
-        // === TIER 3: RATE-LIMITED FALLBACKS ===
-        { provider: 'ollama', model: 'minimax-m3', timeout: baseTimeout },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
         { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: baseTimeout },
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: baseTimeout }
+        { provider: 'ollama', model: 'minimax-m3', timeout: baseTimeout }
       ];
     }
 
