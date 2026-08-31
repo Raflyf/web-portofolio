@@ -46,9 +46,9 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700&display=swap">
 
   <!-- Stylesheets (Cache-Busting for Instant CDN Refresh) -->
-  <link rel="stylesheet" href="css/style.css?v=10.560.0">
-  <link rel="stylesheet" href="css/components.css?v=10.560.0">
-  <link rel="stylesheet" href="css/horizonx.css?v=10.560.0">
+  <link rel="stylesheet" href="css/style.css?v=10.580.0">
+  <link rel="stylesheet" href="css/components.css?v=10.580.0">
+  <link rel="stylesheet" href="css/horizonx.css?v=10.580.0">
 
   <!-- JSON-LD Structured Data Schema (Google Site Name & Person Schema) -->
   <script type="application/ld+json">
@@ -799,6 +799,9 @@
             <!-- Hidden File Input for Image/PDF/Text Upload -->
             <input type="file" id="terminal-file-input" accept="image/*,application/pdf,text/*,.txt,.csv,.json,.md,.py,.js,.html,.css,.sql,.ts,.jsx,.tsx" style="display:none;" aria-hidden="true">
 
+            <!-- Interactive Slash Commands Suggestion Popup -->
+            <div id="terminal-slash-menu" class="terminal-slash-menu" style="display:none;" role="listbox" aria-label="Pilihan Perintah Slash Terminal"></div>
+
             <form id="terminal-form" class="terminal-input-row">
               <span class="terminal-prompt" aria-hidden="true">rafly@lab:~$</span>
               <button type="button" id="terminal-attach-btn" class="terminal-attach-btn" title="Unggah Gambar, PDF, atau Dokumen" aria-label="Unggah Gambar, PDF, atau Dokumen">
@@ -992,6 +995,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busting for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=10.571.0"></script>
+  <script type="module" src="js/main.js?v=10.580.0"></script>
 </body>
 </html>

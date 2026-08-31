@@ -1014,6 +1014,14 @@ export function initTerminal() {
       createNewConvo();
       return [];
     },
+    cls: () => {
+      terminalBody.innerHTML = '';
+      if (terminalAI && typeof terminalAI.clearHistory === 'function') {
+        terminalAI.clearHistory();
+      }
+      renderWelcomeMessage();
+      return [];
+    },
     clear: () => {
       terminalBody.innerHTML = '';
       if (terminalAI && typeof terminalAI.clearHistory === 'function') {
@@ -1021,7 +1029,13 @@ export function initTerminal() {
       }
       renderWelcomeMessage();
       return [];
-    }
+    },
+    setkey: () => [
+      "[PENGATURAN API KEY PRIBADI]",
+      "Format: 'setkey <kunci_api>' atau 'setkey <provider> <kunci_api>'",
+      "Contoh: setkey openrouter sk-or-v1-xxxxxxxxxxxx",
+      "Kunci disimpan aman secara lokal di LocalStorage browser ini."
+    ]
   };
 
   /**
@@ -1586,14 +1600,17 @@ export function initTerminal() {
     attachedFiles = [];
     renderFileTray();
 
-    const cmdLower = trimmed.toLowerCase();
+    hideSlashMenu();
 
-    // Built-in single keyword CLI commands (e.g. skills, projects, clear)
-    if (currentAttachments.length === 0 && COMMAND_REGISTRY[cmdLower]) {
-      telemetry.logEvent('terminal_cmd', cmdLower, `Perintah Terminal: ${cmdLower}`);
+    const cmdLower = trimmed.toLowerCase();
+    const cmdNormalized = cmdLower.startsWith('/') ? cmdLower.slice(1).trim() : cmdLower;
+
+    // Built-in single keyword CLI commands (e.g. skills, /skills, projects, /projects, clear, /clear, help, /help)
+    if (currentAttachments.length === 0 && COMMAND_REGISTRY[cmdNormalized]) {
+      telemetry.logEvent('terminal_cmd', cmdNormalized, `Perintah Terminal: ${cmdNormalized}`);
       const aiContainer = createAIBubbleContainer('System Engine');
       try {
-        const outputLines = COMMAND_REGISTRY[cmdLower]();
+        const outputLines = COMMAND_REGISTRY[cmdNormalized]();
         outputLines.forEach(line => appendLine(line, false, '', false, aiContainer));
       } catch (cmdErr) {
         console.warn('Terminal command error:', cmdErr);
@@ -1605,7 +1622,7 @@ export function initTerminal() {
     // Direct Web Agent Command Triggers (natural-language aliases for [ACTION:...] tags)
     if (currentAttachments.length === 0 && window.portfolioAgent) {
       try {
-        if (/^(buka\s+github|open\s+github|github\s+rafly|link\s+github)$/i.test(cmdLower)) {
+        if (/^(buka\s+github|open\s+github|github\s+rafly|link\s+github)$/i.test(cmdNormalized)) {
           const aiContainer = createAIBubbleContainer('Web Interaction Agent');
           const ok = window.portfolioAgent.executeAction('OPEN_GITHUB', { repo: '' });
           appendLine(ok
@@ -1613,26 +1630,26 @@ export function initTerminal() {
             : `⚡ [Aksi Web Gagal]: Tidak dapat membuka GitHub`, false, '', false, aiContainer);
           return;
         }
-        if (/^(ganti\s+tema|ubah\s+tema|toggle\s+theme|mode\s+gelap|mode\s+terang)$/i.test(cmdLower)) {
+        if (/^(ganti\s+tema|ubah\s+tema|toggle\s+theme|mode\s+gelap|mode\s+terang)$/i.test(cmdNormalized)) {
           const aiContainer = createAIBubbleContainer('Web Interaction Agent');
           const ok = window.portfolioAgent.executeAction('TOGGLE_THEME', {});
           appendLine(`⚡ [Aksi Web Terlaksana]: ${ok ? 'Tema berhasil diganti.' : 'Gagal mengganti tema.'}`, false, '', false, aiContainer);
           return;
         }
-        if (/^(salin\s+email|copy\s+email)$/i.test(cmdLower)) {
+        if (/^(salin\s+email|copy\s+email)$/i.test(cmdNormalized)) {
           const aiContainer = createAIBubbleContainer('Web Interaction Agent');
           const ok = window.portfolioAgent.executeAction('COPY_EMAIL', {});
           appendLine(`⚡ [Aksi Web Terlaksana]: ${ok ? 'Email berhasil disalin ke clipboard.' : 'Gagal menyalin email.'}`, false, '', false, aiContainer);
           return;
         }
-        const openProjMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:proyek|project|repo)\s+(.+)$/i);
+        const openProjMatch = cmdNormalized.match(/^(?:buka|open|lihat|tampilkan)\s+(?:proyek|project|repo)\s+(.+)$/i);
         if (openProjMatch && openProjMatch[1]) {
           const aiContainer = createAIBubbleContainer('Web Interaction Agent');
           const ok = window.portfolioAgent.executeAction('OPEN_PROJECT', { title: openProjMatch[1] });
           appendLine(`⚡ [Aksi Web Terlaksana]: ${ok ? `Membuka detail proyek: ${openProjMatch[1]}` : `Tidak menemukan proyek: ${openProjMatch[1]}`}`, false, '', false, aiContainer);
           return;
         }
-        const openCertMatch = cmdLower.match(/^(?:buka|open|lihat|tampilkan)\s+(?:sertifikat|sertif|cert|kredensial)\s+(.+)$/i);
+        const openCertMatch = cmdNormalized.match(/^(?:buka|open|lihat|tampilkan)\s+(?:sertifikat|sertif|cert|kredensial)\s+(.+)$/i);
         if (openCertMatch && openCertMatch[1]) {
           const aiContainer = createAIBubbleContainer('Web Interaction Agent');
           const ok = window.portfolioAgent.executeAction('OPEN_CERTIFICATE', { title: openCertMatch[1] });
@@ -1647,18 +1664,18 @@ export function initTerminal() {
       }
     }
 
-    // Command: models
-    if (cmdLower === 'models') {
+    // Command: models or /models
+    if (cmdNormalized === 'models') {
       const aiContainer = createAIBubbleContainer('AI Models Registry');
       COMMAND_REGISTRY.models().forEach(line => appendLine(line, false, '', false, aiContainer));
       return;
     }
 
     // Command: model <name> or /model <name> (Strict CLI command parsing)
-    if (cmdLower === 'model' || cmdLower.startsWith('/model ') || cmdLower.startsWith('model ')) {
-      const isNaturalQuestion = /\b(apa|ini|kamu|yang|gimana|kenapa|mengapa|bagaimana|dipakai|aktif|saat ini|terpasang|\?)\b/i.test(cmdLower);
+    if (cmdNormalized === 'model' || cmdNormalized.startsWith('model ')) {
+      const isNaturalQuestion = /\b(apa|ini|kamu|yang|gimana|kenapa|mengapa|bagaimana|dipakai|aktif|saat ini|terpasang|\?)\b/i.test(cmdNormalized);
       if (!isNaturalQuestion) {
-        const parts = trimmed.split(/\s+/);
+        const parts = trimmed.replace(/^\//, '').split(/\s+/);
         const chosen = parts.slice(1).join(' ').trim();
         if (!chosen || chosen.toLowerCase() === 'list') {
           const aiContainer = createAIBubbleContainer('AI Models Registry');
@@ -1684,16 +1701,16 @@ export function initTerminal() {
       }
     }
 
-    // Command: setkey <key> or setkey <provider> <key>
-    if (cmdLower.startsWith('setkey ')) {
-      const parts = trimmed.split(/\s+/);
+    // Command: setkey <key> or setkey <provider> <key> or /setkey ...
+    if (cmdNormalized.startsWith('setkey ') || cmdNormalized === 'setkey') {
+      const parts = trimmed.replace(/^\//, '').split(/\s+/);
       let output;
       if (parts.length === 2) {
         output = terminalAI.setKey(parts[1]);
       } else if (parts.length >= 3) {
         output = terminalAI.setKey(parts[1], parts.slice(2).join(' '));
       } else {
-        output = ["Format: setkey <api-key> atau setkey <provider> <api-key>"];
+        output = COMMAND_REGISTRY.setkey();
       }
       const aiContainer = createAIBubbleContainer('Security Key Manager');
       output.forEach(line => appendLine(line, false, '', false, aiContainer));
@@ -1796,17 +1813,156 @@ export function initTerminal() {
     }
   }
 
+  // =========================================================================
+  // Interactive Slash Commands (/help, /skills, /projects, /models, etc.)
+  // =========================================================================
+  const slashMenu = document.getElementById('terminal-slash-menu');
+  let slashSelectedIndex = 0;
+  let filteredSlashCommands = [];
+
+  const SLASH_COMMANDS = [
+    { cmd: '/help', title: 'Panduan & Bantuan', desc: 'Daftar lengkap seluruh perintah CLI & fitur interaktif' },
+    { cmd: '/skills', title: 'Matriks Keahlian', desc: 'Teknologi AI/ML, NLP, Vision, Backend & Jaringan' },
+    { cmd: '/projects', title: 'Daftar Proyek', desc: 'Riset GitHub & repositori open-source unggulan' },
+    { cmd: '/certifs', title: 'Sertifikasi', desc: '10 Sertifikat terverifikasi (BNSP, MikroTik, Cisco)' },
+    { cmd: '/models', title: 'Katalog Model AI', desc: 'Daftar provider & model AI aktif' },
+    { cmd: '/benchmarks', title: 'Benchmark Riset ML', desc: 'Metrik akurasi deteksi plagiarisme & spam' },
+    { cmd: '/aistatus', title: 'Status Gateway AI', desc: 'Cek konektivitas live provider AI & latensi' },
+    { cmd: '/about', title: 'Tentang Pengembang', desc: 'Profil akademik, fokus riset & bio Rafly' },
+    { cmd: '/contact', title: 'Kontak Resmi', desc: 'Email, LinkedIn, WhatsApp & repositori resmi' },
+    { cmd: '/clear', title: 'Bersihkan Layar', desc: 'Hapus riwayat tampilan chat terminal' },
+    { cmd: '/new', title: 'Sesi Obrolan Baru', desc: 'Mulai sesi percakapan baru yang bersih' },
+    { cmd: '/history', title: 'Riwayat Percakapan', desc: 'Buka modal riwayat sesi chat sebelumnya' },
+    { cmd: '/setkey', title: 'Pasang Kunci API', desc: 'Konfigurasi API Key kustom pribadi' },
+    { cmd: '/clearkey', title: 'Hapus Kunci API', desc: 'Hapus API Key kustom dari peramban' },
+    { cmd: '/telemetry', title: 'Portal Analitik Admin', desc: 'Akses dashboard monitoring & logs' },
+    { cmd: '/whoami', title: 'Status Sesi Pengunjung', desc: 'Info level akses & sesi saat ini' }
+  ];
+
+  function renderSlashMenu() {
+    if (!slashMenu) return;
+    if (filteredSlashCommands.length === 0) {
+      slashMenu.style.display = 'none';
+      return;
+    }
+
+    let html = `
+      <div class="terminal-slash-header">
+        <span>Perintah Terminal Tersedia (${filteredSlashCommands.length})</span>
+        <span class="slash-hint">↑↓ navigasi • Enter/Tab pilih • Esc tutup</span>
+      </div>
+    `;
+
+    filteredSlashCommands.forEach((item, idx) => {
+      const isActive = idx === slashSelectedIndex;
+      html += `
+        <div class="terminal-slash-item ${isActive ? 'active' : ''}" data-index="${idx}" data-cmd="${item.cmd}" role="option" aria-selected="${isActive}">
+          <div class="terminal-slash-item-left">
+            <span class="terminal-slash-badge">${item.cmd}</span>
+            <span class="terminal-slash-title">${item.title}</span>
+          </div>
+          <span class="terminal-slash-desc">${item.desc}</span>
+        </div>
+      `;
+    });
+
+    slashMenu.innerHTML = html;
+    slashMenu.style.display = 'flex';
+
+    slashMenu.querySelectorAll('.terminal-slash-item').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const cmd = el.getAttribute('data-cmd');
+        if (cmd) {
+          selectSlashCommand(cmd);
+        }
+      });
+    });
+
+    const activeEl = slashMenu.querySelector('.terminal-slash-item.active');
+    if (activeEl) {
+      activeEl.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function hideSlashMenu() {
+    if (slashMenu) {
+      slashMenu.style.display = 'none';
+    }
+    filteredSlashCommands = [];
+    slashSelectedIndex = 0;
+  }
+
+  function selectSlashCommand(cmd) {
+    terminalInput.value = cmd;
+    hideSlashMenu();
+    terminalInput.focus();
+    executeCommand(cmd);
+  }
+
+  function handleSlashInput() {
+    const val = (terminalInput.value || '').trim();
+    if (val.startsWith('/')) {
+      const query = val.toLowerCase();
+      filteredSlashCommands = SLASH_COMMANDS.filter(s =>
+        s.cmd.startsWith(query) ||
+        s.title.toLowerCase().includes(query.slice(1)) ||
+        s.cmd.slice(1).startsWith(query.slice(1)) ||
+        s.desc.toLowerCase().includes(query.slice(1))
+      );
+      slashSelectedIndex = 0;
+      renderSlashMenu();
+    } else {
+      hideSlashMenu();
+    }
+  }
+
+  terminalInput.addEventListener('input', handleSlashInput);
+
+  document.addEventListener('click', (e) => {
+    if (slashMenu && !slashMenu.contains(e.target) && e.target !== terminalInput) {
+      hideSlashMenu();
+    }
+  });
+
   // Initial startup: Always present a clean fresh terminal while keeping previous convos safe in history
   createNewConvo(false);
 
   // Form submit listener
   terminalForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    hideSlashMenu();
     executeCommand(terminalInput.value);
   });
 
-  // History & Tab completion key handlers
+  // History, Slash Commands & Tab completion key handlers
   terminalInput.addEventListener('keydown', (e) => {
+    if (slashMenu && slashMenu.style.display !== 'none' && filteredSlashCommands.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        slashSelectedIndex = (slashSelectedIndex + 1) % filteredSlashCommands.length;
+        renderSlashMenu();
+        return;
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        slashSelectedIndex = (slashSelectedIndex - 1 + filteredSlashCommands.length) % filteredSlashCommands.length;
+        renderSlashMenu();
+        return;
+      } else if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+        e.preventDefault();
+        const chosen = filteredSlashCommands[slashSelectedIndex];
+        if (chosen) {
+          selectSlashCommand(chosen.cmd);
+        }
+        return;
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        hideSlashMenu();
+        return;
+      }
+    }
+
     if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (historyIndex > 0) {
@@ -1826,9 +1982,9 @@ export function initTerminal() {
       e.preventDefault();
       const current = terminalInput.value.trim().toLowerCase();
       if (!current) return;
-      const match = Object.keys(COMMAND_REGISTRY).find(c => c.startsWith(current));
+      const match = Object.keys(COMMAND_REGISTRY).find(c => c.startsWith(current.replace(/^\//, '')));
       if (match) {
-        terminalInput.value = match;
+        terminalInput.value = `/${match}`;
       }
     }
   });
