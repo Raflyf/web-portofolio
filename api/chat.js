@@ -907,6 +907,7 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
     process.env.MINIMAX_KEY,
     process.env.MINIMAX_KEYS,
     process.env.OLLAMA_API_KEY,
+    process.env.OLLAMA_KEYS,
     process.env.OLLAMA_KEY,
     process.env.NVIDIA_API_KEY,
     process.env.NVIDIA_KEY
@@ -1700,7 +1701,6 @@ Langkah yang WAJIB Anda lakukan:
         if (t === 'nemotron-3-nano' || t.startsWith('ollama-nano') || t.includes('nano')) {
           return [
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 }
           ];
@@ -1833,25 +1833,25 @@ Langkah yang WAJIB Anda lakukan:
       // 3rd: Nemotron Lightning dari OpenCode (Fast ~8s check)
       // Backup: Model-model aktif responsif terverifikasi
       return [
-        // === TIER 1: PRIORITAS UTAMA (SESUAI INSTRUKSI) ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 4500 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 9000 },
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 9000 },
+        // === TIER 1: PRIORITAS UTAMA (SESUAI INSTRUKSI: OLLAMA NANO -> OPENROUTER LIGHTNING -> OPENCODE LIGHTNING) ===
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 35000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 30000 },
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 30000 },
 
         // === TIER 2: MODEL AKTIF TERVERIFIKASI CEPAT & HIGH CAPACITY (BACKUP) ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 12000 },
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 10000 },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 12000 },
-        { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 12000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 12000 },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 12000 },
-        { provider: 'ollama', model: 'minimax-m3', timeout: 8000 }
+        // (Catatan: Model Omni & Mimo diisolasi khusus untuk Vision Multimodal & Deep Reasoning Thinking)
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 25000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 25000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 25000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 25000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 },
+        { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 25000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 25000 },
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 20000 },
+        { provider: 'ollama', model: 'minimax-m3', timeout: 20000 }
       ];
     }
 
