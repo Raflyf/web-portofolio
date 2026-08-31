@@ -1372,18 +1372,14 @@ Langkah yang WAJIB Anda lakukan:
       }
     }
 
-    // Maximum token limits: Expanded to eliminate cut-offs and support exhaustive reasoning & coding outputs
-    // LOW: 4,096 tokens (~17k chars) - Complete, deep answers for quick chats / trivia
-    // MEDIUM: 8,192 tokens (~34k chars) - Standard Q&A, comprehensive explanations with structured CoT
-    // HIGH: 16,384 tokens (~68k chars) - Deep research, heavy coding, full architecture synthesis
-    // THINKING: 32,768 tokens (~135k chars) - Exhaustive Chain-of-Thought reasoning & mathematical derivations
+    // Maximum token limits: Balanced for blazing fast first-token latency and complete answers
     const maxTokensConfig = (effectiveEffort === 'thinking')
-      ? 32768
+      ? 16384
       : (effectiveEffort === 'high'
-          ? 16384
+          ? 8192
           : (effectiveEffort === 'medium'
-              ? 8192
-              : (effectiveEffort === 'low' ? 4096 : 8192)));
+              ? 4096
+              : (effectiveEffort === 'low' ? 2048 : 4096)));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.35 : 0.25);
 
     // ========================================================================
@@ -1406,7 +1402,7 @@ Langkah yang WAJIB Anda lakukan:
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 12000);
+        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 18000 : 9000);
 
         try {
           const isReasoningModel = mName.toLowerCase().includes('reasoning') || mName.toLowerCase().includes('r1') || mName.toLowerCase().includes('thinking') || mName.toLowerCase().includes('qwq');
@@ -1474,7 +1470,7 @@ Langkah yang WAJIB Anda lakukan:
       for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 12000);
+        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 18000 : 9000);
 
         try {
           const isLightning = cleanModelName.toLowerCase().includes('lightning');
@@ -1832,32 +1828,30 @@ Langkah yang WAJIB Anda lakukan:
       }
 
       // 3. OVERALL GENERAL CHAT CASCADE (Urutan Permintaan Pengguna)
-      // 1st: Nemotron Nano dari Ollama
-      // 2nd: Nemotron Lightning di OpenRouter
-      // 3rd: Nemotron Lightning dari OpenCode
+      // 1st: Nemotron Nano dari Ollama (Fast 4s check)
+      // 2nd: Nemotron Lightning di OpenRouter (Ultra kilat ~1.2s)
+      // 3rd: Nemotron Lightning dari OpenCode (Fast ~8s check)
       // Backup: Model-model aktif responsif terverifikasi
-      const baseTimeout = (effectiveEffort === 'low') ? 35000 : (effectiveEffort === 'medium' ? 45000 : 55000);
-
       return [
         // === TIER 1: PRIORITAS UTAMA (SESUAI INSTRUKSI) ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: baseTimeout },
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: baseTimeout },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 4500 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 9000 },
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 9000 },
 
         // === TIER 2: MODEL AKTIF TERVERIFIKASI CEPAT & HIGH CAPACITY (BACKUP) ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: baseTimeout },
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: baseTimeout },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: baseTimeout },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: baseTimeout },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: baseTimeout },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: baseTimeout },
-        { provider: 'ollama', model: 'minimax-m3', timeout: baseTimeout }
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 12000 },
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 10000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 12000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 12000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 14000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 12000 },
+        { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 12000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 12000 },
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 15000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 12000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 12000 },
+        { provider: 'ollama', model: 'minimax-m3', timeout: 8000 }
       ];
     }
 
