@@ -380,24 +380,105 @@ function isSafePublicUrl(urlString) {
   try {
     const parsed = new URL(urlString);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
-    const host = parsed.hostname.toLowerCase();
-    
+    let host = parsed.hostname.toLowerCase().trim();
+
+    // Strip IPv6 brackets if present
+    if (host.startsWith('[') && host.endsWith(']')) {
+      host = host.slice(1, -1);
+    }
+
     // Block loopback, localhost, internal namespaces, and cloud metadata hostnames
     if (
       host === 'localhost' ||
       host.endsWith('.localhost') ||
       host.endsWith('.local') ||
-      host === '127.0.0.1' ||
-      host === '0.0.0.0' ||
-      host === '::1' ||
-      host === '169.254.169.254' ||
+      host.endsWith('.internal') ||
       host === 'metadata.google.internal' ||
-      host === 'instance-data'
+      host === 'instance-data' ||
+      host === '169.254.169.254'
     ) {
       return false;
     }
 
-    // Block private IPv4 ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16)
+    // Block IPv6 Loopback, Link-local, Unique Local, IPv4-mapped IPv6
+    if (host.includes(':')) {
+      if (host === '::1' || host === '::' || host.startsWith('fe80:') || host.startsWith('fc00:') || host.startsWith('fd00:')) {
+        return false;
+      }
+      // IPv4-mapped IPv6 like ::ffff:127.0.0.1
+      if (host.includes('ffff:')) {
+        const afterFfff = host.split('ffff:')[1] || '';
+        if (afterFfff.includes('.')) {
+          host = afterFfff; // proceed to IPv4 checks below
+        } else {
+          return false; // block hex-mapped IPv4
+        }
+      } else {
+        return true; // regular safe public IPv6
+      }
+    }
+
+    // Handle decimal integer Dword IP (e.g. 2130706433 -> 127.0.0.1)
+    if (/^\d+$/.test(host)) {
+      const num = parseInt(host, 10);
+      if (isNaN(num) || num < 0 || num > 4294967295) return false;
+      const b0 = (num >>> 24) & 255;
+      const b1 = (num >>> 16) & 255;
+      const b2 = (num >>> 8) & 255;
+      const b3 = num & 255;
+      host = `${b0}.${b1}.${b2}.${b3}`;
+    }
+
+    // Handle Hex IP (e.g. 0x7f000001)
+    if (/^0x[0-9a-fA-F]+$/i.test(host)) {
+      const num = parseInt(host, 16);
+      if (isNaN(num) || num < 0 || num > 4294967295) return false;
+      const b0 = (num >>> 24) & 255;
+      const b1 = (num >>> 16) & 255;
+      const b2 = (num >>> 8) & 255;
+      const b3 = num & 255;
+      host = `${b0}.${b1}.${b2}.${b3}`;
+    }
+
+    // Handle Octal notation or multi-part IP (e.g. 0177.0.0.1, 127.0.1, 10.1)
+    if (/^[0-9a-fA-FxX\.]+$/.test(host) && host.includes('.')) {
+      const parts = host.split('.');
+      if (parts.length >= 2 && parts.length <= 4) {
+        const octets = [];
+        for (const p of parts) {
+          let val;
+          if (p.startsWith('0x') || p.startsWith('0X')) {
+            val = parseInt(p, 16);
+          } else if (p.startsWith('0') && p.length > 1 && /^[0-7]+$/.test(p)) {
+            val = parseInt(p, 8);
+          } else if (/^\d+$/.test(p)) {
+            val = parseInt(p, 10);
+          } else {
+            val = NaN;
+          }
+          if (isNaN(val) || val < 0) return false;
+          octets.push(val);
+        }
+
+        if (octets.length === 4) {
+          const [b0, b1] = octets;
+          if (b0 === 10) return false;
+          if (b0 === 127) return false;
+          if (b0 === 169 && b1 === 254) return false;
+          if (b0 === 172 && b1 >= 16 && b1 <= 31) return false;
+          if (b0 === 192 && b1 === 168) return false;
+          if (b0 === 0 || b0 >= 224) return false;
+        } else {
+          // Incomplete octet notation (e.g., 127.1)
+          const first = octets[0];
+          if (first === 127 || first === 10 || first === 0 || (first === 172 && octets[1] >= 16 && octets[1] <= 31) || (first === 192 && octets[1] === 168)) {
+            return false;
+          }
+        }
+      }
+    }
+
+    // Block standard private IPv4 ranges
     const ipMatch = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
     if (ipMatch) {
       const b0 = parseInt(ipMatch[1], 10);
@@ -1076,9 +1157,9 @@ export default async function handler(req, res) {
     const cleanCustomKey = typeof customKey === 'string' ? customKey.replace(/[\r\n]/g, '').trim().slice(0, 256) : '';
     const cleanCustomProvider = typeof customProvider === 'string' ? customProvider.replace(/[^a-zA-Z0-9_-]/g, '').trim().slice(0, 32) : '';
 
-    let rawOmniUrl  = (process.env.OMNIROUTE_URL || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1');
-    let ngrokOmniUrl = (process.env.OMNIROUTE_NGROK_URL || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1');
-    let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1');
+    let rawOmniUrl  = (process.env.OMNIROUTE_URL || '').trim();
+    let ngrokOmniUrl = (process.env.OMNIROUTE_NGROK_URL || '').trim();
+    let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1').trim();
     
     // Always check Dynamic Tunnel from Supabase first if available
     const dynamicTunnel = await fetchDynamicOmniRouteUrl();

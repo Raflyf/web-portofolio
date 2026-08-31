@@ -10,9 +10,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.545.0';
-import { telemetry } from './telemetry.js?v=10.545.0';
-import { terminalAI } from './terminal-ai.js?v=10.545.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA } from './data.js?v=10.560.0';
+import { telemetry } from './telemetry.js?v=10.560.0';
+import { terminalAI } from './terminal-ai.js?v=10.560.0';
 
 export function initTerminal() {
   const terminalBody = document.getElementById('terminal-body');
@@ -1280,6 +1280,19 @@ export function initTerminal() {
       .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
       .replace(/__(.*?)__/g, '<strong style="color:var(--text-heading);font-weight:700;">$1</strong>')
       .replace(/\*([^\*]+)\*/g, '<em style="color:var(--text-body);">$1</em>');
+
+    // 7b. Markdown Links [Text](https://...)
+    content = content.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s\)\<\>]+)\)/g, (match, linkText, linkUrl) => {
+      const safeText = linkText.trim();
+      const safeUrl = linkUrl.trim();
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="chat-markdown-link">${safeText} <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-left:2px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+    });
+
+    // 7c. Raw Autolinks (http://... or https://... not already wrapped in <a> tag)
+    content = content.replace(/(^|[\s(])(https?:\/\/[a-zA-Z0-9_\-\.\:\@\/\?\=\&\%\#\+\~]+)(?=[\s).,;!?]|$)/g, (match, prefix, plainUrl) => {
+      if (prefix.includes('href="') || prefix.includes('="')) return match;
+      return `${prefix}<a href="${plainUrl}" target="_blank" rel="noopener noreferrer" class="chat-markdown-link">${plainUrl} <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-left:2px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg></a>`;
+    });
 
     // 8. Restore Inline Code blocks
     inlineCodes.forEach((ic, idx) => {

@@ -228,11 +228,11 @@ export default async function handler(req, res) {
     const action = body.action || 'get_auth_state';
 
     // =========================================================================
-    // 1. GET CURRENT AUTH STATE FROM SUPABASE
+    // 1. GET CURRENT AUTH STATE FROM SUPABASE (Zero PIN Hash Exposure)
     // =========================================================================
     if (action === 'get_auth_state') {
       try {
-        const queryRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=*`, {
+        const queryRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=lockout_attempts,locked_until,otp_expires_at,updated_at`, {
           method: 'GET',
           headers
         });
@@ -241,9 +241,10 @@ export default async function handler(req, res) {
           const data = await queryRes.json();
           if (Array.isArray(data) && data.length > 0) {
             const row = data[0];
+            const isLocked = row.locked_until && (new Date(row.locked_until).getTime() > Date.now());
             return res.status(200).json({
               success: true,
-              pin_hash: row.pin_hash || DEFAULT_PIN_HASH,
+              is_locked: !!isLocked,
               lockout_attempts: row.lockout_attempts || 0,
               locked_until: row.locked_until || null,
               has_active_otp: !!(row.otp_expires_at && new Date(row.otp_expires_at) > new Date()),
@@ -257,12 +258,115 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        pin_hash: DEFAULT_PIN_HASH,
+        is_locked: false,
         lockout_attempts: 0,
         locked_until: null,
         has_active_otp: false,
         fallback: true
       });
+    }
+
+    // =========================================================================
+    // 1B. VERIFY PIN SERVER-SIDE (Challenge-Response & Session Token Generation)
+    // =========================================================================
+    if (action === 'verify_pin') {
+      const inputPin = String(body.pin || '').trim();
+      const inputHash = String(body.pin_hash || (inputPin ? hashValue(inputPin) : '')).trim();
+
+      if (!inputHash || inputHash.length !== 64) {
+        return res.status(400).json({ success: false, verified: false, message: 'Format input PIN atau hash tidak valid.' });
+      }
+
+      let storedHash = DEFAULT_PIN_HASH;
+      let currentAttempts = 0;
+
+      try {
+        const queryRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=*`, {
+          method: 'GET',
+          headers
+        });
+
+        if (queryRes.ok) {
+          const data = await queryRes.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const row = data[0];
+            storedHash = row.pin_hash || DEFAULT_PIN_HASH;
+            currentAttempts = row.lockout_attempts || 0;
+            if (row.locked_until && (new Date(row.locked_until).getTime() > Date.now())) {
+              return res.status(423).json({
+                success: false,
+                verified: false,
+                is_locked: true,
+                locked_until: row.locked_until,
+                message: 'Akses terkunci sementara karena melebihi batas percobaan PIN. Gunakan OTP recovery.'
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[Admin OTP] Supabase verify_pin fetch error:', err.message);
+      }
+
+      const isMatch = (inputHash === storedHash);
+
+      if (isMatch) {
+        // Reset attempts on successful verification
+        try {
+          await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+            method: 'POST',
+            headers: {
+              ...headers,
+              'Prefer': 'resolution=merge-duplicates,return=representation'
+            },
+            body: JSON.stringify({
+              id: 'master_auth',
+              lockout_attempts: 0,
+              locked_until: null,
+              updated_at: new Date().toISOString()
+            })
+          });
+        } catch (_) {}
+
+        const sessionToken = 'adm_' + crypto.randomBytes(32).toString('hex');
+        return res.status(200).json({
+          success: true,
+          verified: true,
+          session_token: sessionToken,
+          message: 'Autentikasi Master PIN berhasil.'
+        });
+      } else {
+        const newAttempts = currentAttempts + 1;
+        const willLock = newAttempts >= 5;
+        const lockedUntil = willLock ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
+
+        try {
+          await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+            method: 'POST',
+            headers: {
+              ...headers,
+              'Prefer': 'resolution=merge-duplicates,return=representation'
+            },
+            body: JSON.stringify({
+              id: 'master_auth',
+              lockout_attempts: newAttempts,
+              locked_until: lockedUntil,
+              updated_at: new Date().toISOString()
+            })
+          });
+        } catch (_) {}
+
+        return res.status(401).json({
+          success: false,
+          verified: false,
+          lockout_attempts: newAttempts,
+          remaining_attempts: Math.max(0, 5 - newAttempts),
+          is_locked: willLock,
+          locked_until: lockedUntil,
+          message: willLock
+            ? 'Batas 5 kali percobaan PIN terlampaui. Sistem dikunci selama 15 menit. Silakan gunakan pemulihan OTP.'
+            : `Master PIN salah. Sisa percobaan: ${Math.max(0, 5 - newAttempts)} kali.`
+        });
+      }
     }
 
     // =========================================================================
@@ -400,8 +504,7 @@ export default async function handler(req, res) {
 
         return res.status(200).json({
           success: true,
-          message: 'Master PIN keamanan berhasil diperbarui dan semua status kunci telah direset.',
-          new_pin_hash: newPinHash
+          message: 'Master PIN keamanan berhasil diperbarui dan semua status kunci telah direset.'
         });
       } else {
         await recordOtpFailure(clientIp, supabaseUrl, headers);
@@ -476,8 +579,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
-        message: 'Master PIN keamanan berhasil disimpan ke Supabase Cloud.',
-        new_pin_hash: newPinHash
+        message: 'Master PIN keamanan berhasil disimpan ke Supabase Cloud.'
       });
     }
 

@@ -2205,6 +2205,32 @@ html[data-theme="light"] .theme-icon-moon { display: none; }
   color: #059669 !important;
 }
 
+.chat-markdown-link {
+  color: var(--accent-emerald, #10b981);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  word-break: break-all;
+}
+
+.chat-markdown-link:hover {
+  color: var(--accent-cyan, #06b6d4);
+  text-decoration-color: var(--accent-cyan, #06b6d4);
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
+}
+
+[data-theme="light"] .chat-markdown-link {
+  color: #059669 !important;
+}
+
+[data-theme="light"] .chat-markdown-link:hover {
+  color: #0284c7 !important;
+}
+
 .terminal-download-card {
   display: inline-flex;
   align-items: center;

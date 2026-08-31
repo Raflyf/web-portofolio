@@ -194,11 +194,7 @@ class DashboardApp {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  async fetchCloudPinHash() {
-    // C4: admin_auth_config is NOT readable by the anon key anymore (RLS revoked).
-    // The ONLY access path is the /api/admin-otp serverless endpoint, which uses
-    // SUPABASE_SERVICE_ROLE_KEY server-side. The old direct Supabase fallback below
-    // was removed because it returns 403 now and leaked pin_hash/otp_code_hash before.
+  async fetchCloudAuthState() {
     try {
       const res = await fetch('/api/admin-otp?action=get_auth_state', {
         method: 'GET',
@@ -206,20 +202,10 @@ class DashboardApp {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data && data.pin_hash) {
-          this.cloudPinHash = data.pin_hash;
-          localStorage.setItem('dash_custom_pin_hash', data.pin_hash);
-          return data.pin_hash;
-        }
+        return data;
       }
     } catch (_) {}
-
-    // C3: never treat the hardcoded default as the ACTIVE hash. Only a cloud-reported
-    // hash or an explicitly saved local custom hash may grant access. When both are
-    // unavailable, there is no valid active hash (default PIN is NOT a credential).
-    const localSaved = localStorage.getItem('dash_custom_pin_hash');
-    this.cloudPinHash = localSaved || null;
-    return this.cloudPinHash;
+    return null;
   }
 
   initAuthGateway() {
@@ -231,8 +217,8 @@ class DashboardApp {
     const forgotBtn = document.getElementById('pin-forgot-btn');
     const otpModal = document.getElementById('otp-reset-modal');
 
-    // Pre-fetch cloud PIN hash asynchronously
-    this.fetchCloudPinHash();
+    // Pre-fetch cloud auth state asynchronously
+    this.fetchCloudAuthState();
 
     // Shared post-auth bootstrap: load data THEN refresh reveal observer
     const postAuthBootstrap = async () => {
@@ -347,41 +333,70 @@ class DashboardApp {
           return;
         }
 
-        // Ensure latest cloud PIN hash is used
-        const activePinHash = this.cloudPinHash || await this.fetchCloudPinHash();
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+        if (errorEl) errorEl.style.display = 'none';
+
         const inputHash = await this.hashPin(enteredPin);
 
-        // Master PIN verification (checks active Cloud PIN Hash or local custom hash)
-        // NOTE: DEFAULT_PIN_HASH no longer grants access — the default seed is only a
-        // fallback for reading a hash value, never a valid credential.
-        const localHash = localStorage.getItem('dash_custom_pin_hash');
-        const isMatch = (inputHash === activePinHash) ||
-                        (localHash && inputHash === localHash);
+        try {
+          // Primary: Server-Side PIN Verification via /api/admin-otp
+          const res = await fetch('/api/admin-otp?action=verify_pin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin_hash: inputHash })
+          });
 
-        if (isMatch) {
-          // Success: simpan HANYA di sessionStorage — tutup tab = sesi hilang, buka ulang wajib PIN lagi.
-          const sessionPayload = JSON.stringify({ auth: true, timestamp: Date.now() });
-          sessionStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
-          document.documentElement.classList.add('is-admin-authenticated');
-          localStorage.removeItem(LOCKOUT_KEY);
-          postAuthBootstrap();
-        } else {
-          // Failed attempt handling
-          const attempts = (lockout.attempts || 0) + 1;
-          let lockedUntil = null;
-          if (attempts >= 5) {
-            lockedUntil = Date.now() + 15 * 60 * 1000; // 15 min lockout
-            if (errorEl) errorEl.textContent = 'Terlalu banyak percobaan gagal. Akses dikunci 15 menit.';
-            if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.verified) {
+            // Success: simpan HANYA di sessionStorage — tutup tab = sesi hilang
+            const sessionPayload = JSON.stringify({
+              auth: true,
+              token: data.session_token || 'adm_verified',
+              timestamp: Date.now()
+            });
+            sessionStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
+            document.documentElement.classList.add('is-admin-authenticated');
+            localStorage.removeItem(LOCKOUT_KEY);
+            postAuthBootstrap();
+            return;
           } else {
-            if (errorEl) errorEl.textContent = `PIN Salah. Sisa percobaan: ${5 - attempts}`;
+            // Server reported invalid PIN or lockout
+            const attempts = data.lockout_attempts || ((lockout.attempts || 0) + 1);
+            let lockedUntil = data.locked_until || null;
+            if (data.is_locked || attempts >= 5) {
+              if (!lockedUntil) lockedUntil = Date.now() + 15 * 60 * 1000;
+              if (errorEl) errorEl.textContent = data.message || 'Terlalu banyak percobaan gagal. Akses dikunci 15 menit.';
+              if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
+            } else {
+              if (errorEl) errorEl.textContent = data.message || `Master PIN Salah. Sisa percobaan: ${Math.max(0, 5 - attempts)}`;
+            }
+            localStorage.setItem(LOCKOUT_KEY, JSON.stringify({ attempts, lockedUntil }));
+            if (errorEl) errorEl.style.display = 'block';
+            if (input) {
+              input.value = '';
+              input.focus();
+            }
+            return;
           }
-          localStorage.setItem(LOCKOUT_KEY, JSON.stringify({ attempts, lockedUntil }));
-          if (errorEl) errorEl.style.display = 'block';
-          if (input) {
-            input.value = '';
-            input.focus();
+        } catch (netErr) {
+          // Fallback if completely offline
+          console.warn('[Admin Auth] Serverless verification offline, testing local hash fallback:', netErr.message);
+          const localHash = localStorage.getItem('dash_custom_pin_hash');
+          if (localHash && inputHash === localHash) {
+            const sessionPayload = JSON.stringify({ auth: true, offline: true, timestamp: Date.now() });
+            sessionStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
+            document.documentElement.classList.add('is-admin-authenticated');
+            postAuthBootstrap();
+            return;
           }
+          if (errorEl) {
+            errorEl.textContent = 'Gagal terhubung ke gateway verifikasi server. Periksa koneksi internet.';
+            errorEl.style.display = 'block';
+          }
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
         }
       });
     }
@@ -1838,10 +1853,10 @@ class DashboardApp {
     let latencyText = '';
     let statusLabel = '';
     let headerStatusLabel = '';
-    const secretKey = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_secret_key') : null) || 'sk-7a9b51a264768e32-ca46a7-409c6979';
+    const secretKey = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_secret_key') : null) || 'sk-omniroute';
 
     // 1. Probe Primary Ngrok Tunnel
-    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
     if (customTunnel) {
       try {
         const cleanTunnel = customTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
@@ -2105,7 +2120,8 @@ class DashboardApp {
     if (btnPresetNgrok) {
       btnPresetNgrok.addEventListener('click', () => {
         const inp = document.getElementById('omniroute-url-input');
-        if (inp) inp.value = 'https://gullible-cytoplast-mardi.ngrok-free.dev/v1';
+        const saved = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
+        if (inp) inp.value = saved || 'https://your-tunnel.ngrok-free.dev/v1';
       });
     }
     if (btnPresetLocal) {
