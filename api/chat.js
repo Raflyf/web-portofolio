@@ -1692,7 +1692,7 @@ Langkah yang WAJIB Anda lakukan:
         // === OLLAMA CLOUD GROUP ===
         if (t === 'nemotron-3-nano' || t.startsWith('ollama-nano') || t.includes('nano')) {
           return [
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 }
@@ -1700,21 +1700,21 @@ Langkah yang WAJIB Anda lakukan:
         }
         if (t === 'ollama-nemotron-ultra') {
           return [
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 }
           ];
         }
         if (t === 'ollama-nemotron-super') {
           return [
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 }
           ];
         }
         if (t === 'ollama-minimax') {
           return [
-            { provider: 'ollama', model: 'minimax-m3', timeout: 8000 },
+            { provider: 'ollama', model: 'minimax-m3', timeout: 45000 },
             { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
             { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
@@ -1762,13 +1762,13 @@ Langkah yang WAJIB Anda lakukan:
           return [
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 }
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
           ];
         }
         if (t.includes('super')) {
           return [
             { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 }
           ];
         }
@@ -1776,7 +1776,7 @@ Langkah yang WAJIB Anda lakukan:
           return [
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 }
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 }
           ];
         }
         if (t.includes('minimax') || t.includes('vision')) {
@@ -1784,7 +1784,7 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
             { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'ollama', model: 'minimax-m3', timeout: 8000 }
+            { provider: 'ollama', model: 'minimax-m3', timeout: 45000 }
           ];
         }
         if (t.includes('laguna')) {
@@ -1798,14 +1798,14 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
             { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
             { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
           ];
         }
         if (t.includes('antigravity')) {
           return [
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 }
           ];
@@ -1813,7 +1813,7 @@ Langkah yang WAJIB Anda lakukan:
         if (t.includes('deepseek')) {
           return [
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 8000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
             { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
           ];
         }
@@ -1824,11 +1824,11 @@ Langkah yang WAJIB Anda lakukan:
       // 2nd: Nemotron Lightning di OpenRouter
       // 3rd: Nemotron Lightning dari OpenCode
       // Backup: Model-model aktif responsif terverifikasi
-      const baseTimeout = (effectiveEffort === 'low') ? 30000 : (effectiveEffort === 'medium' ? 45000 : 55000);
+      const baseTimeout = (effectiveEffort === 'low') ? 35000 : (effectiveEffort === 'medium' ? 45000 : 55000);
 
       return [
         // === TIER 1: PRIORITAS UTAMA (SESUAI INSTRUKSI) ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: baseTimeout },
         { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: baseTimeout },
         { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: baseTimeout },
 
