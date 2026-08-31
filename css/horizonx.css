@@ -1137,19 +1137,44 @@ body {
   position: absolute !important;
   top: calc(100% + 6px) !important;
   right: 0 !important;
-  min-width: 175px !important;
+  min-width: 210px !important;
+  max-width: 280px !important;
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
   background: rgba(14, 20, 29, 0.98) !important;
   backdrop-filter: var(--glass-overlay-blur) !important;
   -webkit-backdrop-filter: var(--glass-overlay-blur) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
   border-radius: 12px !important;
-  padding: 6px !important;
+  padding: 6px 4px !important;
   list-style: none !important;
   margin: 0 !important;
   z-index: 1000 !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75) !important;
   flex-direction: column !important;
-  gap: 3px !important;
+  gap: 2px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(52, 211, 153, 0.4) transparent !important;
+}
+
+.custom-dropdown-menu::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.custom-dropdown-menu::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.custom-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(52, 211, 153, 0.35) !important;
+  border-radius: 6px !important;
+}
+
+.custom-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 211, 153, 0.65) !important;
 }
 
 .custom-dropdown-menu.is-open {
@@ -1247,6 +1272,15 @@ body {
   background: #ffffff !important;
   border: 1px solid rgba(15, 23, 42, 0.12) !important;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15) !important;
+  scrollbar-color: rgba(5, 150, 105, 0.35) transparent !important;
+}
+
+[data-theme="light"] .custom-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(5, 150, 105, 0.35) !important;
+}
+
+[data-theme="light"] .custom-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(5, 150, 105, 0.65) !important;
 }
 
 [data-theme="light"] .custom-dropdown-menu li {
