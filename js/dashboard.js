@@ -146,6 +146,12 @@ class DashboardApp {
             entry.target.classList.add('is-revealed');
           } else {
             entry.target.classList.remove('is-revealed');
+            // If element is above the viewport, mark it as reveal-from-top so it slides down when scrolling back up
+            if (entry.boundingClientRect.top < 0) {
+              entry.target.classList.add('reveal-from-top');
+            } else {
+              entry.target.classList.remove('reveal-from-top');
+            }
           }
         });
       }, {
