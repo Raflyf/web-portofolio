@@ -17,7 +17,7 @@
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
-  <link rel="stylesheet" href="css/dashboard.css?v=10.551.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=10.552.0">
 
   <!-- Immediate Zero-Flicker Admin Authentication Pre-Check (Session-Only Auth) -->
   <script>
@@ -329,9 +329,10 @@
       </div>
     </section>
 
-    <!-- Dedicated OmniRoute Private Host & Priority Combos Topology Card -->
-    <section class="omniroute-topology-card reveal-item" aria-label="Status Gateway OmniRoute & Topologi Model Combos">
-      <div class="omniroute-header-wrap">
+    <!-- Dedicated OmniRoute Private Host & Priority Combos Topology (Split Cards) -->
+    <section class="dash-section omniroute-topology-card" aria-label="Status Gateway OmniRoute & Topologi Model Combos">
+      <div class="omniroute-header-card">
+        <div class="omniroute-header-wrap">
         <div class="chart-title-wrap">
           <div class="omniroute-badge-row">
             <span class="tech-tag">OMNIROUTE ARCHITECTURE</span>
@@ -346,6 +347,7 @@
             <span id="omniroute-live-text">HOST STATUS: MEMERIKSA...</span>
           </div>
         </div>
+      </div>
       </div>
 
       <div class="omniroute-combos-grid">
@@ -410,18 +412,21 @@
         </div>
       </div>
 
-      <div class="omniroute-footer-tiers">
-        <span class="tier-label">Failover Cascade:</span>
-        <span class="tier-badge">Tier 1: Ollama Cloud Gateway (Nemotron 3 Nano Biasa #1 / Nemotron 3 Ultra / Nemotron 3 Super / MiniMax M3)</span>
-        <span class="tier-badge">Tier 2: OpenRouter SOTA Pool (Nemotron 3 Nano Omni Reasoning #2 / Nemotron 3.5 Lightning / MiniMax M3 / DeepSeek Chat / Nemotron Super 120B / Nemotron Ultra 550B)</span>
-        <span class="tier-badge">Tier 3: OpenCode Zen Direct API (Nemotron 3.5 Lightning Free / Nemotron 3 Ultra Free / x-preview-f-free / Mimo Multimodal)</span>
-        <span class="tier-badge">Tier 4: In-Browser Semantic Engine (Offline Resilient + Supabase Continuous RAG)</span>
+      <div class="omniroute-footer-card">
+        <div class="omniroute-footer-tiers">
+          <span class="tier-label">Failover Cascade:</span>
+          <span class="tier-badge">Tier 1: Ollama Cloud Gateway (Nemotron 3 Nano Biasa #1 / Nemotron 3 Ultra / Nemotron 3 Super / MiniMax M3)</span>
+          <span class="tier-badge">Tier 2: OpenRouter SOTA Pool (Nemotron 3 Nano Omni Reasoning #2 / Nemotron 3.5 Lightning / MiniMax M3 / DeepSeek Chat / Nemotron Super 120B / Nemotron Ultra 550B)</span>
+          <span class="tier-badge">Tier 3: OpenCode Zen Direct API (Nemotron 3.5 Lightning Free / Nemotron 3 Ultra Free / x-preview-f-free / Mimo Multimodal)</span>
+          <span class="tier-badge">Tier 4: In-Browser Semantic Engine (Offline Resilient + Supabase Continuous RAG)</span>
+        </div>
       </div>
     </section>
 
     <!-- Dedicated AI Models Comprehensive Count Matrix (All Models) -->
-    <section class="ai-models-matrix-card reveal-item" aria-label="Matriks Pemantauan Lengkap Seluruh Model AI">
-      <div class="table-header-row">
+    <section class="dash-section ai-models-matrix-card" aria-label="Matriks Pemantauan Lengkap Seluruh Model AI">
+      <div class="ai-matrix-header-card">
+        <div class="table-header-row">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Penghitung &amp; Pemantauan Seluruh Model AI</h2>
           <span class="chart-subtitle">Frekuensi eksekusi per model secara menyeluruh (Pilihan Manual + Resolusi Auto Cloud Router)</span>
@@ -439,10 +444,13 @@
           </div>
         </div>
       </div>
+      </div>
 
-      <!-- Featured Standalone Full-Width Banner Card for Auto Gateway Router -->
-      <div id="ai-auto-router-slot">
-        <!-- Populated dynamically by js/dashboard.js -->
+      <div class="ai-matrix-router-card">
+        <!-- Featured Standalone Full-Width Banner Card for Auto Gateway Router -->
+        <div id="ai-auto-router-slot">
+          <!-- Populated dynamically by js/dashboard.js -->
+        </div>
       </div>
 
       <!-- Dynamically Sorted Grid for Individual Models (Most Used on Top) -->
@@ -452,8 +460,9 @@
     </section>
 
     <!-- Dedicated AI Long-Term Memory (Supabase Continuous RAG) Explorer -->
-    <section class="ai-models-matrix-card reveal-item" aria-label="Memori Jangka Panjang AI Supabase">
-      <div class="table-header-row">
+    <section class="dash-section ai-models-matrix-card" aria-label="Memori Jangka Panjang AI Supabase">
+      <div class="ai-memory-header-card">
+        <div class="table-header-row">
         <div class="chart-title-wrap">
           <h2 class="chart-title">Memori Jangka Panjang AI (Supabase Continuous RAG)</h2>
           <span class="chart-subtitle">Basis data pengetahuan dan fakta yang dipelajari AI dari pencarian web real-time &amp; masukan pengguna</span>
@@ -471,74 +480,81 @@
           </div>
         </div>
       </div>
+      </div>
 
-      <div class="ranked-list" id="ai-memories-list" style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div class="ai-memory-list-card">
+        <div class="ranked-list" id="ai-memories-list" style="display:flex;flex-direction:column;gap:0.75rem;">
         <!-- Dynamically populated by js/dashboard.js -->
         <div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">Memuat basis data memori AI...</div>
       </div>
-      <div class="table-pagination-row" id="ai-memories-pagination"></div>
+          <div class="table-pagination-row" id="ai-memories-pagination"></div>
+        </div>
     </section>
 
     <!-- Activity Stream Table -->
-    <section class="table-card reveal-item" aria-label="Tabel Riwayat Aktivitas Pengunjung">
-      <div class="table-header-row">
-        <div class="chart-title-wrap">
-          <h2 class="chart-title">Log Aktivitas Pengunjung Terkini</h2>
-          <span class="chart-subtitle">Aliran event interaksi real-time tanpa menyimpan data privasi (PII)</span>
-        </div>
-
-        <div class="table-controls-wrap">
-          <div class="table-search-box">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="table-search-input" class="table-search-input" placeholder="Cari event atau target...">
+    <section class="dash-section table-card" aria-label="Tabel Riwayat Aktivitas Pengunjung">
+      <div class="table-header-card">
+        <div class="table-header-row">
+          <div class="chart-title-wrap">
+            <h2 class="chart-title">Log Aktivitas Pengunjung Terkini</h2>
+            <span class="chart-subtitle">Aliran event interaksi real-time tanpa menyimpan data privasi (PII)</span>
           </div>
 
-          <select id="filter-group-table" class="dash-select" aria-label="Rentang Waktu Tabel Aktivitas">
-            <option value="today">Hari Ini</option>
-            <option value="7d" selected>7 Hari</option>
-            <option value="14d">14 Hari</option>
-            <option value="30d">30 Hari</option>
-            <option value="all">Semua</option>
-          </select>
+          <div class="table-controls-wrap">
+            <div class="table-search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="table-search-input" class="table-search-input" placeholder="Cari event atau target...">
+            </div>
 
-          <select id="table-type-filter" class="dash-select" aria-label="Filter Tipe Event">
-            <option value="all">Semua Tipe Event</option>
-            <option value="page_view">Page View</option>
-            <option value="link_click">Link Click / Detail</option>
-            <option value="cert_view">Cert View</option>
-            <option value="terminal_cmd">Terminal Command</option>
-            <option value="ai_query_resolved">AI Query Resolved</option>
-            <option value="contact_submit">Contact Submit</option>
-          </select>
+            <select id="filter-group-table" class="dash-select" aria-label="Rentang Waktu Tabel Aktivitas">
+              <option value="today">Hari Ini</option>
+              <option value="7d" selected>7 Hari</option>
+              <option value="14d">14 Hari</option>
+              <option value="30d">30 Hari</option>
+              <option value="all">Semua</option>
+            </select>
 
-          <button type="button" id="export-csv-btn" class="dash-btn" title="Unduh data dalam format CSV">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Ekspor CSV</span>
-          </button>
-          <button type="button" id="export-json-btn" class="dash-btn" title="Unduh data dalam format JSON">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Ekspor JSON</span>
-          </button>
+            <select id="table-type-filter" class="dash-select" aria-label="Filter Tipe Event">
+              <option value="all">Semua Tipe Event</option>
+              <option value="page_view">Page View</option>
+              <option value="link_click">Link Click / Detail</option>
+              <option value="cert_view">Cert View</option>
+              <option value="terminal_cmd">Terminal Command</option>
+              <option value="ai_query_resolved">AI Query Resolved</option>
+              <option value="contact_submit">Contact Submit</option>
+            </select>
+
+            <button type="button" id="export-csv-btn" class="dash-btn" title="Unduh data dalam format CSV">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Ekspor CSV</span>
+            </button>
+            <button type="button" id="export-json-btn" class="dash-btn" title="Unduh data dalam format JSON">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Ekspor JSON</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Waktu (WIB)</th>
-              <th>Tipe Event</th>
-              <th>Aksi / Target</th>
-              <th>Perangkat</th>
-              <th>Sesi ID</th>
-            </tr>
-          </thead>
-          <tbody id="activity-table-body">
-            <!-- Dynamically populated by js/dashboard.js -->
-          </tbody>
-        </table>
+      <div class="table-body-card">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Waktu (WIB)</th>
+                <th>Tipe Event</th>
+                <th>Aksi / Target</th>
+                <th>Perangkat</th>
+                <th>Sesi ID</th>
+              </tr>
+            </thead>
+            <tbody id="activity-table-body">
+              <!-- Dynamically populated by js/dashboard.js -->
+            </tbody>
+          </table>
+        </div>
+        <div class="table-pagination-row" id="table-pagination"></div>
       </div>
-      <div class="table-pagination-row" id="table-pagination"></div>
     </section>
   </main>
 
@@ -716,6 +732,6 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <script src="js/dashboard.js?v=10.551.0"></script>
+  <script src="js/dashboard.js?v=10.552.0"></script>
 </body>
 </html>

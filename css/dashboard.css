@@ -349,12 +349,22 @@ body {
   .ai-model-banner-card.is-revealed:hover,
   .omniroute-combo-tile:hover,
   .omniroute-combo-tile.is-revealed:hover,
-  .omniroute-topology-card:hover,
-  .omniroute-topology-card.is-revealed:hover,
-  .ai-models-matrix-card:hover,
-  .ai-models-matrix-card.is-revealed:hover,
-  .table-card:hover,
-  .table-card.is-revealed:hover {
+  .omniroute-header-card:hover,
+  .omniroute-header-card.is-revealed:hover,
+  .omniroute-footer-card:hover,
+  .omniroute-footer-card.is-revealed:hover,
+  .ai-matrix-header-card:hover,
+  .ai-matrix-header-card.is-revealed:hover,
+  .ai-matrix-router-card:hover,
+  .ai-matrix-router-card.is-revealed:hover,
+  .ai-memory-header-card:hover,
+  .ai-memory-header-card.is-revealed:hover,
+  .ai-memory-list-card:hover,
+  .ai-memory-list-card.is-revealed:hover,
+  .table-header-card:hover,
+  .table-header-card.is-revealed:hover,
+  .table-body-card:hover,
+  .table-body-card.is-revealed:hover {
     transform: translateY(-4px) !important;
     border-color: rgba(99, 102, 241, 0.45) !important;
     border-top-color: rgba(255, 255, 255, 0.65) !important;
@@ -377,12 +387,22 @@ body {
   [data-theme="light"] .ai-model-banner-card.is-revealed:hover,
   [data-theme="light"] .omniroute-combo-tile:hover,
   [data-theme="light"] .omniroute-combo-tile.is-revealed:hover,
-  [data-theme="light"] .omniroute-topology-card:hover,
-  [data-theme="light"] .omniroute-topology-card.is-revealed:hover,
-  [data-theme="light"] .ai-models-matrix-card:hover,
-  [data-theme="light"] .ai-models-matrix-card.is-revealed:hover,
-  [data-theme="light"] .table-card:hover,
-  [data-theme="light"] .table-card.is-revealed:hover {
+  [data-theme="light"] .omniroute-header-card:hover,
+  [data-theme="light"] .omniroute-header-card.is-revealed:hover,
+  [data-theme="light"] .omniroute-footer-card:hover,
+  [data-theme="light"] .omniroute-footer-card.is-revealed:hover,
+  [data-theme="light"] .ai-matrix-header-card:hover,
+  [data-theme="light"] .ai-matrix-header-card.is-revealed:hover,
+  [data-theme="light"] .ai-matrix-router-card:hover,
+  [data-theme="light"] .ai-matrix-router-card.is-revealed:hover,
+  [data-theme="light"] .ai-memory-header-card:hover,
+  [data-theme="light"] .ai-memory-header-card.is-revealed:hover,
+  [data-theme="light"] .ai-memory-list-card:hover,
+  [data-theme="light"] .ai-memory-list-card.is-revealed:hover,
+  [data-theme="light"] .table-header-card:hover,
+  [data-theme="light"] .table-header-card.is-revealed:hover,
+  [data-theme="light"] .table-body-card:hover,
+  [data-theme="light"] .table-body-card.is-revealed:hover {
     border-color: rgba(99, 102, 241, 0.45) !important;
     border-top-color: rgba(255, 255, 255, 1) !important;
     box-shadow: 0 32px 70px -10px rgba(15, 23, 42, 0.18), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 24px rgba(99, 102, 241, 0.15) !important;
@@ -765,6 +785,76 @@ h1, h2, h3, h4, h5, h6,
   }
 }
 
+/* Transparent section container for split card groups (no glass cost on the wrapper).
+   The big glass surfaces were split into separate smaller cards to cut backdrop-filter
+   + reveal-transform rendering cost. Wrappers keep the legacy class names so the JS
+   selector list still resolves, but they carry zero glass. */
+.dash-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Split glass card surfaces — each logical block is its own glass card using the
+   exact same token recipe as .chart-card / .kpi-card (identity preserved, surfaces split). */
+.omniroute-header-card,
+.omniroute-footer-card,
+.ai-matrix-header-card,
+.ai-matrix-router-card,
+.ai-memory-header-card,
+.ai-memory-list-card,
+.table-header-card,
+.table-body-card {
+  background: var(--glass-card-bg);
+  backdrop-filter: var(--glass-card-blur);
+  -webkit-backdrop-filter: var(--glass-card-blur);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-radius);
+  box-shadow: var(--glass-card-shadow);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+.omniroute-header-card,
+.omniroute-footer-card,
+.ai-matrix-header-card,
+.ai-matrix-router-card,
+.ai-memory-header-card,
+.ai-memory-list-card {
+  padding: 1.35rem;
+}
+
+.table-header-card,
+.table-body-card {
+  padding: 1.5rem;
+}
+
+/* Neutralize legacy inner margins now that each block owns its own surface */
+.omniroute-header-card .omniroute-header-wrap,
+.table-header-card .table-header-row,
+.ai-matrix-header-card .table-header-row,
+.ai-memory-header-card .table-header-row {
+  margin-bottom: 0;
+}
+
+.ai-matrix-router-card .ai-model-banner-card {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.omniroute-footer-card .omniroute-footer-tiers {
+  border-top: none;
+  padding-top: 0;
+}
+
+.dash-section .omniroute-combos-grid,
+.dash-section .ai-models-grid {
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
 /* ==========================================================================
    7. BENTO KPI METRICS GRID (5 CARDS)
    ========================================================================== */
@@ -1027,19 +1117,19 @@ h1, h2, h3, h4, h5, h6,
 /* ==========================================================================
    10. OMNIROUTE DEDICATED TOPOLOGY & FAILOVER CASSETTE
    ========================================================================== */
+/* Transparent wrapper — glass lives in .omniroute-header-card, .omniroute-combo-tile,
+   and .omniroute-footer-card now. Class kept so js refreshScrollReveal still matches. */
 .omniroute-topology-card {
-  background: var(--glass-card-bg);
-  backdrop-filter: var(--glass-card-blur);
-  -webkit-backdrop-filter: var(--glass-card-blur);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-radius);
-  padding: 1.35rem;
-  margin-bottom: 1rem;
-  box-shadow: var(--glass-card-shadow);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
 }
 
 [data-theme="light"] .omniroute-topology-card {
-  background: var(--glass-card-bg);
+  background: transparent;
 }
 
 .omniroute-header-wrap {
@@ -1272,19 +1362,20 @@ h1, h2, h3, h4, h5, h6,
 /* ==========================================================================
    11. AI MODELS COMPREHENSIVE COUNT MATRIX & MEMORY RAG
    ========================================================================== */
+/* Transparent wrapper — glass lives in .ai-matrix-header-card, .ai-matrix-router-card,
+   .ai-memory-header-card, .ai-memory-list-card, and the individual .ai-model-card tiles.
+   Class kept so js refreshScrollReveal still matches. */
 .ai-models-matrix-card {
-  background: var(--glass-card-bg);
-  backdrop-filter: var(--glass-card-blur);
-  -webkit-backdrop-filter: var(--glass-card-blur);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-radius);
-  padding: 1.35rem;
-  margin-bottom: 1rem;
-  box-shadow: var(--glass-card-shadow);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
 }
 
 [data-theme="light"] .ai-models-matrix-card {
-  background: var(--glass-card-bg);
+  background: transparent;
 }
 
 .ai-matrix-total-badge {
@@ -1614,19 +1705,19 @@ h1, h2, h3, h4, h5, h6,
 /* ==========================================================================
    11. DATA TABLE & SEARCH CONTROLS (Zero OS Clashing)
    ========================================================================== */
+/* Transparent wrapper — glass lives in .table-header-card and .table-body-card.
+   Class kept so js refreshScrollReveal still matches. */
 .table-card {
-  background: var(--glass-card-bg);
-  backdrop-filter: var(--glass-card-blur);
-  -webkit-backdrop-filter: var(--glass-card-blur);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-radius);
-  padding: 1.5rem;
-  box-shadow: var(--glass-card-shadow);
-  margin-bottom: 1.5rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
 }
 
 [data-theme="light"] .table-card {
-  background: var(--glass-card-bg);
+  background: transparent;
 }
 
 .table-header-row {
@@ -2256,12 +2347,50 @@ input.pin-input.text-left:focus {
   .ai-model-card,
   .ai-model-banner-card,
   .omniroute-combo-tile,
-  .omniroute-topology-card,
-  .ai-models-matrix-card,
-  .table-card {
+  .omniroute-header-card,
+  .omniroute-footer-card,
+  .ai-matrix-header-card,
+  .ai-matrix-router-card,
+  .ai-memory-header-card,
+  .ai-memory-list-card,
+  .table-header-card,
+  .table-body-card {
     backdrop-filter: blur(8px) saturate(160%) !important;
     -webkit-backdrop-filter: blur(8px) saturate(160%) !important;
     contain: layout style;
+  }
+
+  /* Split card groups stack into a single column on mobile */
+  .dash-section {
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+  .omniroute-header-card .omniroute-header-wrap {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+  .omniroute-header-card .omniroute-actions-wrap {
+    justify-content: flex-start;
+  }
+  .omniroute-header-card .omniroute-live-pill {
+    align-self: flex-start;
+  }
+  .omniroute-footer-card .omniroute-footer-tiers {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ai-matrix-header-card .table-header-row,
+  .ai-memory-header-card .table-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .table-header-card .table-controls-wrap {
+    width: 100%;
+  }
+  .table-header-card .table-search-box {
+    flex: 1;
   }
 
   .dash-kpi-grid {
@@ -2315,7 +2444,8 @@ input.pin-input.text-left:focus {
     color: #0f172a !important;
   }
 
-  /* Dropdown Navigation Menu matching index.html */
+  /* Dropdown Navigation Menu (Liquid Glass — matches the dashboard glass token recipe,
+     semi-translucent gradient + backdrop blur in BOTH dark and light themes) */
   #dash-nav-menu {
     display: none;
     position: fixed;
@@ -2323,26 +2453,31 @@ input.pin-input.text-left:focus {
     left: 0;
     right: 0;
     width: 100vw;
-    background: #090e17;
-    background-color: #090e17;
-    backdrop-filter: var(--glass-overlay-blur);
-    -webkit-backdrop-filter: var(--glass-overlay-blur);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(13, 19, 33, 0.85) 60%, rgba(9, 14, 26, 0.92) 100%);
+    backdrop-filter: var(--glass-card-blur);
+    -webkit-backdrop-filter: var(--glass-card-blur);
+    border: var(--glass-card-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     border-radius: 0 0 24px 24px;
     padding: 1.25rem 1.25rem 1.5rem;
     gap: 0.65rem;
     z-index: 99999;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.85);
+    box-shadow: var(--glass-card-shadow);
     flex-direction: column;
     align-items: stretch;
     box-sizing: border-box;
   }
 
   [data-theme="light"] #dash-nav-menu {
-    background: #ffffff;
-    background-color: #ffffff;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(245, 248, 252, 0.80) 100%);
+    border: var(--glass-card-border);
+    border-top: none;
+    border-left: none;
+    border-right: none;
     border-bottom: 1px solid rgba(15, 23, 42, 0.12);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.14), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 1px rgba(15, 23, 42, 0.08);
   }
 
   #dash-nav-menu.is-open {
