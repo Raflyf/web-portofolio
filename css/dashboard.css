@@ -335,6 +335,17 @@ body {
   filter: none !important;
 }
 
+/* Long-content cards (RAG list + activity table body) skip the slide/scale
+   reveal: animating transform + backdrop-filter over a tall surface is the
+   main scroll-lag cost. They fade in only (same duration/easing), keeping
+   the entrance feeling consistent while staying cheap to composite. */
+.ai-memory-list-card.reveal-item,
+.ai-memory-list-card.reveal-item.reveal-from-top,
+.table-body-card.reveal-item,
+.table-body-card.reveal-item.reveal-from-top {
+  transform: none !important;
+}
+
 /* Universal Instant Hover on Cards (100% Synced with horizonx.css landing recipe) */
 @media (hover: hover) {
   .kpi-card:hover,
@@ -829,6 +840,29 @@ h1, h2, h3, h4, h5, h6,
 .table-header-card,
 .table-body-card {
   padding: 1.5rem;
+}
+
+/* Headers that contain filter dropdowns must create their own stacking
+   context ABOVE the following cards — otherwise the glass backdrop-filter
+   of a sibling card renders over the open dropdown (filter "tertimpa card").
+   position: relative + a modest z-index lifts the dropdown above siblings
+   without escaping the section. */
+.omniroute-header-card,
+.ai-matrix-header-card,
+.ai-memory-header-card,
+.table-header-card {
+  position: relative;
+  z-index: 10;
+}
+
+/* RAG list + table body hold long scrolling content inside one glass card;
+   blur is heavy over a tall area, so collapse it and isolate layout/paint.
+   The header cards above still carry the full glass blur. */
+.ai-memory-list-card,
+.table-body-card {
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  contain: content;
 }
 
 /* Neutralize legacy inner margins now that each block owns its own surface */
