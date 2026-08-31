@@ -335,14 +335,15 @@ body {
   filter: none !important;
 }
 
-/* Long-content cards (RAG list + activity table body) skip the slide/scale
-   reveal: animating transform + backdrop-filter over a tall surface is the
-   main scroll-lag cost. They fade in only (same duration/easing), keeping
-   the entrance feeling consistent while staying cheap to composite. */
-.ai-memory-list-card.reveal-item,
-.ai-memory-list-card.reveal-item.reveal-from-top,
-.table-body-card.reveal-item,
-.table-body-card.reveal-item.reveal-from-top {
+/* Long-content surfaces (RAG table + activity table body) skip the
+   slide/scale reveal: animating transform + backdrop-filter over a tall
+   surface is the main scroll-lag cost. They fade in only (same
+   duration/easing), keeping the entrance feeling consistent while staying
+   cheap to composite. */
+.ai-memory-card .table-responsive.reveal-item,
+.ai-memory-card .table-responsive.reveal-item.reveal-from-top,
+.table-card .table-responsive.reveal-item,
+.table-card .table-responsive.reveal-item.reveal-from-top {
   transform: none !important;
 }
 
@@ -368,14 +369,10 @@ body {
   .ai-matrix-header-card.is-revealed:hover,
   .ai-matrix-router-card:hover,
   .ai-matrix-router-card.is-revealed:hover,
-  .ai-memory-header-card:hover,
-  .ai-memory-header-card.is-revealed:hover,
-  .ai-memory-list-card:hover,
-  .ai-memory-list-card.is-revealed:hover,
-  .table-header-card:hover,
-  .table-header-card.is-revealed:hover,
-  .table-body-card:hover,
-  .table-body-card.is-revealed:hover {
+  .ai-memory-card:hover,
+  .ai-memory-card.is-revealed:hover,
+  .table-card:hover,
+  .table-card.is-revealed:hover {
     transform: translateY(-4px) !important;
     border-color: rgba(99, 102, 241, 0.45) !important;
     border-top-color: rgba(255, 255, 255, 0.65) !important;
@@ -406,14 +403,10 @@ body {
   [data-theme="light"] .ai-matrix-header-card.is-revealed:hover,
   [data-theme="light"] .ai-matrix-router-card:hover,
   [data-theme="light"] .ai-matrix-router-card.is-revealed:hover,
-  [data-theme="light"] .ai-memory-header-card:hover,
-  [data-theme="light"] .ai-memory-header-card.is-revealed:hover,
-  [data-theme="light"] .ai-memory-list-card:hover,
-  [data-theme="light"] .ai-memory-list-card.is-revealed:hover,
-  [data-theme="light"] .table-header-card:hover,
-  [data-theme="light"] .table-header-card.is-revealed:hover,
-  [data-theme="light"] .table-body-card:hover,
-  [data-theme="light"] .table-body-card.is-revealed:hover {
+  [data-theme="light"] .ai-memory-card:hover,
+  [data-theme="light"] .ai-memory-card.is-revealed:hover,
+  [data-theme="light"] .table-card:hover,
+  [data-theme="light"] .table-card.is-revealed:hover {
     border-color: rgba(99, 102, 241, 0.45) !important;
     border-top-color: rgba(255, 255, 255, 1) !important;
     box-shadow: 0 32px 70px -10px rgba(15, 23, 42, 0.18), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 24px rgba(99, 102, 241, 0.15) !important;
@@ -808,15 +801,14 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* Split glass card surfaces — each logical block is its own glass card using the
-   exact same token recipe as .chart-card / .kpi-card (identity preserved, surfaces split). */
+   exact same token recipe as .chart-card / .kpi-card (identity preserved, surfaces split).
+   RAG memory and the activity log are now single merged cards (.ai-memory-card, .table-card). */
 .omniroute-header-card,
 .omniroute-footer-card,
 .ai-matrix-header-card,
 .ai-matrix-router-card,
-.ai-memory-header-card,
-.ai-memory-list-card,
-.table-header-card,
-.table-body-card {
+.ai-memory-card,
+.table-card {
   background: var(--glass-card-bg);
   backdrop-filter: var(--glass-card-blur);
   -webkit-backdrop-filter: var(--glass-card-blur);
@@ -832,34 +824,29 @@ h1, h2, h3, h4, h5, h6,
 .omniroute-footer-card,
 .ai-matrix-header-card,
 .ai-matrix-router-card,
-.ai-memory-header-card,
-.ai-memory-list-card {
+.ai-memory-card {
   padding: 1.35rem;
 }
 
-.table-header-card,
-.table-body-card {
+.table-card {
   padding: 1.5rem;
 }
 
-/* Headers that contain filter dropdowns must create their own stacking
-   context ABOVE the following cards — otherwise the glass backdrop-filter
-   of a sibling card renders over the open dropdown (filter "tertimpa card").
-   position: relative + a modest z-index lifts the dropdown above siblings
-   without escaping the section. */
+/* Cards that contain filter dropdowns create their own stacking context
+   ABOVE the following sections — otherwise the glass backdrop-filter of a
+   sibling renders over the open dropdown (filter "tertimpa card"). */
 .omniroute-header-card,
 .ai-matrix-header-card,
-.ai-memory-header-card,
-.table-header-card {
+.ai-memory-card,
+.table-card {
   position: relative;
   z-index: 10;
 }
 
-/* RAG list + table body hold long scrolling content inside one glass card;
-   blur is heavy over a tall area, so collapse it and isolate layout/paint.
-   The header cards above still carry the full glass blur. */
-.ai-memory-list-card,
-.table-body-card {
+/* Long scrolling content inside a glass card is heavy on blur over a tall
+   area, so collapse it and isolate layout/paint. */
+.ai-memory-card .table-responsive,
+.table-card .table-responsive {
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
   contain: content;
@@ -867,9 +854,9 @@ h1, h2, h3, h4, h5, h6,
 
 /* Neutralize legacy inner margins now that each block owns its own surface */
 .omniroute-header-card .omniroute-header-wrap,
-.table-header-card .table-header-row,
 .ai-matrix-header-card .table-header-row,
-.ai-memory-header-card .table-header-row {
+.ai-memory-card .table-header-row,
+.table-card .table-header-row {
   margin-bottom: 0;
 }
 
@@ -1397,7 +1384,7 @@ h1, h2, h3, h4, h5, h6,
    11. AI MODELS COMPREHENSIVE COUNT MATRIX & MEMORY RAG
    ========================================================================== */
 /* Transparent wrapper — glass lives in .ai-matrix-header-card, .ai-matrix-router-card,
-   .ai-memory-header-card, .ai-memory-list-card, and the individual .ai-model-card tiles.
+   .ai-memory-card, and the individual .ai-model-card tiles.
    Class kept so js refreshScrollReveal still matches. */
 .ai-models-matrix-card {
   background: transparent;
@@ -1739,16 +1726,9 @@ h1, h2, h3, h4, h5, h6,
 /* ==========================================================================
    11. DATA TABLE & SEARCH CONTROLS (Zero OS Clashing)
    ========================================================================== */
-/* Transparent wrapper — glass lives in .table-header-card and .table-body-card.
-   Class kept so js refreshScrollReveal still matches. */
-.table-card {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  padding: 0;
-}
+/* .table-card is a single merged glass card (header + table + pagination).
+   Its glass recipe comes from the shared split-card block above; nothing to
+   override here. */
 
 [data-theme="light"] .table-card {
   background: transparent;
@@ -2385,10 +2365,8 @@ input.pin-input.text-left:focus {
   .omniroute-footer-card,
   .ai-matrix-header-card,
   .ai-matrix-router-card,
-  .ai-memory-header-card,
-  .ai-memory-list-card,
-  .table-header-card,
-  .table-body-card {
+  .ai-memory-card,
+  .table-card {
     backdrop-filter: blur(8px) saturate(160%) !important;
     -webkit-backdrop-filter: blur(8px) saturate(160%) !important;
     contain: layout style;
@@ -2415,15 +2393,16 @@ input.pin-input.text-left:focus {
     align-items: flex-start;
   }
   .ai-matrix-header-card .table-header-row,
-  .ai-memory-header-card .table-header-row {
+  .ai-memory-card .table-header-row,
+  .table-card .table-header-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
-  .table-header-card .table-controls-wrap {
+  .table-card .table-controls-wrap {
     width: 100%;
   }
-  .table-header-card .table-search-box {
+  .table-card .table-search-box {
     flex: 1;
   }
 

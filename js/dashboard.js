@@ -170,7 +170,7 @@ class DashboardApp {
     // Observe the split inner glass cards (big transparent wrappers are skipped so
     // the reveal only triggers on actual surfaces — reduces backdrop-filter cost).
     const items = document.querySelectorAll(
-      '.kpi-card, .chart-card, .intel-card, .omniroute-combo-card, .omniroute-combo-tile, .omniroute-header-card, .omniroute-footer-card, .ai-matrix-header-card, .ai-matrix-router-card, .ai-model-card, .ai-model-banner-card, .ai-memory-header-card, .ai-memory-list-card, .table-header-card, .table-body-card, .dash-section-bar'
+      '.kpi-card, .chart-card, .intel-card, .omniroute-combo-card, .omniroute-combo-tile, .omniroute-header-card, .omniroute-footer-card, .ai-matrix-header-card, .ai-matrix-router-card, .ai-model-card, .ai-model-banner-card, .ai-memory-card, .table-card, .dash-section-bar'
     );
     items.forEach(el => {
       el.classList.add('reveal-item');
@@ -1658,11 +1658,11 @@ class DashboardApp {
   // =========================================================================
   async fetchAIMemories(isSilent = false) {
     const totalBadgeEl = document.getElementById('ai-memory-total-count');
-    const listEl = document.getElementById('ai-memories-list');
+    const listEl = document.getElementById('ai-memories-table-body');
     const config = this.getSupabaseConfig();
     if (!config || !config.url || !config.anonKey) {
       if (listEl && this.memories.length === 0) {
-        listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;">Supabase belum terkonfigurasi.</div>`;
+        listEl.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-dim);padding:2rem;">Supabase belum terkonfigurasi.</td></tr>`;
       }
       if (totalBadgeEl) totalBadgeEl.textContent = '0 Memori';
       return;
@@ -1688,10 +1688,10 @@ class DashboardApp {
   }
 
   renderAIMemoryList() {
-    const listEl = document.getElementById('ai-memories-list');
+    const tbody = document.getElementById('ai-memories-table-body');
     const totalBadgeEl = document.getElementById('ai-memory-total-count');
     const paginationEl = document.getElementById('ai-memories-pagination');
-    if (!listEl) return;
+    if (!tbody) return;
 
     if (this.memories.length === 0 && !this.isFetchingMemories) {
       this.isFetchingMemories = true;
@@ -1704,7 +1704,7 @@ class DashboardApp {
     if (totalBadgeEl) totalBadgeEl.textContent = `${total} Fakta Aktif`;
 
     if (total === 0) {
-      listEl.innerHTML = `<div style="color:var(--text-dim);font-size:0.85rem;padding:0.5rem 0;">Tidak ada memori yang sesuai dengan rentang waktu filter.</div>`;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--text-dim);padding:2rem;">Tidak ada memori yang sesuai dengan rentang waktu filter.</td></tr>`;
       if (paginationEl) paginationEl.innerHTML = '';
       return;
     }
@@ -1714,16 +1714,16 @@ class DashboardApp {
     const start = (this.memoryCurrentPage - 1) * this.memoryPageSize;
     const pageItems = filteredMemories.slice(start, start + this.memoryPageSize);
 
-    listEl.innerHTML = pageItems.map(m => {
+    tbody.innerHTML = pageItems.map(m => {
       const timeStr = m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja';
+      const sidShort = (m.session_id || 'anon').substring(0, 16);
       return `
-        <div class="ai-model-card" style="padding:0.95rem;background-color:var(--surface-badge);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
-            <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent-emerald-text);font-weight:700;">RAG KNOWLEDGE ITEM</span>
-            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim);">${timeStr}</span>
-          </div>
-          <div style="font-size:0.85rem;color:var(--text-heading);line-height:1.45;">${this.sanitize(m.fact_text || '')}</div>
-        </div>
+        <tr>
+          <td style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted);">${timeStr}</td>
+          <td><span class="event-type-badge type-terminal-cmd">RAG KNOWLEDGE</span></td>
+          <td style="font-weight:600;color:var(--text-heading);">${this.sanitize(m.fact_text || '')}</td>
+          <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-dim);">${this.sanitize(sidShort)}...</td>
+        </tr>
       `;
     }).join('');
 
