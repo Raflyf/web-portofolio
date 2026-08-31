@@ -83,6 +83,7 @@ class DashboardApp {
     this.initCustomDropdowns();
     this.initEventListeners();
     this.initBackToTopButton();
+    this.initInertiaSmoothWheel();
   }
 
   showToast(message, type = 'success', duration = 4000) {
@@ -2428,13 +2429,16 @@ class DashboardApp {
   }
 
   // =========================================================================
-  // MOMENTUM INERTIA SMOOTH WHEEL ENGINE (fluid scroll feel)
+  // MOMENTUM INERTIA SMOOTH WHEEL ENGINE (fluid 60-120fps scroll feel)
   // =========================================================================
   initInertiaSmoothWheel() {
+    if (this._inertiaWheelBound) return;
+    this._inertiaWheelBound = true;
+
     let currentY = window.scrollY || window.pageYOffset;
     let targetY = currentY;
     let isRunning = false;
-    const ease = 0.09;
+    const ease = 0.088;
 
     const updateWheelPhysics = () => {
       if (document.hidden) { isRunning = false; return; }
@@ -2451,6 +2455,11 @@ class DashboardApp {
     };
 
     window.addEventListener('wheel', (e) => {
+      // Don't intercept when user is on PIN gateway overlay or inside a modal
+      const overlay = document.getElementById('pin-gateway');
+      if (overlay && overlay.style.display !== 'none' && !document.documentElement.classList.contains('is-admin-authenticated')) {
+        return;
+      }
       if (document.body.classList.contains('modal-open') || document.documentElement.classList.contains('modal-open')) {
         return;
       }
@@ -2459,6 +2468,8 @@ class DashboardApp {
       const isScrollableChild = path.some(el => {
         if (!el || !el.classList) return false;
         return (
+          el.classList.contains('dash-modal') ||
+          el.classList.contains('dash-modal-card') ||
           el.classList.contains('modal-body') ||
           el.classList.contains('activity-table-body') ||
           el.classList.contains('memories-table-body') ||
@@ -2475,7 +2486,7 @@ class DashboardApp {
       }
 
       if (e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
+      if (Math.abs(e.deltaY) < 5 && e.deltaMode === 0) {
         targetY = window.scrollY || window.pageYOffset;
         currentY = targetY;
         return;
@@ -2488,7 +2499,7 @@ class DashboardApp {
       if (e.deltaMode === 1) delta *= 35;
       if (e.deltaMode === 2) delta *= 750;
 
-      targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
+      targetY = Math.min(Math.max(0, targetY + delta * 1.15), maxScroll);
 
       if (!isRunning) {
         isRunning = true;
