@@ -142,13 +142,21 @@ class DashboardApp {
     if ('IntersectionObserver' in window) {
       this.scrollObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-          // Fade-only reveal (two-way): opacity toggles on enter/leave so
+          // Bidirectional reveal (two-way): opacity toggles on enter/leave so
           // cards fade in when scrolling down AND when scrolling back up.
-          // No transform/translate — keeps glass cards cheap to composite.
+          // If the element is ABOVE the viewport, mark it as reveal-from-top
+          // (small 12px translateY slide — cheap on glass cards) so it visibly
+          // slides down from above when it re-enters on scroll-up; otherwise
+          // clear it so down-scroll reveals stay fade-only.
           if (entry.isIntersecting) {
             entry.target.classList.add('is-revealed');
           } else {
             entry.target.classList.remove('is-revealed');
+            if (entry.boundingClientRect.top < 0) {
+              entry.target.classList.add('reveal-from-top');
+            } else {
+              entry.target.classList.remove('reveal-from-top');
+            }
           }
         });
       }, {

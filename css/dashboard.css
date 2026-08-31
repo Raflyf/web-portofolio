@@ -317,14 +317,15 @@ body {
 }
 
 /* ==========================================================================
-   5. KINETIC SCROLL REVEAL — FADE-ONLY (perf-optimized)
-   Dashboard has MANY glass cards on screen at once. Animating transform
-   (translateY/scale/perspective) on a card that has backdrop-filter forces
-   the browser to re-sample the blurred backdrop on every animation frame —
-   that is what caused the frame drops during scroll. Reveal is therefore a
-   pure opacity fade (same 0.6s spring duration): it looks smooth, feels
-   consistent, and costs almost nothing to composite. No will-change, no
-   transform, no reveal-from-top slide on this page.
+   5. KINETIC BIDIRECTIONAL SCROLL REVEAL (FADE-ONLY BASE + CHEAP UP-SCROLL SLIDE)
+   Base reveal stays a pure opacity fade (0.6s spring): costs almost nothing
+   to composite on the MANY glass cards on screen. Heavy transforms
+   (translateY/scale/perspective) on backdrop-filter elements re-sample the
+   blurred backdrop every frame — that caused the frame drops — so the
+   up-scroll "slide down from above" uses only a SMALL translateY(-12px)
+   (no perspective/scale) for a short 0.6s window. The transform transition is
+   only active while .reveal-from-top is set, so normal down-scroll fades stay
+   opacity-only. is-revealed (declared after) wins on transform once revealed.
    ========================================================================== */
 .reveal-item {
   opacity: 0 !important;
@@ -333,6 +334,18 @@ body {
 
 .reveal-item.is-revealed {
   opacity: 1 !important;
+}
+
+/* Re-entering from ABOVE (scroll-up reveal): start 12px higher, slide down
+   into place. Small distance keeps backdrop re-sample region tiny. */
+.reveal-item.reveal-from-top {
+  transform: translateY(-12px) !important;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.reveal-item.reveal-from-top.is-revealed {
+  transform: translateY(0) !important;
 }
 
 /* Universal Instant Hover on Cards (100% Synced with horizonx.css landing recipe) */
