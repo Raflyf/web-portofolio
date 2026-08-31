@@ -48,4 +48,17 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* Essential UX motion that stays fluid even under reduced-motion:
+     the hero "research deck" showcase slider must keep its slide transition.
+     This matches the pre-v10.544 "always-on motion" intent for this component
+     while all decorative motion (card hovers, reveals, marquees) remains collapsed.
+     Only the track itself is exempted; its children keep instant transitions.
+     The wrap-around .no-transition class (specificity 0,2,0) still wins over this
+     rule (0,1,0) so the instant loop-back jump is preserved. */
+  .showcase-slider-track {
+    animation-duration: 0.95s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.95s !important;
+  }
 }
