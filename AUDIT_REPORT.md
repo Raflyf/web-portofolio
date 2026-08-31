@@ -262,3 +262,25 @@ Diterbitkan 2026-08-31, baseline `checkpoint-pre-audit-fix` (`4ed3019`). Seluruh
 - **§6 — split `api/chat.js` 2128-baris** modul (debt §11 P3, cold-start). **STILL OPEN**.
 - **§8 a11y minor** — label/autocomplete form (pre-existing). **STILL OPEN**.
 - **§4 — migrasi `SHA-256(salt)` → `argon2id`/`bcrypt`** dengan salt acak per-row (debt §11 P1). **STILL OPEN**.
+
+---
+
+## 13. Resolusi Audit Mendalam Tahap 2 (v10.560.0 — 2026-08-31)
+
+Semua temuan dari deep-dive audit tahap 2 telah diperbaiki secara tuntas:
+
+- [x] **SEC-01: Server-Side Master PIN Verification & Eliminasi `pin_hash` Leak**:
+  - `api/admin-otp.js:230-367`: `pin_hash` dan `new_pin_hash` dicabut dari semua response JSON `get_auth_state`, `verify_otp_and_reset_pin`, dan `update_pin`.
+  - `api/admin-otp.js`: Action `verify_pin` ditambahkan untuk memvalidasi PIN langsung di serverless function via `SUPABASE_SERVICE_ROLE_KEY`, menangani lockout, dan menerbitkan random session token.
+  - `js/dashboard.js:330-395`: Form login dialihkan dari komparasi client-side ke serverless verification endpoint `POST /api/admin-otp?action=verify_pin`. **RESOLVED**.
+- [x] **SEC-02: SSRF Protection Hardening pada Web Scraper Engine**:
+  - `api/chat.js:380-490`: Fungsi `isSafePublicUrl` diperluas untuk menolak representasi IP Dword integer (`2130706433`), Hex (`0x7f000001`), Octal (`0177.0.0.1`), IPv6 Loopback (`::1`), dan IPv4-mapped IPv6 (`::ffff:127.0.0.1`). **RESOLVED**.
+- [x] **SEC-03: Pembersihan Total Kredensial & URL Ngrok Hardcoded**:
+  - `api/chat.js:1159-1162`: Fallback hardcoded `OMNIROUTE_URL` dan `OMNIROUTE_NGROK_URL` dikosongkan (murni env-driven).
+  - `js/dashboard.js:1853-1860`: Fallback string `sk-7a9b51a2...` dan tunnel ngrok dikosongkan.
+  - `dashboard.html:657-662`: Default value ngrok pada `<input id="omniroute-url-input">` dikosongkan. **RESOLVED**.
+- [x] **UX-01: Markdown Links & Autolinks Rendering pada Terminal AI**:
+  - `js/terminal.js:1280-1295`: Transformer regex Markdown links `[Text](URL)` dan autolink URL polos ditambahkan ke `formatMarkdownFull`.
+  - `css/components.css:2205-2235`: Kelas `.chat-markdown-link` dan adaptasi theme light-mode ditambahkan sehingga link rujukan AI interaktif dan dapat diklik. **RESOLVED**.
+- [x] **PERF-01: Unifikasi Cache-Busting Universal**:
+  - Diseragamkan ke `v10.560.0` pada `index.html`, `dashboard.html`, `preview.html`, `css/style.css`, `js/main.js`, `js/terminal.js`, dan `js/terminal-ai.js`. **RESOLVED**.
