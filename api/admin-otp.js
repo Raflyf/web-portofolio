@@ -124,27 +124,48 @@ async function dispatchEmail(otpCode) {
   const emailjsPublicKey = process.env.EMAILJS_PUBLIC_KEY || process.env.EMAILJS_USER_ID;
   const emailjsPrivateKey = process.env.EMAILJS_PRIVATE_KEY;
   const resendApiKey = process.env.RESEND_API_KEY;
+  const resendFrom = process.env.RESEND_FROM || 'onboarding@resend.dev';
 
   const subject = `[Admin Security] Kode OTP Reset Master PIN: ${otpCode}`;
   const messageBody = `Halo Rafly Firmansyah,\n\nBerikut adalah kode OTP verifikasi untuk mereset Master PIN Observability Dashboard Anda:\n\nKODE OTP: ${otpCode}\n\nKode ini berlaku selama 10 menit. Jangan berikan kode ini kepada siapapun.\n\nJika Anda tidak melakukan permintaan ini, abaikan email ini.\n\n— Rafly Firmansyah Portfolio Security System`;
+  const htmlBody = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; background: #0b0f19; color: #f1f5f9; border-radius: 12px; border: 1px solid #1e293b;">
+  <div style="text-align: center; margin-bottom: 24px;">
+    <h2 style="color: #6366f1; margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.5px;">Observability Security Gateway</h2>
+    <p style="color: #94a3b8; font-size: 13px; margin: 4px 0 0 0;">Rafly Firmansyah Portfolio Dashboard</p>
+  </div>
+  <div style="background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 24px; text-align: center;">
+    <p style="color: #cbd5e1; font-size: 14px; margin-top: 0;">Berikut adalah kode verifikasi OTP untuk mereset Master PIN Anda:</p>
+    <div style="margin: 20px 0; padding: 14px; background: #1e1b4b; border: 1.5px dashed #6366f1; border-radius: 8px; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #a5b4fc; font-family: monospace;">
+      ${otpCode}
+    </div>
+    <p style="color: #94a3b8; font-size: 12px; margin-bottom: 0;">Kode ini berlaku selama <strong>10 menit</strong>. Jangan berikan kode ini kepada siapapun.</p>
+  </div>
+  <p style="color: #64748b; font-size: 11px; text-align: center; margin-top: 24px;">Jika Anda tidak melakukan permintaan ini, abaikan pesan ini.</p>
+</div>`;
 
-  // 1. Resend API Dispatch
+  // 1. Resend API Dispatch (Direct REST API, zero dependency)
   if (resendApiKey) {
     try {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
+          'Authorization': `Bearer ${resendApiKey.trim()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'Security Gateway <security@raflyf.me>',
+          from: `Portfolio Security <${resendFrom}>`,
           to: [TARGET_EMAIL],
           subject: subject,
-          text: messageBody
+          text: messageBody,
+          html: htmlBody
         })
       });
-      if (res.ok) return { dispatched: true, provider: 'resend' };
+      const resData = await res.json().catch(() => ({}));
+      if (res.ok) {
+        return { dispatched: true, provider: 'resend', id: resData.id };
+      } else {
+        console.warn('[Admin OTP] Resend API error:', res.status, resData);
+      }
     } catch (e) {
       console.warn('[Admin OTP] Resend dispatch failed:', e.message);
     }
