@@ -258,8 +258,17 @@ export default async function handler(req, res) {
   };
 
   try {
-    const body = req.method === 'POST' ? (typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {}) : req.query || {};
-    const action = body.action || 'get_auth_state';
+    let body = {};
+    if (req.body) {
+      if (typeof req.body === 'string') {
+        try { body = JSON.parse(req.body); } catch (_) { body = {}; }
+      } else if (typeof req.body === 'object') {
+        body = req.body;
+      }
+    }
+    const query = req.query || {};
+    const params = { ...query, ...body };
+    const action = params.action || 'get_auth_state';
 
     // =========================================================================
     // 1. GET CURRENT AUTH STATE FROM SUPABASE (Zero PIN Hash Exposure)
@@ -304,8 +313,8 @@ export default async function handler(req, res) {
     // 1B. VERIFY PIN SERVER-SIDE (Challenge-Response & Session Token Generation)
     // =========================================================================
     if (action === 'verify_pin') {
-      const inputPin = String(body.pin || '').trim();
-      const inputHash = String(body.pin_hash || (inputPin ? hashValue(inputPin) : '')).trim();
+      const inputPin = String(params.pin || '').trim();
+      const inputHash = String(params.pin_hash || (inputPin ? hashValue(inputPin) : '')).trim();
 
       if (!inputHash || inputHash.length !== 64) {
         return res.status(400).json({ success: false, verified: false, message: 'Format input PIN atau hash tidak valid.' });
@@ -529,8 +538,8 @@ export default async function handler(req, res) {
       if (await isOtpBlocked(clientIp, supabaseUrl, headers)) {
         return res.status(429).json({ success: false, message: 'Terlalu banyak percobaan OTP gagal. Minta kode baru atau coba lagi nanti.' });
       }
-      const enteredOtp = String(body.otp_code || '').trim();
-      const newPin = String(body.new_pin || '').trim();
+      const enteredOtp = String(params.otp_code || '').trim();
+      const newPin = String(params.new_pin || '').trim();
 
       if (!enteredOtp || enteredOtp.length !== 6) {
         return res.status(400).json({ success: false, message: 'Format kode OTP harus 6 digit angka.' });
@@ -636,8 +645,8 @@ export default async function handler(req, res) {
     // 4. DIRECT PIN UPDATE (REQUIRES VALID CURRENT PIN HASH VERIFICATION)
     // =========================================================================
     if (action === 'update_pin') {
-      const providedCurrentHash = String(body.current_pin_hash || '').trim();
-      const newPin = String(body.new_pin || '').trim();
+      const providedCurrentHash = String(params.current_pin_hash || '').trim();
+      const newPin = String(params.new_pin || '').trim();
 
       if (!newPin || newPin.length < 4 || newPin.length > 8) {
         return res.status(400).json({ success: false, message: 'Master PIN baru harus terdiri dari 4-8 digit.' });
@@ -720,7 +729,7 @@ export default async function handler(req, res) {
     // 5. RESET LOCKOUT
     // =========================================================================
     if (action === 'reset_lockout') {
-      const providedCurrentHash = String(body.current_pin_hash || '').trim();
+      const providedCurrentHash = String(params.current_pin_hash || '').trim();
       if (!providedCurrentHash || providedCurrentHash.length !== 64) {
         return res.status(403).json({ success: false, message: 'Verifikasi PIN aktif diperlukan untuk mereset lockout.' });
       }

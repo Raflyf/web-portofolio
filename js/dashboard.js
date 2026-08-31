@@ -307,7 +307,7 @@ class DashboardApp {
           const res = await fetch('/api/admin-otp?action=verify_pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin_hash: proofHash })
+            body: JSON.stringify({ action: 'verify_pin', pin_hash: proofHash })
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.verified) {
@@ -364,7 +364,7 @@ class DashboardApp {
           const res = await fetch('/api/admin-otp?action=verify_pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pin_hash: inputHash })
+            body: JSON.stringify({ action: 'verify_pin', pin_hash: inputHash })
           });
 
           const data = await res.json().catch(() => ({}));
