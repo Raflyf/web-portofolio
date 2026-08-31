@@ -132,25 +132,228 @@ ON CONFLICT (id) DO NOTHING;
 ALTER TABLE public.admin_auth_config ENABLE ROW LEVEL SECURITY;
 
 -- C4 (SECURITY): NO anon policies on admin_auth_config at all.
--- The table stores pin_hash + otp_code_hash, so anon SELECT is revoked (P1 debt).
--- The ONLY way to read or mutate this table is via the /api/admin-otp serverless
--- function, which authenticates with SUPABASE_SERVICE_ROLE_KEY (server-side only,
--- never exposed to the client). No anon INSERT/UPDATE/DELETE policies exist.
+-- The table stores pin_hash + otp_code_hash, so direct anon SELECT is revoked (P1 debt).
+-- To allow secure serverless operations without leaking hashes, we use PostgreSQL
+-- SECURITY DEFINER functions below.
 
 -- ============================================================================
--- 7. PARTIAL INDEX: Optimize OMNIROUTE_TUNNEL lookup in ai_memories
+-- 7. ADMIN SECURITY RPC FUNCTIONS (SECURITY DEFINER)
+-- Operasi PIN & OTP aman langsung di database engine (Anon-safe via RPC)
+-- ============================================================================
+
+-- 7.1. Verifikasi PIN Master
+CREATE OR REPLACE FUNCTION public.rpc_admin_verify_pin(p_pin_hash text)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_row record;
+    v_new_attempts int;
+    v_locked_until timestamptz;
+BEGIN
+    SELECT * INTO v_row FROM public.admin_auth_config WHERE id = 'master_auth';
+    
+    IF v_row IS NULL THEN
+        INSERT INTO public.admin_auth_config (id, pin_hash, lockout_attempts)
+        VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', 0)
+        RETURNING * INTO v_row;
+    END IF;
+
+    IF v_row.locked_until IS NOT NULL AND v_row.locked_until > now() THEN
+        RETURN json_build_object(
+            'success', false,
+            'verified', false,
+            'is_locked', true,
+            'locked_until', v_row.locked_until,
+            'message', 'Akses terkunci sementara karena melebihi batas percobaan PIN.'
+        );
+    END IF;
+
+    IF v_row.pin_hash = p_pin_hash THEN
+        UPDATE public.admin_auth_config
+        SET lockout_attempts = 0, locked_until = NULL, updated_at = now()
+        WHERE id = 'master_auth';
+
+        RETURN json_build_object(
+            'success', true,
+            'verified', true,
+            'message', 'Verifikasi Master PIN berhasil.'
+        );
+    ELSE
+        v_new_attempts := COALESCE(v_row.lockout_attempts, 0) + 1;
+        IF v_new_attempts >= 5 THEN
+            v_locked_until := now() + interval '15 minutes';
+        ELSE
+            v_locked_until := NULL;
+        END IF;
+
+        UPDATE public.admin_auth_config
+        SET lockout_attempts = v_new_attempts, locked_until = v_locked_until, updated_at = now()
+        WHERE id = 'master_auth';
+
+        RETURN json_build_object(
+            'success', false,
+            'verified', false,
+            'is_locked', (v_locked_until IS NOT NULL),
+            'lockout_attempts', v_new_attempts,
+            'remaining_attempts', GREATEST(0, 5 - v_new_attempts),
+            'locked_until', v_locked_until,
+            'message', CASE 
+                WHEN v_locked_until IS NOT NULL THEN 'Batas 5 kali percobaan PIN terlampaui. Sistem dikunci 15 menit. Silakan gunakan pemulihan OTP.'
+                ELSE 'Master PIN salah. Sisa percobaan: ' || (5 - v_new_attempts) || ' kali.'
+            END
+        );
+    END IF;
+END;
+$$;
+
+-- 7.2. Simpan Hash OTP ke Database
+CREATE OR REPLACE FUNCTION public.rpc_admin_save_otp(p_otp_hash text, p_expires_at timestamptz)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+    INSERT INTO public.admin_auth_config (id, pin_hash, otp_code_hash, otp_expires_at, otp_attempts, otp_blocked_until, updated_at)
+    VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', p_otp_hash, p_expires_at, 0, NULL, now())
+    ON CONFLICT (id) DO UPDATE
+    SET otp_code_hash = p_otp_hash,
+        otp_expires_at = p_expires_at,
+        otp_attempts = 0,
+        otp_blocked_until = NULL,
+        updated_at = now();
+
+    RETURN json_build_object('success', true);
+END;
+$$;
+
+-- 7.3. Verifikasi OTP dan Reset Master PIN
+CREATE OR REPLACE FUNCTION public.rpc_admin_verify_otp_and_reset_pin(p_otp_hash text, p_new_pin_hash text)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_row record;
+    v_now timestamptz := now();
+BEGIN
+    SELECT * INTO v_row FROM public.admin_auth_config WHERE id = 'master_auth';
+
+    IF v_row IS NULL OR v_row.otp_code_hash IS NULL OR v_row.otp_expires_at IS NULL THEN
+        RETURN json_build_object('success', false, 'message', 'Tidak ada permintaan OTP aktif. Silakan minta kode OTP baru.');
+    END IF;
+
+    IF v_row.otp_blocked_until IS NOT NULL AND v_row.otp_blocked_until > v_now THEN
+        RETURN json_build_object('success', false, 'message', 'Percobaan verifikasi OTP terkunci sementara. Coba lagi dalam beberapa menit.');
+    END IF;
+
+    IF v_row.otp_expires_at < v_now THEN
+        RETURN json_build_object('success', false, 'message', 'Kode OTP telah kedaluwarsa (melebihi 10 menit). Silakan minta kode baru.');
+    END IF;
+
+    IF v_row.otp_code_hash = p_otp_hash THEN
+        UPDATE public.admin_auth_config
+        SET pin_hash = p_new_pin_hash,
+            otp_code_hash = NULL,
+            otp_expires_at = NULL,
+            otp_attempts = 0,
+            otp_blocked_until = NULL,
+            lockout_attempts = 0,
+            locked_until = NULL,
+            updated_at = v_now
+        WHERE id = 'master_auth';
+
+        RETURN json_build_object('success', true, 'message', 'Master PIN berhasil direset.');
+    ELSE
+        UPDATE public.admin_auth_config
+        SET otp_attempts = COALESCE(otp_attempts, 0) + 1,
+            otp_blocked_until = CASE WHEN COALESCE(otp_attempts, 0) + 1 >= 5 THEN v_now + interval '10 minutes' ELSE NULL END,
+            updated_at = v_now
+        WHERE id = 'master_auth';
+
+        RETURN json_build_object('success', false, 'message', 'Kode OTP tidak cocok.');
+    END IF;
+END;
+$$;
+
+-- 7.4. Update Master PIN
+CREATE OR REPLACE FUNCTION public.rpc_admin_update_pin(p_current_pin_hash text, p_new_pin_hash text)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_row record;
+BEGIN
+    SELECT * INTO v_row FROM public.admin_auth_config WHERE id = 'master_auth';
+
+    IF v_row IS NOT NULL AND v_row.pin_hash IS NOT NULL AND v_row.pin_hash <> p_current_pin_hash THEN
+        RETURN json_build_object('success', false, 'message', 'PIN lama tidak cocok.');
+    END IF;
+
+    UPDATE public.admin_auth_config
+    SET pin_hash = p_new_pin_hash,
+        lockout_attempts = 0,
+        locked_until = NULL,
+        updated_at = now()
+    WHERE id = 'master_auth';
+
+    RETURN json_build_object('success', true, 'message', 'Master PIN berhasil diperbarui.');
+END;
+$$;
+
+-- 7.5. Reset Lockout
+CREATE OR REPLACE FUNCTION public.rpc_admin_reset_lockout(p_current_pin_hash text)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_row record;
+BEGIN
+    SELECT * INTO v_row FROM public.admin_auth_config WHERE id = 'master_auth';
+
+    IF v_row IS NOT NULL AND v_row.pin_hash IS NOT NULL AND v_row.pin_hash <> p_current_pin_hash THEN
+        RETURN json_build_object('success', false, 'message', 'Pembuktian Master PIN tidak valid.');
+    END IF;
+
+    UPDATE public.admin_auth_config
+    SET lockout_attempts = 0,
+        locked_until = NULL,
+        updated_at = now()
+    WHERE id = 'master_auth';
+
+    RETURN json_build_object('success', true, 'message', 'Status lockout berhasil di-reset.');
+END;
+$$;
+
+-- Berikan izin akses eksekusi RPC untuk role anon, authenticated, dan service_role
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_pin(text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) TO anon, authenticated, service_role;
+
+-- ============================================================================
+-- 8. PARTIAL INDEX: Optimize OMNIROUTE_TUNNEL lookup in ai_memories
 -- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_memories_omniroute
 ON public.ai_memories (created_at DESC)
 WHERE fact_text LIKE '%[OMNIROUTE_TUNNEL%';
 
 -- ============================================================================
--- 8. MAINTENANCE NOTE (pg_cron TTL — Optional but Recommended)
+-- 9. MAINTENANCE NOTE (pg_cron TTL — Optional but Recommended)
 -- ============================================================================
 -- To prevent unbounded growth of portfolio_telemetry, schedule a cleanup job:
 -- SELECT cron.schedule('telemetry-cleanup', '0 3 * * 0', $$
 --   DELETE FROM public.portfolio_telemetry WHERE created_at < NOW() - INTERVAL '90 days';
 -- $$);
--- Requires pg_cron extension enabled in Supabase: Extensions > pg_cron
+
 
 
