@@ -11,9 +11,9 @@
  * ============================================================================
  */
 
-import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.261.0';
-import { initTerminal } from './terminal.js?v=10.261.0';
-import { telemetry } from './telemetry.js?v=10.261.0';
+import { DEVELOPER_PROFILE, PROJECTS_DATA, CERTIFICATES_DATA, TIMELINE_DATA } from './data.js?v=10.544.0';
+import { initTerminal } from './terminal.js?v=10.544.0';
+import { telemetry } from './telemetry.js?v=10.544.0';
 
 document.addEventListener('DOMContentLoaded', () => {
   telemetry.init();
@@ -52,7 +52,18 @@ function initHeroClock() {
   }
 
   updateClock();
-  setInterval(updateClock, 1000);
+  let clockTimer = setInterval(updateClock, 1000);
+
+  // Pause the clock when the tab is hidden to reduce background timer churn
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      clearInterval(clockTimer);
+      clockTimer = null;
+    } else if (!clockTimer) {
+      updateClock();
+      clockTimer = setInterval(updateClock, 1000);
+    }
+  });
 }
 
 /* ==========================================================================
@@ -250,6 +261,15 @@ function initHeroShowcaseCarousel() {
     }
   }
 
+  // Pause auto-rotation when the tab is hidden; resume when visible again
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopTimer();
+    } else if (!document.hidden) {
+      startTimer();
+    }
+  });
+
   if (nextBtn) {
     nextBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -299,7 +319,7 @@ function initHeroShowcaseCarousel() {
 /* ==========================================================================
    2. CUSTOM CUBIC SMOOTH-SCROLL ENGINE
    ========================================================================== */
-export function smoothScrollTo(targetY, duration = 1100) {
+function smoothScrollTo(targetY, duration = 1100) {
   const startY = window.scrollY || window.pageYOffset;
   const distance = targetY - startY;
   
@@ -1249,7 +1269,7 @@ function initCopyEmailButton() {
   });
 }
 
-export function showToast(message) {
+function showToast(message) {
   const toast = document.getElementById('toast');
   if (!toast) return;
 
@@ -1286,14 +1306,6 @@ function initScrollProgressBar() {
 }
 
 let globalScrollObserver = null;
-let lastScrollY = window.scrollY;
-let scrollDirection = 'down';
-
-window.addEventListener('scroll', () => {
-  const currentScrollY = window.scrollY;
-  scrollDirection = currentScrollY >= lastScrollY ? 'down' : 'up';
-  lastScrollY = currentScrollY;
-}, { passive: true });
 
 function observeElementForScrollReveal(el) {
   if (!el || !globalScrollObserver) return;
@@ -1304,7 +1316,7 @@ function observeElementForScrollReveal(el) {
 function refreshScrollReveal() {
   if (!globalScrollObserver) return;
   const revealElements = document.querySelectorAll(
-    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .hero-showcase-canvas, .section-header, .about-bio, .pillar-card, .marquee-container, .bento-tile, .project-card, .certificate-card, .filter-bar, .timeline-content, .terminal-card, .contact-method-card, .contact-form, .stats-strip'
+    '.hero-pill-badge, .hero-main-title, .hero-lead-text, .hero-btn-group, .hero-showcase-canvas, .section-header, .about-bio, .pillar-card, .marquee-container, .bento-tile, .project-card, .certificate-card, .filter-bar, .timeline-content, .terminal-card, .contact-method-card, .contact-form'
   );
 
   revealElements.forEach(el => {
@@ -1369,7 +1381,7 @@ function initScrollSpy() {
    ========================================================================== */
 function initHorizonXEffects() {
   // 1. Mouse Spotlight & Hover Physics for Showcase & Bento Cards (RAF Throttled to eliminate reflow thrashing)
-  const cards = document.querySelectorAll('.showcase-card, .bento-tile, .project-card-link, .certificate-card, .pillar-card, .contact-method-card, .contact-form');
+  const cards = document.querySelectorAll('.showcase-card, .bento-tile, .certificate-card, .pillar-card, .contact-method-card, .contact-form');
   cards.forEach(card => {
     let rect = null;
     let rafId = null;

@@ -167,70 +167,6 @@ async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
   }
 }
 
-/**
- * High-Speed SSE Stream Reader with Early Return for Gradio 5 Event Streams
- * Consumes streaming chunks incrementally and resolves immediately upon seeing 'data: [...]' payload,
- * eliminating the 8-18s hang caused by res.text() waiting for SSE connection termination.
- */
-async function fetchSseWithEarlyReturn(url, headers = {}, timeoutMs = 24000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(new Error(`Timeout of ${timeoutMs}ms exceeded`)), timeoutMs);
-  try {
-    const res = await fetch(url, { method: 'GET', headers, signal: controller.signal });
-    if (!res.ok) {
-      clearTimeout(timer);
-      return { ok: false, status: res.status, text: '' };
-    }
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let accumulated = '';
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      accumulated += decoder.decode(value, { stream: true });
-      
-      // Parse complete SSE event blocks delimited by double newlines or full complete event
-      if (accumulated.includes('data:')) {
-        // 1. Try matching complete JSON array payload inside data: [...]
-        const jsonMatch = accumulated.match(/(?:^|\n)data:\s*(\[[\s\S]*?\])(?:\n|$)/);
-        if (jsonMatch && jsonMatch[1]) {
-          try {
-            const arr = JSON.parse(jsonMatch[1]);
-            if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string') {
-              clearTimeout(timer);
-              try { reader.cancel(); } catch (_) {}
-              return { ok: true, status: 200, text: accumulated, data: arr };
-            }
-          } catch (_) {}
-        }
-
-        // 2. Try matching event blocks separated by double newlines
-        const blocks = accumulated.split(/\r?\n\r?\n/);
-        for (const block of blocks) {
-          const m = block.match(/(?:^|\n)data:\s*([\s\S]+)$/);
-          if (m) {
-            const raw = m[1].trim();
-            if (raw && raw !== 'null') {
-              try {
-                const arr = JSON.parse(raw);
-                if (Array.isArray(arr) && arr[0] && typeof arr[0] === 'string') {
-                  clearTimeout(timer);
-                  try { reader.cancel(); } catch (_) {}
-                  return { ok: true, status: 200, text: accumulated, data: arr };
-                }
-              } catch (_) {}
-            }
-          }
-        }
-      }
-    }
-    clearTimeout(timer);
-    return { ok: true, status: 200, text: accumulated };
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
-  }
-}
 
 /**
  * Universal Intelligent Multi-Query Generator for Any Domain & Topic
@@ -852,6 +788,9 @@ const rateLimitCache = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 35;
 
+// Module-scoped so the 15-min key cool-down persists across invocations in the same warm instance
+const rateLimitedKeyCache = new Map();
+
 function isRateLimited(clientIp) {
   if (!clientIp || clientIp === 'unknown-client') return false;
   const now = Date.now();
@@ -875,7 +814,9 @@ async function fetchDynamicOmniRouteUrl() {
     const sUrl = process.env.SUPABASE_URL || 'https://rphyzcqwpkxtzllvymss.supabase.co';
     const sKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
     if (!sUrl || !sKey) return null;
-    const endpoint = `${sUrl.replace(/\/+$/, '')}/rest/v1/ai_memories?fact_text=like.*[OMNIROUTE_TUNNEL*&order=created_at.desc&limit=1`;
+    // C5: proper PostgREST `like` filter with URL encoding. The partial index
+    // predicate (fact_text LIKE '%[OMNIROUTE_TUNNEL%') matches leading `*` + trailing `*`.
+    const endpoint = `${sUrl.replace(/\/+$/, '')}/rest/v1/ai_memories?fact_text=${encodeURIComponent('like.*[OMNIROUTE_TUNNEL]*')}&order=created_at.desc&limit=1`;
     const res = await fetchJsonWithTimeout(endpoint, {
       method: 'GET',
       headers: {
@@ -945,7 +886,7 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
   const minimax = [];
   const ollama = [];
   const nvidia = [];
-  let omnirouteKey = process.env.OMNIROUTE_KEY || 'sk-omniroute';
+  let omnirouteKey = process.env.OMNIROUTE_KEY || '';
 
   for (const token of allTokens) {
     if (token.startsWith('sk-or-v1-')) {
@@ -1239,13 +1180,13 @@ export default async function handler(req, res) {
 
       // 0. Guard against guardrail label-only output or SAVE_MEMORY-only output
       const textWithoutTags = cleaned.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
-      if (/^(?:User Safety:\s*\w+[\s\S]*?Response Safety:\s*\w+|Safety:\s*safe)$/i.test(cleaned) || textWithoutTags.length < 5) {
+      if (/^(?:User Safety:\s*\w+[\s\S]*?Response Safety:\s*\w+|Safety:\s*safe)$/i.test(cleaned) || !textWithoutTags.trim()) {
         return null;
       }
       cleaned = cleaned.replace(/^(?:User Safety:\s*\w+\s*\n*Response Safety:\s*\w+\s*\n*)+/i, '').trim();
 
       // 1. Check for explicit output markers like Thus: "..." or Response:
-      const markerMatch = cleaned.match(/(?:Thus|Therefore|Response|Answer|Jawaban|In Indonesian|Output):\s*["']?([\s\S]+?)["']?$/i);
+      const markerMatch = cleaned.match(/(?:Thus|Therefore|Response|Answer|Jawaban|In Indonesian|Output):\s*["']?([\s\S]+)/i);
       if (markerMatch && markerMatch[1] && markerMatch[1].trim().length > 10) {
         cleaned = markerMatch[1].trim().replace(/^["']|["']$/g, '').trim();
       } else {
@@ -1378,7 +1319,7 @@ export default async function handler(req, res) {
 
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
       if (!cleaned || cleaned.trim().length === 0) {
-        cleaned = String(content || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        cleaned = 'Maaf, saya tidak dapat menyusun jawaban saat ini.';
       }
 
       if (res.headersSent) return true;
@@ -1669,8 +1610,6 @@ Langkah yang WAJIB Anda lakukan:
       return null;
     }
 
-const rateLimitedKeyCache = new Map();
-
     async function callOpenRouter(mName, tOut = 45000) {
       if (OPENROUTER_KEYS.length === 0) return null;
       const stepDeadline = Date.now() + tOut;
@@ -1680,20 +1619,7 @@ const rateLimitedKeyCache = new Map();
       if (activeKeys.length === 0) activeKeys = OPENROUTER_KEYS; // Fallback if all are marked
       const keysToTry = [...activeKeys].sort(() => Math.random() - 0.5);
 
-      // Model-specific payload normalization (stealth/ox-alpha requires user-encapsulated instructions for sub-2s responses)
-      const formattedMessages = (mName === 'stealth/ox-alpha')
-        ? (function() {
-            const sys = openRouterMessages.find(m => m.role === 'system');
-            const nonSys = openRouterMessages.filter(m => m.role !== 'system');
-            if (sys && nonSys.length > 0) {
-              const lastUserIdx = nonSys.findLastIndex ? nonSys.findLastIndex(m => m.role === 'user') : nonSys.map(m => m.role).lastIndexOf('user');
-              if (lastUserIdx !== -1 && typeof nonSys[lastUserIdx].content === 'string') {
-                return nonSys.map((m, i) => i === lastUserIdx ? { ...m, content: `[Instruksi: ${sys.content}]\n\n${m.content}` } : m);
-              }
-            }
-            return openRouterMessages.filter(m => m.role !== 'system');
-          })()
-        : openRouterMessages;
+      const formattedMessages = openRouterMessages;
 
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
@@ -1928,27 +1854,6 @@ const rateLimitedKeyCache = new Map();
       return null;
     }
 
-    // Intent detection for dynamic effort & cost optimization
-    const qLower = (query || '').toLowerCase();
-    const isCodingOrBigFile = qLower.includes('def ') || qLower.includes('function') || qLower.includes('const ') ||
-                              qLower.includes('class ') || qLower.includes('import ') || qLower.includes('koding') ||
-                              qLower.includes('coding') || qLower.includes('script') || qLower.includes('code') ||
-                              qLower.includes('bug') || qLower.includes('error') || qLower.includes('syntax') ||
-                              qLower.includes('algoritma') || qLower.includes('refactor');
-    
-    const isComplexReasoning = isCodingOrBigFile ||
-                               qLower.includes('analisis') || qLower.includes('jelaskan') || qLower.includes('arsitektur') ||
-                               qLower.includes('skripsi') || qLower.includes('metodologi') || qLower.includes('perbandingan') ||
-                               qLower.includes('evaluasi') || qLower.includes('mengapa') || qLower.includes('bagaimana cara') ||
-                               qLower.includes('concept drift') || qLower.includes('naive bayes') || qLower.includes('xgboost') ||
-                               qLower.includes('plagiarism') || qLower.includes('deep learning') || qLower.includes('machine learning') ||
-                               (query && query.length > 80);
-
-    const isTrivialCasual = !isComplexReasoning && (
-      qLower.includes('halo') || qLower.includes('hai') || qLower.includes('pagi') || qLower.includes('siang') ||
-      qLower.includes('malam') || qLower.includes('siapa kamu') || qLower.includes('model apa') || qLower.includes('tes') ||
-      qLower.includes('ping') || qLower.includes('bisa apa') || qLower.length < 35
-    );
 
     // ========================================================================
     // ========================================================================
@@ -2114,7 +2019,8 @@ const rateLimitedKeyCache = new Map();
     if (res.headersSent) return;
 
     // If all providers in the pipeline failed or timed out:
-    const noKeysConfigured = !OPENROUTER_KEY && !NVIDIA_KEY && !OPENCODE_KEY && !MINIMAX_KEY && !OLLAMA_KEY && !OMNIROUTE_KEY;
+    const omniKeyConfigured = !!(OMNIROUTE_KEY && OMNIROUTE_KEY !== 'sk-omniroute');
+    const noKeysConfigured = !OPENROUTER_KEY && !NVIDIA_KEY && !OPENCODE_KEY && !MINIMAX_KEY && !OLLAMA_KEY && !omniKeyConfigured;
     const errorMsg = noKeysConfigured 
       ? 'Belum ada API Key aktif yang terpasang di server Vercel atau terminal. Gunakan perintah: setkey <provider> <key>'
       : 'Semua provider gateway model AI sedang sibuk atau mengalami timeout antrean.';

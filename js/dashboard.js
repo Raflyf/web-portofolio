@@ -83,7 +83,6 @@ class DashboardApp {
     this.initCustomDropdowns();
     this.initEventListeners();
     this.initScrollReveal();
-    this.initInertiaSmoothWheel();
     this.initBackToTopButton();
     this.checkOmniRouteRealtimeStatus();
   }
@@ -188,7 +187,10 @@ class DashboardApp {
   }
 
   async fetchCloudPinHash() {
-    // 1. Try Vercel Serverless Endpoint
+    // C4: admin_auth_config is NOT readable by the anon key anymore (RLS revoked).
+    // The ONLY access path is the /api/admin-otp serverless endpoint, which uses
+    // SUPABASE_SERVICE_ROLE_KEY server-side. The old direct Supabase fallback below
+    // was removed because it returns 403 now and leaked pin_hash/otp_code_hash before.
     try {
       const res = await fetch('/api/admin-otp?action=get_auth_state', {
         method: 'GET',
@@ -204,31 +206,11 @@ class DashboardApp {
       }
     } catch (_) {}
 
-    // 2. Direct Supabase Fallback Query
-    try {
-      const config = this.getSupabaseConfig();
-      if (config && config.url && config.anonKey) {
-        const res = await fetch(`${config.url}/rest/v1/admin_auth_config?id=eq.master_auth&select=*`, {
-          method: 'GET',
-          headers: {
-            'apikey': config.anonKey,
-            'Authorization': `Bearer ${config.anonKey}`,
-            'Accept': 'application/json'
-          }
-        });
-        if (res.ok) {
-          const rows = await res.json();
-          if (Array.isArray(rows) && rows.length > 0 && rows[0].pin_hash) {
-            this.cloudPinHash = rows[0].pin_hash;
-            localStorage.setItem('dash_custom_pin_hash', rows[0].pin_hash);
-            return rows[0].pin_hash;
-          }
-        }
-      }
-    } catch (_) {}
-
+    // C3: never treat the hardcoded default as the ACTIVE hash. Only a cloud-reported
+    // hash or an explicitly saved local custom hash may grant access. When both are
+    // unavailable, there is no valid active hash (default PIN is NOT a credential).
     const localSaved = localStorage.getItem('dash_custom_pin_hash');
-    this.cloudPinHash = localSaved || DEFAULT_PIN_HASH;
+    this.cloudPinHash = localSaved || null;
     return this.cloudPinHash;
   }
 
@@ -281,9 +263,46 @@ class DashboardApp {
       if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
     }
 
-    // Reset local lockout button handler
+    // Reset local lockout button handler — requires proof of the current valid PIN
+    // before clearing the lockout (no more blind self-service reset).
     if (unlockLocalBtn) {
-      unlockLocalBtn.addEventListener('click', () => {
+      unlockLocalBtn.addEventListener('click', async () => {
+        const proofPin = input ? input.value.trim() : '';
+        if (!proofPin) {
+          if (errorEl) {
+            errorEl.textContent = 'Masukkan Master PIN untuk membuktikan identitas sebelum mereset kunci.';
+            errorEl.style.display = 'block';
+          }
+          if (input) input.focus();
+          return;
+        }
+
+        const proofHash = await this.hashPin(proofPin);
+        const activePinHash = this.cloudPinHash || await this.fetchCloudPinHash();
+        const localHash = localStorage.getItem('dash_custom_pin_hash');
+        const isValidProof = (proofHash === activePinHash) || (localHash && proofHash === localHash);
+        if (!isValidProof) {
+          if (errorEl) {
+            errorEl.textContent = 'PIN tidak cocok. Reset Batas Kunci ditolak.';
+            errorEl.style.display = 'block';
+          }
+          return;
+        }
+
+        // Wire to the server-side reset_lockout action using the verified hash as proof.
+        try {
+          await fetch('/api/admin-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'reset_lockout',
+              current_pin_hash: (proofHash === activePinHash) ? activePinHash : localHash
+            })
+          });
+        } catch (_) {}
+
+        // Graceful degradation: if the API is unreachable (e.g., offline) but the PIN
+        // proof is valid, still allow the local lockout reset.
         localStorage.removeItem(LOCKOUT_KEY);
         if (errorEl) errorEl.style.display = 'none';
         unlockLocalBtn.style.display = 'none';
@@ -324,11 +343,12 @@ class DashboardApp {
         const activePinHash = this.cloudPinHash || await this.fetchCloudPinHash();
         const inputHash = await this.hashPin(enteredPin);
 
-        // Master PIN verification (checks Cloud PIN Hash, local custom hash, or default seed)
+        // Master PIN verification (checks active Cloud PIN Hash or local custom hash)
+        // NOTE: DEFAULT_PIN_HASH no longer grants access — the default seed is only a
+        // fallback for reading a hash value, never a valid credential.
         const localHash = localStorage.getItem('dash_custom_pin_hash');
-        const isMatch = (inputHash === activePinHash) || 
-                        (localHash && inputHash === localHash) || 
-                        (inputHash === DEFAULT_PIN_HASH);
+        const isMatch = (inputHash === activePinHash) ||
+                        (localHash && inputHash === localHash);
 
         if (isMatch) {
           // Success: simpan HANYA di sessionStorage — tutup tab = sesi hilang, buka ulang wajib PIN lagi.
@@ -616,9 +636,14 @@ class DashboardApp {
       }
     }
 
-    // 3. Intelligent Dual-Source Deduplication (Primary by ID, Secondary by Time Bucket)
+    // 3. Intelligent Dual-Source Deduplication (Primary by remote Supabase ID, then by
+    //    an improved signature). Remote rows carry a Supabase `id` and are merged first,
+    //    so a duplicate local copy (synced copy without an id) is dropped in their favor.
     const allRawEvents = [...remoteEvents, ...localEvents];
     allRawEvents.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+
+    const previousEvents = this.events;
+    const prevCount = previousEvents.length;
 
     const deduplicated = [];
     const seenIds = new Set();
@@ -635,16 +660,45 @@ class DashboardApp {
       const sid = (e.session_id || 'sess').substring(0, 30);
       const type = (e.event_type || 'unknown').toLowerCase();
       const target = (e.event_target || '').toLowerCase().trim().substring(0, 50);
+      const label = (e.event_label || '').toLowerCase().trim().substring(0, 80);
 
-      const signature = `${sid}__${type}__${target}__${timeBucket}`;
+      // M4: signature now also includes event_label AND created_at (ms) so two genuine
+      // rapid clicks on the same target only collapse when they share the same label
+      // within the same 2s window (same event duplicated across remote + local cache).
+      const signature = `${sid}__${type}__${target}__${label}__${timeBucket}__${ts}`;
       if (!seenSignatures.has(signature)) {
         seenSignatures.add(signature);
         deduplicated.push(e);
       }
     }
 
+    const newCount = deduplicated.length;
+    const prevKeys = new Set(previousEvents.map(e => e.id || `${e.session_id || ''}|${e.created_at || ''}`));
+    const hasNewRows = newCount !== prevCount || deduplicated.some(e => {
+      const key = e.id || `${e.session_id || ''}|${e.created_at || ''}`;
+      return !prevKeys.has(key);
+    });
+
     this.events = deduplicated;
-    this.filterAndRender(isBackground);
+
+    // Performance: delta-render — skip re-rendering charts/leaderboards/table when the
+    // underlying event set did not change between polls (identical count AND no new rows).
+    // The sync status label above already refreshes on every poll.
+    const renderIdle = (fn) => {
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(fn, { timeout: 2000 });
+      } else {
+        setTimeout(fn, 0);
+      }
+    };
+
+    if (!hasNewRows && this._hasRendered && this._lastRenderedCount === newCount) {
+      return;
+    }
+
+    this._hasRendered = true;
+    this._lastRenderedCount = newCount;
+    renderIdle(() => this.filterAndRender(isBackground));
   }
 
   startRealtimePolling() {
@@ -1414,17 +1468,6 @@ class DashboardApp {
         badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
         matcher: (s) => s.includes('opencode') && (s.includes('mimo') || s.includes('multimodal'))
-      },
-
-      // === LOCAL OFFLINE ===
-      {
-        id: 'local-semantic',
-        name: 'In-Browser Semantic Engine',
-        desc: 'Engine pencarian pola sub-15ms lokal di peramban + Supabase Continuous RAG Memory saat offline',
-        provider: 'LOCAL OFFLINE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`,
-        matcher: (s) => s.includes('local_semantic') || s.includes('semantic engine') || s.includes('offline_rag')
       }
     ];
 
@@ -2093,41 +2136,28 @@ class DashboardApp {
           alert('Master PIN harus terdiri dari 4-8 digit.');
           return;
         }
+        // M7: capture the CURRENT hash BEFORE computing the new one — otherwise the
+        // request would send the new hash as proof and the server would reject it.
+        const currentPinHash = this.cloudPinHash || localStorage.getItem('dash_custom_pin_hash');
         const newHash = await this.hashPin(newPin);
-
-        this.cloudPinHash = newHash;
-        localStorage.setItem('dash_custom_pin_hash', newHash);
-        localStorage.removeItem(LOCKOUT_KEY);
 
         try {
           await fetch('/api/admin-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'update_pin', new_pin: newPin, current_pin_hash: this.cloudPinHash || localStorage.getItem('dash_custom_pin_hash') })
+            body: JSON.stringify({ action: 'update_pin', new_pin: newPin, current_pin_hash: currentPinHash })
           });
         } catch (_) {}
 
-        try {
-          const config = this.getSupabaseConfig();
-          if (config && config.url && config.anonKey) {
-            await fetch(`${config.url}/rest/v1/admin_auth_config`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': config.anonKey,
-                'Authorization': `Bearer ${config.anonKey}`,
-                'Prefer': 'resolution=merge-duplicates,return=minimal'
-              },
-              body: JSON.stringify({
-                id: 'master_auth',
-                pin_hash: newHash,
-                lockout_attempts: 0,
-                locked_until: null,
-                updated_at: new Date().toISOString()
-              })
-            });
-          }
-        } catch (_) {}
+        // Update local state only after the cloud update has been attempted.
+        this.cloudPinHash = newHash;
+        localStorage.setItem('dash_custom_pin_hash', newHash);
+        localStorage.removeItem(LOCKOUT_KEY);
+
+        // C4: the direct browser-side anon write to admin_auth_config was removed —
+        // RLS now denies it (403) and it would have leaked pin_hash via the anon key.
+        // The /api/admin-otp POST (action: update_pin) above is the only cloud write
+        // path and it authenticates with SUPABASE_SERVICE_ROLE_KEY server-side.
 
         changePinModal.classList.remove('is-open');
         alert('Master PIN berhasil diperbarui dan disinkronkan ke Supabase Cloud.');
@@ -2201,118 +2231,6 @@ class DashboardApp {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
-
-  // =========================================================================
-  // 16. CUSTOM CUBIC SMOOTH-SCROLL ENGINE & INERTIA SMOOTH WHEEL
-  // =========================================================================
-  smoothScrollTo(targetY, duration = 1100) {
-    const startY = window.scrollY || window.pageYOffset;
-    const distance = targetY - startY;
-    
-    if (Math.abs(distance) < 2) return;
-
-    let startTime = null;
-
-    function easeInOutCubic(t) {
-      return t < 0.5 
-        ? 4 * t * t * t 
-        : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    }
-
-    function animationLoop(currentTime) {
-      if (!startTime) startTime = currentTime;
-      const timeElapsed = currentTime - startTime;
-      const progress = Math.min(timeElapsed / duration, 1);
-      const easedProgress = easeInOutCubic(progress);
-
-      window.scrollTo(0, startY + (distance * easedProgress));
-
-      if (progress < 1) {
-        window.requestAnimationFrame(animationLoop);
-      }
-    }
-
-    window.requestAnimationFrame(animationLoop);
-  }
-
-  initInertiaSmoothWheel() {
-    let currentY = window.scrollY || window.pageYOffset;
-    let targetY = currentY;
-    let isRunning = false;
-    const ease = 0.095;
-
-    const updateWheelPhysics = () => {
-      const diff = targetY - currentY;
-      
-      if (Math.abs(diff) > 0.5) {
-        currentY += diff * ease;
-        window.scrollTo(0, Math.round(currentY * 10) / 10);
-        requestAnimationFrame(updateWheelPhysics);
-      } else {
-        currentY = targetY;
-        window.scrollTo(0, targetY);
-        isRunning = false;
-      }
-    };
-
-    window.addEventListener('wheel', (e) => {
-      // If modal is open, let native dialog scrolling take full control
-      if (document.body.classList.contains('modal-open') || document.querySelector('.dash-modal.is-open')) {
-        return;
-      }
-
-      const path = e.composedPath ? e.composedPath() : [];
-      const isScrollableChild = path.some(el => {
-        if (!el || !el.classList) return false;
-        return (
-          el.classList.contains('dash-modal-card') ||
-          el.tagName === 'TEXTAREA' ||
-          el.tagName === 'SELECT' ||
-          el.classList.contains('table-responsive')
-        );
-      });
-
-      if (isScrollableChild) {
-        targetY = window.scrollY || window.pageYOffset;
-        currentY = targetY;
-        return;
-      }
-
-      if (e.ctrlKey || e.shiftKey || e.altKey) return;
-
-      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
-        targetY = window.scrollY || window.pageYOffset;
-        currentY = targetY;
-        return;
-      }
-
-      e.preventDefault();
-
-      const maxScroll = Math.max(
-        0,
-        document.documentElement.scrollHeight - window.innerHeight
-      );
-
-      let delta = e.deltaY;
-      if (e.deltaMode === 1) delta *= 35;
-      if (e.deltaMode === 2) delta *= 750;
-
-      targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
-
-      if (!isRunning) {
-        isRunning = true;
-        currentY = window.scrollY || window.pageYOffset;
-        requestAnimationFrame(updateWheelPhysics);
-      }
-    }, { passive: false });
-
-    window.addEventListener('scroll', () => {
-      if (!isRunning) {
-        currentY = window.scrollY || window.pageYOffset;
-        targetY = currentY;
-      }
-    }, { passive: true });
   }
 
   initCustomDropdowns() {
@@ -2443,7 +2361,7 @@ class DashboardApp {
 
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      this.smoothScrollTo(0, 1150);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 }

@@ -12,23 +12,45 @@ const PIN_SALT = 'rafly_telemetry_salt';
 const DEFAULT_PIN_HASH = 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c';
 const TARGET_EMAIL = 'raflyfirmansyah02@gmail.com';
 
-// OTP verification attempt limiter (per instance; defense-in-depth di atas lockout Supabase)
+// OTP verification attempt limiter (FIX M6): the in-memory cache is only a fast
+// path — the source of truth is persisted in admin_auth_config (otp_attempts /
+// otp_blocked_until) via service-role REST calls, so the limiter survives cold
+// starts and multiple instances.
 const otpAttemptCache = new Map();
 const OTP_MAX_ATTEMPTS = 5;
 const OTP_ATTEMPT_WINDOW_MS = 10 * 60 * 1000;
 
-function isOtpBlocked(ip) {
+async function isOtpBlocked(ip, supabaseUrl, headers) {
   const now = Date.now();
+  // Fast path: in-memory cache
   const rec = otpAttemptCache.get(ip);
-  if (!rec) return false;
-  if (now - rec.start > OTP_ATTEMPT_WINDOW_MS) {
-    otpAttemptCache.delete(ip);
-    return false;
+  if (rec) {
+    if (now - rec.start > OTP_ATTEMPT_WINDOW_MS) {
+      otpAttemptCache.delete(ip);
+    } else if (rec.count >= OTP_MAX_ATTEMPTS) {
+      return true;
+    }
   }
-  return rec.count >= OTP_MAX_ATTEMPTS;
+  // Source of truth: persisted counters in Supabase
+  try {
+    const queryRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=otp_attempts,otp_blocked_until`, {
+      method: 'GET',
+      headers
+    });
+    if (queryRes.ok) {
+      const data = await queryRes.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const row = data[0];
+        const blockedUntil = row.otp_blocked_until ? new Date(row.otp_blocked_until).getTime() : 0;
+        if (blockedUntil > now) return true;
+        if ((row.otp_attempts || 0) >= OTP_MAX_ATTEMPTS) return true;
+      }
+    }
+  } catch (_) {}
+  return false;
 }
 
-function recordOtpFailure(ip) {
+async function recordOtpFailure(ip, supabaseUrl, headers) {
   const now = Date.now();
   const rec = otpAttemptCache.get(ip);
   if (!rec || now - rec.start > OTP_ATTEMPT_WINDOW_MS) {
@@ -41,10 +63,42 @@ function recordOtpFailure(ip) {
       if (now - v.start > OTP_ATTEMPT_WINDOW_MS) otpAttemptCache.delete(k);
     }
   }
+  const count = otpAttemptCache.get(ip)?.count || 1;
+  const blockedUntil = count >= OTP_MAX_ATTEMPTS ? new Date(now + OTP_ATTEMPT_WINDOW_MS).toISOString() : null;
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        id: 'master_auth',
+        otp_attempts: count,
+        otp_blocked_until: blockedUntil,
+        updated_at: new Date().toISOString()
+      })
+    });
+  } catch (_) {}
 }
 
-function clearOtpAttempts(ip) {
+async function clearOtpAttempts(ip, supabaseUrl, headers) {
   otpAttemptCache.delete(ip);
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        id: 'master_auth',
+        otp_attempts: 0,
+        otp_blocked_until: null,
+        updated_at: new Date().toISOString()
+      })
+    });
+  } catch (_) {}
 }
 
 const SUPABASE_DEFAULT_URL = 'https://rphyzcqwpkxtzllvymss.supabase.co';
@@ -53,7 +107,8 @@ const SUPABASE_DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 function getSupabaseConfig() {
   const url = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
   const anonKey = process.env.SUPABASE_ANON_KEY || SUPABASE_DEFAULT_KEY;
-  return { url, anonKey };
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  return { url, anonKey, serviceRoleKey };
 }
 
 function hashValue(val) {
@@ -141,14 +196,32 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { url: supabaseUrl, anonKey } = getSupabaseConfig();
+  const { url: supabaseUrl, anonKey, serviceRoleKey } = getSupabaseConfig();
+  // C4: all requests to admin_auth_config use the service role key. The schema has
+  // NO anon SELECT/INSERT/UPDATE/DELETE policies on that table, so the anon key is
+  // useless here. This function runs server-side only — the service role key is
+  // never exposed to the client.
+  const activeKey = serviceRoleKey || anonKey;
   const headers = {
-    'apikey': anonKey,
-    'Authorization': `Bearer ${anonKey}`,
+    'apikey': activeKey,
+    'Authorization': `Bearer ${activeKey}`,
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown-client';
+
+  // Fail closed: any write/verification that requires Supabase MUST have the
+  // service role key configured, otherwise RLS denies the write and we must not
+  // pretend it succeeded.
+  const requireServiceRole = () => {
+    if (!serviceRoleKey) {
+      return res.status(503).json({
+        success: false,
+        message: 'Konfigurasi server belum lengkap: variabel lingkungan SUPABASE_SERVICE_ROLE_KEY belum disetel. Hubungi administrator agar sinkronisasi keamanan cloud dapat diaktifkan.'
+      });
+    }
+    return null;
+  };
 
   try {
     const body = req.method === 'POST' ? (typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {}) : req.query || {};
@@ -196,6 +269,9 @@ export default async function handler(req, res) {
     // 2. SEND OTP CODE TO EMAIL
     // =========================================================================
     if (action === 'send_otp') {
+      const denied = requireServiceRole();
+      if (denied) return denied;
+
       const otpCode = crypto.randomInt(100000, 1000000).toString();
       const otpHash = hashValue(otpCode);
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
@@ -246,7 +322,10 @@ export default async function handler(req, res) {
     // 3. VERIFY OTP & RESET PIN
     // =========================================================================
     if (action === 'verify_otp_and_reset_pin') {
-      if (isOtpBlocked(clientIp)) {
+      const denied = requireServiceRole();
+      if (denied) return denied;
+
+      if (await isOtpBlocked(clientIp, supabaseUrl, headers)) {
         return res.status(429).json({ success: false, message: 'Terlalu banyak percobaan OTP gagal. Minta kode baru atau coba lagi nanti.' });
       }
       const enteredOtp = String(body.otp_code || '').trim();
@@ -287,7 +366,7 @@ export default async function handler(req, res) {
 
       // If OTP matches, update master PIN and reset all lockouts
       if (isValidOtp) {
-        clearOtpAttempts(clientIp);
+        await clearOtpAttempts(clientIp, supabaseUrl, headers);
         let pinSaved = false;
         try {
           const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
@@ -325,7 +404,7 @@ export default async function handler(req, res) {
           new_pin_hash: newPinHash
         });
       } else {
-        recordOtpFailure(clientIp);
+        await recordOtpFailure(clientIp, supabaseUrl, headers);
         return res.status(400).json({
           success: false,
           message: 'Kode OTP tidak cocok atau sudah kadaluwarsa. Silakan minta kode OTP baru.'
@@ -337,6 +416,9 @@ export default async function handler(req, res) {
     // 4. DIRECT PIN UPDATE (REQUIRES VALID CURRENT PIN HASH VERIFICATION)
     // =========================================================================
     if (action === 'update_pin') {
+      const denied = requireServiceRole();
+      if (denied) return denied;
+
       // MINOR-6 Fix: Require current_pin_hash proof to prevent unauthorized PIN changes
       const providedCurrentHash = String(body.current_pin_hash || '').trim();
       const newPin = String(body.new_pin || '').trim();
@@ -403,6 +485,9 @@ export default async function handler(req, res) {
     // 5. RESET LOCKOUT
     // =========================================================================
     if (action === 'reset_lockout') {
+      const denied = requireServiceRole();
+      if (denied) return denied;
+
       // Wajib bukti hash PIN aktif — tanpa ini siapa pun bisa menolkan lockout brute-force
       const providedCurrentHash = String(body.current_pin_hash || '').trim();
       if (!providedCurrentHash || providedCurrentHash.length !== 64) {

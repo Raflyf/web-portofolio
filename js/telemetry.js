@@ -246,7 +246,7 @@ class TelemetryEngine {
       }
 
       // Theme Toggle Button
-      if (target.id === 'theme-toggle' || target.closest('#theme-toggle')) {
+      if (target.id === 'theme-toggle-btn' || target.closest('#theme-toggle-btn')) {
         this.logEvent('theme_toggle', 'mode_switch', 'Ubah Mode Tema Tampilan');
         return;
       }

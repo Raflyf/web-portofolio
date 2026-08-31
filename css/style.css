@@ -101,7 +101,8 @@
   --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.5);
   --shadow-glow: 0 0 24px var(--accent-indigo-glow);
 
-  /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content) */
+  /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content)
+     NOTE: Duplicated in css/dashboard.css (dashboard.html loads ONLY dashboard.css). Keep token values in sync. */
   --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(13, 19, 33, 0.85) 60%, rgba(9, 14, 26, 0.92) 100%);
   --glass-card-border: 1px solid rgba(255, 255, 255, 0.18);
   --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.50);
@@ -424,11 +425,6 @@ h1, h2, h3, h4, h5, h6,
 .reveal-item.is-revealed {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* Scroll progress bar */
-.scroll-progress-bar {
-  display: block;
 }
 
 /* ==========================================================================

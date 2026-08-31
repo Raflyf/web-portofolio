@@ -8,7 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="css/style.css?v=10.90.0">
+  <link rel="stylesheet" href="css/style.css?v=10.544.0">
 
   <style>
     *, *::before, *::after {
@@ -330,13 +330,17 @@
         imagesList = [rawImg];
       } else if (rawPdf && isSafePath(rawPdf)) {
         const base = rawPdf.replace(/^certificates\//, '').replace(/\.pdf$/, '');
-        if (base === 'google-profil-bisnis-ecommerce-kominfo') {
-          imagesList = [
-            'certificates/images/google-profil-bisnis-ecommerce-kominfo-1.png',
-            'certificates/images/google-profil-bisnis-ecommerce-kominfo-2.png'
-          ];
+        // M12: data-driven multi-page detection — register certificates that render
+        // more than one page here (bnsp-analis-program also has 2 pages).
+        const MULTI_PAGE_PAGES = {
+          'google-profil-bisnis-ecommerce-kominfo': 2,
+          'bnsp-analis-program': 2
+        };
+        const pageCount = MULTI_PAGE_PAGES[base];
+        if (pageCount) {
+          imagesList = Array.from({ length: pageCount }, (_, i) => `certificates/images/${base}-${i + 1}.webp`);
         } else {
-          imagesList = [`certificates/images/${base}.png`];
+          imagesList = [`certificates/images/${base}.webp`];
         }
       }
 
@@ -378,7 +382,9 @@
         img.className = 'cert-image';
         img.src = src;
         img.alt = `${docTitle} - Halaman ${idx + 1}`;
-        img.loading = 'eager';
+        // First page stays eager (LCP); subsequent pages lazy-load.
+        img.loading = idx === 0 ? 'eager' : 'lazy';
+        img.decoding = 'async';
 
         frame.appendChild(img);
         pageBlock.appendChild(frame);

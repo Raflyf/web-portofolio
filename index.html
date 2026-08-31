@@ -45,13 +45,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700&display=swap">
 
-  <!-- PDF.js Engine for Client-Side Document & PDF Processing (Deferred to unblock initial paint) -->
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
   <!-- Stylesheets (Cache-Busting for Instant CDN Refresh) -->
-  <link rel="stylesheet" href="css/style.css?v=10.543.0">
-  <link rel="stylesheet" href="css/components.css?v=10.543.0">
-  <link rel="stylesheet" href="css/horizonx.css?v=10.543.0">
+  <link rel="stylesheet" href="css/style.css?v=10.544.0">
+  <link rel="stylesheet" href="css/components.css?v=10.544.0">
+  <link rel="stylesheet" href="css/horizonx.css?v=10.544.0">
 
   <!-- JSON-LD Structured Data Schema (Google Site Name & Person Schema) -->
   <script type="application/ld+json">
@@ -723,9 +720,22 @@
                   </button>
                 </div>
                 <div class="terminal-controls-options">
-                  <div class="terminal-model-badge" title="Model AI: Router Cerdas Berbasis Benchmark Tertinggi">
-                    <span class="terminal-model-label">Model:</span>
-                    <span class="terminal-model-tag">Auto</span>
+                  <div class="terminal-model-picker custom-dropdown-wrap" title="Pilih Model AI Aktif">
+                    <label class="terminal-model-label" for="terminal-model-select">Model:</label>
+                    <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI Aktif">
+                      <option value="auto" selected>Auto Router</option>
+                      <option value="codex">Codex (Coding Specialist)</option>
+                      <option value="antigravity">Antigravity (Deep CoT)</option>
+                      <option value="deepseek">DeepSeek V3</option>
+                      <option value="nemotron-3-ultra">Nemotron 3 Ultra</option>
+                      <option value="nemotron-3-super">Nemotron 3 Super (120B CoT)</option>
+                      <option value="nemotron-lighting">Nemotron 3.5 Lightning</option>
+                      <option value="x-preview">x-preview-f-free</option>
+                      <option value="mimo">Mimo v2.5 Multimodal</option>
+                      <option value="laguna">Laguna S 2.1</option>
+                      <option value="minimax">MiniMax-M3 (Vision)</option>
+                      <option value="vision">Vision Model</option>
+                    </select>
                   </div>
                   <div class="terminal-model-picker custom-dropdown-wrap" id="effort-dropdown-wrap">
                     <label class="terminal-model-label">Effort:</label>
@@ -993,13 +1003,36 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <!-- Three.js WebGL Core Engine from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- HorizonX 3D Background: lazily injected only when motion is allowed and page is visible -->
+  <script>
+    (function () {
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) return;
 
-  <!-- HorizonX 3D Scroll-Morphing Background Script -->
-  <script src="js/bg-morph-canvas.js?v=10.543.0"></script>
+      function loadHorizonX() {
+        var three = document.createElement('script');
+        three.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        three.async = true;
+        three.onload = function () {
+          var bg = document.createElement('script');
+          bg.src = 'js/bg-morph-canvas.js?v=10.544.0';
+          bg.async = true;
+          document.body.appendChild(bg);
+        };
+        document.body.appendChild(three);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadHorizonX);
+      } else if (window.requestIdleCallback) {
+        window.requestIdleCallback(loadHorizonX, { timeout: 2500 });
+      } else {
+        setTimeout(loadHorizonX, 500);
+      }
+    })();
+  </script>
 
   <!-- Main JavaScript Module (Cache-Busting for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=10.543.0"></script>
+  <script type="module" src="js/main.js?v=10.544.0"></script>
 </body>
 </html>

@@ -156,6 +156,10 @@
 
     document.addEventListener('visibilitychange', () => {
       isTabVisible = !document.hidden;
+      // Restart the animation loop when the tab becomes visible again
+      if (isTabVisible && !rafId) {
+        rafId = requestAnimationFrame(animate);
+      }
     });
 
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -185,11 +189,11 @@
 
     // Animation Loop — always-on (Motion driven strictly by scroll progress & auto-rotation)
     let clock = new THREE.Clock();
+    let rafId = null;
 
     function animate() {
-      requestAnimationFrame(animate);
-
-      if (!isTabVisible) return;
+      if (!isTabVisible) { rafId = null; return; }
+      rafId = requestAnimationFrame(animate);
 
       const elapsedTime = clock.getElapsedTime();
 
@@ -233,7 +237,7 @@
       renderer.render(scene, camera);
     }
 
-    animate();
+    rafId = requestAnimationFrame(animate);
   }
 
   if (document.readyState === 'loading') {

@@ -89,9 +89,9 @@ button, a, select, input, textarea {
   right: 0 !important;
   width: 100% !important;
   z-index: 100 !important;
-  background: linear-gradient(180deg, rgba(13, 19, 33, 0.88) 0%, rgba(9, 14, 26, 0.92) 100%) !important;
-  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  background: linear-gradient(180deg, rgba(13, 19, 33, 0.97) 0%, rgba(9, 14, 26, 0.98) 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
   padding: 0 !important;
@@ -100,7 +100,9 @@ button, a, select, input, textarea {
 }
 
 [data-theme="light"] .site-header {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 248, 252, 0.85) 100%) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(245, 248, 252, 0.97) 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid rgba(15, 23, 42, 0.09) !important;
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05), inset 0 -1px 0 rgba(255, 255, 255, 0.8) !important;
 }
@@ -1236,7 +1238,6 @@ body {
 .terminal-card,
 .contact-method-card,
 .contact-form,
-.stats-strip,
 .timeline-item .timeline-content,
 .project-card,
 .certificate-card,
@@ -1277,7 +1278,6 @@ body {
 .terminal-card,
 .contact-method-card,
 .contact-form,
-.stats-strip,
 .timeline-item .timeline-content,
 .project-card,
 .project-card.reveal-item,
@@ -1449,7 +1449,6 @@ body {
   .certificates-grid,
   .skills-bento-grid,
   .pillars-grid,
-  .stats-strip-inner,
   .contact-grid {
     grid-template-columns: 1fr !important;
     gap: 1.25rem !important;

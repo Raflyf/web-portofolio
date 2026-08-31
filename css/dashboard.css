@@ -71,7 +71,9 @@
   --radius-xl: 22px;
   --radius-full: 9999px;
 
-  /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content) */
+  /* Master Harmonized Glassmorphism Tokens (True Liquid Frosted Glass Standard across all Cards & Content)
+     NOTE: Duplicated in css/style.css (dashboard.html loads ONLY dashboard.css). Keep token values in sync.
+     `--glass-nested-shadow` intentionally differs slightly (style.css dark: 0.3/0.20 — this file dark: 0.2/0.15). */
   --glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(13, 19, 33, 0.85) 60%, rgba(9, 14, 26, 0.92) 100%);
   --glass-card-border: 1px solid rgba(255, 255, 255, 0.18);
   --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.50);
@@ -361,9 +363,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: linear-gradient(180deg, rgba(13, 19, 33, 0.82) 0%, rgba(9, 14, 26, 0.90) 100%) !important;
-  backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(200%) contrast(105%) !important;
+  background: linear-gradient(180deg, rgba(13, 19, 33, 0.97) 0%, rgba(9, 14, 26, 0.98) 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.3) !important;
   padding: 0.9rem 0;
@@ -371,7 +373,9 @@ body {
 }
 
 [data-theme="light"] .dash-header {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(245, 248, 252, 0.75) 100%) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(245, 248, 252, 0.97) 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border-bottom: 1px solid rgba(15, 23, 42, 0.10) !important;
   box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.8) !important;
 }
