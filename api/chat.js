@@ -889,41 +889,6 @@ function isRateLimited(clientIp) {
   return record.count > MAX_REQUESTS_PER_WINDOW;
 }
 
-// Dynamic OmniRoute Tunnel Resolver from Supabase (Zero-Redeploy Cloudflare & Localhost Sync)
-async function fetchDynamicOmniRouteUrl() {
-  try {
-    const sUrl = process.env.SUPABASE_URL || 'https://rphyzcqwpkxtzllvymss.supabase.co';
-    const sKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
-    if (!sUrl || !sKey) return null;
-    // C5: proper PostgREST `like` filter with URL encoding. The partial index
-    // predicate (fact_text LIKE '%[OMNIROUTE_TUNNEL%') matches leading `*` + trailing `*`.
-    const endpoint = `${sUrl.replace(/\/+$/, '')}/rest/v1/ai_memories?fact_text=${encodeURIComponent('like.*[OMNIROUTE_TUNNEL]*')}&order=created_at.desc&limit=1`;
-    const res = await fetchJsonWithTimeout(endpoint, {
-      method: 'GET',
-      headers: {
-        'apikey': sKey,
-        'Authorization': `Bearer ${sKey}`,
-        'Content-Type': 'application/json'
-      }
-    }, 1800);
-    if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
-      const text = res.data[0].fact_text || '';
-      // Format: [OMNIROUTE_TUNNEL: <cloudUrl> | NGROK_FALLBACK: <ngrokUrl> | LOCAL_FALLBACK: <localUrl>]
-      const tunnelMatch = text.match(/\[OMNIROUTE_TUNNEL:\s*([^|]+)/i);
-      const ngrokMatch  = text.match(/NGROK_FALLBACK:\s*([^|]+)/i);
-      const localMatch  = text.match(/LOCAL_FALLBACK:\s*([^\]]+)/i);
-      if (tunnelMatch && tunnelMatch[1]) {
-        return {
-          cloudUrl:  tunnelMatch[1].trim(),
-          ngrokUrl:  ngrokMatch  ? ngrokMatch[1].trim()  : null,
-          localUrl:  localMatch  ? localMatch[1].trim()  : null
-        };
-      }
-    }
-  } catch (_) {}
-  return null;
-}
-
 /**
  * Intelligent Unified AI Key Resolver
  * Automatically classifies tokens from a single AI_KEYS variable or legacy per-provider env vars.
@@ -933,41 +898,30 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
     process.env.AI_KEYS,
     process.env.AI_API_KEYS,
     process.env.ALL_KEYS,
-    process.env.API_KEYS
+    process.env.OPENROUTER_API_KEY,
+    process.env.OPENROUTER_KEYS,
+    process.env.OPENROUTER_KEY,
+    process.env.OPENCODE_API_KEY,
+    process.env.OPENCODE_KEYS,
+    process.env.MINIMAX_API_KEY,
+    process.env.MINIMAX_KEY,
+    process.env.MINIMAX_KEYS,
+    process.env.OLLAMA_API_KEY,
+    process.env.OLLAMA_KEY,
+    process.env.NVIDIA_API_KEY,
+    process.env.NVIDIA_KEY
   ].filter(Boolean).join(',');
 
-  const allTokens = [
-    ...unifiedRaw.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean),
-    ...(process.env.OPENROUTER_KEYS ? process.env.OPENROUTER_KEYS.split(',').map(s => s.trim()) : []),
-    ...(process.env.OPENROUTER_API_KEYS ? process.env.OPENROUTER_API_KEYS.split(',').map(s => s.trim()) : []),
-    process.env.OPENROUTER_KEY,
-    process.env.OPENROUTER_API_KEY,
-    ...(process.env.OPENCODE_KEYS ? process.env.OPENCODE_KEYS.split(',').map(s => s.trim()) : []),
-    ...(process.env.OPENCODE_API_KEYS ? process.env.OPENCODE_API_KEYS.split(',').map(s => s.trim()) : []),
-    process.env.OPENCODE_KEY,
-    process.env.OPENCODE_API_KEY,
-    ...(process.env.OLLAMA_KEYS ? process.env.OLLAMA_KEYS.split(',').map(s => s.trim()) : []),
-    ...(process.env.OLLAMA_CLOUD_API_KEYS ? process.env.OLLAMA_CLOUD_API_KEYS.split(',').map(s => s.trim()) : []),
-    ...(process.env.OLLAMA_API_KEYS ? process.env.OLLAMA_API_KEYS.split(',').map(s => s.trim()) : []),
-    process.env.OLLAMA_KEY,
-    process.env.OLLAMA_CLOUD_API_KEY,
-    process.env.OLLAMA_API_KEY,
-    ...(process.env.MINIMAX_KEYS ? process.env.MINIMAX_KEYS.split(',').map(s => s.trim()) : []),
-    ...(process.env.MINIMAX_API_KEYS ? process.env.MINIMAX_API_KEYS.split(',').map(s => s.trim()) : []),
-    process.env.MINIMAX_KEY,
-    process.env.MINIMAX_API_KEY,
-    ...(process.env.NVIDIA_KEYS ? process.env.NVIDIA_KEYS.split(',').map(s => s.trim()) : []),
-    ...(process.env.NVIDIA_API_KEYS ? process.env.NVIDIA_API_KEYS.split(',').map(s => s.trim()) : []),
-    process.env.NVIDIA_KEY,
-    process.env.NVIDIA_API_KEY
-  ].filter(Boolean);
+  const allTokens = unifiedRaw
+    .split(/[\n,;\s]+/)
+    .map(k => k.trim())
+    .filter(k => k.length > 5);
 
   const openrouter = [];
   const opencode = [];
   const minimax = [];
   const ollama = [];
   const nvidia = [];
-  let omnirouteKey = process.env.OMNIROUTE_KEY || '';
 
   for (const token of allTokens) {
     if (token.startsWith('sk-or-v1-')) {
@@ -978,8 +932,6 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
       if (!minimax.includes(token)) minimax.push(token);
     } else if (token.startsWith('nvapi-')) {
       if (!nvidia.includes(token)) nvidia.push(token);
-    } else if (token === 'sk-omniroute' || token.startsWith('sk-omni-')) {
-      omnirouteKey = token;
     } else if (token.startsWith('sk-') && token.length >= 40) {
       if (!opencode.includes(token)) opencode.push(token);
     } else if (token.includes('.') || token.length === 32 || token.startsWith('ollama-')) {
@@ -999,8 +951,6 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
       if (!ollama.includes(cleanCustomKey)) ollama.unshift(cleanCustomKey);
     } else if (cleanCustomProvider === 'nvidia') {
       if (!nvidia.includes(cleanCustomKey)) nvidia.unshift(cleanCustomKey);
-    } else if (cleanCustomProvider === 'omniroute') {
-      omnirouteKey = cleanCustomKey;
     }
   }
 
@@ -1009,8 +959,7 @@ function getUnifiedProviderKeys(cleanCustomKey = null, cleanCustomProvider = nul
     opencode,
     minimax,
     ollama,
-    nvidia,
-    omnirouteKey
+    nvidia
   };
 }
 
@@ -1040,63 +989,15 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     loadLocalEnv();
-    let isOmniAlive = false;
-    let omniLatency = null;
-    let activeEndpointType = 'offline';
-    let activeUrl = null;
-
-    // 1. Check Dynamic Tunnel from Supabase
-    const dynConfig = await fetchDynamicOmniRouteUrl();
-    const rawPrimary   = (dynConfig?.cloudUrl || process.env.OMNIROUTE_URL || '').trim();
-    const rawSecondary = (dynConfig?.ngrokUrl || process.env.OMNIROUTE_NGROK_URL || '').trim();
-    const rawLocal     = (dynConfig?.localUrl || process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1').trim();
-
-    const candidatesToProbe = [
-      { url: rawPrimary,   type: 'primary' },
-      { url: rawSecondary, type: 'secondary_fallback' },
-      { url: rawLocal,     type: 'local_fallback' }
-    ].filter(c => c.url && c.url.length > 0);
-
-    for (const cand of candidatesToProbe) {
-      const u = cand.url.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-      const isPureLocal = u.includes('127.0.0.1') || u.includes('localhost');
-      if (process.env.VERCEL && isPureLocal) continue;
-
-      const pingStart = Date.now();
-      try {
-        const pingUrl = u.includes('/models') ? u : `${u}/models`;
-        const headers = {
-          'Authorization': `Bearer ${process.env.OMNIROUTE_KEY || 'sk-omniroute'}`,
-          'ngrok-skip-browser-warning': 'true',
-          'Accept': 'application/json'
-        };
-        const pingRes = await fetchJsonWithTimeout(pingUrl, { method: 'GET', headers }, 2500);
-        if (pingRes.ok && (Array.isArray(pingRes.data?.data) || pingRes.data?.object === 'list' || pingRes.status === 401)) {
-          isOmniAlive = true;
-          omniLatency = Date.now() - pingStart;
-          activeEndpointType = cand.type;
-          activeUrl = u;
-          break;
-        }
-      } catch (_) {}
-    }
-
     const resolvedKeys = getUnifiedProviderKeys();
     const hasOpenRouter = resolvedKeys.openrouter.length > 0;
     const hasOpenCode = resolvedKeys.opencode.length > 0;
     const hasOllama = resolvedKeys.ollama.length > 0;
     const hasMiniMax = resolvedKeys.minimax.length > 0;
     return res.status(200).json({ 
-      version: 'v10.174.0', 
+      version: 'v10.572.0', 
       status: 'online', 
-      omniroute: {
-        configured: Boolean(rawPrimary || rawSecondary),
-        isOnline: isOmniAlive,
-        latencyMs: omniLatency,
-        activeType: activeEndpointType,
-        url: activeUrl ? activeUrl.replace(/:[^\/@]+@/, ':***@') : (rawPrimary ? rawPrimary.replace(/:[^\/@]+@/, ':***@') : null)
-      },
-      keys: { hasOmni: isOmniAlive, hasOpenRouter, hasOpenCode, hasOllama, hasMiniMax },
+      keys: { hasOpenRouter, hasOpenCode, hasOllama, hasMiniMax },
       timestamp: Date.now() 
     });
   }
@@ -1105,48 +1006,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // 0. Client IP Extraction & Anti-Abuse Rate Limiting
-  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown-client';
-  if (isRateLimited(clientIp)) {
-    return res.status(429).json({ 
-      error: 'Too Many Requests: Permintaan melebihi batas wajar (35 kueri/menit). Silakan coba lagi dalam beberapa detik.' 
-    });
-  }
+  const requestStartTime = Date.now();
 
   try {
     loadLocalEnv();
-    const requestStartTime = Date.now();
-    let body = req.body;
-    if (typeof body === 'string') {
-      try { body = JSON.parse(body); } catch (_) { body = {}; }
-    }
-    const { 
-      query = '', 
-      model = 'auto', 
-      customKey = '', 
-      customProvider = '',
-      attachments = [],
-      sessionLanguage = 'id',
-      history = [],
-      reasoningEffort = 'auto',
-      longTermMemory = ''
-    } = body || {};
 
-    // 1. Strict Payload Boundary Checks (Prevent memory exhaustion and DOS)
-    if (typeof query === 'string' && query.length > 50000) {
-      return res.status(413).json({ error: 'Payload Too Large: Query melebihi batas 50.000 karakter.' });
-    }
+    const body = req.body || {};
+    const { query, history = [], attachments = [], model = 'auto', customKey = null, customProvider = null, sessionLanguage = 'id', reasoningEffort = 'auto' } = body;
 
-    if (Array.isArray(attachments) && attachments.length > 10) {
-      return res.status(400).json({ error: 'Bad Request: Maksimal 10 lampiran per permintaan.' });
-    }
-
-    if (Array.isArray(attachments)) {
-      for (const a of attachments) {
-        if (a && a.base64 && typeof a.base64 === 'string' && a.base64.length > 12 * 1024 * 1024) {
-          return res.status(413).json({ error: 'Payload Too Large: Ukuran lampiran file melebihi batas 8MB.' });
-        }
-      }
+    // Rate Limiting
+    const clientIp = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1').split(',')[0].trim();
+    if (isRateLimited(clientIp)) {
+      return res.status(429).json({
+        error: 'Terlalu banyak permintaan. Silakan tunggu beberapa detik sebelum mengirim pesan berikutnya.',
+        rateLimited: true
+      });
     }
 
     if (!query && (!attachments || attachments.length === 0)) {
@@ -1157,32 +1031,7 @@ export default async function handler(req, res) {
     const cleanCustomKey = typeof customKey === 'string' ? customKey.replace(/[\r\n]/g, '').trim().slice(0, 256) : '';
     const cleanCustomProvider = typeof customProvider === 'string' ? customProvider.replace(/[^a-zA-Z0-9_-]/g, '').trim().slice(0, 32) : '';
 
-    let rawOmniUrl  = (process.env.OMNIROUTE_URL || '').trim();
-    let ngrokOmniUrl = (process.env.OMNIROUTE_NGROK_URL || '').trim();
-    let localOmniUrl = (process.env.OMNIROUTE_LOCAL_URL || 'http://localhost:20128/v1').trim();
-    
-    // Always check Dynamic Tunnel from Supabase first if available
-    const dynamicTunnel = await fetchDynamicOmniRouteUrl();
-    if (dynamicTunnel?.cloudUrl) {
-      rawOmniUrl = dynamicTunnel.cloudUrl;
-    } else if (typeof dynamicTunnel === 'string' && dynamicTunnel.trim()) {
-      rawOmniUrl = dynamicTunnel.trim();
-    }
-    if (dynamicTunnel?.ngrokUrl) {
-      ngrokOmniUrl = dynamicTunnel.ngrokUrl;
-    }
-    if (dynamicTunnel?.localUrl) {
-      localOmniUrl = dynamicTunnel.localUrl;
-    }
-
-    // Normalize all URLs to /chat/completions
-    const normUrl = u => u ? u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '') + '/chat/completions' : null;
-    const OMNIROUTE_URL       = rawOmniUrl ? normUrl(rawOmniUrl) : null;
-    const OMNIROUTE_NGROK_URL = ngrokOmniUrl ? normUrl(ngrokOmniUrl) : null;
-    const OMNIROUTE_LOCAL_URL = normUrl(localOmniUrl);
-
     const resolvedKeys = getUnifiedProviderKeys(cleanCustomKey, cleanCustomProvider);
-    const OMNIROUTE_KEY = resolvedKeys.omnirouteKey;
     const OPENROUTER_KEYS = resolvedKeys.openrouter;
     const OPENROUTER_KEY = OPENROUTER_KEYS[0] || null;
     const NVIDIA_KEYS = resolvedKeys.nvidia;
@@ -1540,156 +1389,6 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
     // PROVIDER CALLER WRAPPERS
     // ========================================================================
-    let isOmniOffline = false;
-    const failedOmniEndpointsInRequest = new Set();
-
-    // Detect error strings returned by OmniRoute / Gradio as the "answer" text.
-    // Returns true if the string looks like an upstream error, not a real response.
-    function isOmniErrorResponse(text) {
-      if (!text) return false;
-      const t = text.trim();
-      // Initialization / daemon booting messages from HF Space
-      if (/OmniRoute\s+(?:daemon\s+sedang\s+menginisialisasi|Worker\s+Active|Node\.js\s+LTS)/i.test(t)) return true;
-      if (/Provisioning\s+official\s+Node\.js|Downloading\s+Node\.js|Extracting\s+Node\.js/i.test(t)) return true;
-      // HTTP status error lines: "HTTP 4xx", "HTTP 5xx"
-      if (/^HTTP\s+[45]\d{2}/i.test(t)) return true;
-      // JSON error object returned as string
-      if (t.startsWith('{') || t.startsWith('[')) {
-        try {
-          const obj = JSON.parse(t);
-          if (obj?.error || obj?.detail || obj?.message) return true;
-        } catch (_) {}
-      }
-      // Common upstream error patterns
-      if (/maximum\s+combo\s+retry\s+limit/i.test(t)) return true;
-      if (/service_unavailable|server_error|rate_limit/i.test(t)) return true;
-      if (/{"error":/i.test(t)) return true;
-      return false;
-    }
-
-    async function callOmniRoute(mName, tOut = 1500) {
-      if (isOmniOffline) return null;
-      const stepDeadline = Date.now() + tOut;
-
-      const endpointsToTry = [];
-
-      function addEndpoint(rawUrl, defaultLabel) {
-        if (!rawUrl || typeof rawUrl !== 'string') return;
-        const u = rawUrl.trim();
-        if (!u) return;
-        const isNgrok = u.includes('ngrok') || u.includes('trycloudflare') || u.includes('cloudflare');
-        const isLocal = u.includes('localhost') || u.includes('127.0.0.1');
-
-        if (process.env.VERCEL && isLocal) return; // Vercel serverless cannot reach pure localhost
-
-        const normUrl = u.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-        if (endpointsToTry.some(e => e.normUrl === normUrl)) return;
-
-        let label = defaultLabel;
-        if (isNgrok) label = 'Ngrok Local Tunnel';
-        else if (isLocal) label = 'Localhost :20128';
-
-        endpointsToTry.push({
-          rawUrl: u,
-          normUrl,
-          directUrl: `${normUrl}/chat/completions`,
-          label,
-          isNgrok,
-          isLocal
-        });
-      }
-
-      // Priority 1: Localhost (instant zero-network route for local testing)
-      if (!process.env.VERCEL && OMNIROUTE_LOCAL_URL) {
-        addEndpoint(OMNIROUTE_LOCAL_URL, 'Localhost :20128');
-      }
-      // Priority 2: Ngrok Local Tunnel (instant cloud route if active)
-      if (OMNIROUTE_NGROK_URL) {
-        addEndpoint(OMNIROUTE_NGROK_URL, 'Ngrok Local Tunnel');
-      }
-      // Priority 3: Primary Gateway (e.g. Cloud HF Space)
-      addEndpoint(OMNIROUTE_URL, 'Primary Gateway');
-
-      if (endpointsToTry.length === 0) {
-        isOmniOffline = true;
-        return null;
-      }
-
-      for (const target of endpointsToTry) {
-        if (failedOmniEndpointsInRequest.has(target.normUrl)) {
-          continue;
-        }
-
-        const remaining = stepDeadline - Date.now();
-        if (remaining < 400) break;
-
-        try {
-          const res = await fetchJsonWithTimeout(target.directUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${OMNIROUTE_KEY || 'sk-omniroute'}`,
-              'ngrok-skip-browser-warning': 'true'
-            },
-            body: JSON.stringify({
-              model: mName,
-              messages: openRouterMessages,
-              max_tokens: maxTokensConfig,
-              temperature: tempConfig,
-              reasoning_effort: mName.toLowerCase().includes('lightning') ? undefined : (effectiveEffort === 'low' ? 'medium' : 'high'),
-              stream: false
-            })
-          }, remaining);
-
-          if (res.ok) {
-            let rawPayload = (typeof res.data === 'string') ? res.data : ((typeof res.text === 'string') ? res.text : '');
-            let content = res.data?.choices?.[0]?.message?.content || null;
-            
-            // Extract SSE stream chunks if payload contains SSE stream format
-            if (rawPayload && rawPayload.includes('data:')) {
-              const chunks = [];
-              const reasoningChunks = [];
-              for (const l of rawPayload.split('\n')) {
-                const tr = l.trim();
-                if (tr.startsWith('data:') && !tr.startsWith('data: [DONE]') && tr !== 'data: null') {
-                  try {
-                    const obj = JSON.parse(tr.slice(5).trim());
-                    const delta = obj.choices?.[0]?.delta;
-                    const msg = obj.choices?.[0]?.message;
-                    if (delta?.content) {
-                      chunks.push(delta.content);
-                    } else if (msg?.content) {
-                      chunks.push(msg.content);
-                    } else if (delta?.reasoning_content) {
-                      reasoningChunks.push(delta.reasoning_content);
-                    }
-                  } catch (_) {}
-                }
-              }
-              if (chunks.length > 0) content = chunks.join('');
-              else if (reasoningChunks.length > 0) content = reasoningChunks.join('');
-            } else if (!content && typeof rawPayload === 'string') {
-              content = rawPayload;
-            }
-
-            if (content && content.trim().length > 0 && !isOmniErrorResponse(content)) {
-              return sendSuccess(content.trim(), mName, `OmniRoute Dedicated Gateway (${target.label})`);
-            } else if (content && isOmniErrorResponse(content)) {
-              providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: upstream error — ${content.slice(0, 120)}`);
-              failedOmniEndpointsInRequest.add(target.normUrl);
-            }
-          } else if (res.status >= 400) {
-            providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: HTTP ${res.status}`);
-            failedOmniEndpointsInRequest.add(target.normUrl);
-          }
-        } catch (err) {
-          providerErrors.push(`OmniRoute ${target.label} (${mName}) Direct: ${err.message}`);
-          failedOmniEndpointsInRequest.add(target.normUrl);
-        }
-      }
-
-      return null;
-    }
 
     async function callOpenRouter(mName, tOut = 45000) {
       if (OPENROUTER_KEYS.length === 0) return null;
@@ -1942,10 +1641,14 @@ Langkah yang WAJIB Anda lakukan:
     // Tier 1: OpenRouter SOTA Pool (nemotron-lightning -> nano-reasoning -> free pool -> deepseek-chat -> super -> ultra -> minimax -> laguna)
     // Tier 2: Ollama Cloud AI Gateway (nemotron-nano:30b -> nemotron-ultra -> nemotron-super -> minimax-m3)
     // Tier 3: OpenCode Zen Direct API (nemotron-lightning -> nemotron-ultra -> x-preview -> mimo)
-    // Tier 4 (Manual Override Only): OmniRoute Dedicated Gateway
+    // ========================================================================
+    // BUILD MULTI-TIER EXECUTION PIPELINE (STRICT CLOUD SOTA PRIORITY HIERARCHY)
+    // Tier 1: OpenRouter SOTA Pool (nemotron-lightning -> nano-reasoning -> free pool -> deepseek-chat -> super -> ultra -> minimax -> laguna)
+    // Tier 2: Ollama Cloud AI Gateway (nemotron-nano:30b -> nemotron-ultra -> nemotron-super -> minimax-m3)
+    // Tier 3: OpenCode Zen Direct API (nemotron-lightning -> nemotron-ultra -> x-preview -> mimo)
     // ========================================================================
     function buildExecutionPipeline() {
-      // 0. MULTIMODAL & VISION PIPELINE (Prioritas: Mimo v2.5 OpenCode -> Nemotron Nano Omni -> Minimax M2.7 -> Ollama -> OmniRoute)
+      // 0. MULTIMODAL & VISION PIPELINE (Prioritas: Mimo v2.5 OpenCode -> Nemotron Nano Omni -> Minimax M2.7 -> Ollama)
       if (hasImages || (model && model.toLowerCase().includes('vision')) || queryIntent.category === 'vision') {
         return [
           // Tier 1: Mimo v2.5 from OpenCode (Primary Vision SOTA)
@@ -1956,9 +1659,7 @@ Langkah yang WAJIB Anda lakukan:
           { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
           // Tier 4: Ollama Multimodal (nemotron-3-nano / minimax-m3)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-          { provider: 'ollama', model: 'minimax-m3', timeout: 45000 },
-          // Tier 5: OmniRoute Vision (Local daemon fallback)
-          { provider: 'omniroute', model: 'Vision-model', timeout: 30000 }
+          { provider: 'ollama', model: 'minimax-m3', timeout: 45000 }
         ];
       }
 
@@ -1987,9 +1688,72 @@ Langkah yang WAJIB Anda lakukan:
       // 2. SPECIFIC MANUAL MODEL OVERRIDES (Jika pengguna memilih model spesifik secara manual di UI)
       if (model && model !== 'auto') {
         const t = model.toLowerCase();
-        if (t.includes('nano')) {
+
+        // === OLLAMA CLOUD GROUP ===
+        if (t === 'nemotron-3-nano' || t.startsWith('ollama-nano')) {
           return [
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
+            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 }
+          ];
+        }
+        if (t === 'ollama-nemotron-ultra') {
+          return [
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 }
+          ];
+        }
+        if (t === 'ollama-nemotron-super') {
+          return [
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 }
+          ];
+        }
+        if (t === 'ollama-minimax') {
+          return [
+            { provider: 'ollama', model: 'minimax-m3', timeout: 45000 },
+            { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
+            { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
+            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
+          ];
+        }
+
+        // === OPENCODE ZEN GROUP ===
+        if (t === 'opencode-lightning') {
+          return [
+            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
+          ];
+        }
+        if (t === 'opencode-ultra') {
+          return [
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 }
+          ];
+        }
+        if (t === 'x-preview' || t.includes('preview')) {
+          return [
+            { provider: 'opencode', model: 'x-preview-f-free', timeout: 45000 },
+            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 }
+          ];
+        }
+        if (t === 'mimo' || t.includes('mimo')) {
+          return [
+            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
+            { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 }
+          ];
+        }
+
+        // === OPENROUTER POOL GROUP ===
+        if (t === 'openrouter-free') {
+          return [
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 }
           ];
@@ -2015,18 +1779,12 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 }
           ];
         }
-        if (t.includes('mimo')) {
-          return [
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 }
-          ];
-        }
         if (t.includes('minimax') || t.includes('vision')) {
           return [
             { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
             { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
+            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
+            { provider: 'ollama', model: 'minimax-m3', timeout: 45000 }
           ];
         }
         if (t.includes('laguna')) {
@@ -2041,8 +1799,7 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 45000 },
             { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 30000 }
+            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
           ];
         }
         if (t.includes('antigravity')) {
@@ -2050,23 +1807,14 @@ Langkah yang WAJIB Anda lakukan:
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
             { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
             { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
-            { provider: 'omniroute', model: 'Antigravity', timeout: 30000 }
+            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 }
           ];
         }
         if (t.includes('deepseek')) {
           return [
             { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
             { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'omniroute', model: 'Codex', timeout: 30000 }
-          ];
-        }
-        if (t.includes('preview')) {
-          return [
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 },
-            { provider: 'omniroute', model: 'x-preview-f-free', timeout: 30000 }
+            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
           ];
         }
       }
@@ -2113,9 +1861,7 @@ Langkah yang WAJIB Anda lakukan:
     // ========================================================================
     async function executeStep(step, timeout) {
       if (!step) return null;
-      if (step.provider === 'omniroute') {
-        return callOmniRoute(step.model, timeout);
-      } else if (step.provider === 'nim') {
+      if (step.provider === 'nim') {
         return callNvidiaNim(step.model, timeout);
       } else if (step.provider === 'opencode') {
         return callOpenCode(step.model, timeout);
@@ -2132,13 +1878,7 @@ Langkah yang WAJIB Anda lakukan:
     async function executePipelineWithPriorityRace(pipeline) {
       if (!pipeline || pipeline.length === 0) return null;
 
-      let omniFailedOnce = false;
-
       for (const step of pipeline) {
-        if (step.provider === 'omniroute' && omniFailedOnce) {
-          continue; // Skip subsequent omniroute candidates in this turn if upstream host is unresponsive
-        }
-
         const elapsed = Date.now() - requestStartTime;
         const remainingMs = 58000 - elapsed;
         if (remainingMs <= 2000) break;

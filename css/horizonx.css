@@ -1179,6 +1179,64 @@ body {
   font-weight: 600 !important;
 }
 
+.custom-dropdown-menu li.custom-dropdown-header,
+.custom-dropdown-menu li.custom-dropdown-group-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  font-size: 0.64rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  color: #34d399 !important;
+  padding: 8px 10px 4px 10px !important;
+  cursor: default !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-top: 6px !important;
+  user-select: none !important;
+}
+
+.custom-dropdown-menu li.custom-dropdown-header:first-child,
+.custom-dropdown-menu li.custom-dropdown-group-header:first-child {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 4px !important;
+}
+
+.custom-dropdown-group-header .group-label {
+  font-weight: 700 !important;
+  color: #a7f3d0 !important;
+}
+
+.custom-dropdown-group-header .group-badge {
+  font-size: 0.55rem !important;
+  font-weight: 800 !important;
+  padding: 1px 5px !important;
+  border-radius: 4px !important;
+  background: rgba(52, 211, 153, 0.15) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.3) !important;
+  letter-spacing: 0.05em !important;
+}
+
+[data-theme="light"] .custom-dropdown-menu li.custom-dropdown-header,
+[data-theme="light"] .custom-dropdown-menu li.custom-dropdown-group-header {
+  color: #059669 !important;
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .custom-dropdown-group-header .group-label {
+  color: #065f46 !important;
+}
+
+[data-theme="light"] .custom-dropdown-group-header .group-badge {
+  background: rgba(5, 150, 105, 0.12) !important;
+  color: #047857 !important;
+  border-color: rgba(5, 150, 105, 0.25) !important;
+}
+
 [data-theme="light"] .custom-dropdown-btn {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
