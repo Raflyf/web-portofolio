@@ -1881,3 +1881,169 @@ body {
     z-index: 9999 !important;
   }
 }
+
+/* ==========================================================================
+   TERMINAL SLASH COMMAND AUTOCOMPLETE MENU
+   ========================================================================== */
+.terminal-slash-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 14px;
+  right: 14px;
+  max-height: 260px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgba(13, 17, 23, 0.96) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(139, 92, 246, 0.35) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 20px rgba(139, 92, 246, 0.15) !important;
+  z-index: 100 !important;
+  padding: 6px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.4) transparent;
+}
+
+.terminal-slash-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.terminal-slash-menu::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.4);
+  border-radius: 9999px;
+}
+
+.terminal-slash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px 4px 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #a78bfa;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+.terminal-slash-header .slash-hint {
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: #94a3b8;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.terminal-slash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+  gap: 10px;
+}
+
+.terminal-slash-item:hover,
+.terminal-slash-item.active {
+  background: rgba(139, 92, 246, 0.22) !important;
+  border-left: 3px solid #a78bfa !important;
+  padding-left: 12px !important;
+}
+
+.terminal-slash-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.terminal-slash-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.terminal-slash-item.active .terminal-slash-badge {
+  background: rgba(52, 211, 153, 0.25);
+  border-color: #34d399;
+  color: #a7f3d0;
+}
+
+.terminal-slash-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+}
+
+.terminal-slash-desc {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+  flex-shrink: 1;
+}
+
+/* Light Theme Styling for Slash Menu */
+[data-theme="light"] .terminal-slash-menu {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18), 0 0 20px rgba(99, 102, 241, 0.1) !important;
+  scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
+}
+
+[data-theme="light"] .terminal-slash-menu::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+}
+
+[data-theme="light"] .terminal-slash-header {
+  color: #6366f1;
+  border-bottom-color: rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .terminal-slash-header .slash-hint {
+  color: #64748b;
+}
+
+[data-theme="light"] .terminal-slash-item:hover,
+[data-theme="light"] .terminal-slash-item.active {
+  background: rgba(99, 102, 241, 0.12) !important;
+  border-left: 3px solid #6366f1 !important;
+}
+
+[data-theme="light"] .terminal-slash-badge {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  border-color: rgba(5, 150, 105, 0.25);
+}
+
+[data-theme="light"] .terminal-slash-item.active .terminal-slash-badge {
+  background: rgba(5, 150, 105, 0.2);
+  color: #047857;
+}
+
+[data-theme="light"] .terminal-slash-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .terminal-slash-desc {
+  color: #64748b;
+}
+
