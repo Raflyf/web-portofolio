@@ -18,6 +18,7 @@ ngrok_auth.md
 .agents/
 skills-lock.json
 .mcp.json
+.roo/
 
 # Local utility scripts (not part of Vercel deployment)
 generate_favicons.py
