@@ -167,8 +167,10 @@ class DashboardApp {
 
   refreshScrollReveal() {
     if (!this.scrollObserver) return;
+    // Observe the split inner glass cards (big transparent wrappers are skipped so
+    // the reveal only triggers on actual surfaces — reduces backdrop-filter cost).
     const items = document.querySelectorAll(
-      '.kpi-card, .chart-card, .intel-card, .omniroute-topology-card, .ai-models-matrix-card, .table-card, .dash-section-bar'
+      '.kpi-card, .chart-card, .intel-card, .omniroute-combo-card, .omniroute-combo-tile, .omniroute-header-card, .omniroute-footer-card, .ai-matrix-header-card, .ai-matrix-router-card, .ai-model-card, .ai-model-banner-card, .ai-memory-header-card, .ai-memory-list-card, .table-header-card, .table-body-card, .dash-section-bar'
     );
     items.forEach(el => {
       el.classList.add('reveal-item');
