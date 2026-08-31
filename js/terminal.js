@@ -1350,11 +1350,7 @@ export function initTerminal() {
     const msgEl = document.createElement('div');
     msgEl.className = 'chat-msg chat-msg--ai';
 
-    let currentModelName = modelDisplayName;
-    if (!currentModelName && modelSelect) {
-      const optText = modelSelect.options[modelSelect.selectedIndex]?.text || 'Auto Router';
-      currentModelName = optText.split('(')[0].trim();
-    }
+    let currentModelName = modelDisplayName || 'Auto Router';
     if (!currentModelName) currentModelName = 'AI Assistant';
 
     msgEl.innerHTML = `
