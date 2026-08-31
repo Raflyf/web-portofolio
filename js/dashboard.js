@@ -207,6 +207,14 @@ class DashboardApp {
   // =========================================================================
   // 3. CRYPTOGRAPHIC PIN AUTHENTICATION & SUPABASE CLOUD SYNC
   // =========================================================================
+  getLockoutInfo() {
+    try {
+      const raw = localStorage.getItem(LOCKOUT_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+    return { attempts: 0, lockedUntil: null };
+  }
+
   async hashPin(pin) {
     const encoder = new TextEncoder();
     const data = encoder.encode(pin + PIN_SALT);
@@ -272,7 +280,7 @@ class DashboardApp {
 
     // Check initial lockout state
     const initialLockout = this.getLockoutInfo();
-    if (initialLockout.lockedUntil && Date.now() < initialLockout.lockedUntil) {
+    if (initialLockout && initialLockout.lockedUntil && Date.now() < initialLockout.lockedUntil) {
       const remainingMin = Math.max(1, Math.ceil((initialLockout.lockedUntil - Date.now()) / 60000));
       if (errorEl) {
         errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
@@ -281,8 +289,7 @@ class DashboardApp {
       if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
     }
 
-    // Reset local lockout button handler — requires proof of the current valid PIN
-    // before clearing the lockout (no more blind self-service reset).
+    // Reset local lockout button handler — validates against server-side verify_pin
     if (unlockLocalBtn) {
       unlockLocalBtn.addEventListener('click', async () => {
         const proofPin = input ? input.value.trim() : '';
@@ -296,37 +303,37 @@ class DashboardApp {
         }
 
         const proofHash = await this.hashPin(proofPin);
-        const activePinHash = this.cloudPinHash || await this.fetchCloudPinHash();
-        const localHash = localStorage.getItem('dash_custom_pin_hash');
-        const isValidProof = (proofHash === activePinHash) || (localHash && proofHash === localHash);
-        if (!isValidProof) {
-          if (errorEl) {
-            errorEl.textContent = 'PIN tidak cocok. Reset Batas Kunci ditolak.';
-            errorEl.style.display = 'block';
-          }
-          return;
-        }
-
-        // Wire to the server-side reset_lockout action using the verified hash as proof.
         try {
-          await fetch('/api/admin-otp', {
+          const res = await fetch('/api/admin-otp?action=verify_pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'reset_lockout',
-              current_pin_hash: (proofHash === activePinHash) ? activePinHash : localHash
-            })
+            body: JSON.stringify({ pin_hash: proofHash })
           });
-        } catch (_) {}
-
-        // Graceful degradation: if the API is unreachable (e.g., offline) but the PIN
-        // proof is valid, still allow the local lockout reset.
-        localStorage.removeItem(LOCKOUT_KEY);
-        if (errorEl) errorEl.style.display = 'none';
-        unlockLocalBtn.style.display = 'none';
-        if (input) {
-          input.value = '';
-          input.focus();
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.verified) {
+            localStorage.removeItem(LOCKOUT_KEY);
+            const sessionPayload = JSON.stringify({
+              auth: true,
+              token: data.session_token || 'adm_verified',
+              timestamp: Date.now()
+            });
+            sessionStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
+            document.documentElement.classList.add('is-admin-authenticated');
+            if (errorEl) errorEl.style.display = 'none';
+            unlockLocalBtn.style.display = 'none';
+            postAuthBootstrap();
+            return;
+          } else {
+            if (errorEl) {
+              errorEl.textContent = data.message || 'Master PIN salah. Reset Batas Kunci ditolak.';
+              errorEl.style.display = 'block';
+            }
+          }
+        } catch (_) {
+          if (errorEl) {
+            errorEl.textContent = 'Gagal memverifikasi ke server. Periksa koneksi internet.';
+            errorEl.style.display = 'block';
+          }
         }
       });
     }
@@ -344,18 +351,7 @@ class DashboardApp {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const enteredPin = input ? input.value.trim() : '';
-
-        // Check brute-force lockout
-        const lockout = this.getLockoutInfo();
-        if (lockout.lockedUntil && Date.now() < lockout.lockedUntil) {
-          const remainingMin = Math.max(1, Math.ceil((lockout.lockedUntil - Date.now()) / 60000));
-          if (errorEl) {
-            errorEl.textContent = `Akses terkunci sementara. Coba lagi dalam ${remainingMin} menit.`;
-            errorEl.style.display = 'block';
-          }
-          if (unlockLocalBtn) unlockLocalBtn.style.display = 'inline-flex';
-          return;
-        }
+        if (!enteredPin) return;
 
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) submitBtn.disabled = true;
@@ -383,11 +379,12 @@ class DashboardApp {
             sessionStorage.setItem(SESSION_AUTH_KEY, sessionPayload);
             document.documentElement.classList.add('is-admin-authenticated');
             localStorage.removeItem(LOCKOUT_KEY);
+            if (unlockLocalBtn) unlockLocalBtn.style.display = 'none';
             postAuthBootstrap();
             return;
           } else {
             // Server reported invalid PIN or lockout
-            const attempts = data.lockout_attempts || ((lockout.attempts || 0) + 1);
+            const attempts = data.lockout_attempts || 1;
             let lockedUntil = data.locked_until || null;
             if (data.is_locked || attempts >= 5) {
               if (!lockedUntil) lockedUntil = Date.now() + 15 * 60 * 1000;
