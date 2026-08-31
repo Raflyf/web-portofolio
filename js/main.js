@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollProgressBar();
   initScrollReveal();
   initSmoothScrollEngine();
+  initInertiaSmoothWheel();
   initBackToTopButtons();
   initHorizonXEffects();
   initTerminal();
@@ -408,7 +409,84 @@ function initBackToTopButtons() {
 
 /* ==========================================================================
    3. MOMENTUM INERTIA SMOOTH WHEEL ENGINE (Fluid 60-120fps physics)
+   Lightweight: no per-frame layout read beyond scrollTo; pauses when the
+   tab is hidden; ignores wheel events over scrollable children/modals.
    ========================================================================== */
+function initInertiaSmoothWheel() {
+  let currentY = window.scrollY || window.pageYOffset;
+  let targetY = currentY;
+  let isRunning = false;
+  const ease = 0.09;
+
+  function updateWheelPhysics() {
+    if (document.hidden) { isRunning = false; return; }
+    const diff = targetY - currentY;
+    if (Math.abs(diff) > 0.5) {
+      currentY += diff * ease;
+      window.scrollTo(0, Math.round(currentY * 10) / 10);
+      requestAnimationFrame(updateWheelPhysics);
+    } else {
+      currentY = targetY;
+      window.scrollTo(0, targetY);
+      isRunning = false;
+    }
+  }
+
+  window.addEventListener('wheel', (e) => {
+    if (document.body.classList.contains('modal-open') || document.documentElement.classList.contains('modal-open')) {
+      return;
+    }
+
+    const path = e.composedPath ? e.composedPath() : [];
+    const isScrollableChild = path.some(el => {
+      if (!el || !el.classList) return false;
+      return (
+        el.classList.contains('terminal-body') ||
+        el.classList.contains('modal-body') ||
+        el.classList.contains('terminal-modal-dialog') ||
+        el.classList.contains('cert-modal-dialog') ||
+        el.tagName === 'DIALOG' ||
+        el.tagName === 'TEXTAREA' ||
+        el.tagName === 'IFRAME'
+      );
+    });
+
+    if (isScrollableChild) {
+      targetY = window.scrollY || window.pageYOffset;
+      currentY = targetY;
+      return;
+    }
+
+    if (e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
+      targetY = window.scrollY || window.pageYOffset;
+      currentY = targetY;
+      return;
+    }
+
+    e.preventDefault();
+
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    let delta = e.deltaY;
+    if (e.deltaMode === 1) delta *= 35;
+    if (e.deltaMode === 2) delta *= 750;
+
+    targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
+
+    if (!isRunning) {
+      isRunning = true;
+      currentY = window.scrollY || window.pageYOffset;
+      requestAnimationFrame(updateWheelPhysics);
+    }
+  }, { passive: false });
+
+  window.addEventListener('scroll', () => {
+    if (!isRunning) {
+      currentY = window.scrollY || window.pageYOffset;
+      targetY = currentY;
+    }
+  }, { passive: true });
+}
 
 /* ==========================================================================
    4. THEME TOGGLER

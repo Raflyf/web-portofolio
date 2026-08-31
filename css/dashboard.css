@@ -158,24 +158,6 @@ html[data-theme="light"],
   --glass-backdrop-blur: blur(8px);
 }
 
-/* HorizonX 3D Scroll Morphing Background Canvas */
-.bg-morph-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.85;
-  will-change: transform;
-  transition: opacity 0.3s ease;
-}
-
-[data-theme="light"] .bg-morph-canvas {
-  opacity: 0.75;
-}
-
 /* ==========================================================================
    3. GLOBAL RESET & BASE STYLES
    ========================================================================== */

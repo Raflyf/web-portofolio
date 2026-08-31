@@ -225,23 +225,6 @@ html {
   pointer-events: none;
 }
 
-/* HorizonX 3D Scroll Morphing Background Canvas */
-.bg-morph-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.85;
-  transition: opacity var(--duration-medium) var(--ease-smooth-out);
-}
-
-[data-theme="light"] .bg-morph-canvas {
-  opacity: 0.75;
-}
-
 html {
   background-color: var(--bg-primary);
 }
