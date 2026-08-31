@@ -82,10 +82,7 @@ class DashboardApp {
     this.initOtpResetFlow();
     this.initCustomDropdowns();
     this.initEventListeners();
-    this.initScrollReveal();
     this.initBackToTopButton();
-    this.initInertiaSmoothWheel();
-    this.checkOmniRouteRealtimeStatus();
   }
 
   // =========================================================================
@@ -224,6 +221,9 @@ class DashboardApp {
     const postAuthBootstrap = async () => {
       document.documentElement.classList.add('is-admin-authenticated');
       if (overlay) overlay.style.display = 'none';
+      this.initScrollReveal();
+      this.initInertiaSmoothWheel();
+      this.checkOmniRouteRealtimeStatus();
       await this.loadDashboardData();
       this.startRealtimePolling();
       this.refreshScrollReveal();
