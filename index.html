@@ -46,7 +46,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@400;500;600;700&display=swap">
 
   <!-- Stylesheets (Cache-Busting for Instant CDN Refresh) -->
-  <link rel="stylesheet" href="css/style.css?v=10.545.0">
+  <link rel="stylesheet" href="css/style.css?v=10.547.0">
   <link rel="stylesheet" href="css/components.css?v=10.545.0">
   <link rel="stylesheet" href="css/horizonx.css?v=10.545.0">
 
@@ -199,9 +199,6 @@
     }
   </style>
 <body>
-
-  <!-- HorizonX 3D Scroll-Morphing Background Canvas (Three.js WebGL Engine) -->
-  <canvas id="bg-morph-canvas" class="bg-morph-canvas" aria-hidden="true"></canvas>
 
   <!-- HorizonX Ambient Morphing Mesh & Kinetic Drifting Glow -->
   <div class="ambient-glow-layer" aria-hidden="true">
@@ -1003,33 +1000,7 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
   </button>
 
-  <!-- HorizonX 3D Background: lazily injected on idle (Always-On Motion policy — runs even with OS reduced-motion) -->
-  <script>
-    (function () {
-      function loadHorizonX() {
-        var three = document.createElement('script');
-        three.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-        three.async = true;
-        three.onload = function () {
-          var bg = document.createElement('script');
-          bg.src = 'js/bg-morph-canvas.js?v=10.546.0';
-          bg.async = true;
-          document.body.appendChild(bg);
-        };
-        document.body.appendChild(three);
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadHorizonX);
-      } else if (window.requestIdleCallback) {
-        window.requestIdleCallback(loadHorizonX, { timeout: 2500 });
-      } else {
-        setTimeout(loadHorizonX, 500);
-      }
-    })();
-  </script>
-
   <!-- Main JavaScript Module (Cache-Busting for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=10.546.0"></script>
+  <script type="module" src="js/main.js?v=10.547.0"></script>
 </body>
 </html>
