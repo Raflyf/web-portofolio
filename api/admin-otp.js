@@ -360,6 +360,35 @@ export default async function handler(req, res) {
             const row = data[0];
             storedHash = row.pin_hash || DEFAULT_PIN_HASH;
             currentAttempts = row.lockout_attempts || 0;
+
+            // 1. Jika PIN cocok: Langsung loloskan dan reset lockout di database
+            if (inputHash === storedHash) {
+              try {
+                await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+                  method: 'POST',
+                  headers: {
+                    ...headers,
+                    'Prefer': 'resolution=merge-duplicates,return=representation'
+                  },
+                  body: JSON.stringify({
+                    id: 'master_auth',
+                    lockout_attempts: 0,
+                    locked_until: null,
+                    updated_at: new Date().toISOString()
+                  })
+                });
+              } catch (_) {}
+
+              const sessionToken = 'adm_' + crypto.randomBytes(32).toString('hex');
+              return res.status(200).json({
+                success: true,
+                verified: true,
+                session_token: sessionToken,
+                message: 'Autentikasi Master PIN berhasil.'
+              });
+            }
+
+            // 2. Jika PIN salah dan status saat ini sedang terkunci
             if (row.locked_until && (new Date(row.locked_until).getTime() > Date.now())) {
               return res.status(423).json({
                 success: false,

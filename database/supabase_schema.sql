@@ -165,16 +165,7 @@ BEGIN
         RETURNING * INTO v_row;
     END IF;
 
-    IF v_row.locked_until IS NOT NULL AND v_row.locked_until > now() THEN
-        RETURN json_build_object(
-            'success', false,
-            'verified', false,
-            'is_locked', true,
-            'locked_until', v_row.locked_until,
-            'message', 'Akses terkunci sementara karena melebihi batas percobaan PIN.'
-        );
-    END IF;
-
+    -- 1. JIKA PIN COCOK: Langsung izinkan masuk, bersihkan semua hitungan gagal & status lockout
     IF v_row.pin_hash = p_pin_hash THEN
         UPDATE public.admin_auth_config
         SET lockout_attempts = 0, locked_until = NULL, updated_at = now()
@@ -185,31 +176,43 @@ BEGIN
             'verified', true,
             'message', 'Verifikasi Master PIN berhasil.'
         );
-    ELSE
-        v_new_attempts := COALESCE(v_row.lockout_attempts, 0) + 1;
-        IF v_new_attempts >= 5 THEN
-            v_locked_until := now() + interval '15 minutes';
-        ELSE
-            v_locked_until := NULL;
-        END IF;
+    END IF;
 
-        UPDATE public.admin_auth_config
-        SET lockout_attempts = v_new_attempts, locked_until = v_locked_until, updated_at = now()
-        WHERE id = 'master_auth';
-
+    -- 2. JIKA PIN SALAH DAN SEDANG TERKUNCI: Tolak dengan status terkunci
+    IF v_row.locked_until IS NOT NULL AND v_row.locked_until > now() THEN
         RETURN json_build_object(
             'success', false,
             'verified', false,
-            'is_locked', (v_locked_until IS NOT NULL),
-            'lockout_attempts', v_new_attempts,
-            'remaining_attempts', GREATEST(0, 5 - v_new_attempts),
-            'locked_until', v_locked_until,
-            'message', CASE 
-                WHEN v_locked_until IS NOT NULL THEN 'Batas 5 kali percobaan PIN terlampaui. Sistem dikunci 15 menit. Silakan gunakan pemulihan OTP.'
-                ELSE 'Master PIN salah. Sisa percobaan: ' || (5 - v_new_attempts) || ' kali.'
-            END
+            'is_locked', true,
+            'locked_until', v_row.locked_until,
+            'message', 'Akses terkunci sementara karena melebihi batas percobaan PIN. Gunakan OTP recovery.'
         );
     END IF;
+
+    -- 3. JIKA PIN SALAH DAN BELUM TERKUNCI: Tambah hitungan percobaan gagal
+    v_new_attempts := COALESCE(v_row.lockout_attempts, 0) + 1;
+    IF v_new_attempts >= 5 THEN
+        v_locked_until := now() + interval '15 minutes';
+    ELSE
+        v_locked_until := NULL;
+    END IF;
+
+    UPDATE public.admin_auth_config
+    SET lockout_attempts = v_new_attempts, locked_until = v_locked_until, updated_at = now()
+    WHERE id = 'master_auth';
+
+    RETURN json_build_object(
+        'success', false,
+        'verified', false,
+        'is_locked', (v_locked_until IS NOT NULL),
+        'lockout_attempts', v_new_attempts,
+        'remaining_attempts', GREATEST(0, 5 - v_new_attempts),
+        'locked_until', v_locked_until,
+        'message', CASE 
+            WHEN v_locked_until IS NOT NULL THEN 'Batas 5 kali percobaan PIN terlampaui. Sistem dikunci 15 menit. Silakan gunakan pemulihan OTP.'
+            ELSE 'Master PIN salah. Sisa percobaan: ' || (5 - v_new_attempts) || ' kali.'
+        END
+    );
 END;
 $$;
 
