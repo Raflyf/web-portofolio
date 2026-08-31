@@ -317,39 +317,22 @@ body {
 }
 
 /* ==========================================================================
-   5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE
-   NOTE: Identical to horizonx.css (landing page) so the dashboard reveal
-   animation matches the landing 1:1 — including the reveal-from-top slide.
-   will-change is omitted (vs horizonx) to avoid promoting every card to a
-   permanent compositing layer; the animation itself is unchanged.
+   5. KINETIC SCROLL REVEAL — FADE-ONLY (perf-optimized)
+   Dashboard has MANY glass cards on screen at once. Animating transform
+   (translateY/scale/perspective) on a card that has backdrop-filter forces
+   the browser to re-sample the blurred backdrop on every animation frame —
+   that is what caused the frame drops during scroll. Reveal is therefore a
+   pure opacity fade (same 0.6s spring duration): it looks smooth, feels
+   consistent, and costs almost nothing to composite. No will-change, no
+   transform, no reveal-from-top slide on this page.
    ========================================================================== */
 .reveal-item {
   opacity: 0 !important;
-  transform: perspective(1000px) translateY(32px) scale(0.98) !important;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.reveal-item.reveal-from-top {
-  transform: perspective(1000px) translateY(-32px) scale(0.98) !important;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .reveal-item.is-revealed {
   opacity: 1 !important;
-  transform: none !important;
-  filter: none !important;
-}
-
-/* Long-content surfaces (RAG table + activity table body) skip the
-   slide/scale reveal: animating transform + backdrop-filter over a tall
-   surface is the main scroll-lag cost. They fade in only (same
-   duration/easing), keeping the entrance feeling consistent while staying
-   cheap to composite. */
-.ai-memory-card .table-responsive.reveal-item,
-.ai-memory-card .table-responsive.reveal-item.reveal-from-top,
-.table-card .table-responsive.reveal-item,
-.table-card .table-responsive.reveal-item.reveal-from-top {
-  transform: none !important;
 }
 
 /* Universal Instant Hover on Cards (100% Synced with horizonx.css landing recipe) */
