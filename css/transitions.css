@@ -37,28 +37,9 @@
   --blur-large: 12px;
 }
 
-/* WCAG 2.2 — Honor OS reduced-motion: collapse all non-essential animation/transition durations
-   (smooth scroll becomes instant; marquees, reveals and hover transitions become instant state changes). */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  /* Essential UX motion that stays fluid even under reduced-motion:
-     the hero "research deck" showcase slider must keep its slide transition.
-     This matches the pre-v10.544 "always-on motion" intent for this component
-     while all decorative motion (card hovers, reveals, marquees) remains collapsed.
-     Only the track itself is exempted; its children keep instant transitions.
-     The wrap-around .no-transition class (specificity 0,2,0) still wins over this
-     rule (0,1,0) so the instant loop-back jump is preserved. */
-  .showcase-slider-track {
-    animation-duration: 0.95s !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.95s !important;
-  }
-}
+/* ALWAYS-ON MOTION POLICY (deliberate, documented deviation from WCAG 2.2 reduced-motion best practice).
+   The design language of this site is "Always-On Motion" — every animation, transition,
+   marquee, reveal and 3D background keeps running even when the OS has
+   prefers-reduced-motion: reduce enabled (matches the pre-v10.544 behavior, restored by request).
+   If honoring reduced-motion is ever desired, re-enable a global
+   @media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; ... } } block here. */
