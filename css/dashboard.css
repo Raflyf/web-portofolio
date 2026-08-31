@@ -312,21 +312,27 @@ body {
 }
 
 /* ==========================================================================
-   5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE (perf-optimized)
-   NOTE: No `filter` and NO translateY/scale on glass cards — animating
-   transform on an element that has backdrop-filter forces the browser to
-   re-sample the blurred backdrop every animation frame (the #1 frame-drop
-   cause here). Reveal animates OPACITY ONLY (still a smooth entrance, and
-   backdrop-filter is not re-sampled). No `will-change` on reveal items —
-   keeping it on would promote every card to a permanent compositing layer.
+   5. KINETIC SCROLL REVEAL & MORPHING ENTRANCE ENGINE
+   NOTE: Identical to horizonx.css (landing page) so the dashboard reveal
+   animation matches the landing 1:1 — including the reveal-from-top slide.
+   will-change is omitted (vs horizonx) to avoid promoting every card to a
+   permanent compositing layer; the animation itself is unchanged.
    ========================================================================== */
 .reveal-item {
   opacity: 0 !important;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform: perspective(1000px) translateY(32px) scale(0.98) !important;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.reveal-item.reveal-from-top {
+  transform: perspective(1000px) translateY(-32px) scale(0.98) !important;
 }
 
 .reveal-item.is-revealed {
   opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
 }
 
 /* Universal Instant Hover on Cards (100% Synced with horizonx.css landing recipe) */
