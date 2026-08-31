@@ -1308,6 +1308,47 @@ body {
   }
 }
 
+/* Terminal Static Auto Model Badge */
+.terminal-model-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-family: var(--font-mono, monospace) !important;
+  font-size: var(--fs-caption, 0.75rem) !important;
+  font-weight: 600 !important;
+  background: rgba(14, 20, 29, 0.85) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: var(--radius-sm, 6px) !important;
+  padding: 0.22rem 0.55rem !important;
+  white-space: nowrap !important;
+  user-select: none !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.terminal-badge-pulse-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--hx-accent-emerald, #10b981) !important;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8) !important;
+  display: inline-block !important;
+  animation: badgePulse 2s infinite ease-in-out !important;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.8); }
+}
+
+[data-theme="light"] .terminal-model-badge {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
 /* Universal 3D Translucent Glassmorphism (True Liquid Frosted Glass iOS / VisionOS Standard across Main Page & Dashboard) */
 .hero-showcase-canvas,
 .pillar-card,
