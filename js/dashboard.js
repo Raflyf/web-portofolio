@@ -1,17 +1,16 @@
 /**
  * ============================================================================
- * RAFLY FIRMANSYAH - ADMIN OBSERVABILITY DASHBOARD CONTROLLER (v6.2.0)
+ * RAFLY FIRMANSYAH - ADMIN OBSERVABILITY DASHBOARD CONTROLLER (v6.3.0)
  * HorizonX Deep Obsidian Glassmorphism Architecture & Dual-Theme Engine
  * Features:
- * - 🛡️ Web Crypto PIN Auth & Supabase Cloud-Synced Master Kredensial
- * - ✉️ Email OTP Recovery Engine (raflyfirmansyah02@gmail.com)
- * - 🌓 Dual-Theme Controller (Dark & Light Mode with Dynamic Chart.js)
- * - 📊 3D Glassmorphic Bento KPIs & Chart.js Multi-Metric Visualizations
- * - 🤖 Standalone Auto Router Banner & Dynamic Most-Used AI Model Ranking
- * - ⚡ OmniRoute Dual-Endpoint Host Probing & Live Traffic Deduplication
- * - 🌊 Kinetic Bidirectional Scroll Reveal (Optical De-Blur & Spring Curve)
- * - 🚀 Momentum Inertia Smooth Wheel Physics Engine (60-120fps fluid scroll)
- * - 📑 Compact Sliding Window Pagination (Eliminates Button Overflow)
+ * - Web Crypto PIN Auth & Supabase Cloud-Synced Master Kredensial
+ * - Email OTP Recovery Engine (raflyfirmansyah02@gmail.com)
+ * - Dual-Theme Controller (Dark & Light Mode with Dynamic Chart.js)
+ * - 3D Glassmorphic Bento KPIs & Chart.js Multi-Metric Visualizations
+ * - Standalone Auto Router Banner & Dynamic Most-Used AI Model Ranking
+ * - Kinetic Bidirectional Scroll Reveal (Optical De-Blur & Spring Curve)
+ * - Momentum Inertia Smooth Wheel Physics Engine (60-120fps fluid scroll)
+ * - Compact Sliding Window Pagination (Eliminates Button Overflow)
  * ============================================================================
  */
 
@@ -196,7 +195,7 @@ class DashboardApp {
     // Observe the split inner glass cards (big transparent wrappers are skipped so
     // the reveal only triggers on actual surfaces — reduces backdrop-filter cost).
     const items = document.querySelectorAll(
-      '.kpi-card, .chart-card, .intel-card, .omniroute-combo-card, .omniroute-combo-tile, .omniroute-header-card, .omniroute-footer-card, .ai-matrix-header-card, .ai-matrix-router-card, .ai-model-card, .ai-model-banner-card, .ai-memory-card, .table-card, .dash-section-bar'
+      '.kpi-card, .chart-card, .intel-card, .ai-matrix-header-card, .ai-matrix-router-card, .ai-model-card, .ai-model-banner-card, .ai-memory-card, .table-card, .dash-section-bar'
     );
     items.forEach(el => {
       el.classList.add('reveal-item');
@@ -255,7 +254,6 @@ class DashboardApp {
       if (overlay) overlay.style.display = 'none';
       this.initScrollReveal();
       this.initInertiaSmoothWheel();
-      this.checkOmniRouteRealtimeStatus();
       await this.loadDashboardData();
       this.startRealtimePolling();
       this.refreshScrollReveal();
@@ -459,12 +457,15 @@ class DashboardApp {
     const startCountdown = (duration = 60) => {
       if (countdownTimer) clearInterval(countdownTimer);
       let left = duration;
-      if (resendBtn) resendBtn.disabled = true;
-      if (countdownSpan) countdownSpan.textContent = String(left);
+      if (resendBtn) {
+        resendBtn.disabled = true;
+        resendBtn.innerHTML = `Kirim Ulang Kode (<span id="otp-countdown">${left}</span>s)`;
+      }
 
       countdownTimer = setInterval(() => {
         left--;
-        if (countdownSpan) countdownSpan.textContent = String(left);
+        const span = document.getElementById('otp-countdown');
+        if (span) span.textContent = String(left);
         if (left <= 0) {
           clearInterval(countdownTimer);
           if (resendBtn) {
@@ -582,7 +583,6 @@ class DashboardApp {
             document.documentElement.classList.add('is-admin-authenticated');
             this.initScrollReveal();
             this.initInertiaSmoothWheel();
-            this.checkOmniRouteRealtimeStatus();
             this.loadDashboardData();
             this.startRealtimePolling();
             this.refreshScrollReveal();
@@ -755,8 +755,6 @@ class DashboardApp {
       this.pollInterval = null;
     }
 
-    this.checkOmniRouteRealtimeStatus();
-
     let pollTick = 0;
 
     // Scroll-aware polling: skip the poll while the user is actively
@@ -775,9 +773,6 @@ class DashboardApp {
 
       this.loadDashboardData(true);
       pollTick++;
-      if (pollTick % 2 === 0) {
-        this.checkOmniRouteRealtimeStatus();
-      }
       if (pollTick % 4 === 0) {
         this.fetchAIMemories(true);
       }
@@ -792,7 +787,6 @@ class DashboardApp {
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           this.loadDashboardData(true);
-          this.checkOmniRouteRealtimeStatus();
         }
       });
     }
@@ -1315,7 +1309,7 @@ class DashboardApp {
     const AUTO_MODEL = {
       id: 'auto-router',
       name: 'Auto Gateway Router',
-      desc: 'Dynamic 4-Tier Cascade Failover (OmniRoute, OpenRouter, Ollama Cloud, OpenCode Zen)',
+      desc: 'Dynamic 3-Tier Cascade Failover (OpenRouter Pool → Ollama Cloud → OpenCode Zen)',
       provider: 'SMART CASCADE',
       badgeClass: 'badge-emerald',
       icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline></svg>`,
@@ -1323,63 +1317,7 @@ class DashboardApp {
     };
 
     const INDIVIDUAL_MODELS = [
-      // === TIER 1: OMNIROUTE DEDICATED MODELS ===
-      {
-        id: 'omni-nemotron-lightning',
-        name: 'Nemotron Lightning (OmniRoute)',
-        desc: 'Prioritas #1 OmniRoute - Fast-response sub-detik untuk percakapan umum & Q&A ringkas',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && (s.includes('lightning') || s.includes('lighting'))
-      },
-      {
-        id: 'omni-nemotron-ultra',
-        name: 'Nemotron 3 Ultra (OmniRoute)',
-        desc: 'Arsitektur MoE 550B kapasitas penuh untuk sintesis data komprehensif di gateway OmniRoute',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && (s.includes('ultra') || s.includes('nemotron-3-ultra'))
-      },
-      {
-        id: 'omni-codex',
-        name: 'Codex (GPT-5.6 Terra)',
-        desc: 'Spesialis rekayasa software tingkat tinggi, analisis codebase, debugging, dan sintesis arsitektur kode di OmniRoute',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
-        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok') || !s.includes('openrouter')) && (s.includes('codex') || s.includes('gpt-5') || s.includes('terra'))
-      },
-      {
-        id: 'omni-antigravity',
-        name: 'Antigravity (Claude Opus Thinking)',
-        desc: 'Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah skripsi, dan telaah dokumen komprehensif di OmniRoute',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-cyan',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path></svg>`,
-        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok') || !s.includes('openrouter')) && (s.includes('antigravity') || s.includes('opus') || s.includes('claude'))
-      },
-      {
-        id: 'omni-vision',
-        name: 'Vision-model (OmniRoute)',
-        desc: 'Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi di OmniRoute',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-cyan',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
-        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && s.includes('vision')
-      },
-      {
-        id: 'omni-x-preview',
-        name: 'x-preview-f-free (OmniRoute)',
-        desc: 'Engine preview inferensi cepat berbasis prinsip YAGNI di gateway OmniRoute',
-        provider: 'OMNIROUTE',
-        badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => (s.includes('omniroute') || s.includes('ngrok')) && (s.includes('x-preview') || s.includes('preview-f'))
-      },
-
-      // === TIER 2: OPENROUTER CLOUD MODELS ===
+      // === TIER 1: OPENROUTER CLOUD MODELS ===
       {
         id: 'openrouter-nemotron-nano',
         name: 'Nemotron 3 Nano Omni Reasoning (OpenRouter)',
@@ -1453,7 +1391,7 @@ class DashboardApp {
         matcher: (s) => s.includes('laguna') || s.includes('poolside')
       },
 
-      // === TIER 3: OLLAMA CLOUD MODELS ===
+      // === TIER 2: OLLAMA CLOUD MODELS ===
       {
         id: 'ollama-nemotron-nano',
         name: 'Nemotron 3 Nano Biasa (Ollama Cloud)',
@@ -1491,7 +1429,7 @@ class DashboardApp {
         matcher: (s) => s.includes('ollama') && s.includes('minimax')
       },
 
-      // === TIER 4: OPENCODE ZEN DIRECT MODELS ===
+      // === TIER 3: OPENCODE ZEN DIRECT MODELS ===
       {
         id: 'opencode-nemotron-lightning',
         name: 'Nemotron 3.5 Lightning (OpenCode)',
@@ -1864,105 +1802,7 @@ class DashboardApp {
     }
   }
 
-  // =========================================================================
-  // 13. OMNIROUTE REALTIME HOST PROBING
-  // =========================================================================
-  async checkOmniRouteRealtimeStatus() {
-    const dotEl = document.getElementById('omniroute-live-dot');
-    const textEl = document.getElementById('omniroute-live-text');
-
-    const headerDotEl = document.getElementById('header-omniroute-dot');
-    const headerTextEl = document.getElementById('header-omniroute-text');
-
-    let isOnline = false;
-    let latencyText = '';
-    let statusLabel = '';
-    let headerStatusLabel = '';
-    const secretKey = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_secret_key') : null) || 'sk-omniroute';
-
-    // 1. Probe Primary Ngrok Tunnel
-    const customTunnel = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
-    if (customTunnel) {
-      try {
-        const cleanTunnel = customTunnel.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-        const probeUrl = cleanTunnel.includes('/models') ? cleanTunnel : (cleanTunnel.includes('/v1') ? `${cleanTunnel}/models` : `${cleanTunnel}/v1/models`);
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1800);
-        const t0 = performance.now();
-        const res = await fetch(probeUrl, {
-          method: 'GET',
-          headers: { 
-            'Authorization': `Bearer ${secretKey}`,
-            'ngrok-skip-browser-warning': 'true', 
-            'Accept': 'application/json' 
-          },
-          signal: controller.signal
-        });
-        clearTimeout(timer);
-        if (res.ok || res.status === 200 || res.status === 401) {
-          isOnline = true;
-          const t1 = Math.round(performance.now() - t0);
-          latencyText = `${t1}ms`;
-          statusLabel = `HOST STATUS: NGROK ACTIVE (${latencyText})`;
-          headerStatusLabel = `OMNIROUTE: NGROK (${latencyText})`;
-        }
-      } catch (_) {}
-    }
-
-    // 2. Probe Secondary Localhost Fallback (:20128) if Ngrok didn't respond
-    if (!isOnline) {
-      const localEndpoint = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_secondary_endpoint') : null) || 'http://localhost:20128/v1';
-      try {
-        const cleanLocal = localEndpoint.replace(/\/chat\/completions\/?$/, '').replace(/\/+$/, '');
-        const probeUrl = cleanLocal.includes('/models') ? cleanLocal : (cleanLocal.includes('/v1') ? `${cleanLocal}/models` : `${cleanLocal}/v1/models`);
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 1200);
-        const t0 = performance.now();
-        const res = await fetch(probeUrl, {
-          method: 'GET',
-          headers: { 
-            'Authorization': `Bearer ${secretKey}`,
-            'Accept': 'application/json' 
-          },
-          signal: controller.signal
-        });
-        clearTimeout(timer);
-        if (res.ok || res.status === 200 || res.status === 401) {
-          isOnline = true;
-          const t1 = Math.round(performance.now() - t0);
-          latencyText = `${t1}ms`;
-          statusLabel = `HOST STATUS: LOCALHOST ACTIVE (${latencyText})`;
-          headerStatusLabel = `OMNIROUTE: LOCALHOST (${latencyText})`;
-        }
-      } catch (_) {}
-    }
-
-    if (isOnline) {
-      if (dotEl) {
-        dotEl.style.backgroundColor = 'var(--accent-emerald)';
-        dotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
-      }
-      if (textEl) textEl.textContent = statusLabel;
-
-      if (headerDotEl) {
-        headerDotEl.style.backgroundColor = 'var(--accent-emerald)';
-        headerDotEl.style.boxShadow = '0 0 8px var(--accent-emerald)';
-      }
-      if (headerTextEl) headerTextEl.textContent = headerStatusLabel;
-    } else {
-      if (dotEl) {
-        dotEl.style.backgroundColor = 'var(--accent-amber)';
-        dotEl.style.boxShadow = '0 0 8px var(--accent-amber)';
-      }
-      if (textEl) textEl.textContent = 'HOST STATUS: STANDBY (NGROK OFFLINE)';
-
-      if (headerDotEl) {
-        headerDotEl.style.backgroundColor = 'var(--accent-amber)';
-        headerDotEl.style.boxShadow = '0 0 8px var(--accent-amber)';
-      }
-      if (headerTextEl) headerTextEl.textContent = 'OMNIROUTE: STANDBY';
-    }
-  }
+  // (OmniRoute host probing removed — gateway dihapus)
 
   // =========================================================================
   // 14. EVENT LISTENERS & MODAL DIALOG CONTROLLERS
@@ -2105,67 +1945,7 @@ class DashboardApp {
       });
     }
 
-    // OmniRoute Config Modal Trigger
-    const headerOmniPill = document.getElementById('header-omniroute-pill');
-    const liveOmniPill = document.getElementById('omniroute-live-pill');
-    const omniModal = document.getElementById('omniroute-modal');
-    const omniClose = document.getElementById('omniroute-close-btn');
-    const omniForm = document.getElementById('omniroute-form');
-
-    const openOmniModal = () => omniModal && omniModal.classList.add('is-open');
-    if (headerOmniPill) headerOmniPill.addEventListener('click', openOmniModal);
-    if (liveOmniPill) liveOmniPill.addEventListener('click', openOmniModal);
-    if (omniClose && omniModal) {
-      omniClose.addEventListener('click', () => omniModal.classList.remove('is-open'));
-    }
-    if (omniModal) {
-      omniModal.addEventListener('click', (e) => {
-        if (e.target === omniModal) omniModal.classList.remove('is-open');
-      });
-    }
-    if (omniForm) {
-      omniForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const url1 = document.getElementById('omniroute-url-input').value.trim();
-        const url2 = document.getElementById('omniroute-local-url-input').value.trim();
-        const key = document.getElementById('omniroute-key-input').value.trim();
-        localStorage.setItem('omniroute_custom_tunnel', url1);
-        localStorage.setItem('omniroute_secondary_endpoint', url2);
-        localStorage.setItem('omniroute_secret_key', key);
-        omniModal.classList.remove('is-open');
-        this.checkOmniRouteRealtimeStatus();
-      });
-    }
-
-    // OmniRoute Host Preset Quick Fill Buttons
-    const btnPresetNgrok = document.getElementById('preset-btn-ngrok');
-    const btnPresetLocal = document.getElementById('preset-btn-local');
-    const btnPresetSwap = document.getElementById('preset-btn-swap');
-
-    if (btnPresetNgrok) {
-      btnPresetNgrok.addEventListener('click', () => {
-        const inp = document.getElementById('omniroute-url-input');
-        const saved = (typeof window !== 'undefined' ? localStorage.getItem('omniroute_custom_tunnel') : null) || '';
-        if (inp) inp.value = saved || 'https://your-tunnel.ngrok-free.dev/v1';
-      });
-    }
-    if (btnPresetLocal) {
-      btnPresetLocal.addEventListener('click', () => {
-        const inp = document.getElementById('omniroute-local-url-input');
-        if (inp) inp.value = 'http://localhost:20128/v1';
-      });
-    }
-    if (btnPresetSwap) {
-      btnPresetSwap.addEventListener('click', () => {
-        const inp1 = document.getElementById('omniroute-url-input');
-        const inp2 = document.getElementById('omniroute-local-url-input');
-        if (inp1 && inp2) {
-          const temp = inp1.value;
-          inp1.value = inp2.value;
-          inp2.value = temp;
-        }
-      });
-    }
+    // (OmniRoute modal event listeners removed)
 
     // Change PIN Modal
     const changePinBtn = document.getElementById('dash-changepin-btn');

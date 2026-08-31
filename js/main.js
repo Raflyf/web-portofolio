@@ -445,6 +445,7 @@ function initInertiaSmoothWheel() {
         el.classList.contains('modal-body') ||
         el.classList.contains('terminal-modal-dialog') ||
         el.classList.contains('cert-modal-dialog') ||
+        el.classList.contains('custom-dropdown-menu') ||
         el.tagName === 'DIALOG' ||
         el.tagName === 'TEXTAREA' ||
         el.tagName === 'IFRAME'
@@ -452,6 +453,24 @@ function initInertiaSmoothWheel() {
     });
 
     if (isScrollableChild) {
+      // Let the browser natively scroll the child element.
+      // Prevent the page-level inertia engine from also scrolling window.
+      e.preventDefault();
+      // Manually scroll the scrollable element that was targeted
+      const scrollableEl = path.find(el => {
+        if (!el || !el.classList) return false;
+        return (
+          el.classList.contains('terminal-body') ||
+          el.classList.contains('modal-body') ||
+          el.classList.contains('custom-dropdown-menu')
+        );
+      });
+      if (scrollableEl) {
+        let delta = e.deltaY;
+        if (e.deltaMode === 1) delta *= 35;
+        if (e.deltaMode === 2) delta *= window.innerHeight;
+        scrollableEl.scrollTop += delta;
+      }
       targetY = window.scrollY || window.pageYOffset;
       currentY = targetY;
       return;

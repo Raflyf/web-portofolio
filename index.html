@@ -723,34 +723,75 @@
                       <span id="custom-model-label">Auto Router</span>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </button>
-                    <ul class="custom-dropdown-menu" id="custom-model-menu" role="listbox" style="display:none; max-height: 280px; overflow-y: auto;" aria-label="Pilih Model AI Aktif">
-                      <li role="option" data-value="auto" class="active">Auto Router (Smart Cascade)</li>
-                      <li role="option" data-value="nemotron-3-nano">Nemotron 3 Nano (Ollama Hub)</li>
-                      <li role="option" data-value="nemotron-lighting">Nemotron 3.5 Lightning (1M)</li>
-                      <li role="option" data-value="nemotron-3-super">Nemotron 3 Super (120B CoT)</li>
-                      <li role="option" data-value="nemotron-3-ultra">Nemotron 3 Ultra (550B SOTA)</li>
-                      <li role="option" data-value="mimo">Mimo v2.5 (Multimodal Vision)</li>
-                      <li role="option" data-value="deepseek">DeepSeek V3 (Chat &amp; Code)</li>
-                      <li role="option" data-value="codex">Codex (Coding Specialist)</li>
-                      <li role="option" data-value="antigravity">Antigravity (Deep CoT)</li>
-                      <li role="option" data-value="minimax">MiniMax-M3 (Vision &amp; Text)</li>
-                      <li role="option" data-value="laguna">Laguna XS 2.1 (Instant Reasoning)</li>
-                      <li role="option" data-value="x-preview">x-preview-f-free (OpenCode Zen)</li>
+                    <ul class="custom-dropdown-menu" id="custom-model-menu" role="listbox" style="display:none;" aria-label="Pilih Model AI Aktif">
+
+                      <!-- SMART CASCADE -->
+                      <li class="custom-dropdown-group-header">
+                        <span class="group-label">Smart Cascade</span>
+                        <span class="group-badge">AUTO</span>
+                      </li>
+                      <li role="option" data-value="auto" class="active">Auto Router</li>
+
+                      <!-- OLLAMA CLOUD -->
+                      <li class="custom-dropdown-group-header">
+                        <span class="group-label">Ollama Cloud</span>
+                        <span class="group-badge">CLOUD</span>
+                      </li>
+                      <li role="option" data-value="nemotron-3-nano">Nemotron 3 Nano 30B</li>
+                      <li role="option" data-value="ollama-nemotron-ultra">Nemotron 3 Ultra 550B</li>
+                      <li role="option" data-value="ollama-nemotron-super">Nemotron 3 Super 120B</li>
+                      <li role="option" data-value="ollama-minimax">MiniMax M3 Vision</li>
+
+                      <!-- OPENROUTER -->
+                      <li class="custom-dropdown-group-header">
+                        <span class="group-label">OpenRouter</span>
+                        <span class="group-badge">FREE</span>
+                      </li>
+                      <li role="option" data-value="nemotron-lighting">Nemotron 3.5 Lightning</li>
+                      <li role="option" data-value="nemotron-3-super">Nemotron 3 Super 120B</li>
+                      <li role="option" data-value="nemotron-3-ultra">Nemotron 3 Ultra 550B</li>
+                      <li role="option" data-value="openrouter-free">Free SOTA Pool</li>
+                      <li role="option" data-value="deepseek">DeepSeek Chat V3</li>
+                      <li role="option" data-value="laguna">Poolside Laguna XS 2.1</li>
+                      <li role="option" data-value="minimax">MiniMax M3 Vision</li>
+
+                      <!-- OPENCODE ZEN -->
+                      <li class="custom-dropdown-group-header">
+                        <span class="group-label">OpenCode Zen</span>
+                        <span class="group-badge">DIRECT</span>
+                      </li>
+                      <li role="option" data-value="opencode-lightning">Nemotron 3.5 Lightning</li>
+                      <li role="option" data-value="opencode-ultra">Nemotron 3 Ultra Free</li>
+                      <li role="option" data-value="x-preview">x-preview-f-free</li>
+                      <li role="option" data-value="mimo">Mimo v2.5 Multimodal</li>
+
                     </ul>
                     <!-- Hidden native select kept in sync for compatibility -->
                     <select id="terminal-model-select" style="display:none;" aria-hidden="true" tabindex="-1">
-                      <option value="auto" selected>Auto Router (Smart Cascade)</option>
-                      <option value="nemotron-3-nano">Nemotron 3 Nano (Ollama Hub)</option>
-                      <option value="nemotron-lighting">Nemotron 3.5 Lightning (1M)</option>
-                      <option value="nemotron-3-super">Nemotron 3 Super (120B CoT)</option>
-                      <option value="nemotron-3-ultra">Nemotron 3 Ultra (550B SOTA)</option>
-                      <option value="mimo">Mimo v2.5 (Multimodal Vision)</option>
-                      <option value="deepseek">DeepSeek V3 (Chat &amp; Code)</option>
-                      <option value="codex">Codex (Coding Specialist)</option>
-                      <option value="antigravity">Antigravity (Deep CoT)</option>
-                      <option value="minimax">MiniMax-M3 (Vision &amp; Text)</option>
-                      <option value="laguna">Laguna XS 2.1 (Instant Reasoning)</option>
-                      <option value="x-preview">x-preview-f-free (OpenCode Zen)</option>
+                      <optgroup label="SMART CASCADE">
+                        <option value="auto" selected>Auto Router</option>
+                      </optgroup>
+                      <optgroup label="OLLAMA CLOUD">
+                        <option value="nemotron-3-nano">Nemotron 3 Nano 30B</option>
+                        <option value="ollama-nemotron-ultra">Nemotron 3 Ultra 550B</option>
+                        <option value="ollama-nemotron-super">Nemotron 3 Super 120B</option>
+                        <option value="ollama-minimax">MiniMax M3 Vision</option>
+                      </optgroup>
+                      <optgroup label="OPENROUTER">
+                        <option value="nemotron-lighting">Nemotron 3.5 Lightning</option>
+                        <option value="nemotron-3-super">Nemotron 3 Super 120B</option>
+                        <option value="nemotron-3-ultra">Nemotron 3 Ultra 550B</option>
+                        <option value="openrouter-free">Free SOTA Pool</option>
+                        <option value="deepseek">DeepSeek Chat V3</option>
+                        <option value="laguna">Poolside Laguna XS 2.1</option>
+                        <option value="minimax">MiniMax M3 Vision</option>
+                      </optgroup>
+                      <optgroup label="OPENCODE ZEN">
+                        <option value="opencode-lightning">Nemotron 3.5 Lightning</option>
+                        <option value="opencode-ultra">Nemotron 3 Ultra Free</option>
+                        <option value="x-preview">x-preview-f-free</option>
+                        <option value="mimo">Mimo v2.5 Multimodal</option>
+                      </optgroup>
                     </select>
                   </div>
                   <div class="terminal-model-picker custom-dropdown-wrap" id="effort-dropdown-wrap">

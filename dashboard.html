@@ -132,10 +132,6 @@
           <span id="sync-status">Supabase Live</span>
         </div>
 
-        <div class="dash-status-pill omniroute-header-pill" id="header-omniroute-pill" title="Status Host OmniRoute Gateway (Klik untuk konfigurasi)" style="cursor: pointer;">
-          <span class="dash-status-dot" id="header-omniroute-dot" style="background-color: var(--accent-amber);" aria-hidden="true"></span>
-          <span id="header-omniroute-text">OMNIROUTE: STANDBY</span>
-        </div>
 
 
 
@@ -325,100 +321,6 @@
         </div>
         <div class="ranked-list" id="referrer-ranked-list">
           <!-- Populated dynamically by js/dashboard.js -->
-        </div>
-      </div>
-    </section>
-
-    <!-- Dedicated OmniRoute Private Host & Priority Combos Topology (Split Cards) -->
-    <section class="dash-section omniroute-topology-card" aria-label="Status Gateway OmniRoute & Topologi Model Combos">
-      <div class="omniroute-header-card">
-        <div class="omniroute-header-wrap">
-        <div class="chart-title-wrap">
-          <div class="omniroute-badge-row">
-            <span class="tech-tag">OMNIROUTE ARCHITECTURE</span>
-            <span class="tech-tag tag-primary">TIER 1 PRIMARY GATEWAY</span>
-          </div>
-          <h2 class="chart-title">OmniRoute Dedicated Host &amp; Pipeline Topology</h2>
-          <span class="chart-subtitle">Private Model Inference Server via Ngrok Static Domain &amp; Local Infrastructure</span>
-        </div>
-        <div class="omniroute-actions-wrap">
-          <div class="omniroute-live-pill is-standby" id="omniroute-live-pill" title="Status ketersediaan tunnel Ngrok OmniRoute secara real-time (Klik untuk konfigurasi)" style="cursor: pointer;">
-            <span class="omniroute-live-dot" id="omniroute-live-dot" aria-hidden="true"></span>
-            <span id="omniroute-live-text">HOST STATUS: MEMERIKSA...</span>
-          </div>
-        </div>
-      </div>
-      </div>
-
-      <div class="omniroute-combos-grid">
-        <!-- Combo 1: Codex -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-emerald">ROUND ROBIN</span>
-            <span class="omniroute-engine-tag">gpt-5.6-terra</span>
-          </div>
-          <div class="omniroute-combo-name">Codex</div>
-          <div class="omniroute-combo-desc">Spesialis rekayasa software, arsitektur sistem besar, dan penalaran koding berat (codex/gpt-5.6-terra).</div>
-        </div>
-
-        <!-- Combo 2: Antigravity -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-cyan">ROUND ROBIN</span>
-            <span class="omniroute-engine-tag">opus-4.6-thinking</span>
-          </div>
-          <div class="omniroute-combo-name">Antigravity</div>
-          <div class="omniroute-combo-desc">Penalaran analitis mendalam (Deep CoT Reasoning), sintesis riset ilmiah, dan telaah dokumen komprehensif.</div>
-        </div>
-
-        <!-- Combo 3: x-preview-f-free -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-emerald">ROUND ROBIN</span>
-            <span class="omniroute-engine-tag">x-preview-f-free</span>
-          </div>
-          <div class="omniroute-combo-name">x-preview-f-free</div>
-          <div class="omniroute-combo-desc">Engine penalaran dan koding presisi dari organisasi independen berbasis prinsip YAGNI &amp; inferensi cepat.</div>
-        </div>
-
-        <!-- Combo 4: Vision-model -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-cyan">ROUND ROBIN</span>
-            <span class="omniroute-engine-tag">MiniMax-M3 / mimo</span>
-          </div>
-          <div class="omniroute-combo-name">Vision-model</div>
-          <div class="omniroute-combo-desc">Pemrosesan citra multimodal, OCR teks dokumen PDF/gambar, dan analisis visual resolusi tinggi.</div>
-        </div>
-
-        <!-- Combo 5: nemotron-3-ultra -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-emerald">ROUND ROBIN</span>
-            <span class="omniroute-engine-tag">nemotron-3-ultra-free</span>
-          </div>
-          <div class="omniroute-combo-name">nemotron-3-ultra</div>
-          <div class="omniroute-combo-desc">Frontier reasoning engine untuk analisis komparatif mendalam dan bedah arsitektur proyek riset (opencode/nemotron-3-ultra-free).</div>
-        </div>
-
-        <!-- Combo 6: nemotron-lightning -->
-        <div class="omniroute-combo-tile">
-          <div class="omniroute-tile-top">
-            <span class="omniroute-priority-badge badge-emerald">PRIORITAS #1</span>
-            <span class="omniroute-engine-tag">nemotron-3.5-lightning-free</span>
-          </div>
-          <div class="omniroute-combo-name">nemotron-lightning</div>
-          <div class="omniroute-combo-desc">Fast-response engine utama untuk percakapan kasual, sapaan cepat, dan trivia responsif sub-detik (100 akun pool).</div>
-        </div>
-      </div>
-
-      <div class="omniroute-footer-card">
-        <div class="omniroute-footer-tiers">
-          <span class="tier-label">Failover Cascade:</span>
-          <span class="tier-badge">Tier 1: Ollama Cloud Gateway (Nemotron 3 Nano Biasa #1 / Nemotron 3 Ultra / Nemotron 3 Super / MiniMax M3)</span>
-          <span class="tier-badge">Tier 2: OpenRouter SOTA Pool (Nemotron 3 Nano Omni Reasoning #2 / Nemotron 3.5 Lightning / MiniMax M3 / DeepSeek Chat / Nemotron Super 120B / Nemotron Ultra 550B)</span>
-          <span class="tier-badge">Tier 3: OpenCode Zen Direct API (Nemotron 3.5 Lightning Free / Nemotron 3 Ultra Free / x-preview-f-free / Mimo Multimodal)</span>
-          <span class="tier-badge">Tier 4: In-Browser Semantic Engine (Offline Resilient + Supabase Continuous RAG)</span>
         </div>
       </div>
     </section>
@@ -622,60 +524,6 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-       6. OMNIROUTE CLOUD & TUNNEL CONFIG MODAL
-       ========================================================================= -->
-  <div class="dash-modal" id="omniroute-modal">
-    <div class="dash-modal-card" role="dialog" aria-labelledby="omniroute-title">
-      <div class="modal-header-row">
-        <h3 id="omniroute-title" class="modal-title">Konfigurasi OmniRoute Ngrok &amp; Localhost</h3>
-        <button type="button" id="omniroute-close-btn" class="dash-modal-close" aria-label="Tutup modal">&times;</button>
-      </div>
-
-      <p class="modal-desc">
-        Konfigurasikan endpoint OmniRoute berbasis Ngrok Static Tunnel (Primary) dan Localhost daemon :20128 (Secondary). Seluruh inferensi diproses privat melalui infrastruktur lokal yang aman.
-      </p>
-
-      <div class="omniroute-preset-box">
-        <span class="modal-label" style="margin-bottom:0.35rem;">Isi Cepat Endpoint:</span>
-        <div class="omniroute-preset-btns">
-          <button type="button" class="preset-choice-btn" id="preset-btn-ngrok">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span>Ngrok &rarr; Endpoint 1</span>
-          </button>
-          <button type="button" class="preset-choice-btn" id="preset-btn-local">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-            <span>Localhost (:20128) &rarr; Endpoint 2</span>
-          </button>
-          <button type="button" class="preset-choice-btn" id="preset-btn-swap">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 014-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 01-4 4H3"></path></svg>
-            <span>Swap 1 &harr; 2</span>
-          </button>
-        </div>
-      </div>
-
-      <form id="omniroute-form" class="modal-form">
-        <div>
-          <label for="omniroute-url-input" class="modal-label">Endpoint 1 &mdash; Primary (Ngrok Tunnel)</label>
-          <input type="url" id="omniroute-url-input" class="modal-input" value="" placeholder="https://your-tunnel.ngrok-free.dev/v1" required>
-        </div>
-
-        <div>
-          <label for="omniroute-local-url-input" class="modal-label">Endpoint 2 &mdash; Secondary Fallback (Localhost :20128)</label>
-          <input type="url" id="omniroute-local-url-input" class="modal-input" value="http://localhost:20128/v1" placeholder="http://localhost:20128/v1" required>
-        </div>
-
-        <div>
-          <label for="omniroute-key-input" class="modal-label">OmniRoute Secret API Key (Opsional / Default: sk-omniroute)</label>
-          <input type="text" id="omniroute-key-input" class="modal-input" value="sk-omniroute" placeholder="sk-omniroute">
-        </div>
-
-        <button type="submit" class="pin-submit-btn" style="margin-top:0.5rem;">
-          <span>Simpan &amp; Sambungkan Gateway</span>
-        </button>
-      </form>
-    </div>
-  </div>
 
   <!-- =========================================================================
        7. EMAIL OTP PIN RESET MODAL (High-Security Recovery)

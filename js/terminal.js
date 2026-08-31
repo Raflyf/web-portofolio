@@ -79,7 +79,7 @@ export function initTerminal() {
 
   function syncCustomModelUI(val) {
     if (customModelMenu) {
-      customModelMenu.querySelectorAll('li').forEach(li => {
+      customModelMenu.querySelectorAll('li[data-value]').forEach(li => {
         const isMatch = li.getAttribute('data-value') === val;
         li.classList.toggle('active', isMatch);
         if (isMatch && customModelLabel) {
@@ -110,6 +110,7 @@ export function initTerminal() {
       e.preventDefault();
       e.stopPropagation();
     }
+    if (!val) return;
     if (modelSelect) {
       modelSelect.value = val;
       modelSelect.dispatchEvent(new Event('change'));
@@ -126,9 +127,11 @@ export function initTerminal() {
   if (customModelBtn && customModelMenu) {
     customModelBtn.addEventListener('click', toggleCustomModelMenu);
 
-    customModelMenu.querySelectorAll('li').forEach(li => {
+    customModelMenu.querySelectorAll('li[data-value]').forEach(li => {
       const val = li.getAttribute('data-value');
-      li.addEventListener('click', (e) => selectCustomModelOption(val, e));
+      if (val) {
+        li.addEventListener('click', (e) => selectCustomModelOption(val, e));
+      }
     });
 
     document.addEventListener('click', (e) => {
