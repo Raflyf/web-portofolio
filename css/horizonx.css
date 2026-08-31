@@ -7,7 +7,7 @@
  * - 3D Interactive Cursor Parallax & Spring Tilt on Showcase Cards
  * - PowerPoint Morph-Style Interactive Project Tab Switcher
  * - Dual-Track Continuous Seamless Marquee
- * - WCAG 2.2 AA Contrast & prefers-reduced-motion Strict Safeguards
+ * - WCAG 2.2 AA Contrast (Always-On Motion policy — see transitions.css)
  * ============================================================================
  */
 
@@ -1027,21 +1027,6 @@ body {
 @keyframes backdropFadeOut {
   0% { opacity: 1; }
   100% { opacity: 0; }
-}
-
-/* Always-On Motion — modal open/close animations persist even with OS reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  .modal-dialog[open],
-  .terminal-modal-dialog[open],
-  .modal-dialog.is-closing,
-  .terminal-modal-dialog.is-closing,
-  .modal-dialog::backdrop,
-  .terminal-modal-dialog::backdrop,
-  .modal-dialog.is-closing::backdrop,
-  .terminal-modal-dialog.is-closing::backdrop {
-    animation: inherit !important;
-    transition: inherit !important;
-  }
 }
 
 /* ==========================================================================

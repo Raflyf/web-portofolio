@@ -325,20 +325,6 @@ body {
   }
 }
 
-/* Always-On Motion — reveal & ambient blobs persist even with OS reduced-motion (lightweight perf only via DPR/geometry cap) */
-@media (prefers-reduced-motion: reduce) {
-  .reveal-item {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-    transition: inherit !important;
-    animation: inherit !important;
-  }
-  .ambient-blob {
-    animation: inherit !important;
-  }
-}
-
 /* Base Utility Classes */
 .text-emerald { color: var(--accent-emerald-text) !important; }
 .text-cyan { color: var(--accent-cyan) !important; }
