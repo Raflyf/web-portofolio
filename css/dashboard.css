@@ -2583,3 +2583,70 @@ input.pin-input.text-left:focus {
     padding: 1.5rem;
   }
 }
+
+/* ==========================================================================
+   16. DASHBOARD TOAST NOTIFICATION ENGINE (HorizonX Themed Toast)
+   ========================================================================== */
+.dash-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.4rem;
+  background: #0d1321 !important;
+  border: 1px solid var(--accent-emerald);
+  color: var(--text-ink);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 24px var(--accent-emerald-glow);
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px);
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: calc(100vw - 3rem);
+}
+
+.dash-toast.is-visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}
+
+.dash-toast.toast--success {
+  border-color: #6366f1 !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(99, 102, 241, 0.35) !important;
+}
+
+.dash-toast.toast--error {
+  border-color: #f43f5e !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(244, 63, 94, 0.35) !important;
+}
+
+.dash-toast.toast--info {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(56, 189, 248, 0.35) !important;
+}
+
+[data-theme="light"] .dash-toast {
+  background: #ffffff !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+}
+
+.dash-toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-toast-msg {
+  line-height: 1.4;
+}
+
