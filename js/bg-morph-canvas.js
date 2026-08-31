@@ -139,10 +139,32 @@
     let targetScrollProgress = 0;
     let isTabVisible = !document.hidden;
 
+    // Adaptive render-rate throttle (Always-On Motion, low-power):
+    // 60fps while the user is actively scrolling, 30fps while idle.
+    // The visual keeps morphing/rotating in both modes — this only halves
+    // idle GPU load so the page stays light and jank-free on scroll.
+    const IDLE_FRAME_MS = 1000 / 30;
+    const ACTIVE_FRAME_MS = 1000 / 60;
+    let lastFrameTime = 0;
+    let isScrolling = false;
+    let scrollDebounceTimer = null;
+    let frameBudgetMs = IDLE_FRAME_MS;
+
     // Window Listeners
     function onScroll() {
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       targetScrollProgress = docHeight > 0 ? Math.max(0, Math.min(1, window.scrollY / docHeight)) : 0;
+
+      // Active scrolling → full 60fps; idle for 350ms → drop to 30fps
+      if (!isScrolling) {
+        isScrolling = true;
+        frameBudgetMs = ACTIVE_FRAME_MS;
+      }
+      clearTimeout(scrollDebounceTimer);
+      scrollDebounceTimer = setTimeout(() => {
+        isScrolling = false;
+        frameBudgetMs = IDLE_FRAME_MS;
+      }, 350);
     }
 
     function onResize() {
@@ -194,6 +216,11 @@
     function animate() {
       if (!isTabVisible) { rafId = null; return; }
       rafId = requestAnimationFrame(animate);
+
+      // Adaptive frame-rate gate (idle 30fps / scroll 60fps)
+      const now = performance.now();
+      if (now - lastFrameTime < frameBudgetMs) return;
+      lastFrameTime = now;
 
       const elapsedTime = clock.getElapsedTime();
 
