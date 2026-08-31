@@ -88,7 +88,12 @@
   --glass-card-border: 1px solid rgba(255, 255, 255, 0.18);
   --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 0.50);
   --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.32);
-  --glass-card-blur: blur(28px) saturate(200%) contrast(105%);
+  /* Dashboard renders MANY glass cards on screen at once (KPI grid, charts,
+     intel grid, OmniRoute tiles, model matrix). blur(28px) on every surface
+     makes scroll-heavy pages cost far more than the landing (which has few
+     cards). 20px keeps the identical glassy look while cutting per-surface
+     GPU cost. Landing (style.css) intentionally keeps 28px. */
+  --glass-card-blur: blur(20px) saturate(180%) contrast(105%);
   --glass-card-shadow: 0 32px 80px -12px rgba(0, 0, 0, 0.85), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.30), 0 0 32px rgba(99, 102, 241, 0.15);
   --glass-card-radius: 20px;
   
@@ -200,7 +205,7 @@ html[data-theme="light"],
   --glass-card-border: 1px solid rgba(255, 255, 255, 0.85);
   --glass-card-border-top: 1.5px solid rgba(255, 255, 255, 1);
   --glass-card-border-left: 1.5px solid rgba(255, 255, 255, 0.90);
-  --glass-card-blur: blur(28px) saturate(200%);
+  --glass-card-blur: blur(20px) saturate(180%);
   --glass-card-shadow: 0 28px 70px -12px rgba(15, 23, 42, 0.16), inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1), 0 0 1px rgba(15, 23, 42, 0.08);
   --glass-card-radius: 20px;
 

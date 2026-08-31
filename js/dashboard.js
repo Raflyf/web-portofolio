@@ -84,7 +84,6 @@ class DashboardApp {
     this.initEventListeners();
     this.initScrollReveal();
     this.initBackToTopButton();
-    this.initInertiaSmoothWheel();
     this.checkOmniRouteRealtimeStatus();
   }
 
@@ -713,9 +712,20 @@ class DashboardApp {
     this.checkOmniRouteRealtimeStatus();
 
     let pollTick = 0;
+
+    // Scroll-aware polling: skip the poll while the user is actively
+    // scrolling so a re-render never steals frames from the scroll gesture.
+    let lastScrollActivity = 0;
+    const markScrollActivity = () => { lastScrollActivity = performance.now(); };
+    window.addEventListener('wheel', markScrollActivity, { passive: true });
+    window.addEventListener('touchmove', markScrollActivity, { passive: true });
+    const SCROLL_IDLE_MS = 300;
+
     const runPoll = () => {
       // Egress Saver: Stop polling completely when tab is hidden/minimized
       if (document.hidden) return;
+      // Skip when the user is actively scrolling (re-check in 8s)
+      if (performance.now() - lastScrollActivity < SCROLL_IDLE_MS) return;
 
       this.loadDashboardData(true);
       pollTick++;
@@ -2368,83 +2378,6 @@ class DashboardApp {
     });
   }
 
-  // =========================================================================
-  // MOMENTUM INERTIA SMOOTH WHEEL ENGINE (lightweight, matches index page)
-  // =========================================================================
-  initInertiaSmoothWheel() {
-    let currentY = window.scrollY || window.pageYOffset;
-    let targetY = currentY;
-    let isRunning = false;
-    const ease = 0.09;
-
-    const updateWheelPhysics = () => {
-      if (document.hidden) { isRunning = false; return; }
-      const diff = targetY - currentY;
-      if (Math.abs(diff) > 0.5) {
-        currentY += diff * ease;
-        window.scrollTo(0, Math.round(currentY * 10) / 10);
-        requestAnimationFrame(updateWheelPhysics);
-      } else {
-        currentY = targetY;
-        window.scrollTo(0, targetY);
-        isRunning = false;
-      }
-    };
-
-    window.addEventListener('wheel', (e) => {
-      if (document.body.classList.contains('modal-open') || document.documentElement.classList.contains('modal-open')) {
-        return;
-      }
-
-      const path = e.composedPath ? e.composedPath() : [];
-      const isScrollableChild = path.some(el => {
-        if (!el || !el.classList) return false;
-        return (
-          el.classList.contains('modal-body') ||
-          el.classList.contains('activity-table-body') ||
-          el.classList.contains('memories-table-body') ||
-          el.tagName === 'DIALOG' ||
-          el.tagName === 'TEXTAREA' ||
-          el.tagName === 'IFRAME'
-        );
-      });
-
-      if (isScrollableChild) {
-        targetY = window.scrollY || window.pageYOffset;
-        currentY = targetY;
-        return;
-      }
-
-      if (e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (Math.abs(e.deltaY) < 15 && e.deltaMode === 0) {
-        targetY = window.scrollY || window.pageYOffset;
-        currentY = targetY;
-        return;
-      }
-
-      e.preventDefault();
-
-      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-      let delta = e.deltaY;
-      if (e.deltaMode === 1) delta *= 35;
-      if (e.deltaMode === 2) delta *= 750;
-
-      targetY = Math.min(Math.max(0, targetY + delta * 1.1), maxScroll);
-
-      if (!isRunning) {
-        isRunning = true;
-        currentY = window.scrollY || window.pageYOffset;
-        requestAnimationFrame(updateWheelPhysics);
-      }
-    }, { passive: false });
-
-    window.addEventListener('scroll', () => {
-      if (!isRunning) {
-        currentY = window.scrollY || window.pageYOffset;
-        targetY = currentY;
-      }
-    }, { passive: true });
-  }
 }
 
 // Instantiate and initialize dashboard controller on DOM load
