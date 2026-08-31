@@ -185,6 +185,26 @@ async function dispatchEmail(otpCode) {
   return { dispatched: false, provider: 'cloud_log', note: 'Email provider credentials not configured. OTP partially logged.' };
 }
 
+async function callRpc(supabaseUrl, headers, funcName, params = {}) {
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/rpc/${funcName}`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(params)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { ok: true, data };
+    }
+    return { ok: false, status: res.status, text: await res.text() };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
 export default async function handler(req, res) {
   // CORS: Restrict to official portfolio origin only
   const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://raflyfirmansyah-portofolio.vercel.app';
@@ -197,10 +217,6 @@ export default async function handler(req, res) {
   }
 
   const { url: supabaseUrl, anonKey, serviceRoleKey } = getSupabaseConfig();
-  // C4: all requests to admin_auth_config use the service role key. The schema has
-  // NO anon SELECT/INSERT/UPDATE/DELETE policies on that table, so the anon key is
-  // useless here. This function runs server-side only — the service role key is
-  // never exposed to the client.
   const activeKey = serviceRoleKey || anonKey;
   const headers = {
     'apikey': activeKey,
@@ -210,14 +226,11 @@ export default async function handler(req, res) {
   };
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown-client';
 
-  // Fail closed: any write/verification that requires Supabase MUST have the
-  // service role key configured, otherwise RLS denies the write and we must not
-  // pretend it succeeded.
   const requireServiceRole = () => {
     if (!serviceRoleKey) {
       return res.status(503).json({
         success: false,
-        message: 'Konfigurasi server belum lengkap: variabel lingkungan SUPABASE_SERVICE_ROLE_KEY belum disetel. Hubungi administrator agar sinkronisasi keamanan cloud dapat diaktifkan.'
+        message: 'Konfigurasi database belum lengkap. Jalankan skrip RPC di Supabase SQL Editor atau setel variabel lingkungan SUPABASE_SERVICE_ROLE_KEY.'
       });
     }
     return null;
@@ -277,6 +290,40 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, verified: false, message: 'Format input PIN atau hash tidak valid.' });
       }
 
+      // 1. Prioritaskan RPC SECURITY DEFINER (Bekerja mulus dengan Anon Key)
+      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_verify_pin', { p_pin_hash: inputHash });
+      if (rpcResult.ok && rpcResult.data) {
+        const d = rpcResult.data;
+        if (d.success && d.verified) {
+          const sessionToken = 'adm_' + crypto.randomBytes(32).toString('hex');
+          return res.status(200).json({
+            success: true,
+            verified: true,
+            session_token: sessionToken,
+            message: d.message || 'Autentikasi Master PIN berhasil.'
+          });
+        } else if (d.is_locked) {
+          return res.status(423).json({
+            success: false,
+            verified: false,
+            is_locked: true,
+            locked_until: d.locked_until,
+            message: d.message || 'Akses terkunci sementara karena melebihi batas percobaan PIN. Gunakan OTP recovery.'
+          });
+        } else {
+          return res.status(401).json({
+            success: false,
+            verified: false,
+            lockout_attempts: d.lockout_attempts || 0,
+            remaining_attempts: d.remaining_attempts !== undefined ? d.remaining_attempts : 0,
+            is_locked: !!d.is_locked,
+            locked_until: d.locked_until,
+            message: d.message || 'Master PIN salah.'
+          });
+        }
+      }
+
+      // 2. Direct Table Fallback
       let storedHash = DEFAULT_PIN_HASH;
       let currentAttempts = 0;
 
@@ -310,7 +357,6 @@ export default async function handler(req, res) {
       const isMatch = (inputHash === storedHash);
 
       if (isMatch) {
-        // Reset attempts on successful verification
         try {
           await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
             method: 'POST',
@@ -373,44 +419,48 @@ export default async function handler(req, res) {
     // 2. SEND OTP CODE TO EMAIL
     // =========================================================================
     if (action === 'send_otp') {
-      const denied = requireServiceRole();
-      if (denied) return denied;
-
       const otpCode = crypto.randomInt(100000, 1000000).toString();
       const otpHash = hashValue(otpCode);
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-      // Upsert to Supabase
       let otpSaved = false;
-      try {
-        const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-          method: 'POST',
-          headers: {
-            ...headers,
-            'Prefer': 'resolution=merge-duplicates,return=representation'
-          },
-          body: JSON.stringify({
-            id: 'master_auth',
-            otp_code_hash: otpHash,
-            otp_expires_at: expiresAt,
-            updated_at: new Date().toISOString()
-          })
+
+      // 1. Prioritaskan RPC SECURITY DEFINER
+      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_save_otp', { p_otp_hash: otpHash, p_expires_at: expiresAt });
+      if (rpcResult.ok && rpcResult.data?.success) {
+        otpSaved = true;
+      } else if (serviceRoleKey) {
+        // 2. Direct Table Fallback jika service role tersedia
+        try {
+          const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+            method: 'POST',
+            headers: {
+              ...headers,
+              'Prefer': 'resolution=merge-duplicates,return=representation'
+            },
+            body: JSON.stringify({
+              id: 'master_auth',
+              otp_code_hash: otpHash,
+              otp_expires_at: expiresAt,
+              updated_at: new Date().toISOString()
+            })
+          });
+          otpSaved = saveRes.ok;
+          if (!otpSaved) console.warn('[Admin OTP] Supabase OTP save rejected:', saveRes.status);
+        } catch (err) {
+          console.warn('[Admin OTP] Supabase OTP save error:', err.message);
+        }
+      }
+
+      if (!otpSaved) {
+        return res.status(503).json({
+          success: false,
+          message: 'Konfigurasi database belum lengkap. Jalankan skrip RPC di Supabase SQL Editor atau setel variabel lingkungan SUPABASE_SERVICE_ROLE_KEY.'
         });
-        otpSaved = saveRes.ok;
-        if (!otpSaved) console.warn('[Admin OTP] Supabase OTP save rejected:', saveRes.status);
-      } catch (err) {
-        console.warn('[Admin OTP] Supabase OTP save error:', err.message);
       }
 
       // Dispatch Email
       const emailResult = await dispatchEmail(otpCode);
-
-      if (!otpSaved) {
-        return res.status(502).json({
-          success: false,
-          message: 'Gagal menyimpan OTP ke gateway keamanan cloud. Coba lagi beberapa saat.'
-        });
-      }
 
       return res.status(200).json({
         success: true,
@@ -426,9 +476,6 @@ export default async function handler(req, res) {
     // 3. VERIFY OTP & RESET PIN
     // =========================================================================
     if (action === 'verify_otp_and_reset_pin') {
-      const denied = requireServiceRole();
-      if (denied) return denied;
-
       if (await isOtpBlocked(clientIp, supabaseUrl, headers)) {
         return res.status(429).json({ success: false, message: 'Terlalu banyak percobaan OTP gagal. Minta kode baru atau coba lagi nanti.' });
       }
@@ -446,7 +493,29 @@ export default async function handler(req, res) {
       const inputOtpHash = hashValue(enteredOtp);
       const newPinHash = hashValue(newPin);
 
-      // Verify with Supabase
+      // 1. Prioritaskan RPC SECURITY DEFINER
+      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_verify_otp_and_reset_pin', { p_otp_hash: inputOtpHash, p_new_pin_hash: newPinHash });
+      if (rpcResult.ok && rpcResult.data) {
+        const d = rpcResult.data;
+        if (d.success) {
+          await clearOtpAttempts(clientIp, supabaseUrl, headers);
+          return res.status(200).json({
+            success: true,
+            message: d.message || 'Master PIN keamanan berhasil diperbarui dan semua status kunci telah direset.'
+          });
+        } else {
+          await recordOtpFailure(clientIp, supabaseUrl, headers);
+          return res.status(400).json({
+            success: false,
+            message: d.message || 'Kode OTP tidak cocok atau sudah kadaluwarsa. Silakan minta kode OTP baru.'
+          });
+        }
+      }
+
+      // 2. Direct Table Fallback
+      const denied = requireServiceRole();
+      if (denied) return denied;
+
       let isValidOtp = false;
       try {
         const queryRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=*`, {
@@ -468,7 +537,6 @@ export default async function handler(req, res) {
         console.warn('[Admin OTP] Supabase verification query failed:', err.message);
       }
 
-      // If OTP matches, update master PIN and reset all lockouts
       if (isValidOtp) {
         await clearOtpAttempts(clientIp, supabaseUrl, headers);
         let pinSaved = false;
@@ -490,7 +558,6 @@ export default async function handler(req, res) {
             })
           });
           pinSaved = saveRes.ok;
-          if (!pinSaved) console.warn('[Admin OTP] Supabase pin update rejected:', saveRes.status);
         } catch (err) {
           console.warn('[Admin OTP] Supabase pin update error:', err.message);
         }
@@ -519,10 +586,6 @@ export default async function handler(req, res) {
     // 4. DIRECT PIN UPDATE (REQUIRES VALID CURRENT PIN HASH VERIFICATION)
     // =========================================================================
     if (action === 'update_pin') {
-      const denied = requireServiceRole();
-      if (denied) return denied;
-
-      // MINOR-6 Fix: Require current_pin_hash proof to prevent unauthorized PIN changes
       const providedCurrentHash = String(body.current_pin_hash || '').trim();
       const newPin = String(body.new_pin || '').trim();
 
@@ -530,10 +593,33 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, message: 'Master PIN baru harus terdiri dari 4-8 digit.' });
       }
 
-      // Verify current PIN hash matches Supabase record before allowing update
       if (!providedCurrentHash || providedCurrentHash.length !== 64) {
         return res.status(403).json({ success: false, message: 'Verifikasi PIN aktif diperlukan untuk mengganti PIN.' });
       }
+
+      const newPinHash = hashValue(newPin);
+
+      // 1. Prioritaskan RPC SECURITY DEFINER
+      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_update_pin', { p_current_pin_hash: providedCurrentHash, p_new_pin_hash: newPinHash });
+      if (rpcResult.ok && rpcResult.data) {
+        const d = rpcResult.data;
+        if (d.success) {
+          return res.status(200).json({
+            success: true,
+            message: d.message || 'Master PIN keamanan berhasil disimpan ke Supabase Cloud.'
+          });
+        } else {
+          return res.status(403).json({
+            success: false,
+            message: d.message || 'PIN lama tidak cocok. Aksi ditolak.'
+          });
+        }
+      }
+
+      // 2. Direct Table Fallback
+      const denied = requireServiceRole();
+      if (denied) return denied;
+
       try {
         const verifyRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=pin_hash`, { method: 'GET', headers });
         if (!verifyRes.ok) {
@@ -548,8 +634,6 @@ export default async function handler(req, res) {
         console.warn('[Admin OTP] PIN verification fetch failed:', err.message);
         return res.status(502).json({ success: false, message: 'Gagal menghubungi gateway keamanan cloud.' });
       }
-
-      const newPinHash = hashValue(newPin);
 
       let directPinSaved = false;
       try {
@@ -568,7 +652,6 @@ export default async function handler(req, res) {
           })
         });
         directPinSaved = saveRes.ok;
-        if (!directPinSaved) console.warn('[Admin OTP] Supabase direct pin update rejected:', saveRes.status);
       } catch (err) {
         console.warn('[Admin OTP] Supabase direct pin update error:', err.message);
       }
@@ -587,14 +670,32 @@ export default async function handler(req, res) {
     // 5. RESET LOCKOUT
     // =========================================================================
     if (action === 'reset_lockout') {
-      const denied = requireServiceRole();
-      if (denied) return denied;
-
-      // Wajib bukti hash PIN aktif — tanpa ini siapa pun bisa menolkan lockout brute-force
       const providedCurrentHash = String(body.current_pin_hash || '').trim();
       if (!providedCurrentHash || providedCurrentHash.length !== 64) {
         return res.status(403).json({ success: false, message: 'Verifikasi PIN aktif diperlukan untuk mereset lockout.' });
       }
+
+      // 1. Prioritaskan RPC SECURITY DEFINER
+      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_reset_lockout', { p_current_pin_hash: providedCurrentHash });
+      if (rpcResult.ok && rpcResult.data) {
+        const d = rpcResult.data;
+        if (d.success) {
+          return res.status(200).json({
+            success: true,
+            message: d.message || 'Status penguncian brute-force berhasil dinolkan.'
+          });
+        } else {
+          return res.status(403).json({
+            success: false,
+            message: d.message || 'Pembuktian Master PIN tidak valid.'
+          });
+        }
+      }
+
+      // 2. Direct Table Fallback
+      const denied = requireServiceRole();
+      if (denied) return denied;
+
       try {
         const verifyRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=pin_hash`, { method: 'GET', headers });
         if (!verifyRes.ok) {
@@ -609,6 +710,7 @@ export default async function handler(req, res) {
         console.warn('[Admin OTP] Lockout verification fetch failed:', err.message);
         return res.status(502).json({ success: false, message: 'Gagal menghubungi gateway keamanan cloud.' });
       }
+
       let lockoutSaved = false;
       try {
         const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
@@ -625,7 +727,6 @@ export default async function handler(req, res) {
           })
         });
         lockoutSaved = saveRes.ok;
-        if (!lockoutSaved) console.warn('[Admin OTP] Reset lockout Supabase rejected:', saveRes.status);
       } catch (err) {
         console.warn('[Admin OTP] Reset lockout Supabase error:', err.message);
       }
