@@ -1382,13 +1382,13 @@ class DashboardApp {
         matcher: (s) => s.includes('openrouter') && s.includes('minimax')
       },
       {
-        id: 'openrouter-laguna',
-        name: 'Poolside Laguna S 2.1 (OpenRouter)',
-        desc: 'Model penalaran perangkat lunak terarah di OpenRouter pool',
+        id: 'openrouter-cohere',
+        name: 'Cohere North Mini Code (OpenRouter)',
+        desc: 'Model penalaran logika kode dan optimasi pemrograman di OpenRouter',
         provider: 'OPENROUTER',
-        badgeClass: 'badge-emerald',
+        badgeClass: 'badge-cyan',
         icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
-        matcher: (s) => s.includes('laguna') || s.includes('poolside')
+        matcher: (s) => s.includes('cohere') || s.includes('north-mini')
       },
 
       // === TIER 2: OLLAMA CLOUD MODELS ===
@@ -1449,13 +1449,13 @@ class DashboardApp {
         matcher: (s) => s.includes('opencode') && s.includes('ultra')
       },
       {
-        id: 'opencode-x-preview',
-        name: 'x-preview-f-free (OpenCode)',
-        desc: 'Engine penalaran dan koding presisi dari OpenCode Zen API',
+        id: 'opencode-laguna',
+        name: 'Poolside Laguna S 2.1 (OpenCode)',
+        desc: 'Engine penalaran dan arsitektur kode presisi dari OpenCode Zen API',
         provider: 'OPENCODE',
         badgeClass: 'badge-emerald',
-        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`,
-        matcher: (s) => s.includes('opencode') && (s.includes('x-preview') || s.includes('preview-f'))
+        icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
+        matcher: (s) => s.includes('opencode') && (s.includes('laguna') || s.includes('poolside'))
       },
       {
         id: 'opencode-mimo',
