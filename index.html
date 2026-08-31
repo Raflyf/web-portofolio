@@ -717,21 +717,40 @@
                   </button>
                 </div>
                 <div class="terminal-controls-options">
-                  <div class="terminal-model-picker custom-dropdown-wrap" title="Pilih Model AI Aktif">
-                    <label class="terminal-model-label" for="terminal-model-select">Model:</label>
-                    <select id="terminal-model-select" class="terminal-model-select" aria-label="Pilih Model AI Aktif">
-                      <option value="auto" selected>Auto Router</option>
+                  <div class="terminal-model-picker custom-dropdown-wrap" id="model-dropdown-wrap" title="Pilih Model AI Aktif">
+                    <label class="terminal-model-label">Model:</label>
+                    <button type="button" class="custom-dropdown-btn" id="custom-model-btn" aria-haspopup="listbox" aria-expanded="false" title="Pilih Model AI Aktif">
+                      <span id="custom-model-label">Auto Router</span>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <ul class="custom-dropdown-menu" id="custom-model-menu" role="listbox" style="display:none; max-height: 280px; overflow-y: auto;" aria-label="Pilih Model AI Aktif">
+                      <li role="option" data-value="auto" class="active">Auto Router (Smart Cascade)</li>
+                      <li role="option" data-value="nemotron-3-nano">Nemotron 3 Nano (Ollama Hub)</li>
+                      <li role="option" data-value="nemotron-lighting">Nemotron 3.5 Lightning (1M)</li>
+                      <li role="option" data-value="nemotron-3-super">Nemotron 3 Super (120B CoT)</li>
+                      <li role="option" data-value="nemotron-3-ultra">Nemotron 3 Ultra (550B SOTA)</li>
+                      <li role="option" data-value="mimo">Mimo v2.5 (Multimodal Vision)</li>
+                      <li role="option" data-value="deepseek">DeepSeek V3 (Chat &amp; Code)</li>
+                      <li role="option" data-value="codex">Codex (Coding Specialist)</li>
+                      <li role="option" data-value="antigravity">Antigravity (Deep CoT)</li>
+                      <li role="option" data-value="minimax">MiniMax-M3 (Vision &amp; Text)</li>
+                      <li role="option" data-value="laguna">Laguna XS 2.1 (Instant Reasoning)</li>
+                      <li role="option" data-value="x-preview">x-preview-f-free (OpenCode Zen)</li>
+                    </ul>
+                    <!-- Hidden native select kept in sync for compatibility -->
+                    <select id="terminal-model-select" style="display:none;" aria-hidden="true" tabindex="-1">
+                      <option value="auto" selected>Auto Router (Smart Cascade)</option>
+                      <option value="nemotron-3-nano">Nemotron 3 Nano (Ollama Hub)</option>
+                      <option value="nemotron-lighting">Nemotron 3.5 Lightning (1M)</option>
+                      <option value="nemotron-3-super">Nemotron 3 Super (120B CoT)</option>
+                      <option value="nemotron-3-ultra">Nemotron 3 Ultra (550B SOTA)</option>
+                      <option value="mimo">Mimo v2.5 (Multimodal Vision)</option>
+                      <option value="deepseek">DeepSeek V3 (Chat &amp; Code)</option>
                       <option value="codex">Codex (Coding Specialist)</option>
                       <option value="antigravity">Antigravity (Deep CoT)</option>
-                      <option value="deepseek">DeepSeek V3</option>
-                      <option value="nemotron-3-ultra">Nemotron 3 Ultra</option>
-                      <option value="nemotron-3-super">Nemotron 3 Super (120B CoT)</option>
-                      <option value="nemotron-lighting">Nemotron 3.5 Lightning</option>
-                      <option value="x-preview">x-preview-f-free</option>
-                      <option value="mimo">Mimo v2.5 Multimodal</option>
-                      <option value="laguna">Laguna S 2.1</option>
-                      <option value="minimax">MiniMax-M3 (Vision)</option>
-                      <option value="vision">Vision Model</option>
+                      <option value="minimax">MiniMax-M3 (Vision &amp; Text)</option>
+                      <option value="laguna">Laguna XS 2.1 (Instant Reasoning)</option>
+                      <option value="x-preview">x-preview-f-free (OpenCode Zen)</option>
                     </select>
                   </div>
                   <div class="terminal-model-picker custom-dropdown-wrap" id="effort-dropdown-wrap">
@@ -1001,6 +1020,6 @@
   </button>
 
   <!-- Main JavaScript Module (Cache-Busting for Instant CDN Refresh) -->
-  <script type="module" src="js/main.js?v=10.560.0"></script>
+  <script type="module" src="js/main.js?v=10.571.0"></script>
 </body>
 </html>

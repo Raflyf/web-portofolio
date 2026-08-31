@@ -72,6 +72,75 @@ export function initTerminal() {
   // Pure Intelligent Auto-Routing as permanent default
   terminalAI.setModel('auto');
 
+  // Custom Glass Model Dropdown Controller (Eliminates Native Mobile OS Popup)
+  const customModelBtn = document.getElementById('custom-model-btn');
+  const customModelMenu = document.getElementById('custom-model-menu');
+  const customModelLabel = document.getElementById('custom-model-label');
+
+  function syncCustomModelUI(val) {
+    if (customModelMenu) {
+      customModelMenu.querySelectorAll('li').forEach(li => {
+        const isMatch = li.getAttribute('data-value') === val;
+        li.classList.toggle('active', isMatch);
+        if (isMatch && customModelLabel) {
+          customModelLabel.textContent = li.textContent.trim();
+        }
+      });
+    }
+  }
+
+  function toggleCustomModelMenu(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!customModelMenu) return;
+    const isOpen = customModelMenu.classList.toggle('is-open');
+    if (customModelBtn) {
+      customModelBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    if (isOpen && customEffortMenu) {
+      customEffortMenu.classList.remove('is-open');
+      if (customEffortBtn) customEffortBtn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function selectCustomModelOption(val, e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (modelSelect) {
+      modelSelect.value = val;
+      modelSelect.dispatchEvent(new Event('change'));
+    }
+    syncCustomModelUI(val);
+    if (customModelMenu) {
+      customModelMenu.classList.remove('is-open');
+    }
+    if (customModelBtn) {
+      customModelBtn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  if (customModelBtn && customModelMenu) {
+    customModelBtn.addEventListener('click', toggleCustomModelMenu);
+
+    customModelMenu.querySelectorAll('li').forEach(li => {
+      const val = li.getAttribute('data-value');
+      li.addEventListener('click', (e) => selectCustomModelOption(val, e));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (customModelMenu && customModelMenu.classList.contains('is-open')) {
+        if (!customModelBtn.contains(e.target) && !customModelMenu.contains(e.target)) {
+          customModelMenu.classList.remove('is-open');
+          if (customModelBtn) customModelBtn.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+  }
+
   // Custom Glass Effort Dropdown Controller (Eliminates Native Mobile OS Popup)
   const customEffortBtn = document.getElementById('custom-effort-btn');
   const customEffortMenu = document.getElementById('custom-effort-menu');
@@ -98,6 +167,10 @@ export function initTerminal() {
     const isOpen = customEffortMenu.classList.toggle('is-open');
     if (customEffortBtn) {
       customEffortBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+    if (isOpen && customModelMenu) {
+      customModelMenu.classList.remove('is-open');
+      if (customModelBtn) customModelBtn.setAttribute('aria-expanded', 'false');
     }
   }
 
@@ -160,12 +233,14 @@ export function initTerminal() {
     const savedModel = localStorage.getItem('ai_selected_model') || 'auto';
     modelSelect.value = savedModel;
     terminalAI.setModel(savedModel);
+    syncCustomModelUI(savedModel);
 
     modelSelect.addEventListener('change', () => {
       const chosen = modelSelect.value;
       if (!chosen) return;
       terminalAI.setModel(chosen);
       localStorage.setItem('ai_selected_model', chosen);
+      syncCustomModelUI(chosen);
       const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || chosen;
       appendLine(`[AI Model Manager] Model aktif berhasil diubah ke: ${modelText}`);
       appendLine("");
