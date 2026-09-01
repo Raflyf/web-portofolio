@@ -102,7 +102,7 @@ export default function TerminalAI({ onClose }) {
         {isLoading && (
           <div className="flex flex-col w-full mb-1 animate-pulse">
             <div className="font-mono text-sm break-words flex gap-3 text-zinc-400">
-              <span className="shrink-0 opacity-70">AI> </span>
+              <span className="shrink-0 opacity-70">AI&gt; </span>
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Processing...</span>
