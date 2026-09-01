@@ -1263,7 +1263,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 1. 5 BENTO KPI METRIC CARDS WITH TIME RANGE FILTER */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-cyan-400" />
@@ -1364,7 +1364,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 2. TOP ROW CHARTS: TRAFFIC VELOCITY & CLICK DISTRIBUTION */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Chart 1: Traffic Velocity Line Chart */}
           <div className="lg:col-span-7 p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -1418,7 +1418,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 3. 4-CARD INTELLIGENCE GRID: PLATFORM, PROJECTS, CERTS, REFERRERS */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Radar className="w-4 h-4 text-indigo-400" />
@@ -1549,7 +1549,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 4. AI MODELS MULTI-TIER MATRIX & INFERENCE MONITORING */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-6">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -1649,7 +1649,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 5. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG) */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -1752,7 +1752,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 6. REAL-TIME ACTIVITY STREAM TABLE & EXPORT */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div className="flex items-center gap-2">
