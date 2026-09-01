@@ -1,12 +1,14 @@
 {
-  "version": 2,
-  "cleanUrls": true,
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/((?!api|certificates|assets|favicon).*$)", "destination": "/index.html" }
   ],
   "functions": {
     "api/chat.js": {
       "maxDuration": 60
+    },
+    "api/admin-otp.js": {
+      "maxDuration": 30
     }
   },
   "headers": [
