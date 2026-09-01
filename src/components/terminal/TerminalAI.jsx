@@ -92,12 +92,11 @@ export default function TerminalAI({ onClose }) {
                     ? "bg-blue-500/10 border-blue-500/20 text-blue-200" 
                     : "bg-black/40 border-white/5 text-zinc-300 rounded-tl-sm")
             )}>
-              <ReactMarkdown 
-                remarkPlugins={[remarkGfm]}
-                className="prose prose-invert prose-sm max-w-none break-words [&>p]:last:mb-0 [&>p]:first:mt-0"
-              >
-                {msg.content}
-              </ReactMarkdown>
+              <div className="prose prose-invert prose-sm max-w-none break-words [&>p]:last:mb-0 [&>p]:first:mt-0">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {msg.content}
+                </ReactMarkdown>
+              </div>
             </div>
           </div>
         ))}
