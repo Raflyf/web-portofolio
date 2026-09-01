@@ -16,6 +16,7 @@ import {
   LogOut, 
   ChevronLeft, 
   ChevronRight,
+  ChevronDown,
   Cpu,
   KeyRound,
   Mail,
@@ -81,90 +82,92 @@ async function sha256(message) {
 
 // 16 Individual AI Models Definition (Ported from archive_v1)
 const INDIVIDUAL_MODELS = [
-  // TIER 1: OPENROUTER
-  {
-    id: 'openrouter-nemotron-free',
-    name: 'Nemotron 3 Free (OpenRouter)',
-    desc: 'Model reasoning frontier gratis via gateway OpenRouter API',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
-    matcher: (s) => (s.includes('openrouter') && s.includes('nemotron')) || s.includes('nvidia/nemotron-3')
-  },
-  {
-    id: 'openrouter-deepseek-free',
-    name: 'DeepSeek R1 Free (OpenRouter)',
-    desc: 'Model reasoning chain-of-thought open weight via OpenRouter',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
-    matcher: (s) => (s.includes('openrouter') || s.includes('free')) && s.includes('deepseek')
-  },
-  {
-    id: 'openrouter-hermes-free',
-    name: 'Hermes 3 Llama 3.1 405B (OpenRouter)',
-    desc: 'Model dense 405B open weight reasoning via OpenRouter',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('hermes') || s.includes('nous'))
-  },
-  {
-    id: 'openrouter-gemini-flash',
-    name: 'Gemini 2.0 Flash (OpenRouter)',
-    desc: 'Model super cepat multi-modal via gateway OpenRouter',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('gemini') || s.includes('flash'))
-  },
-  {
-    id: 'openrouter-llama-scout',
-    name: 'Llama 3.3 70B Instruct (OpenRouter)',
-    desc: 'Model open-weight terkemuka dengan instruksi presisi tinggi',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('llama-3.3') || s.includes('llama 3.3'))
-  },
-  {
-    id: 'openrouter-qwen-coder',
-    name: 'Qwen 2.5 Coder 32B (OpenRouter)',
-    desc: 'Model spesialis koding dan arsitektur software via OpenRouter',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    iconColor: 'text-purple-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('qwen') || s.includes('coder'))
-  },
-  {
-    id: 'openrouter-mistral-nemo',
-    name: 'Mistral Nemo 12B (OpenRouter)',
-    desc: 'Model ringkas multilingual efisien dari Mistral AI di OpenRouter',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    iconColor: 'text-amber-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('mistral') || s.includes('nemo'))
-  },
-  {
-    id: 'openrouter-gemma-flash',
-    name: 'Gemma 2 9B IT (OpenRouter)',
-    desc: 'Model ringan dan cepat dari Google DeepMind via OpenRouter',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('gemma') || s.includes('google/gemma'))
-  },
-
-  // TIER 2: OLLAMA CLOUD
+  // PRIORITAS UTAMA
   {
     id: 'ollama-nemotron-nano',
     name: 'Nemotron 3 Nano (Ollama Cloud)',
-    desc: 'Model inferensi cepat 30B reasoning di Ollama Cloud Gateway',
+    desc: 'Prioritas #1 - Model text-to-text dense 30B inferensi instan',
     provider: 'OLLAMA CLOUD',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
-    matcher: (s) => (s.includes('ollama') && (s.includes('nano') || s.includes('nemotron-3-nano')))
+    matcher: (s) => (s.includes('ollama') && (s.includes('nano:30b') || s.includes('nano-30b') || s.includes('nemotron-3-nano') || s.includes('nano'))) || s === 'nemotron-3-nano:30b' || s === 'nemotron-3-nano'
   },
+  {
+    id: 'openrouter-nemotron-lightning',
+    name: 'Nemotron 3.5 Lightning (OpenRouter)',
+    desc: 'Prioritas #2 - Model berkecepatan tinggi OpenRouter Cloud',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    iconColor: 'text-emerald-400',
+    matcher: (s) => s.includes('openrouter') && (s.includes('lightning') || s.includes('lighting'))
+  },
+  {
+    id: 'openrouter-nemotron-nano-omni',
+    name: 'Nemotron 3 Nano Omni (OpenRouter)',
+    desc: 'Prioritas #3 - Model multimodal & penalaran CoT 30B',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    iconColor: 'text-cyan-400',
+    matcher: (s) => (s.includes('openrouter') || s.includes('omni')) && (s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('30b-a3b') || s.includes('reasoning:free'))
+  },
+
+  // SISA MODEL (TIER OPENROUTER)
+  {
+    id: 'openrouter-free',
+    name: 'OpenRouter Free (Auto SOTA Pool)',
+    desc: 'Dynamic SOTA Free router otomatis',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    iconColor: 'text-emerald-400',
+    matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free') && !s.includes('nemotron') && !s.includes('minimax'))
+  },
+  {
+    id: 'openrouter-deepseek',
+    name: 'DeepSeek Chat V3 (OpenRouter)',
+    desc: 'Frontier Intelligence logika koding',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    iconColor: 'text-cyan-400',
+    matcher: (s) => s.includes('deepseek')
+  },
+  {
+    id: 'openrouter-nemotron-super',
+    name: 'Nemotron 3 Super 120B (OpenRouter)',
+    desc: 'Model penalaran dense 120B teroptimasi latensi rendah',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    iconColor: 'text-emerald-400',
+    matcher: (s) => s.includes('openrouter') && (s.includes('super-120b') || s.includes('super:120b') || s.includes('a12b'))
+  },
+  {
+    id: 'openrouter-nemotron-ultra',
+    name: 'Nemotron 3 Ultra 550B (OpenRouter)',
+    desc: 'Arsitektur MoE 550B parameter penuh',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    iconColor: 'text-emerald-400',
+    matcher: (s) => s.includes('openrouter') && (s.includes('ultra-550b') || s.includes('ultra:550b') || s.includes('a55b'))
+  },
+  {
+    id: 'openrouter-minimax',
+    name: 'MiniMax M3 Free (OpenRouter)',
+    desc: 'Model multimodal untuk pemrosesan teks dan citra',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    iconColor: 'text-cyan-400',
+    matcher: (s) => s.includes('openrouter') && s.includes('minimax')
+  },
+  {
+    id: 'openrouter-cohere',
+    name: 'Cohere North Mini Code (OpenRouter)',
+    desc: 'Model penalaran logika kode',
+    provider: 'OPENROUTER',
+    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+    iconColor: 'text-cyan-400',
+    matcher: (s) => s.includes('cohere') || s.includes('north-mini')
+  },
+
+  // SISA MODEL (TIER OLLAMA)
   {
     id: 'ollama-nemotron-ultra',
     name: 'Nemotron 3 Ultra (Ollama Cloud)',
@@ -177,7 +180,7 @@ const INDIVIDUAL_MODELS = [
   {
     id: 'ollama-nemotron-super',
     name: 'Nemotron 3 Super (Ollama Cloud)',
-    desc: 'Model dense 120B teroptimasi untuk latensi rendah di Ollama Cloud',
+    desc: 'Model dense 120B teroptimasi latensi rendah',
     provider: 'OLLAMA CLOUD',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
@@ -186,14 +189,14 @@ const INDIVIDUAL_MODELS = [
   {
     id: 'ollama-minimax',
     name: 'MiniMax M3 (Ollama Cloud)',
-    desc: 'Multimodal vision and text model di Ollama Cloud Gateway',
+    desc: 'Multimodal vision and text model',
     provider: 'OLLAMA CLOUD',
     badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
     iconColor: 'text-cyan-400',
     matcher: (s) => s.includes('ollama') && s.includes('minimax')
   },
 
-  // TIER 3: OPENCODE ZEN
+  // TIER OPENCODE ZEN DIRECT MODELS
   {
     id: 'opencode-nemotron-lightning',
     name: 'Nemotron 3.5 Lightning (OpenCode)',
@@ -207,30 +210,85 @@ const INDIVIDUAL_MODELS = [
     id: 'opencode-nemotron-ultra',
     name: 'Nemotron 3 Ultra Free (OpenCode)',
     desc: 'Frontier reasoning engine via direct endpoint OpenCode Zen',
-    provider: 'OPENROUTER',
+    provider: 'OPENCODE',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
     matcher: (s) => s.includes('opencode') && s.includes('ultra')
-  },
-  {
-    id: 'opencode-laguna',
-    name: 'Poolside Laguna S 2.1 (OpenCode)',
-    desc: 'Engine penalaran dan arsitektur kode presisi dari OpenCode Zen API',
-    provider: 'OPENCODE',
-    badgeClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-    iconColor: 'text-indigo-400',
-    matcher: (s) => s.includes('opencode') && (s.includes('laguna') || s.includes('poolside'))
-  },
-  {
-    id: 'opencode-mimo',
-    name: 'Mimo v2.5 Free (OpenCode)',
-    desc: 'Model multimodal untuk analisis citra dan teks via OpenCode Zen API',
-    provider: 'OPENCODE',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
-    matcher: (s) => s.includes('opencode') && (s.includes('mimo') || s.includes('multimodal'))
   }
 ];
+
+const CustomSelect = ({ value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value) || options[0];
+
+  return (
+    <div ref={containerRef} className="relative inline-block text-left z-[50]">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-36 sm:w-44 px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs text-zinc-300 hover:border-cyan-400/50 focus:outline-none focus:border-cyan-400 transition-colors cursor-pointer"
+      >
+        <span className="truncate">{selectedOption?.label}</span>
+        <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : "rotate-0"}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 z-[60] mt-1 w-full sm:w-44 origin-top-right rounded-xl bg-slate-900 border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95">
+          <div className="py-1 max-h-60 overflow-y-auto no-scrollbar">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center px-4 py-2.5 text-left text-xs transition-colors ${
+                  value === option.value ? "bg-cyan-500/20 text-cyan-400 font-medium" : "text-zinc-300 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Plugin kustom untuk selalu menampilkan label data di atas grafik batang
+const alwaysShowDataLabelPlugin = {
+  id: 'alwaysShowDataLabel',
+  afterDatasetsDraw(chart, args, pluginOptions) {
+    const { ctx } = chart;
+    ctx.font = 'bold 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    
+    chart.data.datasets.forEach((dataset, i) => {
+      const meta = chart.getDatasetMeta(i);
+      meta.data.forEach((bar, index) => {
+        const data = dataset.data[index];
+        if (data > 0) {
+          ctx.fillStyle = dataset.backgroundColor[index] || '#94a3b8';
+          ctx.fillText(data, bar.x, bar.y - 4);
+        }
+      });
+    });
+  }
+};
 
 export default function Dashboard() {
   // Authentication State
@@ -330,7 +388,12 @@ export default function Dashboard() {
     if (isAuthenticated) {
       fetchTelemetryData();
       const interval = setInterval(fetchTelemetryData, 15000);
-      return () => clearInterval(interval);
+      window.addEventListener('telemetry_update', fetchTelemetryData);
+      
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('telemetry_update', fetchTelemetryData);
+      };
     }
   }, [isAuthenticated, supabaseUrl, supabaseAnonKey]);
 
@@ -353,11 +416,19 @@ export default function Dashboard() {
         loadedEvents = await evRes.json();
         setIsLiveConnected(true);
       } else {
-        // Fallback to local storage if network or table issue
-        const local = localStorage.getItem('portfolio_telemetry_events');
-        if (local) {
-          try { loadedEvents = JSON.parse(local); } catch (e) {}
-        }
+        setIsLiveConnected(false);
+      }
+      
+      // Merge local storage events (so terminal chat events reflect instantly on dashboard)
+      const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
+      if (localEventsStr) {
+        try { 
+          const localEvents = JSON.parse(localEventsStr);
+          if (Array.isArray(localEvents)) {
+            // Prepend local events to prioritize them or just combine them
+            loadedEvents = [...localEvents, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
+          }
+        } catch (e) {}
       }
 
       // 2. Fetch AI Memories from Supabase table ai_memories
@@ -375,9 +446,13 @@ export default function Dashboard() {
     } catch (err) {
       console.warn("Supabase Fetch Warning:", err);
       setIsLiveConnected(false);
-      const local = localStorage.getItem('portfolio_telemetry_events');
-      if (local) {
-        try { loadedEvents = JSON.parse(local); } catch (e) {}
+      
+      // Fallback
+      if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
+        const local = localStorage.getItem('portfolio_telemetry_events');
+        if (local) {
+          try { loadedEvents = JSON.parse(local); } catch (e) {}
+        }
       }
     } finally {
       if (Array.isArray(loadedEvents)) setEvents(loadedEvents);
@@ -879,7 +954,7 @@ export default function Dashboard() {
     const refMap = {
       'Direct Navigation / URL': 0,
       'GitHub Repository': 0,
-      'LinkedIn Profile': 0,
+      'Instagram Profile': 0,
       'Google Search': 0,
       'WhatsApp Share': 0
     };
@@ -887,7 +962,7 @@ export default function Dashboard() {
     gridFilteredEvents.forEach(e => {
       const ref = (e.referrer || '').toLowerCase();
       if (ref.includes('github')) refMap['GitHub Repository']++;
-      else if (ref.includes('linkedin')) refMap['LinkedIn Profile']++;
+      else if (ref.includes('instagram')) refMap['Instagram Profile']++;
       else if (ref.includes('google')) refMap['Google Search']++;
       else if (ref.includes('whatsapp') || ref.includes('wa.me')) refMap['WhatsApp Share']++;
       else refMap['Direct Navigation / URL']++;
@@ -1410,7 +1485,7 @@ export default function Dashboard() {
             </div>
 
             <div className="h-64 w-full">
-              <Bar data={barChartData} options={barChartOptions} />
+              <Bar data={barChartData} options={barChartOptions} plugins={[alwaysShowDataLabelPlugin]} />
             </div>
           </div>
         </motion.section>
@@ -1767,61 +1842,65 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={handleExportCsv}
-                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
-                title="Ekspor sebagai CSV"
-              >
-                <Download className="w-3.5 h-3.5 text-cyan-400" />
-                <span>CSV</span>
-              </button>
+            <div className="flex flex-col xl:flex-row items-start xl:items-center gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCsv}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
+                  title="Ekspor sebagai CSV"
+                >
+                  <Download className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>CSV</span>
+                </button>
 
-              <button
-                onClick={handleExportJson}
-                className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
-                title="Ekspor sebagai JSON"
-              >
-                <Download className="w-3.5 h-3.5 text-purple-400" />
-                <span>JSON</span>
-              </button>
-
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Cari target / sesi..."
-                  value={tableSearchTerm}
-                  onChange={(e) => { setTableSearchTerm(e.target.value); setTableCurrentPage(1); }}
-                  className="pl-8 pr-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 w-44 sm:w-56"
-                />
+                <button
+                  onClick={handleExportJson}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
+                  title="Ekspor sebagai JSON"
+                >
+                  <Download className="w-3.5 h-3.5 text-purple-400" />
+                  <span>JSON</span>
+                </button>
               </div>
 
-              <select
-                value={selectedEventType}
-                onChange={(e) => { setSelectedEventType(e.target.value); setTableCurrentPage(1); }}
-                className="px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs text-zinc-300 focus:outline-none focus:border-cyan-400 cursor-pointer"
-              >
-                <option value="all">Semua Tipe Event</option>
-                <option value="page_view">Page View</option>
-                <option value="link_click">Link Click</option>
-                <option value="cert_filter">Cert Filter</option>
-                <option value="terminal_cmd">Terminal Command</option>
-                <option value="ai_query_resolved">AI Query Resolved</option>
-                <option value="contact_submit">Contact Submit</option>
-              </select>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Cari target / sesi..."
+                    value={tableSearchTerm}
+                    onChange={(e) => { setTableSearchTerm(e.target.value); setTableCurrentPage(1); }}
+                    className="pl-8 pr-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 w-44 sm:w-56"
+                  />
+                </div>
 
-              <select
-                value={tableRange}
-                onChange={(e) => { setTableRange(e.target.value); setTableCurrentPage(1); }}
-                className="px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs text-zinc-300 focus:outline-none focus:border-cyan-400 cursor-pointer"
-              >
-                <option value="all">Semua Waktu</option>
-                <option value="today">Hari Ini</option>
-                <option value="7d">7 Hari Terakhir</option>
-                <option value="14d">14 Hari Terakhir</option>
-                <option value="30d">30 Hari Terakhir</option>
-              </select>
+                <CustomSelect 
+                  value={selectedEventType}
+                  onChange={(val) => { setSelectedEventType(val); setTableCurrentPage(1); }}
+                  options={[
+                    { value: 'all', label: 'Semua Tipe Event' },
+                    { value: 'page_view', label: 'Page View' },
+                    { value: 'link_click', label: 'Link Click' },
+                    { value: 'cert_filter', label: 'Cert Filter' },
+                    { value: 'terminal_cmd', label: 'Terminal Command' },
+                    { value: 'ai_query_resolved', label: 'AI Query Resolved' },
+                    { value: 'contact_submit', label: 'Contact Submit' },
+                  ]}
+                />
+
+                <CustomSelect 
+                  value={tableRange}
+                  onChange={(val) => { setTableRange(val); setTableCurrentPage(1); }}
+                  options={[
+                    { value: 'all', label: 'Semua Waktu' },
+                    { value: 'today', label: 'Hari Ini' },
+                    { value: '7d', label: '7 Hari Terakhir' },
+                    { value: '14d', label: '14 Hari Terakhir' },
+                    { value: '30d', label: '30 Hari Terakhir' },
+                  ]}
+                />
+              </div>
             </div>
           </div>
 

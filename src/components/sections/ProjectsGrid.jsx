@@ -96,10 +96,10 @@ export default function ProjectsGrid() {
       {/* Featured Project Showcase Card */}
       {featuredProject && (filter === 'all' || featuredProject.category === filter) && (
         <motion.div 
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, amount: 0.15 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12 rounded-3xl border border-white/15 bg-slate-950/70 p-8 sm:p-12 backdrop-blur-2xl shadow-2xl relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-300"
         >
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />

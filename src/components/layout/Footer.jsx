@@ -10,12 +10,6 @@ const socialLinks = [
     color: 'hover:text-white hover:border-white/40',
   },
   {
-    icon: (props) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>,
-    label: 'LinkedIn',
-    href: 'https://linkedin.com/in/raflyf',
-    color: 'hover:text-blue-400 hover:border-blue-400/40',
-  },
-  {
     icon: Mail,
     label: 'Email',
     href: 'mailto:raflyfirmansyah@gmail.com',
@@ -97,16 +91,10 @@ export default function Footer() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-6 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3"
+          className="mt-6 pt-6 border-t border-white/5 flex justify-center"
         >
-          <p className="text-xs text-zinc-500 font-mono flex items-center gap-1.5 text-center sm:text-left">
-            <Zap className="w-3 h-3 text-cyan-500/70" />
+          <p className="text-xs text-zinc-500 font-mono text-center">
             &copy; {year} Rafly Firmansyah. Seluruh hak cipta dilindungi.
-          </p>
-          <p className="text-xs text-zinc-600 flex items-center gap-1.5 text-center">
-            Dibuat dengan
-            <Heart className="w-3 h-3 text-rose-500/80 fill-rose-500/60" />
-            React &amp; Framer
           </p>
         </motion.div>
       </div>

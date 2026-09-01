@@ -6,17 +6,100 @@ import { Send, TerminalSquare, Loader2, X, Clock, Plus, ChevronDown, Copy, Downl
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
 
+const COMMAND_REGISTRY = {
+  about: () => [
+    "--- ABOUT ME ---",
+    "Rafly Firmansyah",
+    "Software Engineer, AI Researcher & Web Developer",
+    "Fokus pada Web Performance, AI Integration, dan Data Engineering."
+  ],
+  skills: () => [
+    "--- TECH SKILLS ---",
+    "Frontend: React, Vue, TailwindCSS, Framer Motion",
+    "Backend: Node.js, Python, Express",
+    "Database: PostgreSQL, MongoDB, Supabase",
+    "AI/ML: PyTorch, LangChain, OpenAI, DeepSeek, Ollama"
+  ],
+  projects: () => [
+    "--- OPEN SOURCE PROJECTS ---",
+    "1. Terminal AI Gateway - Smart LLM Router",
+    "2. Skripsi AI Plagiarism Checker",
+    "3. Next.js Dashboard Analytics",
+    "Cek selengkapnya di GitHub: https://github.com/Raflyf"
+  ],
+  certifs: () => [
+    "--- CREDENTIALS ---",
+    "- Bangkit Academy Cloud Computing Cohort",
+    "- Dicoding: Menjadi Front-End Web Developer Expert",
+    "- Dicoding: Membangun Web dengan React",
+    "- Google Cloud Certified"
+  ],
+  benchmarks: () => [
+    "--- AI BENCHMARKS ---",
+    "Nemotron 3 Nano (Ollama): Latensi ~3s, Logika Menengah",
+    "OpenCode x-preview-f-free: Latensi ~1s, Coding Expert",
+    "DeepSeek R1 Free: Latensi ~4s, Deep Reasoning"
+  ],
+  models: () => [
+    "[KATALOG MODEL AI MODERN (PRIORITAS)]",
+    "----------------------------------------------------------------",
+    "1. PRIORITAS UTAMA:",
+    "   - nemotron-3-nano:30b (Ollama Cloud | Sub-5s Fast Conversational - PRIORITAS #1)",
+    "   - lightning (OpenRouter | Nemotron 3.5 Lightning Berkecepatan Tinggi - PRIORITAS #2)",
+    "   - nemotron-3-nano-omni (OpenRouter | Model multimodal & penalaran CoT 30B - PRIORITAS #3)",
+    "",
+    "2. OPENROUTER CLOUD SOTA POOL:",
+    "   - deepseek-chat (DeepSeek V3 | Fast Analytical)",
+    "   - openrouter/free (Universal SOTA Auto Router)",
+    "   - super-120b (Nemotron 3 Super 120B | Teroptimasi latensi rendah)",
+    "   - ultra-550b (Nemotron 3 Ultra 550B | MoE 550B parameter penuh)",
+    "   - minimax (MiniMax M3 Free | Multimodal vision & text)",
+    "   - cohere (Cohere North Mini Code | Penalaran logika kode)",
+    "",
+    "3. OLLAMA CLOUD SOTA HUB:",
+    "   - ultra (Nemotron 3 Ultra | Frontier reasoning)",
+    "   - super (Nemotron 3 Super | 120B CoT Reasoning)",
+    "   - minimax (MiniMax M3 | Multimodal)",
+    "",
+    "4. OPENCODE ZEN DIRECT MODELS:",
+    "   - opencode-lightning (Nemotron 3.5 Lightning)",
+    "   - opencode-ultra (Nemotron 3 Ultra Free)",
+    "",
+    "Perintah Penggantian: Ketik 'model <nama>' (contoh: model nano / model lightning / model auto)."
+  ],
+  'ai-status': () => [
+    "--- AI ENGINE STATUS ---",
+    "Engine: Smart Cascade Auto Router",
+    "Latency: Normal (< 5s)",
+    "Status: ONLINE"
+  ],
+  contact: () => [
+    "--- CONTACT ---",
+    "Email: mr.rafly2002@gmail.com",
+    "GitHub: github.com/Raflyf"
+  ],
+  clear: () => []
+};
+
 export default function TerminalAI({ onClose }) {
   const { 
     isTerminalPopupOpen, setIsTerminalPopupOpen,
     messages, setMessages,
     input, setInput,
     isLoading, setIsLoading,
+    historyList, setHistoryList,
+    effort, setEffort,
     getCurrentTime, initialMsg
   } = useTerminal();
   
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const scrollRef = useRef(null);
+
+  const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [slashFilter, setSlashFilter] = useState('');
+  const [slashSelectedIndex, setSlashSelectedIndex] = useState(0);
+
+  const availableCommands = Object.keys(COMMAND_REGISTRY).filter(cmd => cmd.startsWith(slashFilter));
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -24,7 +107,24 @@ export default function TerminalAI({ onClose }) {
     }
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (showHistoryModal) {
+          setShowHistoryModal(false);
+        } else if (isTerminalPopupOpen) {
+          setIsTerminalPopupOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isTerminalPopupOpen, showHistoryModal, setIsTerminalPopupOpen]);
+
   const handleNewChat = () => {
+    if (messages.length > 1) {
+      setHistoryList(prev => [{ id: Date.now(), messages: [...messages], timestamp: new Date().toLocaleTimeString() }, ...prev].slice(0, 50));
+    }
     setMessages([initialMsg]);
     setShowHistoryModal(false);
   };
@@ -32,8 +132,50 @@ export default function TerminalAI({ onClose }) {
   const sendMessage = async (text) => {
     if (!text.trim() || isLoading) return;
     
-    const userQuery = text.trim();
+    let userQuery = text.trim();
+    const isSlash = userQuery.startsWith('/');
+    const cmdNormalized = isSlash ? userQuery.substring(1).toLowerCase() : userQuery.toLowerCase();
+    
     setInput('');
+    setShowSlashMenu(false);
+
+    if (COMMAND_REGISTRY[cmdNormalized]) {
+       if (cmdNormalized === 'clear') {
+         setMessages([{ role: 'system', content: 'Console cleared.', time: getCurrentTime() }]);
+         return;
+       }
+       setMessages(prev => [
+         ...prev, 
+         { role: 'user', content: userQuery, time: getCurrentTime() },
+         { role: 'ai', content: COMMAND_REGISTRY[cmdNormalized]().join('\n\n'), time: getCurrentTime(), isStatic: true }
+       ]);
+       return;
+    }
+
+    if (cmdNormalized === 'model' || cmdNormalized.startsWith('model ')) {
+      const chosen = cmdNormalized.split(' ')[1] || 'auto';
+      localStorage.setItem('ai_selected_model', chosen);
+      
+      try {
+        const events = JSON.parse(localStorage.getItem('portfolio_telemetry_events') || '[]');
+        events.push({
+          event_type: 'model_select',
+          event_target: chosen,
+          event_label: `Pilihan Model: ${chosen}`,
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('portfolio_telemetry_events', JSON.stringify(events));
+        window.dispatchEvent(new Event('telemetry_update'));
+      } catch (e) {}
+
+      setMessages(prev => [
+        ...prev, 
+        { role: 'user', content: userQuery, time: getCurrentTime() },
+        { role: 'system', content: `[AI Model Manager] Model aktif berhasil diubah ke: ${chosen}`, time: getCurrentTime() }
+      ]);
+      return;
+    }
+
     setMessages(prev => [...prev, { role: 'user', content: userQuery, time: getCurrentTime() }]);
     setIsLoading(true);
 
@@ -56,6 +198,20 @@ export default function TerminalAI({ onClose }) {
       finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
 
       setMessages(prev => [...prev, { role: 'ai', content: finalResponse, time: getCurrentTime() }]);
+
+      // Log to telemetry (Auto Router / Ollama Nano)
+      try {
+        const events = JSON.parse(localStorage.getItem('portfolio_telemetry_events') || '[]');
+        events.push({
+          event_type: 'ai_chat',
+          event_target: 'auto',
+          event_label: '[auto] ollama nano',
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('portfolio_telemetry_events', JSON.stringify(events));
+        window.dispatchEvent(new Event('telemetry_update'));
+      } catch (e) {}
+
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', content: '⚠️ Gagal terhubung ke API Gateway lokal. Jika Anda menjalankan secara lokal dengan Vite, pastikan `/api/chat` tersedia atau Vercel Dev dijalankan.', time: getCurrentTime() }]);
     } finally {
@@ -66,6 +222,41 @@ export default function TerminalAI({ onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     sendMessage(input);
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setInput(val);
+    
+    if (val.startsWith('/')) {
+      const filter = val.substring(1).toLowerCase();
+      setSlashFilter(filter);
+      setShowSlashMenu(true);
+      setSlashSelectedIndex(0);
+    } else {
+      setShowSlashMenu(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (showSlashMenu && availableCommands.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSlashSelectedIndex(prev => (prev + 1) % availableCommands.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSlashSelectedIndex(prev => (prev - 1 + availableCommands.length) % availableCommands.length);
+      } else if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+        e.preventDefault();
+        const chosen = availableCommands[slashSelectedIndex];
+        if (chosen) {
+           sendMessage(`/${chosen}`);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowSlashMenu(false);
+      }
+    }
   };
 
   const handleShortcutClick = (cmd) => {
@@ -83,9 +274,16 @@ export default function TerminalAI({ onClose }) {
   };
 
   const terminalContent = (
-    <div className={cn(
-      isTerminalPopupOpen ? "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-8" : "relative w-full"
-    )}>
+    <div 
+      className={cn(
+        isTerminalPopupOpen ? "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-8" : "relative w-full"
+      )}
+      onClick={(e) => {
+        if (isTerminalPopupOpen && e.target === e.currentTarget) {
+          setIsTerminalPopupOpen(false);
+        }
+      }}
+    >
       <div className={cn(
         "w-full max-w-5xl mx-auto flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-2xl font-mono text-sm relative transition-all duration-300",
         isTerminalPopupOpen ? "h-[85vh] shadow-[0_0_50px_rgba(34,211,238,0.15)] animate-in zoom-in-95" : "h-[600px] sm:h-[700px]"
@@ -137,6 +335,24 @@ export default function TerminalAI({ onClose }) {
             <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0" title="Smart Cascade Auto Router">
               Model: 
               <span className="bg-cyan-500/20 text-cyan-400 font-bold px-2 py-0.5 rounded text-[10px]">AUTO ROUTER</span>
+            </div>
+
+            <div className="hidden sm:block h-4 w-[1px] bg-white/20 mx-1"></div>
+
+            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0 cursor-pointer group" title="Pilih Reasoning Effort & Thinking Mode">
+              Effort:
+              <select 
+                value={effort}
+                onChange={(e) => setEffort(e.target.value)}
+                className="bg-transparent text-cyan-400 font-bold text-[10px] sm:text-xs outline-none cursor-pointer appearance-none pr-4 relative z-10 uppercase transition-colors group-hover:text-cyan-300"
+                style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="none" stroke="%2322d3ee" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"></polyline></svg>')`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: '10px' }}
+              >
+                <option value="auto" className="bg-slate-900 text-zinc-300">Auto (Balanced)</option>
+                <option value="thinking" className="bg-slate-900 text-zinc-300">Thinking CoT (Deep)</option>
+                <option value="high" className="bg-slate-900 text-zinc-300">High (Research)</option>
+                <option value="medium" className="bg-slate-900 text-zinc-300">Medium (Standard)</option>
+                <option value="low" className="bg-slate-900 text-zinc-300">Low (Fast)</option>
+              </select>
             </div>
           </div>
         </div>
@@ -195,9 +411,10 @@ export default function TerminalAI({ onClose }) {
                     <Cpu className="w-3 h-3 text-cyan-400" />
                   </div>
                   <span className="text-[10px] sm:text-xs font-semibold text-cyan-400">
-                    Auto Router <span className="text-zinc-500 mx-1">{"->"}</span> NEMOTRON 3 NANO <span className="text-zinc-500 mx-1">[Effort: Auto]</span>
+                    {msg.isStatic ? "System Engine" : "Auto Router -> NEMOTRON 3 NANO"}
+                    {!msg.isStatic && <span className="text-zinc-500 mx-1 uppercase">[Effort: {effort}]</span>}
                   </span>
-                  <span className="hidden lg:inline text-[10px] text-zinc-500">(Ollama Cloud SOTA Engine)</span>
+                  {!msg.isStatic && <span className="hidden lg:inline text-[10px] text-zinc-500">(Ollama Cloud SOTA Engine)</span>}
                   <span className="text-[10px] sm:text-xs text-zinc-500 font-medium sm:ml-2">{msg.time || getCurrentTime()}</span>
                   
                   <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -239,29 +456,55 @@ export default function TerminalAI({ onClose }) {
         )}
       </div>
 
-      {/* History Modal Overlay */}
+      {/* History Modal */}
       {showHistoryModal && (
-        <div className="absolute inset-0 z-50 flex flex-col bg-slate-950/95 backdrop-blur-md p-6 animate-in slide-in-from-bottom-10 duration-300">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2"><Clock className="w-5 h-5 text-cyan-400" /> Riwayat Percakapan</h3>
-            <button onClick={() => setShowHistoryModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition"><X className="w-4 h-4 text-zinc-400 hover:text-white" /></button>
-          </div>
-          <div className="flex-1 overflow-y-auto no-scrollbar space-y-3">
-             <div className="p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group relative">
-               <div className="flex items-center justify-between mb-1">
-                 <span className="text-cyan-400 font-medium group-hover:text-cyan-300 text-sm">Sesi Aktif</span>
-                 <span className="text-[10px] text-zinc-500">Sekarang</span>
+        <div 
+          className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowHistoryModal(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden font-mono animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 p-6">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2"><Clock className="w-5 h-5 text-cyan-400" /> Riwayat Percakapan</h3>
+              <button onClick={() => setShowHistoryModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition"><X className="w-4 h-4 text-zinc-400 hover:text-white" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto max-h-[60vh] no-scrollbar space-y-3 p-6 pt-0">
+               <div className="p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group relative">
+                 <div className="flex items-center justify-between mb-1">
+                   <span className="text-cyan-400 font-medium group-hover:text-cyan-300 text-sm">Sesi Aktif</span>
+                   <span className="text-[10px] text-zinc-500">Sekarang</span>
+                 </div>
+               <p className="text-xs text-zinc-400 truncate">
+                 {messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
+               </p>
+             </div>
+             {historyList.map((hist, idx) => (
+               <div key={hist.id} onClick={() => {
+                 setMessages(hist.messages);
+                 setShowHistoryModal(false);
+               }} className="p-4 bg-white/[0.02] border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group">
+                 <div className="flex items-center justify-between mb-1">
+                   <span className="text-zinc-300 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
+                   <span className="text-[10px] text-zinc-500">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+                 </div>
+                 <p className="text-xs text-zinc-500 truncate">
+                   {hist.messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
+                 </p>
                </div>
-               <p className="text-xs text-zinc-400 truncate">{messages[messages.length - 1]?.content.substring(0, 50) || "Percakapan baru..."}...</p>
-             </div>
-             {/* Note: Full persistent multi-session history requires database indexing */}
-             <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
-                <History className="w-8 h-8 text-zinc-600 mx-auto mb-3" />
-                <p className="text-sm text-zinc-500">Riwayat sesi terdahulu (sebelum refresh) akan diimplementasikan ke database via API.</p>
-             </div>
+             ))}
+
+             {historyList.length === 0 && (
+               <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
+                  <p className="text-sm text-zinc-500">Belum ada riwayat sesi terdahulu tersimpan.</p>
+               </div>
+             )}
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* Terminal Input Area */}
       <div className="p-3 sm:p-4 bg-slate-950 border-t border-white/10 relative z-10 shrink-0">
@@ -275,11 +518,29 @@ export default function TerminalAI({ onClose }) {
               <input
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 placeholder="Ketik perintah atau tanya sesuatu... (misal: 'buatkan ringkasan')"
                 className="w-full bg-slate-900 border border-indigo-500/30 text-white rounded-xl py-3 sm:py-3.5 pl-10 pr-12 sm:pr-14 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-zinc-500 transition-all shadow-[inset_0_1px_4px_rgba(0,0,0,0.3)] text-sm"
                 disabled={isLoading}
               />
+              
+              {showSlashMenu && availableCommands.length > 0 && (
+                <div className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto bg-slate-800 border border-indigo-500/30 rounded-xl shadow-2xl z-50 py-1">
+                  {availableCommands.map((cmd, idx) => (
+                    <div 
+                      key={cmd} 
+                      onClick={() => sendMessage(`/${cmd}`)}
+                      className={cn(
+                        "px-4 py-2 text-sm cursor-pointer transition-colors",
+                        idx === slashSelectedIndex ? "bg-indigo-500/30 text-white" : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                      )}
+                    >
+                      /{cmd}
+                    </div>
+                  ))}
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}

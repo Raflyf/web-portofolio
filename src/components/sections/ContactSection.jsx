@@ -144,15 +144,15 @@ export default function ContactSection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Direct Action Cards */}
-        <motion.div 
-          initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
-          className="lg:col-span-5 space-y-3"
-        >
+        <div className="lg:col-span-5 space-y-3">
           {/* Email Direct Copy Card */}
-          <div className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-cyan-500/30 transition-all duration-300 group">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-cyan-500/30 transition-all duration-300 group"
+          >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
                 <Mail className="w-5 h-5" />
@@ -183,10 +183,14 @@ export default function ContactSection() {
                 </>
               )}
             </button>
-          </div>
+          </motion.div>
 
           {/* WhatsApp Direct Chat Card */}
-          <a
+          <motion.a
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             href={DEVELOPER_PROFILE.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -210,10 +214,14 @@ export default function ContactSection() {
               <span>Buka Chat WhatsApp</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
-          </a>
+          </motion.a>
 
           {/* GitHub Profile Card */}
-          <a
+          <motion.a
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
             href={DEVELOPER_PROFILE.github}
             target="_blank"
             rel="noopener noreferrer"
@@ -239,9 +247,9 @@ export default function ContactSection() {
               <span>Kunjungi Profil GitHub</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
-          </a>
+          </motion.a>
 
-        </motion.div>
+        </div>
 
         {/* Right Column: Contact Form with FormSubmit */}
         <motion.div 
