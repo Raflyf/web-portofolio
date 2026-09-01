@@ -56,7 +56,7 @@ export default function AboutSection() {
         {/* Main Bio Card */}
         <motion.div 
           variants={itemVariants}
-          className="lg:col-span-6 space-y-6 text-base sm:text-lg text-zinc-300 leading-relaxed p-8 sm:p-10 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-2xl relative overflow-hidden flex flex-col justify-center hover:border-cyan-500/30 transition-all duration-300"
+          className="lg:col-span-6 space-y-6 text-base sm:text-lg text-zinc-300 leading-relaxed p-8 sm:p-10 liquid-glass-strong liquid-glass-hover relative overflow-hidden flex flex-col justify-center"
         >
           <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
           <p className="relative z-10">
@@ -107,7 +107,7 @@ export default function AboutSection() {
               key={i} 
               variants={itemVariants}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="p-6 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl hover:border-cyan-500/30 transition-all shadow-xl group cursor-default relative overflow-hidden flex flex-col justify-between"
+              className="p-6 liquid-glass liquid-glass-hover group cursor-default relative overflow-hidden flex flex-col justify-between"
             >
               <div className="relative z-10">
                 <div className={`w-10 h-10 rounded-xl ${pillar.bg} border ${pillar.border} flex items-center justify-center ${pillar.color} mb-4 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]`}>

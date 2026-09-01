@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { telemetry } from '../lib/telemetry';
 import HorizonHero from '../components/ui/horizon-hero';
 import ScrollStoryline from '../components/ui/scroll-storyline';
 import TerminalAI from '../components/terminal/TerminalAI';
@@ -12,6 +13,10 @@ import ContactSection from '../components/sections/ContactSection';
 import Footer from '../components/layout/Footer';
 
 export default function Home() {
+  useEffect(() => {
+    telemetry.init();
+  }, []);
+
   return (
     <>
       <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-hidden">
@@ -39,7 +44,7 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center space-y-4 mb-12"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+            <div className="inline-flex items-center gap-2 liquid-glass-inset liquid-glass-pill px-3.5 py-1.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">CLI & AI Assistant</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">

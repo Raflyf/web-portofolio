@@ -313,6 +313,7 @@ export const CERTIFICATES_DATA = [
 
 export const TIMELINE_DATA = [
   {
+    type: "education",
     period: "2022 — Sekarang",
     title: "Mahasiswa S1 Informatika",
     institution: "Universitas Bina Sarana Informatika (UBSI), Kampus Sukabumi",

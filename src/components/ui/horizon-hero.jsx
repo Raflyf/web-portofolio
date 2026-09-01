@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
-import { 
-  ArrowRight, 
-  Terminal, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  ArrowRight,
+  Terminal,
+  ChevronLeft,
+  ChevronRight,
   Star,
   Hexagon,
   Triangle,
@@ -13,7 +13,8 @@ import {
   Gem,
   Cpu,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Clock
 } from "lucide-react";
 
 const HERO_SHOWCASE_PROJECTS = [
@@ -69,6 +70,36 @@ export default function HorizonHero() {
   const containerRef = useRef(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [clockTime, setClockTime] = useState('');
+
+  // Live WIB clock (UTC+7), paused when the tab is hidden
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      const timeStr = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Bangkok',
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).format(now);
+      setClockTime(`WIB (UTC+7) · ${timeStr}`);
+    };
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    const onVisibility = () => {
+      if (document.hidden) {
+        clearInterval(timer);
+      } else {
+        updateClock();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -138,11 +169,17 @@ export default function HorizonHero() {
             style={{ y: heroTextY, opacity: heroOpacity }}
             className="lg:col-span-7 flex flex-col justify-center space-y-8"
           >
-            <div>
+            <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl transition-colors hover:bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
                 <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
                   Portofolio Pribadi & Developer Lab
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
+                </span>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/5 px-3.5 py-1.5 backdrop-blur-xl">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
+                  {clockTime}
                 </span>
               </div>
             </div>
@@ -164,7 +201,7 @@ export default function HorizonHero() {
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <a 
                 href="#projects"
-                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 font-semibold tracking-wide text-sm backdrop-blur-2xl shadow-[0_0_25px_rgba(6,182,212,0.2)] transition-all hover:scale-[1.03] active:scale-[0.98] group"
+                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-gradient-to-b from-cyan-400 to-cyan-600 hover:from-cyan-300 hover:to-cyan-500 border border-cyan-300/60 text-white font-semibold tracking-wide text-sm shadow-[0_8px_24px_rgba(6,182,212,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-[1.03] group"
               >
                 <span>Jelajahi Karya</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -172,7 +209,7 @@ export default function HorizonHero() {
               
               <a 
                 href="#lab"
-                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-slate-900/60 hover:bg-slate-800/80 border border-white/15 text-slate-200 font-semibold tracking-wide text-sm backdrop-blur-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all hover:scale-[1.03] active:scale-[0.98] group"
+                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full liquid-glass-inset liquid-glass-pill liquid-press text-slate-200 font-semibold tracking-wide text-sm transition-all hover:scale-[1.03] group"
               >
                 <Terminal className="w-4 h-4 text-cyan-400 transition-transform group-hover:scale-110" />
                 <span>Uji Terminal AI Lab</span>
@@ -188,7 +225,7 @@ export default function HorizonHero() {
             onMouseLeave={() => setIsPaused(false)}
           >
             {/* Dynamic Project Showcase Canvas */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-950/70 p-6 sm:p-7 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] transition-all hover:border-cyan-500/30">
+            <div className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7">
               <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
               {/* Showcase Window Header */}
@@ -277,7 +314,7 @@ export default function HorizonHero() {
             </div>
 
             {/* Marquee Tech Brand Pod */}
-            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 py-4 backdrop-blur-2xl shadow-xl">
+            <div className="relative overflow-hidden liquid-glass py-4">
               <div className="mb-2.5 px-6 flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Core Engineering Stack</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />

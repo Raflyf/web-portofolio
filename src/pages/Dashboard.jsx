@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { telemetry } from '../lib/telemetry';
 import { 
   Lock, 
   ArrowRight, 
@@ -239,14 +240,14 @@ const CustomSelect = ({ value, onChange, options }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-36 sm:w-44 px-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs text-zinc-300 hover:border-cyan-400/50 focus:outline-none focus:border-cyan-400 transition-colors cursor-pointer"
+        className="flex items-center justify-between w-36 sm:w-44 px-3 py-1.5 liquid-glass-inset text-xs text-zinc-300 hover:border-cyan-400/50 focus:outline-none focus:border-cyan-400 transition-colors cursor-pointer"
       >
         <span className="truncate">{selectedOption?.label}</span>
         <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : "rotate-0"}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-[60] mt-1 w-full sm:w-44 origin-top-right rounded-xl bg-slate-900 border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="absolute right-0 z-[60] mt-1 w-full sm:w-44 origin-top-right liquid-glass-strong focus:outline-none overflow-hidden glass-spring-in">
           <div className="py-1 max-h-60 overflow-y-auto no-scrollbar">
             {options.map((option) => (
               <button
@@ -360,6 +361,11 @@ export default function Dashboard() {
 
   // Ping Toast
   const [pingStatus, setPingStatus] = useState('');
+
+  // 0. Telemetry: record dashboard visit
+  useEffect(() => {
+    telemetry.init();
+  }, []);
 
   // 1. Session Auth Check
   useEffect(() => {
@@ -725,13 +731,13 @@ export default function Dashboard() {
 
   // KPI Metrics Computed
   const kpiFilteredEvents = useMemo(() => filterByRange(events, kpiRange), [events, kpiRange]);
-  const totalViews = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'page_view').length || (kpiFilteredEvents.length > 0 ? kpiFilteredEvents.length : 124), [kpiFilteredEvents]);
+  const totalViews = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'page_view').length, [kpiFilteredEvents]);
   const uniqueVisitors = useMemo(() => {
     const set = new Set(kpiFilteredEvents.map(e => e.session_id).filter(Boolean));
-    return set.size || Math.max(Math.floor(totalViews * 0.65), 18);
-  }, [kpiFilteredEvents, totalViews]);
-  const totalClicks = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'click' || e.event_type === 'cert_filter' || e.event_type === 'project_click').length || 48, [kpiFilteredEvents]);
-  const contactSubmissions = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'contact_submit' || e.event_target?.toLowerCase().includes('contact') || e.event_target?.toLowerCase().includes('whatsapp')).length || 9, [kpiFilteredEvents]);
+    return set.size;
+  }, [kpiFilteredEvents]);
+  const totalClicks = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'click' || e.event_type === 'cert_filter' || e.event_type === 'project_click').length, [kpiFilteredEvents]);
+  const contactSubmissions = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'contact_submit' || e.event_target?.toLowerCase().includes('contact') || e.event_target?.toLowerCase().includes('whatsapp')).length, [kpiFilteredEvents]);
   const interactivityRatio = useMemo(() => {
     if (totalViews === 0) return '0%';
     const ratio = Math.min(((totalClicks + contactSubmissions) / totalViews) * 100, 100);
@@ -770,21 +776,6 @@ export default function Dashboard() {
     // Konversi set ke size (jumlah sesi unik per hari)
     const finalVisitors = uniqueSessionsPerDay.map(set => set.size);
     const finalViews = viewsPerDay;
-
-    // Tampilkan data fallback dummy hanya saat belum ada data API sama sekali
-    if (events.length === 0) {
-      if (daysCount === 7) {
-        const dummyViews = [12, 19, 15, 28, 34, 42, 36];
-        const dummyVisitors = [8, 14, 11, 21, 26, 31, 25];
-        return {
-          labels,
-          datasets: [
-            { label: 'Total Kunjungan (Page Views)', data: dummyViews, borderColor: '#22d3ee', backgroundColor: 'rgba(34, 211, 238, 0.12)', fill: true, tension: 0.4, pointBackgroundColor: '#22d3ee', pointBorderColor: '#0891b2', pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'Pengunjung Unik (Unique Sessions)', data: dummyVisitors, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.12)', fill: true, tension: 0.4, pointBackgroundColor: '#a855f7', pointBorderColor: '#7e22ce', pointRadius: 4, pointHoverRadius: 6 }
-          ]
-        };
-      }
-    }
 
     return {
       labels: labels,
@@ -835,15 +826,12 @@ export default function Dashboard() {
       else if (/\b(terminal|ai)\b/.test(combined)) counts[8]++;
     });
 
-    const fallbackCounts = [18, 24, 15, 12, 10, 8, 22, 16, 29];
-    const finalCounts = events.length === 0 ? fallbackCounts : counts;
-
     return {
       labels: categories,
       datasets: [
         {
           label: 'Total Klik / Aksi',
-          data: finalCounts,
+          data: counts,
           backgroundColor: [
             'rgba(34, 211, 238, 0.7)',
             'rgba(168, 85, 247, 0.7)',
@@ -875,9 +863,6 @@ export default function Dashboard() {
       else if (dev.includes('tab')) tablet++;
       else desktop++;
     });
-    if (desktop === 0 && mobile === 0 && tablet === 0) {
-      desktop = 58; mobile = 36; tablet = 6;
-    }
     const total = desktop + mobile + tablet;
     return {
       desktop,
@@ -919,10 +904,9 @@ export default function Dashboard() {
       else if (target.includes('dashboard') || target.includes('telemetry')) projMap['Portfolio Observability Dashboard']++;
     });
 
-    const fallbackBase = [28, 22, 19, 15, 12];
-    const sorted = Object.entries(projMap).map(([name, count], i) => ({
+    const sorted = Object.entries(projMap).map(([name, count]) => ({
       name,
-      count: Math.max(count, fallbackBase[i])
+      count
     })).sort((a, b) => b.count - a.count);
 
     const maxCount = sorted[0]?.count || 1;
@@ -951,10 +935,9 @@ export default function Dashboard() {
       else if (target.includes('fullstack') || target.includes('react')) certMap['Fullstack Web Architecture']++;
     });
 
-    const fallbackBase = [34, 29, 21, 18, 14];
-    const sorted = Object.entries(certMap).map(([name, count], i) => ({
+    const sorted = Object.entries(certMap).map(([name, count]) => ({
       name,
-      count: Math.max(count, fallbackBase[i])
+      count
     })).sort((a, b) => b.count - a.count);
 
     const maxCount = sorted[0]?.count || 1;
@@ -983,10 +966,9 @@ export default function Dashboard() {
       else refMap['Direct Navigation / URL']++;
     });
 
-    const fallbackBase = [45, 32, 28, 19, 15];
-    const sorted = Object.entries(refMap).map(([name, count], i) => ({
+    const sorted = Object.entries(refMap).map(([name, count]) => ({
       name,
-      count: Math.max(count, fallbackBase[i])
+      count
     })).sort((a, b) => b.count - a.count);
 
     const maxCount = sorted[0]?.count || 1;
@@ -1038,15 +1020,6 @@ export default function Dashboard() {
         if (!matched && !isAutoRouted) autoRouterCount++;
       }
     });
-
-    // Provide realistic baseline if empty
-    if (totalAIQueries === 0) {
-      totalAIQueries = 64;
-      autoRouterCount = 28;
-      INDIVIDUAL_MODELS.forEach((m, idx) => {
-        modelCounts[m.id] = Math.max(12 - idx, 1);
-      });
-    }
 
     const sortedModels = [...INDIVIDUAL_MODELS].map(m => ({
       ...m,
@@ -1135,7 +1108,7 @@ export default function Dashboard() {
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Auth Glass Card */}
-        <div className="w-full max-w-md rounded-3xl border border-white/15 bg-slate-950/80 p-8 backdrop-blur-2xl shadow-2xl relative overflow-hidden group">
+        <div className="w-full max-w-md liquid-glass-strong p-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
           
           <div className="flex justify-center mb-6 relative z-10">
@@ -1164,7 +1137,7 @@ export default function Dashboard() {
                   maxLength={8}
                   disabled={lockoutSeconds > 0}
                   autoFocus
-                  className="w-full bg-black/60 border border-white/15 rounded-2xl px-4 py-3.5 text-center text-2xl tracking-[0.5em] text-white focus:outline-none focus:border-cyan-400 transition-colors placeholder:text-zinc-700 shadow-inner disabled:opacity-50"
+                  className="w-full liquid-glass-inset border border-white/15 rounded-2xl px-4 py-3.5 text-center text-2xl tracking-[0.5em] text-white focus:outline-none focus:border-cyan-400 transition-colors placeholder:text-zinc-700 disabled:opacity-50"
                 />
               </div>
 
@@ -1224,7 +1197,7 @@ export default function Dashboard() {
                     onChange={(e) => setOtpInput(e.target.value)}
                     placeholder="Kode OTP 6-Digit"
                     maxLength={6}
-                    className="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
                   <input
                     type="password"
@@ -1232,7 +1205,7 @@ export default function Dashboard() {
                     onChange={(e) => setNewPinInput(e.target.value)}
                     placeholder="Master PIN Baru (6+ Angka)"
                     maxLength={8}
-                    className="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
+                    className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
                   <button
                     onClick={handleVerifyOtp}
@@ -1277,7 +1250,7 @@ export default function Dashboard() {
     <main className="w-full min-h-screen relative z-10 pb-20 bg-zinc-950 text-white font-sans">
       
       {/* Top Header Controls Bar */}
-      <div className="sticky top-0 z-50 w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-2xl shadow-xl">
+      <div className="sticky top-0 z-50 w-full liquid-glass-nav">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
           
@@ -1380,7 +1353,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Card 1: Page Views */}
-            <div className="p-5 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-cyan-500/30 transition-all">
+            <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-zinc-400">Total Page Views</span>
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
@@ -1394,7 +1367,7 @@ export default function Dashboard() {
             </div>
 
             {/* Card 2: Unique Visitors */}
-            <div className="p-5 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-purple-500/30 transition-all">
+            <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-zinc-400">Pengunjung Unik</span>
                 <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
@@ -1408,7 +1381,7 @@ export default function Dashboard() {
             </div>
 
             {/* Card 3: Link Clicks */}
-            <div className="p-5 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+            <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-zinc-400">Total Klik Tautan</span>
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -1422,7 +1395,7 @@ export default function Dashboard() {
             </div>
 
             {/* Card 4: Contact Conversions */}
-            <div className="p-5 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-pink-500/30 transition-all">
+            <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-zinc-400">Konversi Kontak</span>
                 <div className="w-9 h-9 rounded-xl bg-pink-500/15 border border-pink-500/30 flex items-center justify-center text-pink-400">
@@ -1436,7 +1409,7 @@ export default function Dashboard() {
             </div>
 
             {/* Card 5: Interactivity Ratio */}
-            <div className="p-5 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+            <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-medium text-zinc-400">Rasio Interaktivitas</span>
                 <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
@@ -1456,7 +1429,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Chart 1: Traffic Velocity Line Chart */}
-          <div className="lg:col-span-7 p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-4">
+          <div className="lg:col-span-7 p-6 liquid-glass space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -1488,7 +1461,7 @@ export default function Dashboard() {
           </div>
 
           {/* Chart 2: Link Click Distribution Bar Chart */}
-          <div className="lg:col-span-5 p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-4">
+          <div className="lg:col-span-5 p-6 liquid-glass space-y-4">
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -1534,7 +1507,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Intel Card 1: Rasio Perangkat */}
-            <div className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-4">
+            <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                   <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
@@ -1563,7 +1536,7 @@ export default function Dashboard() {
             </div>
 
             {/* Intel Card 2: Repositori Proyek Unggulan */}
-            <div className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-4">
+            <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-purple-400" />
@@ -1587,7 +1560,7 @@ export default function Dashboard() {
             </div>
 
             {/* Intel Card 3: Sertifikat Paling Diminati */}
-            <div className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-4">
+            <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5 text-emerald-400" />
@@ -1611,7 +1584,7 @@ export default function Dashboard() {
             </div>
 
             {/* Intel Card 4: Saluran Trafik & Referrer */}
-            <div className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-4">
+            <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-indigo-400" />
@@ -1639,7 +1612,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 4. AI MODELS MULTI-TIER MATRIX & INFERENCE MONITORING */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-6">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -1703,7 +1676,7 @@ export default function Dashboard() {
               return (
                 <div 
                   key={m.id}
-                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${isLatestUsed ? 'border-cyan-400/50 bg-cyan-950/30 shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400/40' : 'border-white/10 bg-slate-950/50 hover:border-white/20'}`}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${isLatestUsed ? 'border-cyan-400/50 bg-cyan-950/30 shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400/40' : 'liquid-glass-inset hover:border-white/20'}`}
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -1739,7 +1712,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 5. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG) */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -1842,7 +1815,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 6. REAL-TIME ACTIVITY STREAM TABLE & EXPORT */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-5">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -1886,7 +1859,7 @@ export default function Dashboard() {
                     placeholder="Cari target / sesi..."
                     value={tableSearchTerm}
                     onChange={(e) => { setTableSearchTerm(e.target.value); setTableCurrentPage(1); }}
-                    className="pl-8 pr-3 py-1.5 rounded-xl bg-black/50 border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 w-44 sm:w-56"
+                    className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 w-44 sm:w-56"
                   />
                 </div>
 
@@ -1997,8 +1970,8 @@ export default function Dashboard() {
       {/* MODAL: UBAH MASTER PIN */}
       {/* ========================================================================= */}
       {isChangePinOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl border border-white/15 bg-slate-950 p-6 shadow-2xl space-y-5 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in">
+          <div className="w-full max-w-md liquid-glass-strong p-6 space-y-5 relative">
             <div className="flex justify-between items-center pb-3 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <KeyRound className="w-5 h-5 text-purple-400" />
@@ -2020,7 +1993,7 @@ export default function Dashboard() {
                   value={currentPinChange}
                   onChange={(e) => setCurrentPinChange(e.target.value)}
                   placeholder="PIN Saat Ini"
-                  className="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
+                  className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
                 />
               </div>
@@ -2033,7 +2006,7 @@ export default function Dashboard() {
                   onChange={(e) => setNewPinChange(e.target.value)}
                   placeholder="PIN Baru"
                   maxLength={8}
-                  className="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
+                  className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
                 />
               </div>
@@ -2046,7 +2019,7 @@ export default function Dashboard() {
                   onChange={(e) => setConfirmPinChange(e.target.value)}
                   placeholder="Ulangi PIN Baru"
                   maxLength={8}
-                  className="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
+                  className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
                 />
               </div>
@@ -2081,8 +2054,8 @@ export default function Dashboard() {
       {/* MODAL: KONFIGURASI SUPABASE CLOUD */}
       {/* ========================================================================= */}
       {isConfigModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-lg rounded-3xl border border-white/15 bg-slate-950 p-6 shadow-2xl space-y-5 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in">
+          <div className="w-full max-w-lg liquid-glass-strong p-6 space-y-5 relative">
             <div className="flex justify-between items-center pb-3 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-cyan-400" />
@@ -2104,7 +2077,7 @@ export default function Dashboard() {
                   value={supabaseUrl}
                   onChange={(e) => setSupabaseUrl(e.target.value)}
                   placeholder="https://xxx.supabase.co"
-                  className="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
+                  className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
                 />
               </div>
 
@@ -2115,7 +2088,7 @@ export default function Dashboard() {
                   onChange={(e) => setSupabaseAnonKey(e.target.value)}
                   rows={3}
                   placeholder="eyJhbGciOiJIUz..."
-                  className="w-full bg-black/50 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono resize-none"
+                  className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono resize-none"
                 />
               </div>
 
