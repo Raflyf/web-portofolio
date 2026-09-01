@@ -734,15 +734,15 @@ export default function Dashboard() {
 
     chartFilteredEvents.forEach(e => {
       const combined = `${e.event_target || ''} ${e.event_label || ''} ${e.event_type || ''}`.toLowerCase();
-      if (combined.includes('wa') || combined.includes('whatsapp')) counts[0]++;
-      else if (combined.includes('github') || combined.includes('git')) counts[1]++;
-      else if (combined.includes('plagiarism') || combined.includes('skripsi')) counts[2]++;
-      else if (combined.includes('spam') || combined.includes('email')) counts[3]++;
-      else if (combined.includes('laser') || combined.includes('ppt')) counts[4]++;
-      else if (combined.includes('fotokita') || combined.includes('foto')) counts[5]++;
-      else if (combined.includes('portfolio') || combined.includes('web')) counts[6]++;
-      else if (combined.includes('cert') || combined.includes('sertifikat')) counts[7]++;
-      else if (combined.includes('terminal') || combined.includes('ai')) counts[8]++;
+      if (/\b(wa|whatsapp)\b/.test(combined)) counts[0]++;
+      else if (/\b(github|git)\b/.test(combined)) counts[1]++;
+      else if (/\b(plagiarism|skripsi)\b/.test(combined)) counts[2]++;
+      else if (/\b(spam|email)\b/.test(combined)) counts[3]++;
+      else if (/\b(laser|ppt)\b/.test(combined)) counts[4]++;
+      else if (/\b(fotokita|foto)\b/.test(combined)) counts[5]++;
+      else if (/\b(portfolio|web)\b/.test(combined)) counts[6]++;
+      else if (/\b(cert|sertifikat)\b/.test(combined)) counts[7]++;
+      else if (/\b(terminal|ai)\b/.test(combined)) counts[8]++;
     });
 
     const fallbackCounts = [18, 24, 15, 12, 10, 8, 22, 16, 29];
