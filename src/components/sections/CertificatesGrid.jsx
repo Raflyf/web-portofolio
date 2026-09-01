@@ -74,23 +74,22 @@ export default function CertificatesGrid() {
         ))}
       </div>
 
-      <motion.div 
-        layout
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        <AnimatePresence>
-          {filteredCertificates.map(cert => (
+      {/* Cards Grid — whileInView per-card agar animasi individual */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <AnimatePresence mode="popLayout">
+          {filteredCertificates.map((cert, index) => (
             <motion.div 
               layout
               key={cert.id} 
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              viewport={{ once: false, amount: 0.15 }}
+              transition={{ 
+                duration: 0.5, 
+                ease: [0.16, 1, 0.3, 1],
+                delay: (index % 3) * 0.08
+              }}
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
               className="rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl hover:border-cyan-500/30 transition-all shadow-xl group flex flex-col justify-between relative overflow-hidden p-6"
             >
@@ -158,7 +157,7 @@ export default function CertificatesGrid() {
             </motion.div>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Image Preview Modal */}
       <AnimatePresence>
