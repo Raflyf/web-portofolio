@@ -40,8 +40,8 @@ export default function Footer() {
       {/* Glow divider top */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 
           {/* Brand Block */}
           <motion.div
@@ -49,26 +49,22 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-5"
+            className="space-y-4"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
-                <span className="text-sm font-bold text-white tracking-tight">RF</span>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
+                <span className="text-xs font-bold text-white tracking-tight">RF</span>
               </div>
               <div>
-                <p className="text-base font-bold text-white tracking-tight leading-snug">
+                <p className="text-sm font-bold text-white tracking-tight leading-snug">
                   Rafly Firmansyah
                 </p>
-                <p className="text-xs text-zinc-400 font-mono flex items-center gap-1.5">
+                <p className="text-[11px] text-zinc-400 font-mono flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]" />
                   Tersedia untuk peluang baru
                 </p>
               </div>
             </div>
-
-            <p className="text-sm text-zinc-400 leading-relaxed max-w-xs">
-              Machine Learning Engineer &amp; Full-Stack Developer yang berfokus pada AI Production, NLP, dan sistem yang skalabel.
-            </p>
 
             {/* Social Links */}
             <div className="flex items-center gap-3">
@@ -110,25 +106,15 @@ export default function Footer() {
             </nav>
           </motion.div>
 
-          {/* Tech Stack & Dashboard CTA */}
+          {/* Actions & Dashboard CTA */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-5"
+            className="space-y-4"
           >
-            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Stack Utama</p>
-            <div className="flex flex-wrap gap-2">
-              {['Python', 'PyTorch', 'React', 'Supabase', 'FastAPI', 'Docker', 'TensorFlow', 'LangChain'].map((tech) => (
-                <span
-                  key={tech}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-white/5 border border-white/10 text-zinc-400"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Akses Khusus</p>
 
             <a
               href="/dashboard"

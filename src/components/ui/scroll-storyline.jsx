@@ -7,7 +7,7 @@ const SECTIONS = [
   { id: 'skills', label: 'Keahlian' },
   { id: 'projects', label: 'Karya' },
   { id: 'certificates', label: 'Sertifikat' },
-  { id: 'experience', label: 'Riwayat' },
+  { id: 'timeline', label: 'Riwayat' },
   { id: 'lab', label: 'AI Lab' },
 ];
 

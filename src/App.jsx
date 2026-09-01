@@ -40,11 +40,11 @@ function FloatingNavbar() {
   ];
 
   return (
-    <header className="fixed top-4 inset-x-0 mx-auto max-w-5xl z-50 px-4 pointer-events-none">
-      <div className={`w-full rounded-full border transition-all duration-300 pointer-events-auto px-6 py-3 flex items-center justify-between shadow-[0_12px_40px_rgba(0,0,0,0.7)] ${
+    <header className="fixed top-0 inset-x-0 z-50 pointer-events-none transition-all duration-300">
+      <div className={`w-full pointer-events-auto px-6 lg:px-8 py-3.5 flex items-center justify-between transition-all duration-300 ${
         scrolled 
-          ? 'bg-slate-950/90 border-white/20 backdrop-blur-2xl' 
-          : 'bg-slate-900/80 border-white/15 backdrop-blur-xl'
+          ? 'bg-slate-950/90 border-b border-white/10 backdrop-blur-2xl shadow-lg' 
+          : 'bg-transparent border-b border-transparent'
       }`}>
         {/* Brand / Logo - Clicking smoothly scrolls to the very top */}
         <Link to="/" onClick={handleBrandClick} className="flex items-center gap-3 group cursor-pointer" title="Kembali ke Paling Atas">
