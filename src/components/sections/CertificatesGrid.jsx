@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CERTIFICATES_DATA } from '../../data';
 import { FileText, Award, ExternalLink, Calendar, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -30,10 +30,15 @@ export default function CertificatesGrid() {
   const [filter, setFilter] = useState('all');
   const [selectedCert, setSelectedCert] = useState(null);
   const [selectedPage, setSelectedPage] = useState(0);
+  // FIX M6: dialog focus management — modal container ref + trigger element ref.
+  const modalRef = useRef(null);
+  const triggerRef = useRef(null);
 
-  const openCertModal = (cert) => {
+  const openCertModal = (cert, triggerEl) => {
     setSelectedCert(cert);
     setSelectedPage(0);
+    // Remember which card opened the modal so focus can return on close.
+    triggerRef.current = triggerEl || null;
     const title = cert.title || 'Sertifikat';
     telemetry.logEvent('cert_view', cert.id || title, `Buka Detail Kredensial: ${title}`);
   };
@@ -41,7 +46,19 @@ export default function CertificatesGrid() {
   const closeCertModal = () => {
     setSelectedCert(null);
     setSelectedPage(0);
+    // FIX M6: return focus to the trigger card (if it is still mounted).
+    if (triggerRef.current && typeof triggerRef.current.focus === 'function') {
+      triggerRef.current.focus();
+    }
+    triggerRef.current = null;
   };
+
+  // FIX M6: focus the dialog container when it opens.
+  useEffect(() => {
+    if (selectedCert && modalRef.current) {
+      modalRef.current.focus();
+    }
+  }, [selectedCert]);
 
   const filteredCertificates = CERTIFICATES_DATA.filter(cert => {
     if (filter === 'all') return true;
@@ -121,7 +138,11 @@ export default function CertificatesGrid() {
               <div>
                 {/* Certificate Preview Frame */}
                 <div
-                  onClick={() => openCertModal(cert)}
+                  onClick={(e) => openCertModal(cert, e.currentTarget)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCertModal(cert, e.currentTarget); } }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Lihat detail sertifikat ${cert.title}`}
                   className="h-44 w-full relative overflow-hidden liquid-glass-inset mb-5 group/img cursor-pointer"
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-zinc-600 bg-slate-900/80 z-0">
@@ -188,7 +209,15 @@ export default function CertificatesGrid() {
       {/* Certificate Viewer Modal (Multi-Page Support) */}
       <AnimatePresence>
         {selectedCert && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in" onClick={closeCertModal}>
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Pratinjau sertifikat ${selectedCert.title}`}
+            tabIndex={-1}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in"
+            onClick={closeCertModal}
+          >
             <div className="relative max-w-4xl w-full max-h-[90vh] liquid-glass-strong glass-spring-in p-4 overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
               {/* Modal Header */}
               <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10 mb-3 shrink-0">

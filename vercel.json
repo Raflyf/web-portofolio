@@ -85,24 +85,6 @@
           "value": "no-cache, must-revalidate"
         }
       ]
-    },
-    {
-      "source": "/dashboard.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/preview.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, must-revalidate"
-        }
-      ]
     }
   ]
 }

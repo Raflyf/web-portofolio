@@ -6,30 +6,11 @@
  * ============================================================================
  */
 
+import { getSupabaseConfig } from './supabase';
+
 const STORAGE_KEY = 'portfolio_telemetry_events';
 const SESSION_KEY = 'portfolio_session_token';
 const MAX_LOCAL_EVENTS = 1000;
-
-function cleanKey(val) {
-  if (!val) return '';
-  return String(val)
-    .trim()
-    .replace(/^['"`]+|['"`]+$/g, '')
-    .replace(/;+$/, '')
-    .trim();
-}
-
-function getSupabaseConfig() {
-  const url = cleanKey(import.meta.env.VITE_SUPABASE_URL);
-  const anonKey = cleanKey(import.meta.env.VITE_SUPABASE_ANON_KEY);
-  if (url && anonKey) {
-    return {
-      url: url.startsWith('http') ? url.replace(/\/+$/, '') : `https://${url.replace(/\/+$/, '')}`,
-      anonKey
-    };
-  }
-  return null;
-}
 
 class TelemetryEngine {
   constructor() {
@@ -92,11 +73,17 @@ class TelemetryEngine {
     };
 
     // 1. Always store in local high-speed circular cache instantly
+    //    (offline fallback — does NOT emit the live update signal)
     this.storeLocally(payload);
 
-    // 2. If Supabase is configured, sync asynchronously via REST API
+    // 2. If Supabase is configured, sync asynchronously via REST API.
+    //    FIX M5: the live 'telemetry_update' event is dispatched only AFTER the
+    //    server write succeeds, so the dashboard never mixes unsent local
+    //    events with confirmed server events.
     if (this.supabaseConfig && this.supabaseConfig.url && this.supabaseConfig.anonKey) {
-      this.syncToSupabase(payload).catch(() => {});
+      this.syncToSupabase(payload)
+        .then(() => window.dispatchEvent(new Event('telemetry_update')))
+        .catch(() => {});
     }
   }
 
@@ -108,7 +95,6 @@ class TelemetryEngine {
         existing.length = MAX_LOCAL_EVENTS;
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
-      window.dispatchEvent(new Event('telemetry_update'));
     } catch (_) {}
   }
 

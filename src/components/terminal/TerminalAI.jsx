@@ -82,21 +82,17 @@ const COMMAND_REGISTRY = {
 
 // Persist an explicit fact taught by the AI to Supabase ai_memories (anon INSERT allowed by RLS).
 function saveAIMemory(factText, sessionId) {
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !anonKey || !factText) return;
+  if (!factText) return;
   try {
+    // Trusted path: the browser posts to the serverless endpoint, which
+    // validates + inserts with SUPABASE_SERVICE_ROLE_KEY. Direct anon INSERT
+    // is revoked (anti RAG-poisoning).
     const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 2000);
-    fetch(`${url.replace(/\/+$/, '')}/rest/v1/ai_memories`, {
+    setTimeout(() => ctrl.abort(), 3000);
+    fetch('/api/save-memory', {
       method: 'POST',
       keepalive: true,
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}`,
-        'Prefer': 'return=minimal'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fact_text: String(factText).substring(0, 1000),
         session_id: (sessionId || 'unknown').substring(0, 64)
@@ -123,6 +119,11 @@ export default function TerminalAI({ onClose }) {
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [slashFilter, setSlashFilter] = useState('');
   const [slashSelectedIndex, setSlashSelectedIndex] = useState(0);
+
+  // FIX M4: file attachment support (paperclip button was dead UI).
+  const fileInputRef = useRef(null);
+  const [attachments, setAttachments] = useState([]);
+  const [attachError, setAttachError] = useState('');
 
   const availableCommands = Object.keys(COMMAND_REGISTRY).filter(cmd => cmd.startsWith(slashFilter));
 
@@ -155,7 +156,9 @@ export default function TerminalAI({ onClose }) {
   };
 
   const sendMessage = async (text) => {
-    if (!text.trim() || isLoading) return;
+    // FIX M4: allow sending when only attachments are present (server accepts
+    // attachments-only requests).
+    if ((!text.trim() && attachments.length === 0) || isLoading) return;
     
     let userQuery = text.trim();
     const isSlash = userQuery.startsWith('/');
@@ -204,6 +207,9 @@ export default function TerminalAI({ onClose }) {
     setIsLoading(true);
 
     try {
+      // FIX M4: forward attachments ({name,type,data}; images carry a data URL
+      // plus isImage:true — matches /api/chat consumption). _bytes is client-only.
+      const payloadAttachments = attachments.map(({ _bytes, ...att }) => att);
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -211,11 +217,15 @@ export default function TerminalAI({ onClose }) {
           query: userQuery,
           model: localStorage.getItem('ai_selected_model') || 'auto',
           reasoningEffort: effort,
-          history: messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content }))
+          history: messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
+          attachments: payloadAttachments
         })
       });
 
       if (!res.ok) throw new Error('API Error');
+      // Clear consumed attachments on success (keep them on error so retry is easy).
+      setAttachments([]);
+      setAttachError('');
       const data = await res.json();
       
       let finalResponse = data.response || "Maaf, terjadi kesalahan atau antrean penuh.";
@@ -285,6 +295,66 @@ export default function TerminalAI({ onClose }) {
 
   const handleShortcutClick = (cmd) => {
     sendMessage(cmd);
+  };
+
+  // FIX M4: paperclip handler — read text/code files as text and images as
+  // base64 data URLs, cap total size, show friendly message for PDFs.
+  const MAX_ATTACHMENT_BYTES = 12 * 1024 * 1024;
+  const MAX_ATTACHMENTS = 5;
+
+  const readAttachmentFile = (file) => new Promise((resolve) => {
+    const isImage = file.type.startsWith('image/');
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (isImage) {
+        resolve({ name: file.name, type: file.type || 'image/jpeg', data: reader.result, isImage: true });
+      } else {
+        resolve({ name: file.name, type: file.type || 'text/plain', data: String(reader.result || '') });
+      }
+    };
+    reader.onerror = () => resolve(null);
+    if (isImage) {
+      reader.readAsDataURL(file);
+    } else {
+      reader.readAsText(file);
+    }
+  });
+
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (files.length === 0) return;
+    setAttachError('');
+
+    // PDFs would need pdf.js (not installed) — friendly message instead.
+    if (files.some(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name))) {
+      setAttachError('Lampiran PDF belum didukung. Silakan lampirkan file teks/kode atau gambar.');
+      return;
+    }
+
+    const currentBytes = attachments.reduce((s, a) => s + (a._bytes || 0), 0);
+    const totalBytes = currentBytes + files.reduce((s, f) => s + f.size, 0);
+    if (totalBytes > MAX_ATTACHMENT_BYTES) {
+      setAttachError('Total ukuran lampiran melebihi batas 12MB.');
+      return;
+    }
+
+    if (attachments.length + files.length > MAX_ATTACHMENTS) {
+      setAttachError(`Maksimal ${MAX_ATTACHMENTS} lampiran per pesan.`);
+      return;
+    }
+
+    const next = [...attachments];
+    for (const file of files) {
+      const att = await readAttachmentFile(file);
+      if (att) next.push({ ...att, _bytes: file.size });
+    }
+    setAttachments(next);
+  };
+
+  const removeAttachment = (idx) => {
+    setAttachments(prev => prev.filter((_, i) => i !== idx));
+    setAttachError('');
   };
 
   const handleDownload = (content) => {
@@ -533,12 +603,52 @@ export default function TerminalAI({ onClose }) {
       {/* Terminal Input Area */}
       <div className="p-3 sm:p-4 liquid-glass-inset border-t border-white/10 relative z-10 shrink-0">
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+          {/* FIX M4: attachment chips row */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {attachments.map((att, idx) => (
+                <span
+                  key={`${att.name}-${idx}`}
+                  className="inline-flex items-center gap-1.5 max-w-[190px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300"
+                >
+                  <span className="truncate">{att.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(idx)}
+                    className="text-zinc-400 hover:text-rose-400 transition-colors cursor-pointer"
+                    aria-label={`Hapus lampiran ${att.name}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          {attachError && (
+            <p className="text-[10px] font-medium text-rose-400" role="alert">{attachError}</p>
+          )}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full relative">
             <span className="hidden sm:block text-cyan-400 font-semibold text-sm whitespace-nowrap pl-2">rafly@Lab:~$</span>
             <div className="flex-1 relative flex items-center w-full">
-              <button type="button" className="absolute left-3 text-zinc-500 hover:text-zinc-300 transition-colors">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute left-3 text-zinc-500 hover:text-zinc-300 transition-colors"
+                aria-label="Lampirkan file"
+                title="Lampirkan file (teks/kode/gambar)"
+              >
                 <Paperclip className="w-4 h-4" />
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="text/*,image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+                aria-hidden="true"
+                tabIndex={-1}
+              />
               <input
                 type="text"
                 value={input}
@@ -567,7 +677,7 @@ export default function TerminalAI({ onClose }) {
               )}
               <button
                 type="submit"
-                disabled={!input.trim() || isLoading}
+                disabled={(!input.trim() && attachments.length === 0) || isLoading}
                 className="absolute right-2 p-2 sm:p-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Send className="w-4 h-4 sm:w-5 sm:h-5" />}
