@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { 
   Lock, 
   ArrowRight, 
@@ -500,7 +501,7 @@ export default function Dashboard() {
       const res = await fetch('/api/admin-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'request-otp' })
+        body: JSON.stringify({ action: 'send_otp' })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -529,7 +530,7 @@ export default function Dashboard() {
       const res = await fetch('/api/admin-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify-otp', otp: otpInput, newPin: newPinInput })
+        body: JSON.stringify({ action: 'verify_otp_and_reset_pin', otp_code: otpInput, new_pin: newPinInput })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -650,33 +651,53 @@ export default function Dashboard() {
   // Chart 1: Traffic Velocity Line Chart
   const chartFilteredEvents = useMemo(() => filterByRange(events, chartRange), [events, chartRange]);
   const lineChartData = useMemo(() => {
-    const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-    const last7Days = [];
-    const viewsPerDay = [0, 0, 0, 0, 0, 0, 0];
-    const visitorsPerDay = [0, 0, 0, 0, 0, 0, 0];
+    let daysCount = 7;
+    if (chartRange === '14d') daysCount = 14;
+    if (chartRange === '30d') daysCount = 30;
 
-    for (let i = 6; i >= 0; i--) {
+    const labels = [];
+    const viewsPerDay = new Array(daysCount).fill(0);
+    const visitorsPerDay = new Array(daysCount).fill(0);
+
+    for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      last7Days.push(days[d.getDay()]);
+      labels.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
     }
+
+    const uniqueSessionsPerDay = Array.from({ length: daysCount }, () => new Set());
 
     chartFilteredEvents.forEach(e => {
       const eDate = new Date(e.created_at || 0);
       const dayIndex = Math.floor((Date.now() - eDate.getTime()) / 86400000);
-      if (dayIndex >= 0 && dayIndex < 7) {
-        const slot = 6 - dayIndex;
+      if (dayIndex >= 0 && dayIndex < daysCount) {
+        const slot = (daysCount - 1) - dayIndex;
         if (e.event_type === 'page_view') viewsPerDay[slot]++;
-        visitorsPerDay[slot]++;
+        if (e.session_id) uniqueSessionsPerDay[slot].add(e.session_id);
       }
     });
+    
+    // Konversi set ke size (jumlah sesi unik per hari)
+    const finalVisitors = uniqueSessionsPerDay.map(set => set.size);
+    const finalViews = viewsPerDay;
 
-    // Provide dynamic baseline if zero
-    const finalViews = viewsPerDay.map((v, i) => v || [12, 19, 15, 28, 34, 42, Math.max(totalViews, 36)][i]);
-    const finalVisitors = visitorsPerDay.map((v, i) => v || [8, 14, 11, 21, 26, 31, Math.max(uniqueVisitors, 25)][i]);
+    // Tampilkan data fallback dummy hanya saat belum ada data API sama sekali
+    if (events.length === 0) {
+      if (daysCount === 7) {
+        const dummyViews = [12, 19, 15, 28, 34, 42, 36];
+        const dummyVisitors = [8, 14, 11, 21, 26, 31, 25];
+        return {
+          labels,
+          datasets: [
+            { label: 'Total Kunjungan (Page Views)', data: dummyViews, borderColor: '#22d3ee', backgroundColor: 'rgba(34, 211, 238, 0.12)', fill: true, tension: 0.4, pointBackgroundColor: '#22d3ee', pointBorderColor: '#0891b2', pointRadius: 4, pointHoverRadius: 6 },
+            { label: 'Pengunjung Unik (Unique Sessions)', data: dummyVisitors, borderColor: '#a855f7', backgroundColor: 'rgba(168, 85, 247, 0.12)', fill: true, tension: 0.4, pointBackgroundColor: '#a855f7', pointBorderColor: '#7e22ce', pointRadius: 4, pointHoverRadius: 6 }
+          ]
+        };
+      }
+    }
 
     return {
-      labels: last7Days,
+      labels: labels,
       datasets: [
         {
           label: 'Total Kunjungan (Page Views)',
@@ -725,7 +746,7 @@ export default function Dashboard() {
     });
 
     const fallbackCounts = [18, 24, 15, 12, 10, 8, 22, 16, 29];
-    const finalCounts = counts.map((c, i) => Math.max(c, fallbackCounts[i]));
+    const finalCounts = events.length === 0 ? fallbackCounts : counts;
 
     return {
       labels: categories,
@@ -1163,24 +1184,24 @@ export default function Dashboard() {
   // MAIN AUTHENTICATED OBSERVABILITY DASHBOARD
   // ==========================================
   return (
-    <main className="w-full min-h-screen relative z-10 p-4 sm:p-6 lg:p-8 pt-24 pb-20 bg-zinc-950 text-white font-sans">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Top Header Controls Bar */}
-        <div className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+    <main className="w-full min-h-screen relative z-10 pb-20 bg-zinc-950 text-white font-sans">
+      
+      {/* Top Header Controls Bar */}
+      <div className="sticky top-0 z-50 w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-2xl shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
           
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className={`w-2.5 h-2.5 rounded-full ${isLiveConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]' : 'bg-amber-400'}`} />
-              <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-400">
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`w-2 h-2 rounded-full ${isLiveConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]' : 'bg-amber-400'}`} />
+              <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-emerald-400">
                 {isLiveConnected ? 'Live Supabase Cloud Telemetry Gateway' : 'Offline / Local Cache Mode'}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               Admin Observability Dashboard
             </h1>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-[11px] text-zinc-400 mt-0.5 hidden sm:block">
               Pemantauan Real-time Traffic Velocity, AI Execution Matrix, RAG Memories & Telemetry Stream
             </p>
           </div>
@@ -1229,6 +1250,9 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         {pingStatus && (
           <div className="p-3 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-xs font-mono text-cyan-300 text-center animate-fade-in">
@@ -1239,7 +1263,7 @@ export default function Dashboard() {
         {/* ========================================================================= */}
         {/* 1. 5 BENTO KPI METRIC CARDS WITH TIME RANGE FILTER */}
         {/* ========================================================================= */}
-        <section className="space-y-4">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-cyan-400" />
@@ -1335,12 +1359,12 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ========================================================================= */}
         {/* 2. TOP ROW CHARTS: TRAFFIC VELOCITY & CLICK DISTRIBUTION */}
         {/* ========================================================================= */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Chart 1: Traffic Velocity Line Chart */}
           <div className="lg:col-span-7 p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -1389,12 +1413,12 @@ export default function Dashboard() {
               <Bar data={barChartData} options={barChartOptions} />
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ========================================================================= */}
         {/* 3. 4-CARD INTELLIGENCE GRID: PLATFORM, PROJECTS, CERTS, REFERRERS */}
         {/* ========================================================================= */}
-        <section className="space-y-4">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Radar className="w-4 h-4 text-indigo-400" />
@@ -1520,12 +1544,12 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ========================================================================= */}
         {/* 4. AI MODELS MULTI-TIER MATRIX & INFERENCE MONITORING */}
         {/* ========================================================================= */}
-        <section className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-6">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -1620,12 +1644,12 @@ export default function Dashboard() {
               );
             })}
           </div>
-        </section>
+        </motion.section>
 
         {/* ========================================================================= */}
         {/* 5. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG) */}
         {/* ========================================================================= */}
-        <section className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -1723,12 +1747,12 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ========================================================================= */}
         {/* 6. REAL-TIME ACTIVITY STREAM TABLE & EXPORT */}
         {/* ========================================================================= */}
-        <section className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl space-y-5">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -1871,7 +1895,7 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-        </section>
+        </motion.section>
 
       </div>
 

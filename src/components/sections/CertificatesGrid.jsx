@@ -52,7 +52,13 @@ export default function CertificatesGrid() {
       </motion.div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap justify-center gap-2 mb-12">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.8 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="flex flex-wrap justify-center gap-2 mb-12"
+      >
         {[
           { id: 'all', label: 'Semua Sertifikat' },
           { id: 'ai-ml', label: 'AI & Python' },
@@ -72,7 +78,7 @@ export default function CertificatesGrid() {
             {tab.label}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Cards Grid — whileInView per-card agar animasi individual */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

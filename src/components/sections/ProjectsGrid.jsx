@@ -60,7 +60,13 @@ export default function ProjectsGrid() {
       </motion.div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap justify-center gap-2 mb-12">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.8 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="flex flex-wrap justify-center gap-2 mb-12"
+      >
         {[
           { id: 'all', label: 'Semua Proyek' },
           { id: 'ai-ml', label: 'AI & Machine Learning' },
@@ -79,7 +85,7 @@ export default function ProjectsGrid() {
             {tab.label}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Featured Project Showcase Card */}
       {featuredProject && (filter === 'all' || featuredProject.category === filter) && (
