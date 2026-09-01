@@ -17,8 +17,17 @@ export const TerminalProvider = ({ children }) => {
 
   const [messages, setMessages] = useState(() => {
     try {
-      const saved = localStorage.getItem('terminal_active_convo');
-      if (saved) return JSON.parse(saved);
+      const active = localStorage.getItem('terminal_active_convo');
+      if (active) {
+        const parsed = JSON.parse(active);
+        if (parsed && parsed.length > 1) {
+           const savedHist = localStorage.getItem('terminal_history_list');
+           let hist = savedHist ? JSON.parse(savedHist) : [];
+           hist = [{ id: Date.now(), messages: parsed, timestamp: new Date().toLocaleTimeString('id-ID') }, ...hist].slice(0, 50);
+           localStorage.setItem('terminal_history_list', JSON.stringify(hist));
+        }
+        localStorage.removeItem('terminal_active_convo');
+      }
     } catch(e) {}
     return [initialMsg];
   });
