@@ -11,7 +11,7 @@ export const TerminalProvider = ({ children }) => {
 
   const initialMsg = { 
     role: 'system', 
-    content: '* INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v5.2.0)\n* Initialization Sequence: Complete\n* Engine: OpenCode AI Gateway\n* Status: Online\n\nSelamat datang. Silakan ketik perintah atau pertanyaan Anda terkait portofolio.',
+    content: 'Selamat datang. Silakan ketik perintah atau pertanyaan Anda terkait portofolio.',
     time: getCurrentTime()
   };
 

@@ -311,18 +311,18 @@ export default function TerminalAI({ onClose }) {
   
         {/* Control Bar (Riwayat, Baru, Pop-up) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40 gap-3 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex gap-1.5 shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
               <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
               <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
             </div>
-            <span className="text-zinc-400 text-xs sm:text-sm font-semibold flex items-center gap-2">
+            <span className="text-zinc-400 text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
               rafly@portfolio-lab:~ (bash / AI Engine)
             </span>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-zinc-400 font-medium overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+          <div className="flex items-center flex-nowrap gap-2 sm:gap-3 text-xs text-zinc-400 font-medium overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full sm:w-auto">
             <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-1.5 hover:text-white transition px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0">
               <Clock className="w-3.5 h-3.5" /> Riwayat
             </button>
