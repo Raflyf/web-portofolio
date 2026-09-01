@@ -1,6 +1,7 @@
-import HeroSection from './components/ui/glassmorphism-trust-hero'
-import TerminalAI from './components/terminal/TerminalAI'
-import LiquidOTPInput from './components/ui/liquid-otp'
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 
 function GlassFilter() {
   return (
@@ -27,30 +28,31 @@ function GlassFilter() {
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-foreground relative selection:bg-white/20">
-      <GlassFilter />
-      <HeroSection />
-      
-      {/* Terminal Section */}
-      <section className="relative py-24 px-4 sm:px-6 z-10">
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 to-black pointer-events-none -z-10" />
-        <div className="max-w-7xl mx-auto space-y-24">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white">
-              Sistem Terminal AI
-            </h2>
-            <p className="text-zinc-400 max-w-2xl mx-auto">
-              Berinteraksi langsung dengan AI Engine portofolio ini. Tanyakan tentang proyek, sertifikasi, atau diskusi teknis.
-            </p>
+    <BrowserRouter>
+      <div className="min-h-screen bg-zinc-950 text-foreground relative selection:bg-white/20 font-sans">
+        <GlassFilter />
+        
+        {/* Navigation Bar Header (Ported from old HorizonX Header) */}
+        <header className="fixed top-0 left-0 right-0 z-50 p-4 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/" className="text-white font-bold tracking-tight text-lg">
+              <span className="text-zinc-400">Rafly</span> Firmansyah
+            </a>
+            <nav className="hidden md:flex gap-6 text-sm font-medium text-zinc-300">
+              <a href="/#about" className="hover:text-white transition-colors">Tentang</a>
+              <a href="/#skills" className="hover:text-white transition-colors">Keahlian</a>
+              <a href="/#projects" className="hover:text-white transition-colors">Proyek</a>
+              <a href="/#certificates" className="hover:text-white transition-colors">Sertifikat</a>
+              <a href="/dashboard" className="hover:text-white transition-colors text-emerald-400">Dashboard</a>
+            </nav>
           </div>
-          
-          <TerminalAI />
+        </header>
 
-          <div className="max-w-md mx-auto pt-12">
-            <LiquidOTPInput />
-          </div>
-        </div>
-      </section>
-    </div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   )
 }
