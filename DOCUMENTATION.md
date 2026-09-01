@@ -4,6 +4,25 @@ Dokumen ini mencatat keputusan arsitektur konseptual, sistem desain, standar aks
 
 ---
 
+## Log Pembaruan Terkini: v10.583.0 (Liquid Glass Aesthetics, Physics Inertia, & Full React Telemetry Integration)
+
+1. **iOS Liquid Glass Unified Design:**
+   - Menyelaraskan seluruh permukaan komponen (`AboutSection`, `SkillsBento`, `ProjectsGrid`, `CertificatesGrid`, `ExperienceTimeline`, `TerminalAI`, dan `Dashboard`) dengan sistem obsidian dark glass (`bg-slate-950/70`, `border-white/10`, `backdrop-blur-2xl`, specular highlight inset).
+   - Menghilangkan seluruh emoji generik dan menggantikannya dengan ikon semantik presisi dari pustaka Lucide SVG.
+2. **Animasi Marquee & Bidirectional Scroll Reveal:**
+   - Menambahkan keyframes infinite marquee dua arah (kiri dan kanan) di `index.css` dan diterapkan pada `SkillsBento`.
+   - Mengonfigurasi `viewport: { once: false, amount: 0.15 }` pada seluruh elemen `framer-motion` sehingga animasi masuk dan keluar terjadi secara dinamis saat digulir ke atas maupun ke bawah.
+3. **Fisika Pengguliran Halus (Lenis Scroll):**
+   - Mengintegrasikan mesin *momentum inertia wheel physics* (Lenis) di `App.jsx` untuk pengalaman pengguliran yang sangat mulus tanpa jeda frame.
+4. **Navigasi Floating Capsule Glass:**
+   - Menambahkan navbar mengambang kapsul iOS Liquid Glass di `App.jsx` dengan status konektivitas, tautan bagian, dan navigasi langsung ke Dashboard Observabilitas.
+5. **Dashboard Observabilitas & Telemetri Supabase:**
+   - Integrasi langsung Supabase Cloud API untuk `portfolio_telemetry_events` dan `portfolio_ai_memories`.
+   - Gerbang keamanan autentikasi Master PIN berbasis Web Crypto SHA-256 + salt dan alur pemulihan OTP via email.
+   - Visualisasi grafik tren aktivitas mingguan menggunakan Chart.js.
+
+---
+
 ## 1. Filosofi Desain & Anti-AI Slop
 
 Proyek ini dibangun dengan komitmen terhadap estetika _Cyber-Editorial_ dan presisi tinggi:

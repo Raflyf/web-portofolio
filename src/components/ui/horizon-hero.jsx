@@ -1,9 +1,10 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
-  Play, 
-  Target, 
+  Terminal, 
+  ChevronLeft, 
+  ChevronRight, 
   Star,
   Hexagon,
   Triangle,
@@ -11,28 +12,64 @@ import {
   Ghost,
   Gem,
   Cpu,
-  Sparkles
+  Sparkles,
+  ExternalLink
 } from "lucide-react";
-import { LiquidButton } from "./liquid-glass-button";
 
-const CLIENTS = [
+const HERO_SHOWCASE_PROJECTS = [
+  {
+    id: "open-plagiarism-checker",
+    tag: "NLP · Skripsi S1",
+    title: "OpenPlagiarismChecker",
+    desc: "Mesin riset pemeriksa dokumen akademik lokal berbasis N-Gram Shingling dan Sentence Transformers.",
+    spec: "IndoBERT & N-Gram"
+  },
+  {
+    id: "spam-email-classifier",
+    tag: "Machine Learning · Riset",
+    title: "Spam-Email Detection System",
+    desc: "Evaluasi komparatif Complement Naive Bayes (CNB) vs XGBoost dengan mitigasi Concept Drift.",
+    spec: "CNB vs XGBoost"
+  },
+  {
+    id: "laser-pointer-ppt",
+    tag: "Computer Vision / IoT",
+    title: "laser_pointer_PPT",
+    desc: "Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan WebSocket.",
+    spec: "Gyroscope & WebSockets"
+  },
+  {
+    id: "fotokita-blur",
+    tag: "Edge AI / Vision",
+    title: "FotoKitaBlur",
+    desc: "Deteksi gestur tangan realtime berbasis browser menggunakan MediaPipe Tasks Vision dan OpenCV.",
+    spec: "MediaPipe & OpenCV"
+  },
+  {
+    id: "web-portofolio",
+    tag: "Frontend & Systems",
+    title: "Web Portofolio & AI Platform",
+    desc: "Arsitektur antarmuka web modern Vanilla JS/CSS, observabilitas telemetri, dan integrasi AI.",
+    spec: "Vanilla Architecture"
+  }
+];
+
+const STACK_BADGES = [
   { name: "PyTorch", icon: Hexagon },
   { name: "Transformers", icon: Triangle },
   { name: "MikroTik", icon: Command },
   { name: "OpenCV", icon: Ghost },
   { name: "Supabase", icon: Gem },
   { name: "React 19", icon: Cpu },
+  { name: "Sentence-Transformers", icon: Sparkles },
+  { name: "Flask & WebSockets", icon: Command }
 ];
-
-const StatItem = ({ value, label }) => (
-  <div className="flex flex-col items-center justify-center transition-transform hover:-translate-y-1 cursor-default">
-    <span className="text-xl font-bold text-white sm:text-2xl">{value}</span>
-    <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-medium sm:text-xs">{label}</span>
-  </div>
-);
 
 export default function HorizonHero() {
   const containerRef = useRef(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
@@ -41,16 +78,35 @@ export default function HorizonHero() {
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 20 });
 
   // Parallax layer transforms
-  const heroTextY = useTransform(smoothProgress, [0, 1], [0, 100]);
+  const heroTextY = useTransform(smoothProgress, [0, 1], [0, 80]);
   const heroOpacity = useTransform(smoothProgress, [0, 0.7], [1, 0]);
   const horizonScale = useTransform(smoothProgress, [0, 1], [1, 1.25]);
-  const horizonY = useTransform(smoothProgress, [0, 1], [0, 50]);
-  const cardsY = useTransform(smoothProgress, [0, 1], [0, -80]);
+  const horizonY = useTransform(smoothProgress, [0, 1], [0, 40]);
+  const showcaseY = useTransform(smoothProgress, [0, 1], [0, -60]);
+
+  // Auto slide interval
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SHOWCASE_PROJECTS.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isPaused]);
+
+  const handlePrev = () => {
+    setCurrentSlide((prev) => (prev === 0 ? HERO_SHOWCASE_PROJECTS.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % HERO_SHOWCASE_PROJECTS.length);
+  };
+
+  const activeProject = HERO_SHOWCASE_PROJECTS[currentSlide];
 
   return (
     <div 
       ref={containerRef}
-      className="relative w-full min-h-[110vh] flex flex-col justify-center items-center bg-zinc-950 text-white overflow-hidden font-sans pt-16 pb-24"
+      className="relative w-full min-h-[105vh] flex flex-col justify-center items-center bg-zinc-950 text-white overflow-hidden font-sans pt-20 pb-24"
     >
       {/* Ambient Deep Space Nebula */}
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -59,10 +115,10 @@ export default function HorizonHero() {
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[300px] bg-emerald-500/10 blur-[100px] rounded-full" />
       </div>
 
-      {/* Horizon Curved Arc (21st.dev Horizon Curve Inspiration) */}
+      {/* Horizon Curved Arc (Liquid Glass Glow Curve) */}
       <motion.div 
         style={{ scale: horizonScale, y: horizonY }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-[100vw] h-[320px] sm:h-[400px] pointer-events-none z-0 overflow-hidden"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-[100vw] h-[320px] sm:h-[380px] pointer-events-none z-0 overflow-hidden"
       >
         <div className="w-full h-full rounded-[100%] border-t border-cyan-400/40 bg-gradient-to-b from-cyan-500/15 via-indigo-950/40 to-transparent shadow-[0_-20px_80px_rgba(34,211,238,0.25)] relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_20px_#fff]" />
@@ -71,7 +127,7 @@ export default function HorizonHero() {
       </motion.div>
 
       {/* Main Grid Container */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full pt-12 md:pt-16">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full pt-10 md:pt-14">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8 items-center">
           
           {/* Left Column: Hero Content */}
@@ -80,16 +136,16 @@ export default function HorizonHero() {
             className="lg:col-span-7 flex flex-col justify-center space-y-8"
           >
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md transition-colors hover:bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl transition-colors hover:bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
                   Portofolio Pribadi & Developer Lab
-                  <Star className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
                 </span>
               </div>
             </div>
 
             <h1 
-              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-medium tracking-tighter leading-[0.9]"
+              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-medium tracking-tighter leading-[0.95]"
             >
               Rafly<br />
               <span className="bg-gradient-to-br from-white via-zinc-100 to-zinc-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(255,255,255,0.2)]">
@@ -97,102 +153,149 @@ export default function HorizonHero() {
               </span>
             </h1>
 
-            <p className="max-w-xl text-lg text-zinc-400 leading-relaxed font-normal">
-              Mengeksplorasi kecerdasan buatan, arsitektur web modern, dan infrastruktur cloud. Saya membangun produk digital dengan presisi tinggi, etika privasi, dan performa terbaik.
+            <p className="max-w-xl text-base sm:text-lg text-zinc-300 leading-relaxed font-normal">
+              Mengkombinasikan ketajaman analisis algoritmik dengan arsitektur sistem yang transparan, dapat direproduksi, dan beretika privasi.
             </p>
 
+            {/* Pristine iOS Liquid Glass Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <a href="#projects">
-                <LiquidButton variant="cool" size="lg" className="w-full sm:w-auto">
-                  Jelajahi Karya
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </LiquidButton>
+              <a 
+                href="#projects"
+                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/40 text-cyan-300 font-semibold tracking-wide text-sm backdrop-blur-2xl shadow-[0_0_25px_rgba(6,182,212,0.2)] transition-all hover:scale-[1.03] active:scale-[0.98] group"
+              >
+                <span>Jelajahi Karya</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </a>
               
-              <a href="#lab">
-                <LiquidButton variant="ghost" size="lg" className="w-full sm:w-auto border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] backdrop-blur-md text-white">
-                  <Play className="w-4 h-4 fill-current mr-2 text-cyan-400" />
-                  Terminal AI
-                </LiquidButton>
+              <a 
+                href="#lab"
+                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-slate-900/60 hover:bg-slate-800/80 border border-white/15 text-slate-200 font-semibold tracking-wide text-sm backdrop-blur-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all hover:scale-[1.03] active:scale-[0.98] group"
+              >
+                <Terminal className="w-4 h-4 text-cyan-400 transition-transform group-hover:scale-110" />
+                <span>Uji Terminal AI Lab</span>
               </a>
             </div>
           </motion.div>
 
-          {/* Right Column: Floating System & Metrics Pods */}
+          {/* Right Column: Dynamic Project Showcase Deck & Carousel */}
           <motion.div 
-            style={{ y: cardsY }}
+            style={{ y: showcaseY }}
             className="lg:col-span-5 space-y-6"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
           >
-            {/* System Status Pod */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/40 p-8 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all hover:border-white/20">
+            {/* Dynamic Project Showcase Canvas */}
+            <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-950/70 p-6 sm:p-7 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] transition-all hover:border-cyan-500/30">
               <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
-                    <Target className="h-6 w-6 text-cyan-400" />
+              {/* Showcase Window Header */}
+              <div className="flex items-center justify-between pb-5 border-b border-white/10 mb-5 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block shadow-[0_0_6px_rgba(244,63,94,0.6)]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
                   </div>
-                  <div>
-                    <div className="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-                      99.9%
-                      <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <div className="text-[11px] font-mono font-semibold text-emerald-400 tracking-tight truncate max-w-[200px] sm:max-w-[250px]">
+                    rafly@node-ubsi-s1: ~/research-deck
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400 font-medium">
+                    0{currentSlide + 1} / 0{HERO_SHOWCASE_PROJECTS.length}
+                  </span>
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={handlePrev}
+                      className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
+                      title="Proyek Sebelumnya"
+                      aria-label="Proyek Sebelumnya"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={handleNext}
+                      className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
+                      title="Proyek Berikutnya"
+                      aria-label="Proyek Berikutnya"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Animated Card Content */}
+              <div className="relative min-h-[170px] flex flex-col justify-between z-10">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeProject.id}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    className="space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide text-cyan-300 bg-cyan-500/10 border border-cyan-500/30">
+                        {activeProject.tag}
+                      </span>
+                      <span className="text-[11px] font-mono text-zinc-400">
+                        {activeProject.spec}
+                      </span>
                     </div>
-                    <div className="text-sm text-zinc-400">Uptime Sistem & Komputasi</div>
-                  </div>
-                </div>
 
-                <div className="space-y-3 mb-8">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-zinc-400">Efisiensi Pipeline Model</span>
-                    <span className="text-white font-medium">100%</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800/50">
-                    <div className="h-full w-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-white shadow-[0_0_12px_rgba(34,211,238,0.8)]" />
-                  </div>
-                </div>
+                    <h3 className="text-xl font-bold text-white tracking-tight hover:text-cyan-300 transition-colors">
+                      <a href="#projects" className="flex items-center gap-2 group">
+                        {activeProject.title}
+                        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 text-cyan-400" />
+                      </a>
+                    </h3>
 
-                <div className="h-px w-full bg-white/10 mb-6" />
+                    <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                      {activeProject.desc}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
 
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <StatItem value="AI" label="Agentic" />
-                  <div className="w-px h-full bg-white/10 mx-auto" />
-                  <StatItem value="UI" label="Liquid Glass" />
-                  <div className="w-px h-full bg-white/10 mx-auto" />
-                  <StatItem value="3D" label="Parallax" />
-                </div>
-
-                <div className="mt-8 flex flex-wrap gap-2">
-                  <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium tracking-wide text-zinc-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    SYSTEM ONLINE & AGENT READY
-                  </div>
+                <div className="pt-4 mt-2 border-t border-white/10 flex items-center justify-between text-xs">
+                  <span className="text-zinc-400 font-mono text-[11px]">
+                    Live Interactive Gateway
+                  </span>
+                  <a 
+                    href="#projects" 
+                    className="text-cyan-400 hover:text-cyan-300 font-medium inline-flex items-center gap-1 transition-colors"
+                  >
+                    Detail Proyek &rarr;
+                  </a>
                 </div>
               </div>
             </div>
 
             {/* Marquee Tech Brand Pod */}
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/40 py-6 backdrop-blur-2xl shadow-xl">
-              <h3 className="mb-4 px-8 text-xs font-semibold uppercase tracking-wider text-zinc-400">Core Engineering Stack</h3>
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 py-4 backdrop-blur-2xl shadow-xl">
+              <div className="mb-2.5 px-6 flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Core Engineering Stack</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+              </div>
               
               <div 
                 className="relative flex overflow-hidden"
                 style={{
-                  maskImage: "linear-gradient(to right, transparent, black 15%, black 85%, transparent)",
-                  WebkitMaskImage: "linear-gradient(to right, transparent, black 15%, black 85%, transparent)"
+                  maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+                  WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
                 }}
               >
-                <div className="animate-marquee flex gap-10 whitespace-nowrap px-4">
-                  {[...CLIENTS, ...CLIENTS, ...CLIENTS].map((client, i) => (
+                <div className="animate-marquee-left flex gap-8 whitespace-nowrap px-4 py-1">
+                  {[...STACK_BADGES, ...STACK_BADGES].map((tech, i) => (
                     <div 
                       key={i}
-                      className="flex items-center gap-2 opacity-60 transition-all hover:opacity-100 hover:scale-105 cursor-default"
+                      className="flex items-center gap-2 opacity-70 transition-all hover:opacity-100 hover:scale-105 cursor-default"
                     >
-                      <client.icon className="h-5 w-5 text-cyan-400 fill-current drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-                      <span className="text-base font-semibold text-white tracking-tight">
-                        {client.name}
+                      <tech.icon className="h-4 w-4 text-cyan-400 drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]" />
+                      <span className="text-xs font-semibold text-zinc-200 tracking-tight">
+                        {tech.name}
                       </span>
                     </div>
                   ))}

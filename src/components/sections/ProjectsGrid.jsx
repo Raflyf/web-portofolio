@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PROJECTS_DATA } from '../../data';
 import { ArrowRight, Star, ExternalLink } from 'lucide-react';
-import { LiquidButton } from '../ui/liquid-glass-button';
 
 const GithubIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -14,7 +13,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 }
+    transition: { staggerChildren: 0.08 }
   }
 };
 
@@ -31,9 +30,11 @@ const cardVariants = {
 export default function ProjectsGrid() {
   const [filter, setFilter] = useState('all');
 
-  const filteredProjects = PROJECTS_DATA.filter(project => 
-    filter === 'all' ? true : project.category === filter
-  );
+  const filteredProjects = PROJECTS_DATA.filter(project => {
+    if (filter === 'all') return true;
+    if (filter === 'tools') return project.category === 'tools' || project.category === 'cv-tools';
+    return project.category === filter;
+  });
 
   const featuredProject = PROJECTS_DATA.find(p => p.id === 'open-plagiarism-checker');
   const secondaryProjects = filteredProjects.filter(p => p.id !== 'open-plagiarism-checker');
@@ -43,11 +44,11 @@ export default function ProjectsGrid() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-12"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Karya Terpilih</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -62,17 +63,17 @@ export default function ProjectsGrid() {
       <div className="flex flex-wrap justify-center gap-2 mb-12">
         {[
           { id: 'all', label: 'Semua Proyek' },
-          { id: 'ai-ml', label: 'AI & ML' },
-          { id: 'cv-tools', label: 'Vision & Tools' },
+          { id: 'ai-ml', label: 'AI & Machine Learning' },
+          { id: 'tools', label: 'Vision & Tools' },
           { id: 'web', label: 'Web Systems' }
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id)}
-            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all backdrop-blur-md border cursor-pointer ${
+            className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all backdrop-blur-xl border cursor-pointer ${
               filter === tab.id 
-                ? 'bg-white/10 border-white/20 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]' 
-                : 'bg-transparent border-transparent text-zinc-400 hover:bg-white/5 hover:text-white'
+                ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]' 
+                : 'bg-slate-900/50 border-white/10 text-zinc-400 hover:bg-white/5 hover:text-white'
             }`}
           >
             {tab.label}
@@ -85,24 +86,24 @@ export default function ProjectsGrid() {
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={{ once: false, amount: 0.15 }}
           transition={{ duration: 0.7 }}
-          className="mb-12 rounded-3xl border border-white/15 bg-black/40 p-8 sm:p-12 backdrop-blur-2xl shadow-2xl relative overflow-hidden group"
+          className="mb-12 rounded-3xl border border-white/15 bg-slate-950/70 p-8 sm:p-12 backdrop-blur-2xl shadow-2xl relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-300"
         >
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             <div className="lg:col-span-8 space-y-6">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="px-3 py-1 text-xs font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-full uppercase backdrop-blur-md">
+                <span className="px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-full uppercase backdrop-blur-md">
                   {featuredProject.badge}
                 </span>
-                <span className="px-3 py-1 text-xs font-medium text-zinc-300 bg-white/10 border border-white/10 rounded-full">
+                <span className="px-3.5 py-1 text-xs font-medium text-zinc-300 bg-white/5 border border-white/10 rounded-full">
                   {featuredProject.categoryLabel}
                 </span>
-                <div className="flex items-center gap-1.5 text-yellow-400">
-                  <Star className="w-4 h-4 fill-current" />
-                  <span className="text-sm font-semibold">{featuredProject.stars} Stars</span>
+                <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <span>{featuredProject.stars} Stars</span>
                 </div>
               </div>
 
@@ -110,9 +111,18 @@ export default function ProjectsGrid() {
                 {featuredProject.title}
               </h3>
 
-              <p className="text-base sm:text-lg text-zinc-300 leading-relaxed max-w-3xl">
+              <p className="text-sm sm:text-base text-zinc-300 leading-relaxed max-w-3xl">
                 {featuredProject.description}
               </p>
+
+              <div className="space-y-2 pt-1">
+                {featuredProject.keyFeatures.slice(0, 3).map((feat, i) => (
+                  <div key={i} className="flex items-center gap-2.5 text-xs sm:text-sm text-zinc-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#22d3ee]" />
+                    <span>{feat}</span>
+                  </div>
+                ))}
+              </div>
 
               <div className="flex flex-wrap gap-2 pt-2">
                 {featuredProject.techStack.map((tech, i) => (
@@ -122,26 +132,30 @@ export default function ProjectsGrid() {
                 ))}
               </div>
 
-              <div className="flex flex-wrap gap-4 pt-4">
-                <a href={featuredProject.githubUrl} target="_blank" rel="noopener noreferrer">
-                  <LiquidButton variant="glass" size="sm">
-                    Lihat Source Code
-                    <GithubIcon className="w-4 h-4 ml-2" />
-                  </LiquidButton>
+              <div className="pt-4 flex flex-wrap gap-4">
+                <a 
+                  href={featuredProject.githubUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm transition-all hover:scale-105 shadow-md"
+                >
+                  <GithubIcon className="w-4 h-4" />
+                  Kunjungi Repositori
                 </a>
               </div>
             </div>
 
-            {/* Key Features Pod */}
-            <div className="lg:col-span-4 flex flex-col justify-center space-y-3 p-6 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-xl">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-cyan-300">Highlight Fitur Riset</h4>
-              <div className="space-y-2">
-                {(featuredProject.keyFeatures || []).slice(0, 4).map((feature, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-zinc-300">
-                    <span className="text-cyan-400 font-bold shrink-0">›</span>
-                    <span>{feature}</span>
-                  </div>
-                ))}
+            <div className="lg:col-span-4 rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl space-y-4">
+              <div className="text-xs font-mono font-semibold text-emerald-400 uppercase tracking-wider">
+                Basis Data Riset Terindeks:
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs text-zinc-300 font-mono">
+                <span className="p-2 rounded bg-white/5 border border-white/5">GARUDA</span>
+                <span className="p-2 rounded bg-white/5 border border-white/5">OneSearch</span>
+                <span className="p-2 rounded bg-white/5 border border-white/5">Neliti</span>
+                <span className="p-2 rounded bg-white/5 border border-white/5">BASE (Bielefeld)</span>
+                <span className="p-2 rounded bg-white/5 border border-white/5">OpenAlex</span>
+                <span className="p-2 rounded bg-white/5 border border-white/5">Semantic Scholar</span>
               </div>
             </div>
           </div>
@@ -153,12 +167,13 @@ export default function ProjectsGrid() {
         layout
         variants={containerVariants}
         initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.1 }}
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
       >
         <AnimatePresence>
-          {secondaryProjects.map((project) => (
-            <motion.div
+          {secondaryProjects.map(project => (
+            <motion.div 
               layout
               key={project.id}
               variants={cardVariants}
@@ -166,49 +181,60 @@ export default function ProjectsGrid() {
               animate="visible"
               exit="exit"
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="rounded-2xl border border-white/10 bg-black/40 p-6 sm:p-7 backdrop-blur-2xl hover:border-white/20 transition-colors shadow-xl flex flex-col justify-between relative overflow-hidden group"
+              className="rounded-3xl border border-white/10 bg-slate-950/70 p-7 backdrop-blur-2xl hover:border-cyan-500/30 transition-all shadow-xl group flex flex-col justify-between"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-              
-              <div>
-                <div className="flex items-center justify-between mb-4 relative z-10">
-                  <span className="px-2.5 py-1 text-[10px] font-medium text-zinc-300 bg-white/10 border border-white/10 rounded-full">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 rounded-full">
                     {project.categoryLabel}
                   </span>
-                  <div className="flex items-center gap-1 text-yellow-500/80">
-                    <Star className="w-3.5 h-3.5 fill-current" />
-                    <span className="text-xs font-medium">{project.stars}</span>
+                  <div className="flex items-center gap-1 text-zinc-400 text-xs">
+                    <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
+                    <span>{project.stars}</span>
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-2 relative z-10 group-hover:text-cyan-300 transition-colors">
+                <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
                   {project.title}
                 </h3>
-                
-                <p className="text-sm text-zinc-400 mb-6 leading-relaxed relative z-10 line-clamp-3">
+
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
                   {project.description}
                 </p>
-              </div>
 
-              <div>
-                <div className="flex flex-wrap gap-1.5 mb-6 relative z-10">
-                  {project.techStack.slice(0,4).map((tech, i) => (
-                    <span key={i} className="px-2 py-0.5 rounded text-[10px] text-zinc-400 border border-white/5 bg-black/60">
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {project.techStack.map((tech, i) => (
+                    <span key={i} className="px-2.5 py-1 rounded-md text-[11px] font-medium text-zinc-300 bg-white/5 border border-white/10">
                       {tech}
                     </span>
                   ))}
                 </div>
+              </div>
 
-                <div className="mt-auto flex items-center gap-3 relative z-10 pt-4 border-t border-white/5">
-                  <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors" title="GitHub Repository">
-                    <GithubIcon className="w-5 h-5" />
+              <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-between">
+                <a 
+                  href={project.githubUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+                >
+                  <GithubIcon className="w-4 h-4" />
+                  GitHub Repository
+                </a>
+                
+                {project.demoUrl ? (
+                  <a 
+                    href={project.demoUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
+                  >
+                    Live Demo
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </a>
-                  {project.demoUrl && (
-                    <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors" title="Live Demo">
-                      <ExternalLink className="w-5 h-5" />
-                    </a>
-                  )}
-                </div>
+                ) : (
+                  <span className="text-[11px] font-mono text-zinc-500">Standalone App</span>
+                )}
               </div>
             </motion.div>
           ))}
