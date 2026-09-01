@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, MessageSquare, Github, Copy, Check, Send, AlertCircle, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { Mail, MessageSquare, Copy, Check, Send, AlertCircle, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
 
 export default function ContactSection() {
