@@ -4,46 +4,7 @@ import Lenis from 'lenis';
 import { Shield, Sparkles, Menu, X, Terminal, ExternalLink } from 'lucide-react';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
-import TerminalAI from './components/terminal/TerminalAI';
-
-function FloatingControls() {
-  const location = useLocation();
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-
-  if (location.pathname === '/dashboard') return null;
-
-  return (
-    <>
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
-        <button 
-          onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }) || window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="w-12 h-12 rounded-full bg-slate-900/80 border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 backdrop-blur-xl flex items-center justify-center shadow-lg transition-all hover:-translate-y-1"
-          aria-label="Back to top"
-          title="Kembali ke Atas"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-        </button>
-        
-        <button 
-          onClick={() => setIsTerminalOpen(true)}
-          className="w-12 h-12 rounded-full bg-cyan-500 border border-cyan-400 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all hover:scale-105 hover:bg-cyan-400 animate-pulse-glow"
-          aria-label="Open Terminal"
-          title="Buka Terminal AI"
-        >
-          <Terminal className="w-5 h-5" />
-        </button>
-      </div>
-
-      {isTerminalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-8 animate-in fade-in duration-200">
-           <div className="w-full max-w-5xl relative animate-in zoom-in-95 duration-200">
-             <TerminalAI onClose={() => setIsTerminalOpen(false)} />
-           </div>
-        </div>
-      )}
-    </>
-  );
-}
+import { useTerminal } from './context/TerminalContext.jsx';
 
 function FloatingNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -179,6 +140,7 @@ function FloatingNavbar() {
 }
 
 export default function App() {
+  const { setIsTerminalPopupOpen } = useTerminal();
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
     const lenis = new Lenis({
@@ -211,7 +173,28 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       
-        <FloatingControls />
+      {/* Floating Action Buttons */}
+      {location.pathname !== '/dashboard' && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+          <button 
+            onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }) || window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-12 h-12 rounded-full bg-slate-900/80 border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 backdrop-blur-xl flex items-center justify-center shadow-lg transition-all hover:-translate-y-1"
+            aria-label="Back to top"
+            title="Kembali ke Atas"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+          </button>
+          
+          <button 
+            onClick={() => setIsTerminalPopupOpen(true)}
+            className="w-12 h-12 rounded-full bg-cyan-500 border border-cyan-400 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all hover:scale-105 hover:bg-cyan-400 animate-pulse-glow"
+            aria-label="Open Terminal"
+            title="Buka Terminal AI"
+          >
+            <Terminal className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
     </BrowserRouter>
   );
