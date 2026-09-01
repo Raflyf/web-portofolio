@@ -36,12 +36,12 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full mt-0 border-t border-white/10 bg-slate-950/80 backdrop-blur-2xl">
+    <footer className="relative w-full mt-10 border-t border-white/10 bg-slate-950/80 backdrop-blur-2xl">
       {/* Glow divider top */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
           {/* Brand Block */}
           <motion.div
@@ -49,10 +49,10 @@ export default function Footer() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-4"
+            className="flex flex-col items-center md:items-start space-y-3"
           >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
                 <span className="text-xs font-bold text-white tracking-tight">RF</span>
               </div>
               <div>
@@ -61,70 +61,34 @@ export default function Footer() {
                 </p>
                 <p className="text-[11px] text-zinc-400 font-mono flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]" />
-                  Tersedia untuk peluang baru
+                  Tersedia untuk kolaborasi
                 </p>
               </div>
             </div>
-
-            {/* Social Links */}
-            <div className="flex items-center gap-3">
-              {socialLinks.map(({ icon: Icon, label, href, color }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className={`w-9 h-9 rounded-xl border border-white/15 bg-white/5 flex items-center justify-center text-zinc-400 transition-all duration-200 ${color} hover:bg-white/10 hover:scale-105`}
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
-            </div>
           </motion.div>
 
-          {/* Quick Nav */}
+          {/* Social Links */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-5"
+            className="flex items-center gap-3"
           >
-            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Navigasi</p>
-            <nav className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-              {quickLinks.map(({ label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 group"
-                >
-                  <span className="w-1 h-1 rounded-full bg-cyan-500/50 group-hover:bg-cyan-400 transition-colors" />
-                  {label}
-                </a>
-              ))}
-            </nav>
+            {socialLinks.map(({ icon: Icon, label, href, color }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className={`w-9 h-9 rounded-xl border border-white/15 bg-white/5 flex items-center justify-center text-zinc-400 transition-all duration-200 ${color} hover:bg-white/10 hover:scale-105`}
+              >
+                <Icon className="w-4 h-4" />
+              </a>
+            ))}
           </motion.div>
 
-          {/* Actions & Dashboard CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.55, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-4"
-          >
-            <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Akses Khusus</p>
-
-            <a
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 transition-all group"
-            >
-              <Shield className="w-4 h-4" />
-              <span>Observability Dashboard</span>
-              <ExternalLink className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-            </a>
-          </motion.div>
         </div>
 
         {/* Bottom Bar */}
@@ -132,17 +96,17 @@ export default function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-12 pt-6 border-t border-white/8 flex flex-col sm:flex-row items-center justify-between gap-3"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-6 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3"
         >
-          <p className="text-xs text-zinc-500 font-mono flex items-center gap-1.5">
+          <p className="text-xs text-zinc-500 font-mono flex items-center gap-1.5 text-center sm:text-left">
             <Zap className="w-3 h-3 text-cyan-500/70" />
             &copy; {year} Rafly Firmansyah. Seluruh hak cipta dilindungi.
           </p>
-          <p className="text-xs text-zinc-600 flex items-center gap-1.5">
+          <p className="text-xs text-zinc-600 flex items-center gap-1.5 text-center">
             Dibuat dengan
             <Heart className="w-3 h-3 text-rose-500/80 fill-rose-500/60" />
-            menggunakan React &amp; Framer Motion
+            React &amp; Framer
           </p>
         </motion.div>
       </div>

@@ -30,6 +30,17 @@ function FloatingNavbar() {
     }
   };
 
+  const handleNavClick = (e, href) => {
+    if (href.startsWith('/#')) {
+      e.preventDefault();
+      const id = href.replace('/#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   const navLinks = [
     { name: 'Tentang', href: '/#about' },
     { name: 'Keahlian', href: '/#skills' },
@@ -37,6 +48,7 @@ function FloatingNavbar() {
     { name: 'Sertifikat', href: '/#certificates' },
     { name: 'Riwayat', href: '/#timeline' },
     { name: 'Lab AI', href: '/#lab' },
+    { name: 'Kontak', href: '/#contact' },
   ];
 
   return (
@@ -68,6 +80,7 @@ function FloatingNavbar() {
             <a 
               key={link.name}
               href={link.href} 
+              onClick={(e) => handleNavClick(e, link.href)}
               className="px-4 py-2 rounded-full text-sm font-medium text-zinc-200 hover:text-white hover:bg-white/10 transition-all"
             >
               {link.name}
@@ -96,30 +109,30 @@ function FloatingNavbar() {
         </button>
       </div>
 
-      {/* Mobile Dropdown Panel */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-2 p-5 rounded-3xl bg-slate-950/95 border border-white/20 backdrop-blur-2xl shadow-2xl pointer-events-auto flex flex-col gap-2.5">
+        <nav className="md:hidden mt-3 p-2 bg-slate-900/95 border border-white/10 rounded-2xl backdrop-blur-2xl flex flex-col gap-1 shadow-2xl pointer-events-auto">
           {navLinks.map((link) => (
-            <a 
+            <button 
               key={link.name}
-              href={link.href} 
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-4 py-3 rounded-xl text-base font-medium text-zinc-200 hover:bg-white/10 transition-all"
+              onClick={(e) => {
+                handleNavClick(e, link.href);
+                setMobileMenuOpen(false);
+              }}
+              className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-200 hover:text-white hover:bg-white/10 transition-colors text-left"
             >
               {link.name}
-            </a>
+            </button>
           ))}
-          <div className="pt-3 border-t border-white/10 mt-1">
-            <Link 
-              to="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-base font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
-            >
-              <Shield className="w-4 h-4" />
-              Observability Dashboard
-            </Link>
-          </div>
-        </div>
+          <div className="h-px bg-white/10 my-1 mx-2" />
+          <Link 
+            to="/dashboard" 
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+          >
+            <Shield className="w-4 h-4" />
+            <span>Dashboard Admin</span>
+          </Link>
+        </nav>
       )}
     </header>
   );
@@ -157,7 +170,33 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
-      </div>
+      
+      {/* Floating Action Buttons */}
+      {location.pathname !== '/dashboard' && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+          <button 
+            onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }) || window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-12 h-12 rounded-full bg-slate-900/80 border border-white/10 text-zinc-400 hover:text-white hover:border-white/20 backdrop-blur-xl flex items-center justify-center shadow-lg transition-all hover:-translate-y-1"
+            aria-label="Back to top"
+            title="Kembali ke Atas"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+          </button>
+          
+          <button 
+            onClick={() => {
+              const el = document.getElementById('lab');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="w-12 h-12 rounded-full bg-cyan-500 border border-cyan-400 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all hover:scale-105 hover:bg-cyan-400 animate-pulse-glow"
+            aria-label="Open Terminal"
+            title="Buka Terminal AI"
+          >
+            <Terminal className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+    </div>
     </BrowserRouter>
   );
 }

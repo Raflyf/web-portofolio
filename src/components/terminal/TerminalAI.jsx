@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 export default function TerminalAI({ onClose }) {
   const [messages, setMessages] = useState([
-    { role: 'system', content: 'Sistem Terminal Interaktif [Versi 6.0 — React Engine]\n\nSaya adalah asisten AI Portofolio Rafly Firmansyah. Ada yang bisa saya bantu terkait proyek, sertifikasi, atau riset ML?' }
+    { role: 'system', content: '* INTERACTIVE DEVELOPER LAB / TERMINAL SIMULATOR (v5.2.0)\n* Initialization Sequence: Complete\n* Engine: OpenCode AI Gateway\n* Status: Online\n\nSelamat datang. Silakan ketik perintah atau pertanyaan Anda terkait portofolio.' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -80,19 +80,17 @@ export default function TerminalAI({ onClose }) {
       {/* Terminal Body */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth">
         {messages.map((msg, idx) => (
-          <div key={idx} className={cn("flex flex-col max-w-[90%]", msg.role === 'user' ? "ml-auto items-end" : "mr-auto items-start")}>
-            <div className="text-[10px] text-zinc-500 mb-1 uppercase tracking-wider">
-              {msg.role === 'user' ? 'Guest_User' : (msg.role === 'system' ? 'System' : 'AI Assistant')}
-            </div>
+          <div key={idx} className="flex flex-col w-full mb-1">
             <div className={cn(
-              "px-4 py-3 rounded-2xl border backdrop-blur-sm",
+              "font-mono text-sm break-words flex gap-3",
               msg.role === 'user' 
-                ? "bg-white/10 border-white/10 text-white rounded-tr-sm"
-                : (msg.role === 'system' 
-                    ? "bg-blue-500/10 border-blue-500/20 text-blue-200" 
-                    : "bg-black/40 border-white/5 text-zinc-300 rounded-tl-sm")
+                ? "text-emerald-400" 
+                : (msg.role === 'system' ? "text-cyan-400" : "text-zinc-300")
             )}>
-              <div className="prose prose-invert prose-sm max-w-none break-words [&>p]:last:mb-0 [&>p]:first:mt-0">
+              <span className="shrink-0 opacity-70">
+                {msg.role === 'user' ? 'guest@user:~$ ' : (msg.role === 'system' ? '[SYSTEM] ' : 'AI> ')}
+              </span>
+              <div className="prose prose-invert prose-sm max-w-none [&>p]:last:mb-0 [&>p]:first:mt-0 leading-relaxed">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {msg.content}
                 </ReactMarkdown>
@@ -102,11 +100,13 @@ export default function TerminalAI({ onClose }) {
         ))}
         
         {isLoading && (
-          <div className="flex flex-col max-w-[85%] mr-auto items-start animate-pulse">
-            <div className="text-[10px] text-zinc-500 mb-1 uppercase tracking-wider">AI Assistant</div>
-            <div className="px-4 py-3 rounded-2xl border border-white/5 bg-black/40 text-zinc-400 rounded-tl-sm flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Memproses...
+          <div className="flex flex-col w-full mb-1 animate-pulse">
+            <div className="font-mono text-sm break-words flex gap-3 text-zinc-400">
+              <span className="shrink-0 opacity-70">AI> </span>
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Processing...</span>
+              </div>
             </div>
           </div>
         )}

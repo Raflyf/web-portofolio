@@ -44,7 +44,11 @@ export default function SkillsBento() {
       </motion.div>
 
       {/* Infinite Marquee 1 (Left Scrolling) */}
-      <div 
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.8 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
         className="relative overflow-hidden flex w-full mb-4" 
         style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
       >
@@ -60,10 +64,14 @@ export default function SkillsBento() {
             </React.Fragment>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Infinite Marquee 2 (Right Scrolling) */}
-      <div 
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.8 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
         className="relative overflow-hidden flex w-full mb-16" 
         style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
       >
@@ -79,7 +87,7 @@ export default function SkillsBento() {
             </React.Fragment>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Bento Grid with Uniform Obsidian Liquid Glass & Lucide SVG Icons */}
       <motion.div 

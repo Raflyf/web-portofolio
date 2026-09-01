@@ -8,6 +8,7 @@ import SkillsBento from '../components/sections/SkillsBento';
 import ProjectsGrid from '../components/sections/ProjectsGrid';
 import CertificatesGrid from '../components/sections/CertificatesGrid';
 import ExperienceTimeline from '../components/sections/ExperienceTimeline';
+import ContactSection from '../components/sections/ContactSection';
 import Footer from '../components/layout/Footer';
 
 export default function Home() {
@@ -58,6 +59,9 @@ export default function Home() {
             <TerminalAI />
           </motion.div>
         </section>
+
+        {/* Contact Form & Information */}
+        <ContactSection />
       </main>
 
       {/* Footer rapat ke bawah, tidak menggantung */}
