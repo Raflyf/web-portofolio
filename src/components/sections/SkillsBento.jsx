@@ -14,12 +14,17 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 25 },
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+    transition: { duration: 0.5, staggerChildren: 0.05 }
   }
+};
+
+const badgeVariants = {
+  hidden: { opacity: 0, scale: 0.8 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } }
 };
 
 export default function SkillsBento() {
@@ -47,7 +52,7 @@ export default function SkillsBento() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.8 }}
+        viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.1 }}
         className="relative overflow-hidden flex w-full mb-4" 
         style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
@@ -70,7 +75,7 @@ export default function SkillsBento() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.8 }}
+        viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="relative overflow-hidden flex w-full mb-16" 
         style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
@@ -113,9 +118,9 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["Python 3", "PyTorch", "Scikit-Learn", "XGBoost", "Sentence-Transformers", "N-Gram Shingling", "Pandas", "NumPy"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-cyan-400/30 hover:text-cyan-200 transition-colors">
+              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-cyan-400/30 hover:text-cyan-200 transition-colors">
                 {tech}
-              </span>
+              </motion.span>
             ))}
           </div>
         </motion.div>
@@ -135,9 +140,9 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MikroTik RouterOS", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filter Rules", "Simple Queues (QoS)", "VLAN & Tunnels"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-emerald-400/30 hover:text-emerald-200 transition-colors">
+              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-emerald-400/30 hover:text-emerald-200 transition-colors">
                 {tech}
-              </span>
+              </motion.span>
             ))}
           </div>
         </motion.div>
@@ -156,10 +161,10 @@ export default function SkillsBento() {
             Backend & Full-Stack Systems
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
-            {["Python Flask", "PHP 8 MVC", "RESTful APIs", "MySQL Database", "Vanilla JS (ES6+)", "Modern CSS / OKLCH"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-indigo-400/30 hover:text-indigo-200 transition-colors">
+            {["React.js", "Tailwind CSS", "Framer Motion", "Supabase DB", "Node.js API", "Flask API"].map((tech, i) => (
+              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-indigo-400/30 hover:text-indigo-200 transition-colors">
                 {tech}
-              </span>
+              </motion.span>
             ))}
           </div>
         </motion.div>
