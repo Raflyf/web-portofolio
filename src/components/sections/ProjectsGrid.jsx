@@ -163,23 +163,21 @@ export default function ProjectsGrid() {
       )}
 
       {/* Secondary Projects Grid */}
-      <motion.div 
-        layout
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6"
-      >
-        <AnimatePresence>
-          {secondaryProjects.map(project => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <AnimatePresence mode="popLayout">
+          {secondaryProjects.map((project, index) => (
             <motion.div 
               layout
               key={project.id}
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              viewport={{ once: false, amount: 0.15 }}
+              transition={{ 
+                duration: 0.5, 
+                ease: [0.16, 1, 0.3, 1],
+                delay: (index % 2) * 0.08
+              }}
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
               className="rounded-3xl border border-white/10 bg-slate-950/70 p-7 backdrop-blur-2xl hover:border-cyan-500/30 transition-all shadow-xl group flex flex-col justify-between"
             >
@@ -239,7 +237,7 @@ export default function ProjectsGrid() {
             </motion.div>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </section>
   );
 }
