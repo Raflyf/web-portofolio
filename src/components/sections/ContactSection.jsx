@@ -149,36 +149,36 @@ export default function ContactSection() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.6 }}
-          className="lg:col-span-5 space-y-4"
+          className="lg:col-span-5 space-y-3"
         >
           {/* Email Direct Copy Card */}
-          <div className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-4 hover:border-cyan-500/30 transition-all duration-300 group">
+          <div className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-cyan-500/30 transition-all duration-300 group">
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
                 <Mail className="w-5 h-5" />
               </div>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 bg-white/5 px-2.5 py-1 rounded-md border border-white/5">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
                 Respon Cepat
               </span>
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Email Langsung</span>
-              <p className="text-base sm:text-lg font-bold text-white font-mono mt-0.5 group-hover:text-cyan-300 transition-colors break-all">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Email Langsung</span>
+              <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5 group-hover:text-cyan-300 transition-colors break-all">
                 {DEVELOPER_PROFILE.email}
               </p>
             </div>
             <button
               onClick={handleCopyEmail}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 hover:border-cyan-400/40 transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-[11px] font-semibold bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 hover:border-cyan-400/40 transition-all cursor-pointer"
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
                   <span className="text-emerald-300">Tersalin ke Clipboard!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4 text-cyan-400" />
+                  <Copy className="w-3.5 h-3.5 text-cyan-400" />
                   <span>Salin Alamat Email</span>
                 </>
               )}
@@ -190,25 +190,25 @@ export default function ContactSection() {
             href={DEVELOPER_PROFILE.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition-all duration-300 group block"
+            className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-emerald-500/40 transition-all duration-300 group block"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                 <MessageSquare className="w-5 h-5" />
               </div>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400/80 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400/80 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
                 WhatsApp Chat
               </span>
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Pesan Instan</span>
-              <p className="text-base sm:text-lg font-bold text-white font-mono mt-0.5 group-hover:text-emerald-300 transition-colors">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Pesan Instan</span>
+              <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5 group-hover:text-emerald-300 transition-colors">
                 {DEVELOPER_PROFILE.whatsapp}
               </p>
             </div>
-            <div className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all">
+            <div className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-[11px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all">
               <span>Buka Chat WhatsApp</span>
-              <ArrowUpRight className="w-4 h-4" />
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
           </a>
 
@@ -217,7 +217,7 @@ export default function ContactSection() {
             href={DEVELOPER_PROFILE.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-6 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-4 hover:border-indigo-500/40 transition-all duration-300 group block"
+            className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-indigo-500/40 transition-all duration-300 group block"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
@@ -225,19 +225,19 @@ export default function ContactSection() {
                   <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                 </svg>
               </div>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-indigo-400/80 bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/20">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400/80 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
                 Repositori Publik
               </span>
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Profil Developer</span>
-              <p className="text-base sm:text-lg font-bold text-white font-mono mt-0.5 group-hover:text-indigo-300 transition-colors">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Profil Developer</span>
+              <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5 group-hover:text-indigo-300 transition-colors">
                 github.com/Raflyf
               </p>
             </div>
-            <div className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all">
+            <div className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-[11px] font-semibold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all">
               <span>Kunjungi Profil GitHub</span>
-              <ArrowUpRight className="w-4 h-4" />
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
           </a>
 
