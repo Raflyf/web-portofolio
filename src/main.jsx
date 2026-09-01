@@ -1,10 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import { TerminalProvider } from './context/TerminalContext.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <TerminalProvider>
+      <App />
+    </TerminalProvider>
   </React.StrictMode>,
 )
