@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CERTIFICATES_DATA } from '../../data';
-import { FileText, Award, ExternalLink, Calendar, Eye, X } from 'lucide-react';
+import { FileText, Award, ExternalLink, Calendar, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { telemetry } from '../../lib/telemetry';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -27,7 +28,20 @@ const tabVariants = {
 
 export default function CertificatesGrid() {
   const [filter, setFilter] = useState('all');
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedCert, setSelectedCert] = useState(null);
+  const [selectedPage, setSelectedPage] = useState(0);
+
+  const openCertModal = (cert) => {
+    setSelectedCert(cert);
+    setSelectedPage(0);
+    const title = cert.title || 'Sertifikat';
+    telemetry.logEvent('cert_view', cert.id || title, `Buka Detail Kredensial: ${title}`);
+  };
+
+  const closeCertModal = () => {
+    setSelectedCert(null);
+    setSelectedPage(0);
+  };
 
   const filteredCertificates = CERTIFICATES_DATA.filter(cert => {
     if (filter === 'all') return true;
@@ -102,13 +116,13 @@ export default function CertificatesGrid() {
                 delay: (index % 3) * 0.08
               }}
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl hover:border-cyan-500/30 transition-all shadow-xl group flex flex-col justify-between relative overflow-hidden p-6"
+              className="liquid-glass liquid-glass-hover group flex flex-col justify-between relative overflow-hidden p-6"
             >
               <div>
                 {/* Certificate Preview Frame */}
-                <div 
-                  onClick={() => setSelectedImage(cert.imageUrl || cert.images?.[0])}
-                  className="h-44 w-full relative overflow-hidden rounded-2xl bg-black/60 border border-white/10 mb-5 group/img cursor-pointer"
+                <div
+                  onClick={() => openCertModal(cert)}
+                  className="h-44 w-full relative overflow-hidden liquid-glass-inset mb-5 group/img cursor-pointer"
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-zinc-600 bg-slate-900/80 z-0">
                     <Award className="w-10 h-10 opacity-30 text-cyan-400" />
@@ -159,6 +173,7 @@ export default function CertificatesGrid() {
                   href={cert.pdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => telemetry.logEvent('cert_view', `${cert.id}_pdf`, `Buka PDF: ${cert.title}`)}
                   className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-cyan-300 flex items-center justify-center gap-2 transition-all shadow-sm group/btn"
                 >
                   <FileText className="w-4 h-4 text-cyan-400 group-hover/btn:scale-110 transition-transform" />
@@ -170,22 +185,83 @@ export default function CertificatesGrid() {
         </AnimatePresence>
       </div>
 
-      {/* Image Preview Modal */}
+      {/* Certificate Viewer Modal (Multi-Page Support) */}
       <AnimatePresence>
-        {selectedImage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
-            <div className="relative max-w-4xl w-full max-h-[90vh] bg-slate-950 border border-white/15 rounded-3xl p-4 overflow-hidden shadow-2xl">
-              <button 
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <img 
-                src={selectedImage} 
-                alt="Pratinjau Sertifikat" 
-                className="w-full h-auto max-h-[80vh] object-contain rounded-2xl"
-              />
+        {selectedCert && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in" onClick={closeCertModal}>
+            <div className="relative max-w-4xl w-full max-h-[90vh] liquid-glass-strong glass-spring-in p-4 overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+              {/* Modal Header */}
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10 mb-3 shrink-0">
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-white truncate">{selectedCert.title}</h3>
+                  <p className="text-[11px] text-zinc-400 truncate">{selectedCert.issuer} · {selectedCert.date}</p>
+                </div>
+                <button
+                  onClick={closeCertModal}
+                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white cursor-pointer shrink-0"
+                  aria-label="Tutup Pratinjau"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Multi-Page Image Area */}
+              {(() => {
+                const pages = (selectedCert.images && selectedCert.images.length > 0)
+                  ? selectedCert.images
+                  : [selectedCert.imageUrl].filter(Boolean);
+                const pageIndex = Math.min(selectedPage, pages.length - 1);
+                const currentPage = pages[pageIndex];
+
+                return (
+                  <div className="relative flex-1 min-h-0 overflow-hidden">
+                    <img
+                      src={currentPage}
+                      alt={`${selectedCert.title} - Halaman ${pageIndex + 1}`}
+                      className="w-full h-auto max-h-[70vh] object-contain rounded-2xl mx-auto"
+                    />
+
+                    {pages.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setSelectedPage(prev => (prev - 1 + pages.length) % pages.length)}
+                          disabled={pages.length <= 1}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center text-white cursor-pointer"
+                          aria-label="Halaman Sebelumnya"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setSelectedPage(prev => (prev + 1) % pages.length)}
+                          disabled={pages.length <= 1}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center text-white cursor-pointer"
+                          aria-label="Halaman Berikutnya"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/70 border border-white/15 text-[11px] font-mono text-zinc-300">
+                          {pageIndex + 1} / {pages.length}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Footer Actions */}
+              {selectedCert.pdfUrl && (
+                <div className="pt-3 border-t border-white/10 mt-3 shrink-0">
+                  <a
+                    href={selectedCert.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-cyan-300 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <FileText className="w-4 h-4 text-cyan-400" />
+                    <span>Lihat Dokumen PDF Lengkap</span>
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}

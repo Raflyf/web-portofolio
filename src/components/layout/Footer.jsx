@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Shield, ExternalLink, Heart, Zap } from 'lucide-react';
+import { DEVELOPER_PROFILE } from '../../data';
+import { telemetry } from '../../lib/telemetry';
 
 const socialLinks = [
   {
@@ -12,7 +14,7 @@ const socialLinks = [
   {
     icon: Mail,
     label: 'Email',
-    href: 'mailto:raflyfirmansyah@gmail.com',
+    href: `mailto:${DEVELOPER_PROFILE.email}`,
     color: 'hover:text-cyan-400 hover:border-cyan-400/40',
   },
 ];
@@ -30,7 +32,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full mt-10 border-t border-white/10 bg-slate-950/80 backdrop-blur-2xl">
+    <footer className="relative w-full mt-10 liquid-glass-nav">
       {/* Glow divider top */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
 
@@ -76,6 +78,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
+                onClick={() => telemetry.logEvent('link_click', label.toLowerCase(), `Klik Tautan Footer: ${label}`)}
                 className={`w-9 h-9 rounded-xl border border-white/15 bg-white/5 flex items-center justify-center text-zinc-400 transition-all duration-200 ${color} hover:bg-white/10 hover:scale-105`}
               >
                 <Icon className="w-4 h-4" />

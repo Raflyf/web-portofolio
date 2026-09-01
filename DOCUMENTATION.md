@@ -614,3 +614,17 @@ emotron-lighting dari semua omniCandidates; (11) **KONFLIK-1:** Fix timeout RSS 
 - **Frontend Home**: Fixed Horizon parallax bottom cut by adjusting orderTopRadius and extending height. Added missing ramer-motion scroll animations to ProjectsGrid, CertificatesGrid, and SkillsBento.
 - **Footer & Navigation**: Simplified footer to minimal profile/socials. Fixed smooth scrolling to contact and terminal.
 - **Admin OTP Logic**: Fixed payload synchronization between dashboard client and Vercel serverless function (send_otp/request-otp payload alignment).
+
+
+### v10.572.0 - React Migration Deep Audit & Fix
+
+1. **Keamanan:**
+   - Revoke akses anon pada RPC dan seluruh kebijakan RLS (telemetri dan memori kini privat).
+   - Penghapusan backdoor Master PIN (`DEFAULT_PIN_HASH`) dan pemindahan seluruh operasi auth admin ke serverless `/api/admin-otp` dengan `SUPABASE_SERVICE_ROLE_KEY`.
+   - `netlify.toml` kini mempublikasikan direktori `dist`.
+   - Autentikasi dashboard memakai session token acak; endpoint `/api/dashboard-data` memvalidasi token sesi di sisi server.
+   - Rate limit OTP/PIN dipersistenkan di database (`otp_attempts`, `otp_blocked_until`).
+2. **Fitur dipulihkan (parity):** Perbaikan timeline pengalaman (M1), sertifikat asli dengan penampil multi-halaman (M2/M10), pengiriman email terpadu EmailJS/Resend (M3), penyimpanan memori RAG AI (M4), telemetri global (M5), animasi Tailwind v4 (M6), metrik jujur tanpa klaim presisi palsu (M8), jam WIB hero + toggle tema + SEO/meta (M10).
+3. **Dead code dihapus:** 5 berkas JavaScript terminal vanilla (`src/components/terminal/*.js`), 3 komponen UI tak terpakai, dan dependensi tak terpakai (`tailwind.config.js`, dsb).
+4. **UI/UX:** Design token iOS Liquid Glass diterapkan pada seluruh permukaan (dark/light/mobile), Always-On Motion dipertahankan tanpa mematikan animasi saat `prefers-reduced-motion` aktif.
+5. **Performa:** Dashboard di-lazy-load dan di-code-split (index bundle 943kB menjadi 687kB, chunk Dashboard 257kB); `npm run build` hijau.

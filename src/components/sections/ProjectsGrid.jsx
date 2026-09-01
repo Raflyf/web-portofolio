@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PROJECTS_DATA } from '../../data';
 import { ArrowRight, Star, ExternalLink } from 'lucide-react';
+import { telemetry } from '../../lib/telemetry';
 
 const GithubIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -100,7 +101,7 @@ export default function ProjectsGrid() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, amount: 0.15 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12 rounded-3xl border border-white/15 bg-slate-950/70 p-8 sm:p-12 backdrop-blur-2xl shadow-2xl relative overflow-hidden group hover:border-cyan-500/40 transition-all duration-300"
+          className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
           
@@ -145,10 +146,11 @@ export default function ProjectsGrid() {
               </div>
 
               <div className="pt-4 flex flex-wrap gap-4">
-                <a 
-                  href={featuredProject.githubUrl} 
-                  target="_blank" 
+                <a
+                  href={featuredProject.githubUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => telemetry.logEvent('link_click', 'github_openplagiarismchecker', 'Kunjungi Repositori: OpenPlagiarismChecker')}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm transition-all hover:scale-105 shadow-md"
                 >
                   <GithubIcon className="w-4 h-4" />
@@ -157,7 +159,7 @@ export default function ProjectsGrid() {
               </div>
             </div>
 
-            <div className="lg:col-span-4 rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-xl space-y-4">
+            <div className="lg:col-span-4 liquid-glass-inset p-6 space-y-4">
               <div className="text-xs font-mono font-semibold text-emerald-400 uppercase tracking-wider">
                 Basis Data Riset Terindeks:
               </div>
@@ -191,7 +193,7 @@ export default function ProjectsGrid() {
                 delay: (index % 2) * 0.08
               }}
               whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="rounded-3xl border border-white/10 bg-slate-950/70 p-7 backdrop-blur-2xl hover:border-cyan-500/30 transition-all shadow-xl group flex flex-col justify-between"
+              className="liquid-glass liquid-glass-hover p-7 group flex flex-col justify-between"
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -222,10 +224,11 @@ export default function ProjectsGrid() {
               </div>
 
               <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-between">
-                <a 
-                  href={project.githubUrl} 
-                  target="_blank" 
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => telemetry.logEvent('link_click', `github_${project.id}`, `Kunjungi Repositori: ${project.title}`)}
                   className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
                 >
                   <GithubIcon className="w-4 h-4" />
@@ -233,10 +236,11 @@ export default function ProjectsGrid() {
                 </a>
                 
                 {project.demoUrl ? (
-                  <a 
-                    href={project.demoUrl} 
-                    target="_blank" 
+                  <a
+                    href={project.demoUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => telemetry.logEvent('link_click', `demo_${project.id}`, `Buka Demo: ${project.title}`)}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
                   >
                     Live Demo

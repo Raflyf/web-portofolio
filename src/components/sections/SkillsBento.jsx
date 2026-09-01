@@ -107,7 +107,7 @@ export default function SkillsBento() {
         <motion.div 
           variants={itemVariants}
           whileHover={{ y: -4 }}
-          className="md:col-span-7 rounded-3xl border border-white/10 bg-slate-950/70 p-7 sm:p-8 backdrop-blur-2xl shadow-xl relative overflow-hidden group hover:border-cyan-500/30 transition-all duration-300"
+          className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
@@ -129,7 +129,7 @@ export default function SkillsBento() {
         <motion.div 
           variants={itemVariants}
           whileHover={{ y: -4 }}
-          className="md:col-span-5 rounded-3xl border border-white/10 bg-slate-950/70 p-7 sm:p-8 backdrop-blur-2xl shadow-xl relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300"
+          className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
@@ -151,7 +151,7 @@ export default function SkillsBento() {
         <motion.div 
           variants={itemVariants}
           whileHover={{ y: -4 }}
-          className="md:col-span-5 rounded-3xl border border-white/10 bg-slate-950/70 p-7 sm:p-8 backdrop-blur-2xl shadow-xl relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300"
+          className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
@@ -173,7 +173,7 @@ export default function SkillsBento() {
         <motion.div 
           variants={itemVariants}
           whileHover={{ y: -4 }}
-          className="md:col-span-7 rounded-3xl border border-white/10 bg-slate-950/70 p-7 sm:p-8 backdrop-blur-2xl shadow-xl relative overflow-hidden group hover:border-cyan-500/30 transition-all duration-300"
+          className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">

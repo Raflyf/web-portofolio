@@ -5,6 +5,8 @@ import remarkGfm from 'remark-gfm';
 import { Send, TerminalSquare, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, History, Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
+import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
+import { telemetry } from '../../lib/telemetry';
 
 const COMMAND_REGISTRY = {
   about: () => [
@@ -29,10 +31,7 @@ const COMMAND_REGISTRY = {
   ],
   certifs: () => [
     "--- CREDENTIALS ---",
-    "- Bangkit Academy Cloud Computing Cohort",
-    "- Dicoding: Menjadi Front-End Web Developer Expert",
-    "- Dicoding: Membangun Web dengan React",
-    "- Google Cloud Certified"
+    ...CERTIFICATES_DATA.map(cert => `- ${cert.title} (${cert.date}) — ${cert.issuer}`)
   ],
   benchmarks: () => [
     "--- AI BENCHMARKS ---",
@@ -75,11 +74,37 @@ const COMMAND_REGISTRY = {
   ],
   contact: () => [
     "--- CONTACT ---",
-    "Email: mr.rafly2002@gmail.com",
+    `Email: ${DEVELOPER_PROFILE.email}`,
     "GitHub: github.com/Raflyf"
   ],
   clear: () => []
 };
+
+// Persist an explicit fact taught by the AI to Supabase ai_memories (anon INSERT allowed by RLS).
+function saveAIMemory(factText, sessionId) {
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!url || !anonKey || !factText) return;
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 2000);
+    fetch(`${url.replace(/\/+$/, '')}/rest/v1/ai_memories`, {
+      method: 'POST',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        'Authorization': `Bearer ${anonKey}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        fact_text: String(factText).substring(0, 1000),
+        session_id: (sessionId || 'unknown').substring(0, 64)
+      }),
+      signal: ctrl.signal
+    }).catch(() => {});
+  } catch (_) {}
+}
 
 export default function TerminalAI({ onClose }) {
   const { 
@@ -162,18 +187,7 @@ export default function TerminalAI({ onClose }) {
       if (chosen === '' || validModels.includes(chosen)) {
         const finalModel = chosen === '' ? 'auto' : chosen;
         localStorage.setItem('ai_selected_model', finalModel);
-        
-        try {
-          const events = JSON.parse(localStorage.getItem('portfolio_telemetry_events') || '[]');
-          events.push({
-            event_type: 'model_select',
-            event_target: finalModel,
-            event_label: `Pilihan Model: ${finalModel}`,
-            created_at: new Date().toISOString()
-          });
-          localStorage.setItem('portfolio_telemetry_events', JSON.stringify(events));
-          window.dispatchEvent(new Event('telemetry_update'));
-        } catch (e) {}
+        telemetry.logEvent('model_select', finalModel, `Pilihan Model: ${finalModel}`);
 
         setMessages(prev => [
           ...prev, 
@@ -195,7 +209,8 @@ export default function TerminalAI({ onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: userQuery,
-          model: 'auto',
+          model: localStorage.getItem('ai_selected_model') || 'auto',
+          reasoningEffort: effort,
           history: messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content }))
         })
       });
@@ -204,23 +219,22 @@ export default function TerminalAI({ onClose }) {
       const data = await res.json();
       
       let finalResponse = data.response || "Maaf, terjadi kesalahan atau antrean penuh.";
+      // Save continuous RAG memories (explicit facts the model wants to persist)
+      const memoryRegex = /\[SAVE_MEMORY:\s*([\s\S]*?)\]/gi;
+      const rawResponse = data.response || "";
+      let memoryMatch;
+      while ((memoryMatch = memoryRegex.exec(rawResponse)) !== null) {
+        if (memoryMatch[1] && memoryMatch[1].trim()) {
+          saveAIMemory(memoryMatch[1].trim(), telemetry.sessionId || 'unknown');
+        }
+      }
       // Clean memory tags
       finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
 
       setMessages(prev => [...prev, { role: 'ai', content: finalResponse, time: getCurrentTime() }]);
 
       // Log to telemetry (Auto Router / Ollama Nano)
-      try {
-        const events = JSON.parse(localStorage.getItem('portfolio_telemetry_events') || '[]');
-        events.push({
-          event_type: 'ai_chat',
-          event_target: 'auto',
-          event_label: '[auto] ollama nano',
-          created_at: new Date().toISOString()
-        });
-        localStorage.setItem('portfolio_telemetry_events', JSON.stringify(events));
-        window.dispatchEvent(new Event('telemetry_update'));
-      } catch (e) {}
+      telemetry.logEvent('ai_chat', localStorage.getItem('ai_selected_model') || 'auto', `[${localStorage.getItem('ai_selected_model') || 'auto'}] effort:${effort}`);
 
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', content: '⚠️ Gagal terhubung ke API Gateway lokal. Jika Anda menjalankan secara lokal dengan Vite, pastikan `/api/chat` tersedia atau Vercel Dev dijalankan.', time: getCurrentTime() }]);
@@ -286,7 +300,7 @@ export default function TerminalAI({ onClose }) {
   const terminalContent = (
     <div 
       className={cn(
-        isTerminalPopupOpen ? "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-8" : "relative w-full"
+        isTerminalPopupOpen ? "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4 sm:p-8" : "relative w-full"
       )}
       onClick={(e) => {
         if (isTerminalPopupOpen && e.target === e.currentTarget) {
@@ -295,8 +309,8 @@ export default function TerminalAI({ onClose }) {
       }}
     >
       <div className={cn(
-        "w-full max-w-5xl mx-auto flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-2xl font-mono text-sm relative transition-all duration-300",
-        isTerminalPopupOpen ? "h-[85vh] shadow-[0_0_50px_rgba(34,211,238,0.15)] animate-in zoom-in-95" : "h-[600px] sm:h-[700px]"
+        "w-full max-w-5xl mx-auto flex flex-col overflow-hidden liquid-glass-strong font-mono text-sm relative transition-all duration-300",
+        isTerminalPopupOpen ? "h-[85vh] shadow-[0_0_50px_rgba(34,211,238,0.15)] glass-spring-in" : "h-[600px] sm:h-[700px]"
       )}>
         
         {/* Terminal App Header */}
@@ -320,7 +334,7 @@ export default function TerminalAI({ onClose }) {
         </div>
   
         {/* Control Bar (Riwayat, Baru, Pop-up) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40 gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-white/10 liquid-glass-inset gap-3 shrink-0">
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex gap-1.5 shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -443,8 +457,8 @@ export default function TerminalAI({ onClose }) {
                   </div>
                 </div>
                 
-                <div className="w-full bg-slate-900/60 backdrop-blur-md border border-white/10 rounded-2xl rounded-tl-sm px-4 py-4 sm:px-6 shadow-xl text-zinc-200">
-                  <div className="prose prose-invert prose-sm sm:prose-base max-w-none [&>p]:last:mb-0 [&>p]:first:mt-0 leading-relaxed prose-pre:bg-black/60 prose-pre:border prose-pre:border-white/10 prose-a:text-cyan-400 prose-code:text-cyan-200 prose-code:bg-cyan-500/10 prose-code:px-1 prose-code:rounded">
+                <div className="w-full liquid-glass rounded-2xl rounded-tl-sm px-4 py-4 sm:px-6 text-zinc-200">
+                  <div className="markdown-body max-w-none leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content}
                     </ReactMarkdown>
@@ -469,14 +483,14 @@ export default function TerminalAI({ onClose }) {
       {/* History Modal */}
       {showHistoryModal && (
         <div 
-          className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowHistoryModal(false);
             }
           }}
         >
-          <div className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden font-mono animate-in zoom-in-95">
+          <div className="w-full max-w-2xl liquid-glass-strong rounded-2xl overflow-hidden font-mono glass-spring-in">
             <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 p-6">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2"><Clock className="w-5 h-5 text-cyan-400" /> Riwayat Percakapan</h3>
               <button onClick={() => setShowHistoryModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition"><X className="w-4 h-4 text-zinc-400 hover:text-white" /></button>
@@ -517,7 +531,7 @@ export default function TerminalAI({ onClose }) {
     )}
 
       {/* Terminal Input Area */}
-      <div className="p-3 sm:p-4 bg-slate-950 border-t border-white/10 relative z-10 shrink-0">
+      <div className="p-3 sm:p-4 liquid-glass-inset border-t border-white/10 relative z-10 shrink-0">
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full relative">
             <span className="hidden sm:block text-cyan-400 font-semibold text-sm whitespace-nowrap pl-2">rafly@Lab:~$</span>
@@ -531,7 +545,7 @@ export default function TerminalAI({ onClose }) {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Ketik perintah atau tanya sesuatu... (misal: 'buatkan ringkasan')"
-                className="w-full bg-slate-900 border border-indigo-500/30 text-white rounded-xl py-3 sm:py-3.5 pl-10 pr-12 sm:pr-14 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-zinc-500 transition-all shadow-[inset_0_1px_4px_rgba(0,0,0,0.3)] text-sm"
+                className="w-full liquid-glass-inset border border-indigo-500/30 text-white rounded-xl py-3 sm:py-3.5 pl-10 pr-12 sm:pr-14 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-zinc-500 transition-all text-sm"
                 disabled={isLoading}
               />
               

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, MessageSquare, Copy, Check, Send, AlertCircle, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
+import { telemetry } from '../../lib/telemetry';
 
 export default function ContactSection() {
   const [copied, setCopied] = useState(false);
@@ -92,6 +93,7 @@ export default function ContactSection() {
 
       if (response.ok || data.success === 'true' || data.success === true) {
         localStorage.setItem('portfolio_last_submit', Date.now().toString());
+        telemetry.logEvent('contact_submit', 'contact_form', 'Kirim Formulir Pesan Kontak');
         const waText = encodeURIComponent(`Halo Rafly, saya ${name.trim()} (${email.trim()}). Pesan: ${message.trim()}`);
         const waUrl = `${DEVELOPER_PROFILE.whatsappUrl}?text=${waText}`;
 
@@ -151,7 +153,7 @@ export default function ContactSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: false, amount: 0.2 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-cyan-500/30 transition-all duration-300 group"
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
@@ -194,7 +196,8 @@ export default function ContactSection() {
             href={DEVELOPER_PROFILE.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-emerald-500/40 transition-all duration-300 group block"
+            onClick={() => telemetry.logEvent('link_click', 'whatsapp', 'Klik Tombol Chat WhatsApp')}
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group block"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -225,7 +228,8 @@ export default function ContactSection() {
             href={DEVELOPER_PROFILE.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-xl flex flex-col justify-between space-y-3 hover:border-indigo-500/40 transition-all duration-300 group block"
+            onClick={() => telemetry.logEvent('link_click', 'github_profile', 'Klik Profil GitHub')}
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group block"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
@@ -257,7 +261,7 @@ export default function ContactSection() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.6 }}
-          className="lg:col-span-7 p-8 sm:p-10 rounded-3xl border border-white/10 bg-slate-950/70 backdrop-blur-2xl shadow-2xl relative overflow-hidden"
+          className="lg:col-span-7 p-8 sm:p-10 liquid-glass-strong relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
@@ -292,7 +296,7 @@ export default function ContactSection() {
                 onChange={handleChange}
                 placeholder="Masukkan nama Anda..."
                 required
-                className="w-full px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 focus:border-cyan-400/50 focus:bg-white/10 text-white placeholder-zinc-500 text-sm outline-none transition-all"
+                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
               />
             </div>
 
@@ -308,7 +312,7 @@ export default function ContactSection() {
                 onChange={handleChange}
                 placeholder="nama@instansi.com..."
                 required
-                className="w-full px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 focus:border-cyan-400/50 focus:bg-white/10 text-white placeholder-zinc-500 text-sm outline-none transition-all"
+                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
               />
             </div>
 
@@ -324,7 +328,7 @@ export default function ContactSection() {
                 rows={5}
                 placeholder="Tuliskan detail pertanyaan atau tawaran kolaborasi riset/proyek..."
                 required
-                className="w-full px-4 py-3.5 rounded-2xl bg-white/5 border border-white/10 focus:border-cyan-400/50 focus:bg-white/10 text-white placeholder-zinc-500 text-sm outline-none transition-all resize-none"
+                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all resize-none"
               />
             </div>
 

@@ -284,3 +284,38 @@ Semua temuan dari deep-dive audit tahap 2 telah diperbaiki secara tuntas:
   - `css/components.css:2205-2235`: Kelas `.chat-markdown-link` dan adaptasi theme light-mode ditambahkan sehingga link rujukan AI interaktif dan dapat diklik. **RESOLVED**.
 - [x] **PERF-01: Unifikasi Cache-Busting Universal**:
   - Diseragamkan ke `v10.560.0` pada `index.html`, `dashboard.html`, `preview.html`, `css/style.css`, `js/main.js`, `js/terminal.js`, dan `js/terminal-ai.js`. **RESOLVED**.
+
+
+---
+
+# RESOLVED - React Migration Audit (v10.572.0)
+
+Diterbitkan 2026-09-01 setelah migrasi penuh ke React/Vite. Dokumentasi dan konfigurasi deployment diperbarui di rilis ini (DOCUMENTATION.md, README.md).
+
+## Checklist resolusi temuan audit (C1-C5, M1-M11)
+
+- [x] **C1 - Revoke akses anon RPC & RLS**: Seluruh kebijakan anon SELECT/UPDATE/DELETE pada `admin_auth_config` dicabut total; `portfolio_telemetry` dan `ai_memories` hanya dapat dibaca oleh `service_role`/`authenticated`; anon hanya INSERT dengan guard panjang kolom. **RESOLVED** (database/supabase_schema.sql).
+- [x] **C2 - PIN backdoor dihapus**: `DEFAULT_PIN_HASH` bukan lagi otentikasi utama; verifikasi PIN dilakukan serverless via RPC `rpc_admin_verify_pin` dengan session token acak (`adm_<hex>`) yang dipersistenkan. Dashboard memakai session token untuk membaca data. **RESOLVED**.
+- [x] **C3 - Netlify publish dist**: `netlify.toml` kini `command = "npm run build"` dan `publish = "dist"` dengan SPA redirect `/*` ke `/index.html`. **RESOLVED**.
+- [x] **C4 - Session token & /api/dashboard-data**: Endpoint `api/dashboard-data.js` membaca telemetri + memori AI dengan `SUPABASE_SERVICE_ROLE_KEY` dan memvalidasi `X-Admin-Token` (session token dari `admin_auth_config`) secara fail-closed (401/502/503). **RESOLVED**.
+- [x] **C5 - Persisted rate limits**: Rate limit OTP/PIN dipersistenkan di database (`otp_attempts`, `otp_blocked_until`, `lockout_attempts`, `locked_until`) bukan hanya cache in-memory; OTP memakai `crypto.randomInt`. **RESOLVED**.
+- [x] **M1 - Timeline pengalaman**: `ExperienceTimeline` merender `TIMELINE_DATA` dengan scroll beam Framer Motion. **RESOLVED**.
+- [x] **M2 - Sertifikat asli**: `CertificatesGrid` menampilkan kredensial autentik dari `CERTIFICATES_DATA` dengan modal viewer multi-halaman (`ChevronLeft`/`ChevronRight`) dan tautan PDF asli dari `public/certificates/`. **RESOLVED**.
+- [x] **M3 - Email terpadu**: Pengiriman email kontak via FormSubmit (`ContactSection`) dan notifikasi OTP via EmailJS/Resend (`api/admin-otp.js`). **RESOLVED** (catatan: path kontak publik memakai FormSubmit, bukan serverless; lihat STILL OPEN).
+- [x] **M4 - RAG save**: `TerminalAI` mengekstrak tag `[SAVE_MEMORY:...]` dan menulis ke `ai_memories` (anon INSERT diizinkan RLS); riwayat konteks diteruskan ke `/api/chat`. **RESOLVED**.
+- [x] **M5 - Telemetri global**: `src/lib/telemetry.js` mereplikasi arsitektur vanilla (dual-storage Supabase REST + ring buffer lokal) dengan `VITE_` env, session UUID, device type, dan bounds kolom RLS. **RESOLVED**.
+- [x] **M6 - Tailwind v4 animations**: `src/index.css` memakai `@import "tailwindcss"` + `@plugin tailwindcss-animate` + custom `@theme` keyframes. **RESOLVED**.
+- [x] **M8 - Metrik jujur**: Seluruh klaim presisi/akurasi tidak terverifikasi dihapus dari showcase; hero memakai spesifikasi algoritma riil. **RESOLVED**.
+- [x] **M9 - Persisted OTP limiter**: lihat C5. **RESOLVED**.
+- [x] **M10 - Hero clock, theme toggle, multi-page cert viewer, SEO/meta**: Hero menampilkan jam WIB live (UTC+7, pause saat tab hidden); toggle tema gelap/terang dengan persistensi localStorage + telemetri; viewer sertifikat multi-halaman; `index.html` memuat JSON-LD, OpenGraph, dan favicon suite. **RESOLVED**.
+- [x] **M11 - Revoke anon RPC**: `rpc_admin_*` SECURITY DEFINER menggantikan akses tabel langsung; anon RPC dibatasi hanya fungsi yang dibutuhkan. **RESOLVED**.
+- [x] **Dead code & iOS Liquid Glass**: 5 file terminal vanilla + 3 komponen UI tak terpakai + `tailwind.config.js` dihapus; dependensi tak terpakai dibersihkan; design token Liquid Glass diterapkan pada seluruh permukaan; Always-On Motion dipertahankan. **RESOLVED**.
+- [x] **Performa**: Dashboard di-lazy-load (`React.lazy`) dan code-split (index ~687 kB, chunk Dashboard ~257 kB). `npm run build` hijau (944ms). **RESOLVED**.
+
+## STILL OPEN (debt yang tersisa)
+
+- **Server-side enforcement dashboard data di semua path**: `/api/dashboard-data` menegakkan token untuk baca privat, namun rute Supabase anon INSERT pada `portfolio_telemetry`/`ai_memories` tetap terbuka untuk publik (by design untuk telemetri). Jika diperlukan, pindahkan seluruh tulis ke endpoint serverless agar anon INSERT bisa dicabut penuh. **STILL OPEN**.
+- **Prompt-injection mitigation pada `ai_memories`**: Konten memori yang disimpan publik (anon INSERT) belum disanitasi di sisi server sebelum dipakai sebagai konteks RAG; memori berpotensi menyuntikkan instruksi ke prompt LLM. Disarankan sanitasi/validasi pada path write. **STILL OPEN**.
+- **Chunk-size note**: Chunk index utama ~687 kB tetap memicu peringatan Vite (`>500 kB`). Opsi lanjutan: split lebih agresif (mis. deps vendor, icon subset). **STILL OPEN**.
+- **M3 path kontak publik**: `ContactSection` memakai `formsubmit.co` pihak ketiga; migrasi ke serverless `/api` (EmailJS/Resend) akan menghapus ketergantungan eksternal. **STILL OPEN**.
+- **WIB timezone literal**: `horizon-hero.jsx` memakai `Asia/Bangkok` (UTC+7, identik dengan WIB); dapat diganti literal `Asia/Jakarta` untuk kejelasan. **STILL OPEN (cosmetic)**.

@@ -62,7 +62,7 @@ export default function ExperienceTimeline() {
               >
                 
                 {/* Timeline Dot */}
-                <div className="absolute left-0 sm:left-1/2 w-8 h-8 rounded-full border border-white/20 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center transform -translate-x-1/2 sm:-translate-x-1/2 z-10 shadow-[0_0_15px_rgba(0,0,0,0.8)] group-hover:scale-125 transition-all duration-300">
+                <div className="absolute left-0 sm:left-1/2 w-8 h-8 rounded-full border border-white/20 liquid-glass-inset liquid-glass-pill flex items-center justify-center transform -translate-x-1/2 sm:-translate-x-1/2 z-10 shadow-[0_0_15px_rgba(0,0,0,0.8)] group-hover:scale-125 transition-all duration-300">
                   <div className={`w-3 h-3 rounded-full ${isEducation ? 'bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,1)]' : 'bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,1)]'}`} />
                 </div>
 
@@ -70,11 +70,11 @@ export default function ExperienceTimeline() {
                 <div className={`w-full sm:w-[45%] pl-8 sm:pl-0 ${isLeft ? 'sm:pr-12 sm:text-right' : 'sm:pl-12 sm:text-left'}`}>
                   <motion.div 
                     whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    className="rounded-3xl border border-white/10 bg-slate-950/70 p-6 sm:p-7 backdrop-blur-2xl shadow-xl hover:border-cyan-500/30 transition-all relative overflow-hidden text-left"
+                    className="liquid-glass liquid-glass-hover p-6 sm:p-7 relative overflow-hidden text-left"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <span className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 rounded-full uppercase">
-                        {item.date}
+                        {item.period}
                       </span>
                     </div>
 
@@ -82,7 +82,7 @@ export default function ExperienceTimeline() {
                       {isEducation ? <GraduationCap className="w-5 h-5 text-indigo-400 shrink-0" /> : <Briefcase className="w-5 h-5 text-cyan-400 shrink-0" />}
                       <span>{item.title}</span>
                     </h3>
-                    <p className="text-xs sm:text-sm font-medium text-cyan-400/90 mb-3">{item.subtitle}</p>
+                    <p className="text-xs sm:text-sm font-medium text-cyan-400/90 mb-3">{item.institution}</p>
                     <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
                       {item.description}
                     </p>
