@@ -26,6 +26,16 @@ export const TerminalProvider = ({ children }) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [historyList, setHistoryList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('terminal_history_list');
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return [];
+  });
+  
+  const [effort, setEffort] = useState('auto');
+
   // Sync to local storage
   useEffect(() => {
     if (messages.length > 0) {
@@ -33,12 +43,18 @@ export const TerminalProvider = ({ children }) => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    localStorage.setItem('terminal_history_list', JSON.stringify(historyList));
+  }, [historyList]);
+
   return (
     <TerminalContext.Provider value={{ 
       isTerminalPopupOpen, setIsTerminalPopupOpen,
       messages, setMessages,
       input, setInput,
       isLoading, setIsLoading,
+      historyList, setHistoryList,
+      effort, setEffort,
       getCurrentTime, initialMsg
     }}>
       {children}
