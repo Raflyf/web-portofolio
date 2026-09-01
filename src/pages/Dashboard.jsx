@@ -65,13 +65,14 @@ ChartJS.register(
 );
 
 const PIN_SALT = "rafly_telemetry_salt";
-const DEFAULT_PIN_HASH = "db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c"; 
 const SESSION_AUTH_KEY = "dash_admin_auth_session";
 const PIN_STORAGE_KEY = "admin_master_pin_hash";
 const SUPABASE_CONFIG_KEY = "rafly_supabase_config";
 
-const DEFAULT_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://rphyzcqwpkxtzllvymss.supabase.co";
-const DEFAULT_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU";
+// FAIL-CLOSED: no hardcoded anon key fallback in the client bundle.
+// The dashboard reads telemetry through the serverless API, not Supabase directly.
+const DEFAULT_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
+const DEFAULT_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
 async function sha256(message) {
   const msgBuffer = new TextEncoder().encode(message);
@@ -403,51 +404,47 @@ export default function Dashboard() {
     let loadedMemories = [];
 
     try {
-      // 1. Fetch Events from Supabase table portfolio_telemetry
-      const evRes = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc&limit=5000`, {
+      // SECURE: telemetry + memories are private (RLS) and read via the
+      // serverless endpoint /api/dashboard-data with the admin session token.
+      const sessionRaw = sessionStorage.getItem(SESSION_AUTH_KEY);
+      let sessionToken = '';
+      try {
+        const session = JSON.parse(sessionRaw || '{}');
+        if (session?.session_token) sessionToken = session.session_token;
+      } catch (_) {}
+
+      const dataRes = await fetch('/api/dashboard-data', {
+        method: 'GET',
         headers: {
-          'apikey': supabaseAnonKey,
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'X-Admin-Token': sessionToken
         }
       });
 
-      if (evRes.ok) {
-        loadedEvents = await evRes.json();
+      if (dataRes.ok) {
+        const payload = await dataRes.json();
+        if (Array.isArray(payload.events)) loadedEvents = payload.events;
+        if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
         setIsLiveConnected(true);
       } else {
         setIsLiveConnected(false);
       }
-      
+
       // Merge local storage events (so terminal chat events reflect instantly on dashboard)
       const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
       if (localEventsStr) {
-        try { 
+        try {
           const localEvents = JSON.parse(localEventsStr);
           if (Array.isArray(localEvents)) {
-            // Prepend local events to prioritize them or just combine them
             loadedEvents = [...localEvents, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
           }
         } catch (e) {}
       }
-
-      // 2. Fetch AI Memories from Supabase table ai_memories
-      const memRes = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=200`, {
-        headers: {
-          'apikey': supabaseAnonKey,
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (memRes.ok) {
-        loadedMemories = await memRes.json();
-      }
     } catch (err) {
-      console.warn("Supabase Fetch Warning:", err);
+      console.warn("Dashboard data fetch warning:", err);
       setIsLiveConnected(false);
-      
-      // Fallback
+
+      // Fallback: local storage only (offline / no session)
       if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
         const local = localStorage.getItem('portfolio_telemetry_events');
         if (local) {
@@ -491,10 +488,27 @@ export default function Dashboard() {
 
     try {
       const hashedInput = await sha256(pinInput + PIN_SALT);
-      const savedHash = localStorage.getItem(PIN_STORAGE_KEY) || DEFAULT_PIN_HASH;
+      const savedHash = localStorage.getItem(PIN_STORAGE_KEY);
 
-      if (hashedInput === savedHash || pinInput === "080402") {
-        sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, timestamp: Date.now() }));
+      // FAIL-CLOSED: only the stored (cloud-synced) hash may authenticate.
+      // No hardcoded default PIN backdoor.
+      if (savedHash && hashedInput === savedHash) {
+        // Obtain a real admin session token from the serverless API (used by
+        // /api/dashboard-data to authorize private telemetry reads).
+        let sessionToken = '';
+        try {
+          const verifyRes = await fetch('/api/admin-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'verify_pin', pin_hash: hashedInput })
+          });
+          if (verifyRes.ok) {
+            const verifyData = await verifyRes.json();
+            if (verifyData?.session_token) sessionToken = verifyData.session_token;
+          }
+        } catch (_) { /* offline fallback: token kosong, data lokal saja */ }
+
+        sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, session_token: sessionToken, timestamp: Date.now() }));
         setIsAuthenticated(true);
         setAuthError('');
         failedAttemptsRef.current = 0;
@@ -533,9 +547,10 @@ export default function Dashboard() {
 
     try {
       const currentHashed = await sha256(currentPinChange + PIN_SALT);
-      const activeHash = localStorage.getItem(PIN_STORAGE_KEY) || DEFAULT_PIN_HASH;
+      const activeHash = localStorage.getItem(PIN_STORAGE_KEY);
 
-      if (currentHashed !== activeHash && currentPinChange !== "080402") {
+      // FAIL-CLOSED: no hardcoded default-PIN bypass.
+      if (!activeHash || currentHashed !== activeHash) {
         setChangePinMessage('Master PIN saat ini salah.');
         return;
       }

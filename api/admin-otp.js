@@ -102,11 +102,12 @@ async function clearOtpAttempts(ip, supabaseUrl, headers) {
 }
 
 const SUPABASE_DEFAULT_URL = 'https://rphyzcqwpkxtzllvymss.supabase.co';
-const SUPABASE_DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
 
 function getSupabaseConfig() {
+  // FAIL-CLOSED: no hardcoded anon key fallback (a committed key is a leak).
+  // Keys must come from environment variables.
   const url = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
-  const anonKey = process.env.SUPABASE_ANON_KEY || SUPABASE_DEFAULT_KEY;
+  const anonKey = process.env.SUPABASE_ANON_KEY || '';
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   return { url, anonKey, serviceRoleKey };
 }
@@ -204,6 +205,29 @@ async function dispatchEmail(otpCode) {
   const maskedOtp = otpCode.substring(0, 2) + '****';
   console.warn(`[Admin OTP Security] OTP generated for ${TARGET_EMAIL.replace(/(.{3})(.*)(@.*)/, '$1***$3')}: ${maskedOtp} (Valid for 10 min — email provider not configured)`);
   return { dispatched: false, provider: 'cloud_log', note: 'Email provider credentials not configured. OTP partially logged.' };
+}
+
+async function storeSessionToken(supabaseUrl, headers, token) {
+  // Persist the admin session token so /api/dashboard-data can validate it.
+  // Must run with service_role (writes are not allowed for anon).
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        id: 'master_auth',
+        session_token: token,
+        session_expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString()
+      })
+    });
+    return res.ok;
+  } catch (_) {
+    return false;
+  }
 }
 
 async function callRpc(supabaseUrl, headers, funcName, params = {}) {
@@ -326,6 +350,10 @@ export default async function handler(req, res) {
         const d = rpcResult.data;
         if (d.success && d.verified) {
           const sessionToken = 'adm_' + crypto.randomBytes(32).toString('hex');
+          // Persist token (best-effort) so dashboard-data can validate sessions.
+          if (serviceRoleKey) {
+            await storeSessionToken(supabaseUrl, headers, sessionToken);
+          }
           return res.status(200).json({
             success: true,
             verified: true,
@@ -354,7 +382,9 @@ export default async function handler(req, res) {
       }
 
       // 2. Direct Table Fallback
-      let storedHash = DEFAULT_PIN_HASH;
+      // FAIL-CLOSED: the stored hash comes ONLY from the database. If the row
+      // is missing, login is refused — the seeded default is never accepted.
+      let storedHash = '';
       let currentAttempts = 0;
 
       try {
@@ -367,7 +397,7 @@ export default async function handler(req, res) {
           const data = await queryRes.json();
           if (Array.isArray(data) && data.length > 0) {
             const row = data[0];
-            storedHash = row.pin_hash || DEFAULT_PIN_HASH;
+            storedHash = row.pin_hash || '';
             currentAttempts = row.lockout_attempts || 0;
 
             // 1. Jika PIN cocok: Langsung loloskan dan reset lockout di database
@@ -389,6 +419,9 @@ export default async function handler(req, res) {
               } catch (_) {}
 
               const sessionToken = 'adm_' + crypto.randomBytes(32).toString('hex');
+              if (serviceRoleKey) {
+                await storeSessionToken(supabaseUrl, headers, sessionToken);
+              }
               return res.status(200).json({
                 success: true,
                 verified: true,

@@ -45,11 +45,18 @@ WITH CHECK (
     char_length(session_id) <= 64
 );
 
--- Allow reading telemetry data for the dashboard
-CREATE POLICY "Allow public anonymous read telemetry"
+-- Dashboard telemetry is PRIVATE: only the serverless function (service_role)
+-- and authenticated sessions may read it. Anonymous visitors may ONLY insert.
+CREATE POLICY "Allow service role read telemetry"
 ON public.portfolio_telemetry
 FOR SELECT
-TO anon
+TO service_role
+USING (true);
+
+CREATE POLICY "Allow authenticated read telemetry"
+ON public.portfolio_telemetry
+FOR SELECT
+TO authenticated
 USING (true);
 
 -- Prohibit UPDATE and DELETE completely for public client (Immutable Event Log)
@@ -89,10 +96,19 @@ WITH CHECK (
     (session_id IS NULL OR char_length(session_id) <= 64)
 );
 
-CREATE POLICY "Allow public anonymous read memory"
+-- RAG memory is PRIVATE: only service_role (serverless function) and
+-- authenticated sessions may read. Anonymous INSERT remains for the public
+-- terminal's memory-save path.
+CREATE POLICY "Allow service role read memory"
 ON public.ai_memories
 FOR SELECT
-TO anon
+TO service_role
+USING (true);
+
+CREATE POLICY "Allow authenticated read memory"
+ON public.ai_memories
+FOR SELECT
+TO authenticated
 USING (true);
 
 CREATE POLICY "Deny public update memory"
@@ -120,12 +136,16 @@ CREATE TABLE IF NOT EXISTS public.admin_auth_config (
     otp_expires_at TIMESTAMPTZ,
     otp_attempts INT DEFAULT 0,
     otp_blocked_until TIMESTAMPTZ,
+    session_token TEXT,
+    session_expires_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Pastikan kolom baru tersedia jika tabel sudah pernah dibuat sebelumnya
 ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS otp_attempts INT DEFAULT 0;
 ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS otp_blocked_until TIMESTAMPTZ;
+ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS session_token TEXT;
+ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS session_expires_at TIMESTAMPTZ;
 
 -- Seed initial master PIN hash (nilai awal; WAJIB dirotasi via dashboard setelah deploy)
 -- M10: DO NOTHING — re-running the schema must NEVER overwrite a PIN the owner already set.
@@ -340,15 +360,57 @@ BEGIN
 END;
 $$;
 
--- Berikan izin akses eksekusi RPC untuk role anon, authenticated, dan service_role
+-- ============================================================================
+-- RPC EXECUTION GRANTS (STRICT FAIL-CLOSED, per AGENTS.md §9b)
+-- ----------------------------------------------------------------------------
+-- SECURITY CRITICAL: the OTP / PIN-mutation RPCs (save_otp, update_pin,
+-- reset_lockout, verify_otp_and_reset_pin) MUST NOT be callable by anon or
+-- authenticated roles. An anon caller could otherwise plant their own OTP
+-- hash and reset the master PIN (privilege escalation). Only service_role
+-- (used by the /api/admin-otp serverless function) may execute them.
+--
+-- rpc_admin_verify_pin stays callable by anon/authenticated because the
+-- login endpoint uses it; it only compares a hash against the stored hash
+-- and returns success/lockout — it never reveals the stored hash.
+-- ============================================================================
 GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_pin(text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) TO anon, authenticated, service_role;
+
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) TO service_role;
+
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) TO service_role;
+
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) TO service_role;
+
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) TO service_role;
 
 -- ============================================================================
--- 8. PARTIAL INDEX: Optimize OMNIROUTE_TUNNEL lookup in ai_memories
+-- 8. PERSISTED RATE LIMITING (AGENTS.md §9b)
+-- Serverless rate limits must survive cold starts and multiple instances.
+-- /api/chat persists per-IP rolling counters here (service_role writes only).
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.rate_limits (
+    client_ip TEXT NOT NULL,
+    window_start TIMESTAMPTZ NOT NULL,
+    request_count INT NOT NULL DEFAULT 1,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    PRIMARY KEY (client_ip, window_start)
+);
+
+ALTER TABLE public.rate_limits ENABLE ROW LEVEL SECURITY;
+
+-- Only service_role may read/write the rate-limit counters.
+CREATE POLICY "Allow service role all rate_limits" ON public.rate_limits
+FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+CREATE INDEX IF NOT EXISTS idx_rate_limits_window
+ON public.rate_limits (window_start DESC);
+
+-- ============================================================================
+-- 9. PARTIAL INDEX: Optimize OMNIROUTE_TUNNEL lookup in ai_memories
 -- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_memories_omniroute
 ON public.ai_memories (created_at DESC)

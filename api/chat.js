@@ -864,7 +864,10 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   };
 }
 
-// In-memory rate limiting (35 requests per minute per IP)
+// Rate limiting (35 requests per minute per IP).
+// The in-memory cache is the fast path; the source of truth is persisted in a
+// `rate_limits` table via Supabase so the limit survives cold starts and
+// multiple serverless instances (AGENTS.md §9b).
 const rateLimitCache = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 35;
@@ -872,9 +875,57 @@ const MAX_REQUESTS_PER_WINDOW = 35;
 // Module-scoped so the 15-min key cool-down persists across invocations in the same warm instance
 const rateLimitedKeyCache = new Map();
 
-function isRateLimited(clientIp) {
+const RATE_LIMIT_TABLE = 'rate_limits';
+
+async function persistRateLimit(clientIp, count, windowStartIso) {
+  // Best-effort persisted counter; never blocks the request when Supabase is down.
+  const supabaseUrl = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!supabaseUrl || !serviceRoleKey) return;
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/${RATE_LIMIT_TABLE}`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        client_ip: clientIp,
+        window_start: windowStartIso,
+        request_count: count
+      })
+    });
+  } catch (_) { /* non-fatal */ }
+}
+
+async function isRateLimited(clientIp) {
   if (!clientIp || clientIp === 'unknown-client') return false;
   const now = Date.now();
+
+  // 1. Persisted source of truth first (survives cold starts / multi-instance).
+  const supabaseUrl = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (supabaseUrl && serviceRoleKey) {
+    try {
+      const windowStartIso = new Date(now - (now % RATE_LIMIT_WINDOW_MS)).toISOString();
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/${RATE_LIMIT_TABLE}?client_ip=eq.${encodeURIComponent(clientIp)}&window_start=eq.${encodeURIComponent(windowStartIso)}&select=request_count`,
+        { headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, Accept: 'application/json' } }
+      );
+      if (res.ok) {
+        const rows = await res.json();
+        const persistedCount = Array.isArray(rows) && rows.length > 0 ? (rows[0].request_count || 0) : 0;
+        if (persistedCount >= MAX_REQUESTS_PER_WINDOW) return true;
+        // Increment persisted counter (optimistic); fire-and-forget.
+        persistRateLimit(clientIp, persistedCount + 1, windowStartIso);
+        return false;
+      }
+    } catch (_) { /* fall through to memory */ }
+  }
+
+  // 2. In-memory fast path (fallback when Supabase is unreachable).
   const record = rateLimitCache.get(clientIp);
   if (!record || (now - record.startTime) > RATE_LIMIT_WINDOW_MS) {
     rateLimitCache.set(clientIp, { count: 1, startTime: now });
@@ -1017,7 +1068,7 @@ export default async function handler(req, res) {
 
     // Rate Limiting
     const clientIp = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1').split(',')[0].trim();
-    if (isRateLimited(clientIp)) {
+    if (await isRateLimited(clientIp)) {
       return res.status(429).json({
         error: 'Terlalu banyak permintaan. Silakan tunggu beberapa detik sebelum mengirim pesan berikutnya.',
         rateLimited: true
