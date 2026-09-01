@@ -28,12 +28,13 @@ import {
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
   Filler
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -41,6 +42,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -512,7 +514,7 @@ export default function Dashboard() {
 
             <div className="pt-4 border-t border-white/10 text-[11px] font-mono text-zinc-400 flex items-center justify-between">
               <span>Model Routing:</span>
-              <span className="text-emerald-400 font-semibold">OmniRoute Dedicated</span>
+              <span className="text-emerald-400 font-semibold">OpenCode Zen Multi-LLM</span>
             </div>
           </div>
         </div>
