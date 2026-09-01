@@ -285,14 +285,22 @@
 :root:not(.dark) .liquid-glass .text-zinc-200,
 :root:not(.dark) .liquid-glass-strong .text-zinc-200,
 :root:not(.dark) .liquid-glass-nav .text-zinc-200,
-:root:not(.dark) .liquid-glass-inset .text-zinc-200 {
+:root:not(.dark) .liquid-glass-inset .text-zinc-200,
+:root:not(.dark) .liquid-glass .text-slate-200,
+:root:not(.dark) .liquid-glass-strong .text-slate-200,
+:root:not(.dark) .liquid-glass-nav .text-slate-200,
+:root:not(.dark) .liquid-glass-inset .text-slate-200 {
   color: rgb(39 39 42);
 }
 
 :root:not(.dark) .liquid-glass .text-zinc-300,
 :root:not(.dark) .liquid-glass-strong .text-zinc-300,
 :root:not(.dark) .liquid-glass-nav .text-zinc-300,
-:root:not(.dark) .liquid-glass-inset .text-zinc-300 {
+:root:not(.dark) .liquid-glass-inset .text-zinc-300,
+:root:not(.dark) .liquid-glass .text-slate-300,
+:root:not(.dark) .liquid-glass-strong .text-slate-300,
+:root:not(.dark) .liquid-glass-nav .text-slate-300,
+:root:not(.dark) .liquid-glass-inset .text-slate-300 {
   color: rgb(39 39 42);
 }
 
@@ -662,11 +670,13 @@ html.lenis, html.lenis body {
 :root:not(.dark) .text-white,
 :root:not(.dark) .text-zinc-50,
 :root:not(.dark) .text-zinc-100,
-:root:not(.dark) .text-zinc-200 {
+:root:not(.dark) .text-zinc-200,
+:root:not(.dark) .text-slate-200 {
   color: rgb(24 24 27);
 }
 
-:root:not(.dark) .text-zinc-300 {
+:root:not(.dark) .text-zinc-300,
+:root:not(.dark) .text-slate-300 {
   color: rgb(39 39 42);
 }
 
@@ -737,9 +747,15 @@ html.lenis, html.lenis body {
 :root:not(.dark) .border-white\/5 { border-color: rgba(15, 23, 42, 0.08); }
 
 /* Gradient primary CTAs keep white labels in light mode (re-exclusion with
-   specificity high enough to beat the global .text-white ink remap above) */
+   specificity high enough to beat the global .text-white ink remap above).
+   Slate/zinc ink remaps are re-excluded the same way so gradient buttons keep
+   their intended light label color. */
 :root:not(.dark) a.bg-gradient-to-b.text-white,
-:root:not(.dark) button.bg-gradient-to-b.text-white {
+:root:not(.dark) button.bg-gradient-to-b.text-white,
+:root:not(.dark) a.bg-gradient-to-b.text-slate-200,
+:root:not(.dark) a.bg-gradient-to-b.text-slate-300,
+:root:not(.dark) button.bg-gradient-to-b.text-slate-200,
+:root:not(.dark) button.bg-gradient-to-b.text-slate-300 {
   color: #ffffff;
 }
 
@@ -772,6 +788,56 @@ html.lenis, html.lenis body {
 }
 
 :root:not(.dark) .markdown-body pre {
+  background: rgba(15, 23, 42, 0.07);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+/* FIX M5: markdown rendered inside liquid-glass surfaces (e.g. terminal AI
+   bubbles, inset panels) must also flip to dark ink in light mode — the global
+   .markdown-body remap can be out-ranked by the glass surface remaps. */
+:root:not(.dark) .liquid-glass-inset .markdown-body,
+:root:not(.dark) .liquid-glass .markdown-body,
+:root:not(.dark) .liquid-glass-strong .markdown-body {
+  color: rgb(39 39 42);
+}
+
+:root:not(.dark) .liquid-glass-inset .markdown-body h1,
+:root:not(.dark) .liquid-glass-inset .markdown-body h2,
+:root:not(.dark) .liquid-glass-inset .markdown-body h3,
+:root:not(.dark) .liquid-glass-inset .markdown-body h4,
+:root:not(.dark) .liquid-glass-inset .markdown-body strong,
+:root:not(.dark) .liquid-glass-inset .markdown-body th,
+:root:not(.dark) .liquid-glass .markdown-body h1,
+:root:not(.dark) .liquid-glass .markdown-body h2,
+:root:not(.dark) .liquid-glass .markdown-body h3,
+:root:not(.dark) .liquid-glass .markdown-body h4,
+:root:not(.dark) .liquid-glass .markdown-body strong,
+:root:not(.dark) .liquid-glass .markdown-body th,
+:root:not(.dark) .liquid-glass-strong .markdown-body h1,
+:root:not(.dark) .liquid-glass-strong .markdown-body h2,
+:root:not(.dark) .liquid-glass-strong .markdown-body h3,
+:root:not(.dark) .liquid-glass-strong .markdown-body h4,
+:root:not(.dark) .liquid-glass-strong .markdown-body strong,
+:root:not(.dark) .liquid-glass-strong .markdown-body th {
+  color: rgb(24 24 27);
+}
+
+:root:not(.dark) .liquid-glass-inset .markdown-body a,
+:root:not(.dark) .liquid-glass .markdown-body a,
+:root:not(.dark) .liquid-glass-strong .markdown-body a {
+  color: rgb(8 145 178);
+}
+
+:root:not(.dark) .liquid-glass-inset .markdown-body code,
+:root:not(.dark) .liquid-glass .markdown-body code,
+:root:not(.dark) .liquid-glass-strong .markdown-body code {
+  color: rgb(8 145 178);
+  background: rgba(8, 145, 178, 0.1);
+}
+
+:root:not(.dark) .liquid-glass-inset .markdown-body pre,
+:root:not(.dark) .liquid-glass .markdown-body pre,
+:root:not(.dark) .liquid-glass-strong .markdown-body pre {
   background: rgba(15, 23, 42, 0.07);
   border-color: rgba(15, 23, 42, 0.12);
 }

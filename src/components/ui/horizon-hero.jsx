@@ -5,6 +5,8 @@ import {
   Terminal,
   ChevronLeft,
   ChevronRight,
+  Play,
+  Pause,
   Star,
   Hexagon,
   Triangle,
@@ -223,6 +225,8 @@ export default function HorizonHero() {
             className="lg:col-span-5 space-y-6"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
+            onFocus={() => setIsPaused(true)}
+            onBlur={() => setIsPaused(false)}
           >
             {/* Dynamic Project Showcase Canvas */}
             <div className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7">
@@ -246,7 +250,24 @@ export default function HorizonHero() {
                     0{currentSlide + 1} / 0{HERO_SHOWCASE_PROJECTS.length}
                   </span>
                   <div className="flex gap-1">
-                    <button 
+                    {/* FIX M6: visible pause/play control for the auto-slide
+                        (WCAG 2.2.2 — auto-rotating content must be pausable by
+                        the user; this is user control, not a reduced-motion kill). */}
+                    <button
+                      type="button"
+                      onClick={() => setIsPaused(prev => !prev)}
+                      className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
+                        isPaused
+                          ? "bg-cyan-500/25 border-cyan-500/40 text-cyan-300"
+                          : "bg-white/5 border-white/10 text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40"
+                      }`}
+                      title={isPaused ? "Lanjutkan putar otomatis" : "Jeda putar otomatis"}
+                      aria-label={isPaused ? "Lanjutkan putar otomatis" : "Jeda putar otomatis"}
+                      aria-pressed={isPaused}
+                    >
+                      {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                    </button>
+                    <button
                       onClick={handlePrev}
                       className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
                       title="Proyek Sebelumnya"
@@ -254,7 +275,7 @@ export default function HorizonHero() {
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <button 
+                    <button
                       onClick={handleNext}
                       className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
                       title="Proyek Berikutnya"

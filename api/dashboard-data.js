@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   try {
     // 1. Validate session token against admin_auth_config (service_role read).
     const authRes = await fetch(
-      `${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=session_token,lockout_attempts`,
+      `${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=session_token,session_expires_at,lockout_attempts`,
       { headers: serviceHeaders }
     );
     if (!authRes.ok) {
@@ -53,7 +53,12 @@ export default async function handler(req, res) {
     const authRows = await authRes.json();
     const row = Array.isArray(authRows) ? authRows[0] : null;
     if (!row || !row.session_token || row.session_token !== token) {
-      return res.status(401).json({ success: false, message: 'Token sesi tidak valid atau kedaluwarsa.' });
+      return res.status(401).json({ success: false, message: 'Token sesi tidak valid.' });
+    }
+    // FAIL-CLOSED expiry: a session without a valid future expiry is rejected.
+    const expiresAt = row.session_expires_at ? new Date(row.session_expires_at).getTime() : 0;
+    if (!expiresAt || expiresAt < Date.now()) {
+      return res.status(401).json({ success: false, message: 'Sesi admin telah kedaluwarsa. Silakan login ulang.' });
     }
 
     // 2. Fetch telemetry (up to 5000 rows) with service role.

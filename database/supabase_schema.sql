@@ -87,14 +87,20 @@ CREATE INDEX IF NOT EXISTS idx_memories_created_at ON public.ai_memories (create
 
 ALTER TABLE public.ai_memories ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public anonymous insert memory"
+-- RAG memory writes are trusted only from the serverless function (service_role)
+-- or authenticated sessions. Anonymous INSERT is revoked to prevent prompt/RAG
+-- poisoning: anyone could otherwise plant false "facts" that the AI repeats.
+CREATE POLICY "Allow service role insert memory"
 ON public.ai_memories
 FOR INSERT
-TO anon
-WITH CHECK (
-    char_length(fact_text) <= 1000 AND
-    (session_id IS NULL OR char_length(session_id) <= 64)
-);
+TO service_role
+WITH CHECK (char_length(fact_text) <= 1000);
+
+CREATE POLICY "Allow authenticated insert memory"
+ON public.ai_memories
+FOR INSERT
+TO authenticated
+WITH CHECK (char_length(fact_text) <= 1000);
 
 -- RAG memory is PRIVATE: only service_role (serverless function) and
 -- authenticated sessions may read. Anonymous INSERT remains for the public

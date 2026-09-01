@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { telemetry } from '../lib/telemetry';
-import { 
-  Lock, 
-  ArrowRight, 
-  Activity, 
-  Users, 
-  MousePointerClick, 
-  MessageSquare, 
-  Radar, 
-  Shield, 
-  Database, 
-  RefreshCw, 
-  Search, 
-  Filter, 
-  LogOut, 
-  ChevronLeft, 
+import { getSupabaseConfig } from '../lib/supabase';
+import {
+  Lock,
+  ArrowRight,
+  Activity,
+  Users,
+  MousePointerClick,
+  MessageSquare,
+  Radar,
+  Shield,
+  Database,
+  RefreshCw,
+  Search,
+  Filter,
+  LogOut,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
   Cpu,
@@ -25,7 +26,6 @@ import {
   AlertCircle,
   TrendingUp,
   Download,
-  Settings,
   Zap,
   Globe,
   Award,
@@ -65,15 +65,20 @@ ChartJS.register(
   Filler
 );
 
+// PIN_SALT MUST match the server salt (api/admin-otp.js PIN_SALT). The client
+// hashes the input locally before sending pin_hash to /api/admin-otp, which
+// compares SHA-256 hashes directly. Moving to server-side PBKDF is tracked
+// separately — do not change this constant without updating the server.
 const PIN_SALT = "rafly_telemetry_salt";
 const SESSION_AUTH_KEY = "dash_admin_auth_session";
 const PIN_STORAGE_KEY = "admin_master_pin_hash";
-const SUPABASE_CONFIG_KEY = "rafly_supabase_config";
 
-// FAIL-CLOSED: no hardcoded anon key fallback in the client bundle.
-// The dashboard reads telemetry through the serverless API, not Supabase directly.
-const DEFAULT_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
-const DEFAULT_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+// Shared Supabase config (single source of truth, see src/lib/supabase.js).
+// FAIL-CLOSED: no hardcoded key fallback. The dashboard reads telemetry via
+// /api/dashboard-data; direct Supabase writes (ping test) only use env config.
+const supabaseConfig = getSupabaseConfig();
+const DEFAULT_SUPABASE_URL = supabaseConfig?.url || "";
+const DEFAULT_SUPABASE_ANON_KEY = supabaseConfig?.anonKey || "";
 
 async function sha256(message) {
   const msgBuffer = new TextEncoder().encode(message);
@@ -240,6 +245,8 @@ const CustomSelect = ({ value, onChange, options }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         className="flex items-center justify-between w-36 sm:w-44 px-3 py-1.5 liquid-glass-inset text-xs text-zinc-300 hover:border-cyan-400/50 focus:outline-none focus:border-cyan-400 transition-colors cursor-pointer"
       >
         <span className="truncate">{selectedOption?.label}</span>
@@ -247,11 +254,16 @@ const CustomSelect = ({ value, onChange, options }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-[60] mt-1 w-full sm:w-44 origin-top-right liquid-glass-strong focus:outline-none overflow-hidden glass-spring-in">
+        <div
+          role="listbox"
+          className="absolute right-0 z-[60] mt-1 w-full sm:w-44 origin-top-right liquid-glass-strong focus:outline-none overflow-hidden glass-spring-in"
+        >
           <div className="py-1 max-h-60 overflow-y-auto no-scrollbar">
             {options.map((option) => (
               <button
                 key={option.value}
+                role="option"
+                aria-selected={value === option.value}
                 onClick={() => {
                   onChange(option.value);
                   setIsOpen(false);
@@ -284,7 +296,9 @@ const alwaysShowDataLabelPlugin = {
       meta.data.forEach((bar, index) => {
         const data = dataset.data[index];
         if (data > 0) {
-          ctx.fillStyle = dataset.backgroundColor[index] || '#94a3b8';
+          // FIX M4: backgroundColor may be a single string or missing at index
+          const color = dataset.backgroundColor?.[index] || '#94a3b8';
+          ctx.fillStyle = color;
           ctx.fillText(data, bar.x, bar.y - 4);
         }
       });
@@ -303,7 +317,6 @@ export default function Dashboard() {
   // Modals State
   const [isForgotPinOpen, setIsForgotPinOpen] = useState(false);
   const [isChangePinOpen, setIsChangePinOpen] = useState(false);
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   // Forgot PIN / OTP State
   const [otpStep, setOtpStep] = useState(1);
@@ -318,22 +331,11 @@ export default function Dashboard() {
   const [confirmPinChange, setConfirmPinChange] = useState('');
   const [changePinMessage, setChangePinMessage] = useState('');
 
-  // Supabase Config State
-  const [supabaseUrl, setSupabaseUrl] = useState(() => {
-    const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
-    if (saved) {
-      try { return JSON.parse(saved).url || DEFAULT_SUPABASE_URL; } catch (e) {}
-    }
-    return DEFAULT_SUPABASE_URL;
-  });
-  const [supabaseAnonKey, setSupabaseAnonKey] = useState(() => {
-    const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
-    if (saved) {
-      try { return JSON.parse(saved).anonKey || DEFAULT_SUPABASE_ANON_KEY; } catch (e) {}
-    }
-    return DEFAULT_SUPABASE_ANON_KEY;
-  });
-  const [configMessage, setConfigMessage] = useState('');
+  // Supabase config comes from the shared src/lib/supabase.js source of truth.
+  // The obsolete "Supabase Config" modal (which persisted url+anonKey to
+  // localStorage) was removed — the data path goes through /api/dashboard-data.
+  const supabaseUrl = DEFAULT_SUPABASE_URL;
+  const supabaseAnonKey = DEFAULT_SUPABASE_ANON_KEY;
 
   // Telemetry & Data State
   const [events, setEvents] = useState([]);
@@ -391,78 +393,108 @@ export default function Dashboard() {
   }, [lockoutSeconds]);
 
   // 2. Fetch Telemetry Loop
+  // FIX M3: all fetch triggers (interval + telemetry_update event) go through a
+  // single throttled wrapper with an in-flight guard, so overlapping async
+  // requests and out-of-order state overwrites are prevented.
+  const isFetchingRef = useRef(false);
+  // FIX M3: pending timers + in-flight fetch are tracked in refs so they can be
+  // cleaned up on unmount (no leaked setTimeout / dangling fetch callbacks).
+  const timeoutsRef = useRef([]);
+  const abortControllerRef = useRef(null);
+  const fetchTelemetryData = useMemo(() => {
+    const run = async () => {
+      if (isFetchingRef.current) return; // skip if already in flight
+      isFetchingRef.current = true;
+      setIsLoading(true);
+      let loadedEvents = [];
+      let loadedMemories = [];
+
+      // FIX M3: cancel any previous in-flight request before starting a new one.
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      abortControllerRef.current = new AbortController();
+
+      try {
+        // SECURE: telemetry + memories are private (RLS) and read via the
+        // serverless endpoint /api/dashboard-data with the admin session token.
+        const sessionRaw = sessionStorage.getItem(SESSION_AUTH_KEY);
+        let sessionToken = '';
+        try {
+          const session = JSON.parse(sessionRaw || '{}');
+          if (session?.session_token) sessionToken = session.session_token;
+        } catch (_) {}
+
+        const dataRes = await fetch('/api/dashboard-data', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'X-Admin-Token': sessionToken
+          },
+          signal: abortControllerRef.current.signal
+        });
+
+        if (dataRes.ok) {
+          const payload = await dataRes.json();
+          if (Array.isArray(payload.events)) loadedEvents = payload.events;
+          if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
+          setIsLiveConnected(true);
+        } else {
+          setIsLiveConnected(false);
+        }
+
+        // Merge local storage events (so terminal chat events reflect instantly on dashboard)
+        const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
+        if (localEventsStr) {
+          try {
+            const localEvents = JSON.parse(localEventsStr);
+            if (Array.isArray(localEvents)) {
+              loadedEvents = [...localEvents, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
+            }
+          } catch (e) {}
+        }
+      } catch (err) {
+        // FIX M3: aborted requests (unmount / superseded) are expected; skip noise.
+        if (err && err.name === 'AbortError') return;
+        console.warn("Dashboard data fetch warning:", err);
+        setIsLiveConnected(false);
+
+        // Fallback: local storage only (offline / no session)
+        if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
+          const local = localStorage.getItem('portfolio_telemetry_events');
+          if (local) {
+            try { loadedEvents = JSON.parse(local); } catch (e) {}
+          }
+        }
+      } finally {
+        if (Array.isArray(loadedEvents)) setEvents(loadedEvents);
+        if (Array.isArray(loadedMemories)) setMemories(loadedMemories);
+        setIsLoading(false);
+        isFetchingRef.current = false;
+      }
+    };
+    return run;
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchTelemetryData();
       const interval = setInterval(fetchTelemetryData, 15000);
       window.addEventListener('telemetry_update', fetchTelemetryData);
-      
+
       return () => {
         clearInterval(interval);
         window.removeEventListener('telemetry_update', fetchTelemetryData);
       };
     }
-  }, [isAuthenticated, supabaseUrl, supabaseAnonKey]);
+  }, [isAuthenticated, fetchTelemetryData]);
 
-  const fetchTelemetryData = async () => {
-    setIsLoading(true);
-    let loadedEvents = [];
-    let loadedMemories = [];
-
-    try {
-      // SECURE: telemetry + memories are private (RLS) and read via the
-      // serverless endpoint /api/dashboard-data with the admin session token.
-      const sessionRaw = sessionStorage.getItem(SESSION_AUTH_KEY);
-      let sessionToken = '';
-      try {
-        const session = JSON.parse(sessionRaw || '{}');
-        if (session?.session_token) sessionToken = session.session_token;
-      } catch (_) {}
-
-      const dataRes = await fetch('/api/dashboard-data', {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'X-Admin-Token': sessionToken
-        }
-      });
-
-      if (dataRes.ok) {
-        const payload = await dataRes.json();
-        if (Array.isArray(payload.events)) loadedEvents = payload.events;
-        if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
-        setIsLiveConnected(true);
-      } else {
-        setIsLiveConnected(false);
-      }
-
-      // Merge local storage events (so terminal chat events reflect instantly on dashboard)
-      const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
-      if (localEventsStr) {
-        try {
-          const localEvents = JSON.parse(localEventsStr);
-          if (Array.isArray(localEvents)) {
-            loadedEvents = [...localEvents, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
-          }
-        } catch (e) {}
-      }
-    } catch (err) {
-      console.warn("Dashboard data fetch warning:", err);
-      setIsLiveConnected(false);
-
-      // Fallback: local storage only (offline / no session)
-      if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
-        const local = localStorage.getItem('portfolio_telemetry_events');
-        if (local) {
-          try { loadedEvents = JSON.parse(local); } catch (e) {}
-        }
-      }
-    } finally {
-      if (Array.isArray(loadedEvents)) setEvents(loadedEvents);
-      if (Array.isArray(loadedMemories)) setMemories(loadedMemories);
-      setIsLoading(false);
-    }
-  };
+  // FIX M3: on unmount, clear all pending timers and abort the in-flight fetch.
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach((t) => clearTimeout(t));
+      timeoutsRef.current = [];
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+    };
+  }, []);
 
   // Helper Filter by Range
   const filterByRange = (items, range) => {
@@ -564,30 +596,19 @@ export default function Dashboard() {
       const newHashed = await sha256(newPinChange + PIN_SALT);
       localStorage.setItem(PIN_STORAGE_KEY, newHashed);
       setChangePinMessage('Master PIN berhasil diperbarui secara lokal & tersimpan!');
-      setTimeout(() => {
+      timeoutsRef.current.push(setTimeout(() => {
         setIsChangePinOpen(false);
         setCurrentPinChange('');
         setNewPinChange('');
         setConfirmPinChange('');
         setChangePinMessage('');
-      }, 1500);
+      }, 1500));
     } catch (err) {
       setChangePinMessage('Gagal mengubah PIN.');
     }
   };
 
-  // 5. Supabase Config Save
-  const handleSaveConfig = () => {
-    const cleanUrl = supabaseUrl.trim().replace(/\/+$/, '');
-    const cleanKey = supabaseAnonKey.trim();
-    localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify({ url: cleanUrl, anonKey: cleanKey }));
-    setConfigMessage('Konfigurasi Supabase berhasil disimpan! Menyegarkan data...');
-    setTimeout(() => {
-      setIsConfigModalOpen(false);
-      setConfigMessage('');
-      fetchTelemetryData();
-    }, 1200);
-  };
+  // 5. (removed) Obsolete Supabase Config modal — data path is /api/dashboard-data.
 
   // 6. OTP Reset Handlers
   const handleRequestOtp = async () => {
@@ -633,13 +654,13 @@ export default function Dashboard() {
         const hashed = await sha256(newPinInput + PIN_SALT);
         localStorage.setItem(PIN_STORAGE_KEY, hashed);
         setOtpMessage('Master PIN berhasil direset! Silakan masuk kembali.');
-        setTimeout(() => {
+        timeoutsRef.current.push(setTimeout(() => {
           setIsForgotPinOpen(false);
           setOtpStep(1);
           setOtpInput('');
           setNewPinInput('');
           setOtpMessage('');
-        }, 2000);
+        }, 2000));
       } else {
         setOtpMessage(data.error || 'Kode OTP salah atau kedaluwarsa.');
       }
@@ -685,7 +706,7 @@ export default function Dashboard() {
     } catch (e) {
       setPingStatus('Ping Gagal: Gangguan Jaringan.');
     }
-    setTimeout(() => setPingStatus(''), 4000);
+    timeoutsRef.current.push(setTimeout(() => setPingStatus(''), 4000));
   };
 
   // 8. Export CSV & JSON
@@ -806,7 +827,10 @@ export default function Dashboard() {
         }
       ]
     };
-  }, [chartFilteredEvents, totalViews, uniqueVisitors]);
+    // FIX M4: keyed only on the actual data source (chartFilteredEvents). The
+    // previous deps (totalViews/uniqueVisitors) are not referenced inside and
+    // caused the chart to rebuild on every unrelated KPI re-render.
+  }, [chartFilteredEvents, chartRange]);
 
   // Chart 2: Link Click & Action Distribution (9 Categories)
   const barChartData = useMemo(() => {
@@ -874,7 +898,9 @@ export default function Dashboard() {
     };
   }, [gridFilteredEvents]);
 
-  const deviceDoughnutData = {
+  // FIX M4: stabilize the doughnut data object with useMemo keyed on the actual
+  // values so the chart does not re-init on every unrelated render.
+  const deviceDoughnutData = useMemo(() => ({
     labels: ['Desktop', 'Mobile', 'Tablet'],
     datasets: [
       {
@@ -883,7 +909,7 @@ export default function Dashboard() {
         borderWidth: 0
       }
     ]
-  };
+  }), [deviceStats]);
 
   // 2. Top Projects Ranked
   const topProjects = useMemo(() => {
@@ -1069,10 +1095,12 @@ export default function Dashboard() {
     return filteredActivityEvents.slice(start, start + tablePageSize);
   }, [filteredActivityEvents, tableCurrentPage, tablePageSize]);
 
+  // FIX M4: animation disabled to avoid blink/re-init on every 15s poll update.
   // Standard Chart Options
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: false,
     plugins: {
       legend: {
         position: 'top',
@@ -1088,6 +1116,7 @@ export default function Dashboard() {
   const barChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: false,
     plugins: {
       legend: { display: false }
     },
@@ -1129,11 +1158,12 @@ export default function Dashboard() {
           {!isForgotPinOpen ? (
             <form onSubmit={handleLogin} className="space-y-5 relative z-10">
               <div>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
                   placeholder="••••••"
+                  aria-label="Master PIN"
                   maxLength={8}
                   disabled={lockoutSeconds > 0}
                   autoFocus
@@ -1196,6 +1226,7 @@ export default function Dashboard() {
                     value={otpInput}
                     onChange={(e) => setOtpInput(e.target.value)}
                     placeholder="Kode OTP 6-Digit"
+                    aria-label="Kode OTP 6-Digit"
                     maxLength={6}
                     className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
@@ -1204,6 +1235,7 @@ export default function Dashboard() {
                     value={newPinInput}
                     onChange={(e) => setNewPinInput(e.target.value)}
                     placeholder="Master PIN Baru (6+ Angka)"
+                    aria-label="Master PIN Baru (minimal 6 karakter)"
                     maxLength={8}
                     className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
@@ -1285,14 +1317,6 @@ export default function Dashboard() {
             >
               <KeyRound className="w-3.5 h-3.5 text-purple-400" />
               <span>Ubah PIN</span>
-            </button>
-
-            <button
-              onClick={() => setIsConfigModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Settings className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Konfigurasi</span>
             </button>
 
             <button
@@ -1993,6 +2017,7 @@ export default function Dashboard() {
                   value={currentPinChange}
                   onChange={(e) => setCurrentPinChange(e.target.value)}
                   placeholder="PIN Saat Ini"
+                  aria-label="Master PIN saat ini"
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
                 />
@@ -2005,6 +2030,7 @@ export default function Dashboard() {
                   value={newPinChange}
                   onChange={(e) => setNewPinChange(e.target.value)}
                   placeholder="PIN Baru"
+                  aria-label="Master PIN baru (minimal 6 digit)"
                   maxLength={8}
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
@@ -2018,6 +2044,7 @@ export default function Dashboard() {
                   value={confirmPinChange}
                   onChange={(e) => setConfirmPinChange(e.target.value)}
                   placeholder="Ulangi PIN Baru"
+                  aria-label="Konfirmasi master PIN baru"
                   maxLength={8}
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
@@ -2046,75 +2073,6 @@ export default function Dashboard() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: KONFIGURASI SUPABASE CLOUD */}
-      {/* ========================================================================= */}
-      {isConfigModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in">
-          <div className="w-full max-w-lg liquid-glass-strong p-6 space-y-5 relative">
-            <div className="flex justify-between items-center pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-base font-bold text-white">Konfigurasi Supabase Cloud</h3>
-              </div>
-              <button
-                onClick={() => setIsConfigModalOpen(false)}
-                className="text-zinc-400 hover:text-white text-sm cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Supabase Project URL</label>
-                <input
-                  type="text"
-                  value={supabaseUrl}
-                  onChange={(e) => setSupabaseUrl(e.target.value)}
-                  placeholder="https://xxx.supabase.co"
-                  className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-zinc-400 block mb-1">Supabase Anon Public API Key</label>
-                <textarea
-                  value={supabaseAnonKey}
-                  onChange={(e) => setSupabaseAnonKey(e.target.value)}
-                  rows={3}
-                  placeholder="eyJhbGciOiJIUz..."
-                  className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono resize-none"
-                />
-              </div>
-
-              {configMessage && (
-                <div className="text-xs text-center text-emerald-300 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20">
-                  {configMessage}
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsConfigModalOpen(false)}
-                  className="w-1/2 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 cursor-pointer"
-                >
-                  Tutup
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveConfig}
-                  className="w-1/2 py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 text-xs font-semibold cursor-pointer"
-                >
-                  Simpan & Hubungkan
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

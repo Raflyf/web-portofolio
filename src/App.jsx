@@ -190,6 +190,7 @@ function FloatingNavbar() {
 
 export default function App() {
   const { setIsTerminalPopupOpen } = useTerminal();
+  const location = useLocation();
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
     const lenis = new Lenis({
@@ -201,13 +202,17 @@ export default function App() {
       touchMultiplier: 1.8,
     });
 
+    // RAF loop with a stored id so it is actually canceled on unmount
+    // (lenis.destroy() alone does not stop our own loop).
+    let rafId = 0;
     function raf(time) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     return () => {
+      cancelAnimationFrame(rafId);
       lenis.destroy();
     };
   }, []);

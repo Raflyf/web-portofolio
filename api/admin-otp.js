@@ -20,6 +20,13 @@ const otpAttemptCache = new Map();
 const OTP_MAX_ATTEMPTS = 5;
 const OTP_ATTEMPT_WINDOW_MS = 10 * 60 * 1000;
 
+// OTP send throttle (FIX M1): per-IP limiter on send_otp to prevent email spam.
+// In-memory fast path, mirroring the otpAttemptCache pattern above.
+const otpSendCache = new Map();
+const OTP_SEND_MAX = 3;
+const OTP_SEND_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const OTP_SEND_MIN_INTERVAL_MS = 60 * 1000; // 60 seconds between sends for the same IP
+
 async function isOtpBlocked(ip, supabaseUrl, headers) {
   const now = Date.now();
   // Fast path: in-memory cache
@@ -99,6 +106,55 @@ async function clearOtpAttempts(ip, supabaseUrl, headers) {
       })
     });
   } catch (_) {}
+}
+
+// FIX M1: per-IP send throttle for send_otp. Returns null if allowed, otherwise
+// an object { status, retryAfterSeconds, message } describing the block.
+function checkOtpSendThrottle(ip) {
+  const now = Date.now();
+  const rec = otpSendCache.get(ip);
+  if (rec && now - rec.start > OTP_SEND_WINDOW_MS) {
+    otpSendCache.delete(ip);
+  }
+  const current = otpSendCache.get(ip);
+  if (current) {
+    // Enforce minimum 60s interval between sends for the same IP
+    const elapsed = now - current.lastSendAt;
+    if (elapsed < OTP_SEND_MIN_INTERVAL_MS) {
+      const retryAfterSeconds = Math.ceil((OTP_SEND_MIN_INTERVAL_MS - elapsed) / 1000);
+      return {
+        status: 429,
+        retryAfterSeconds,
+        message: `Terlalu banyak permintaan. Coba lagi dalam ${retryAfterSeconds} detik.`
+      };
+    }
+    if (current.count >= OTP_SEND_MAX) {
+      const retryAfterSeconds = Math.ceil((current.start + OTP_SEND_WINDOW_MS - now) / 1000);
+      return {
+        status: 429,
+        retryAfterSeconds: Math.max(1, retryAfterSeconds),
+        message: `Batas pengiriman OTP terlampaui (maks 3 per 10 menit). Coba lagi dalam ${Math.max(1, retryAfterSeconds)} detik.`
+      };
+    }
+  }
+  return null;
+}
+
+function recordOtpSend(ip) {
+  const now = Date.now();
+  const rec = otpSendCache.get(ip);
+  if (!rec || now - rec.start > OTP_SEND_WINDOW_MS) {
+    otpSendCache.set(ip, { count: 1, start: now, lastSendAt: now });
+  } else {
+    rec.count += 1;
+    rec.lastSendAt = now;
+  }
+  // Bound the map size so it cannot grow unbounded
+  if (otpSendCache.size > 2000) {
+    for (const [k, v] of otpSendCache.entries()) {
+      if (now - v.start > OTP_SEND_WINDOW_MS) otpSendCache.delete(k);
+    }
+  }
 }
 
 const SUPABASE_DEFAULT_URL = 'https://rphyzcqwpkxtzllvymss.supabase.co';
@@ -511,6 +567,16 @@ export default async function handler(req, res) {
     // 2. SEND OTP CODE TO EMAIL
     // =========================================================================
     if (action === 'send_otp') {
+      // FIX M1: per-IP send throttle before generating/dispatching any OTP
+      const throttle = checkOtpSendThrottle(clientIp);
+      if (throttle) {
+        return res.status(throttle.status).json({
+          success: false,
+          message: throttle.message,
+          retry_after_seconds: throttle.retryAfterSeconds
+        });
+      }
+
       const otpCode = crypto.randomInt(100000, 1000000).toString();
       const otpHash = hashValue(otpCode);
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
@@ -550,6 +616,10 @@ export default async function handler(req, res) {
           message: 'Konfigurasi database belum lengkap. Jalankan skrip RPC di Supabase SQL Editor atau setel variabel lingkungan SUPABASE_SERVICE_ROLE_KEY.'
         });
       }
+
+      // FIX M1: record the send (only after the OTP was persisted) so the
+      // throttle window reflects actual dispatched attempts.
+      recordOtpSend(clientIp);
 
       // Dispatch Email
       const emailResult = await dispatchEmail(otpCode);
