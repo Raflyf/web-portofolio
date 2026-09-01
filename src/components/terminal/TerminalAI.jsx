@@ -153,27 +153,37 @@ export default function TerminalAI({ onClose }) {
     }
 
     if (cmdNormalized === 'model' || cmdNormalized.startsWith('model ')) {
-      const chosen = cmdNormalized.split(' ')[1] || 'auto';
-      localStorage.setItem('ai_selected_model', chosen);
+      const chosen = cmdNormalized.split(' ')[1] || '';
       
-      try {
-        const events = JSON.parse(localStorage.getItem('portfolio_telemetry_events') || '[]');
-        events.push({
-          event_type: 'model_select',
-          event_target: chosen,
-          event_label: `Pilihan Model: ${chosen}`,
-          created_at: new Date().toISOString()
-        });
-        localStorage.setItem('portfolio_telemetry_events', JSON.stringify(events));
-        window.dispatchEvent(new Event('telemetry_update'));
-      } catch (e) {}
+      const validModels = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision'];
+      
+      // Jika kata setelah "model" adalah nama model yang valid, ubah model.
+      // Jika kosong (hanya mengetik "model" saja), setel ke "auto".
+      if (chosen === '' || validModels.includes(chosen)) {
+        const finalModel = chosen === '' ? 'auto' : chosen;
+        localStorage.setItem('ai_selected_model', finalModel);
+        
+        try {
+          const events = JSON.parse(localStorage.getItem('portfolio_telemetry_events') || '[]');
+          events.push({
+            event_type: 'model_select',
+            event_target: finalModel,
+            event_label: `Pilihan Model: ${finalModel}`,
+            created_at: new Date().toISOString()
+          });
+          localStorage.setItem('portfolio_telemetry_events', JSON.stringify(events));
+          window.dispatchEvent(new Event('telemetry_update'));
+        } catch (e) {}
 
-      setMessages(prev => [
-        ...prev, 
-        { role: 'user', content: userQuery, time: getCurrentTime() },
-        { role: 'system', content: `[AI Model Manager] Model aktif berhasil diubah ke: ${chosen}`, time: getCurrentTime() }
-      ]);
-      return;
+        setMessages(prev => [
+          ...prev, 
+          { role: 'user', content: userQuery, time: getCurrentTime() },
+          { role: 'system', content: `[AI Model Manager] Model aktif berhasil diubah ke: ${finalModel.toUpperCase()}`, time: getCurrentTime() }
+        ]);
+        return;
+      }
+      
+      // Jika kata setelah "model" bukan nama model (contoh: "model apa kamu"), biarkan proses chat berlanjut.
     }
 
     setMessages(prev => [...prev, { role: 'user', content: userQuery, time: getCurrentTime() }]);
@@ -378,7 +388,7 @@ export default function TerminalAI({ onClose }) {
       </div>
 
       {/* Terminal Body (Messages) */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth bg-black/20">
+      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-6 scroll-smooth bg-black/20">
         {messages.map((msg, idx) => (
           <div key={idx} className={cn("flex flex-col w-full mb-2", msg.role === 'user' ? "items-end" : "items-start")}>
             
@@ -526,7 +536,7 @@ export default function TerminalAI({ onClose }) {
               />
               
               {showSlashMenu && availableCommands.length > 0 && (
-                <div className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto bg-slate-800 border border-indigo-500/30 rounded-xl shadow-2xl z-50 py-1">
+                <div data-lenis-prevent="true" className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto overscroll-contain no-scrollbar bg-slate-800 border border-indigo-500/30 rounded-xl shadow-2xl z-50 py-1">
                   {availableCommands.map((cmd, idx) => (
                     <div 
                       key={cmd} 
