@@ -9,6 +9,7 @@ const SECTIONS = [
   { id: 'certificates', label: 'Sertifikat' },
   { id: 'timeline', label: 'Riwayat' },
   { id: 'lab', label: 'AI Lab' },
+  { id: 'contact', label: 'Kontak' },
 ];
 
 export default function ScrollStoryline() {
