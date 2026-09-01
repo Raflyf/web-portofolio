@@ -27,6 +27,11 @@ const cardVariants = {
   exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
 };
 
+const tabVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } }
+};
+
 export default function ProjectsGrid() {
   const [filter, setFilter] = useState('all');
 
@@ -61,10 +66,10 @@ export default function ProjectsGrid() {
 
       {/* Filter Tabs */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.8 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.8 }}
         className="flex flex-wrap justify-center gap-2 mb-12"
       >
         {[
@@ -73,7 +78,8 @@ export default function ProjectsGrid() {
           { id: 'tools', label: 'Vision & Tools' },
           { id: 'web', label: 'Web Systems' }
         ].map(tab => (
-          <button
+          <motion.button
+            variants={tabVariants}
             key={tab.id}
             onClick={() => setFilter(tab.id)}
             className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all backdrop-blur-xl border cursor-pointer ${
@@ -83,7 +89,7 @@ export default function ProjectsGrid() {
             }`}
           >
             {tab.label}
-          </button>
+          </motion.button>
         ))}
       </motion.div>
 
