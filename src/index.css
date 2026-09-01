@@ -128,3 +128,25 @@
   box-shadow: 0 10px 40px -10px rgba(6, 182, 212, 0.15);
 }
 
+/* Lenis Smooth Scroll Inertia Physics Engine */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+

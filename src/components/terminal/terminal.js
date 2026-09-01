@@ -861,11 +861,11 @@ export function initTerminal() {
     models: () => [
       "[KATALOG MODEL AI MODERN (DESEMBER 2025 - 2026)]",
       "----------------------------------------------------------------",
-      "1. OmniRoute Dedicated Local Gateway (Port 20128 | Tier 1):",
+      "1. OpenCode Zen Direct Gateway (Tier 1):",
       "   - Codex (GPT-5.6 Terra - Feb 2026 | Coding Specialist)",
       "   - x-preview-f-free (OpenCode x-preview | SOTA Coding & Fast Reasoning)",
       "   - Antigravity (Claude Opus 4.6 Thinking - Feb 2026 | Deep CoT)",
-      "   - nemotron-lighting (Nvidia Nemotron 3.5 Lightning · Fast Response OmniRoute)",
+      "   - nemotron-lighting (Nvidia Nemotron 3.5 Lightning · Fast Response)",
       "   - Vision-model (Multimodal Vision SOTA | Image Perception & OCR)",
       "",
       "2. Ollama Cloud SOTA Hub (ollama.com | Tier 2):",
@@ -1688,7 +1688,7 @@ export function initTerminal() {
           'nemotron', 'nemotron-3-ultra', 'nemotron-ultra', 'ultra', 'nemotron-super', 'super', 'laguna',
           'nemotron-lighting', 'nemotron-lightning', 'lightning', 'lighting',
           'mimo', 'x-preview', 'muse', 'hy3', 'big-pickle', 'minimax', 'm3', 'vision',
-          'nvidia', 'opencode', 'openrouter', 'omniroute', 'ollama'
+          'nvidia', 'opencode', 'openrouter', 'ollama'
         ];
         
         const isKnownModel = validKeywords.some(k => chosen.toLowerCase() === k || chosen.toLowerCase().startsWith(k)) || chosen.includes('/');
