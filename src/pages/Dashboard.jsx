@@ -450,32 +450,45 @@ export default function Dashboard() {
           if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
           setIsLiveConnected(true);
         } else {
-          // Direct Supabase Cloud Fallback (Ensures 100% of all 5000+ historical rows load directly)
+          // Direct Supabase Cloud Fallback (Fetches 100% of all 2700+ telemetry rows & 1700+ memories via pagination)
           const cfg = getSupabaseConfig();
           if (cfg && cfg.url && cfg.anonKey) {
             try {
-              const [evRes, memRes] = await Promise.allSettled([
-                fetch(`${cfg.url}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=5000`, {
-                  headers: { 'apikey': cfg.anonKey, 'Authorization': `Bearer ${cfg.anonKey}` },
-                  signal: abortControllerRef.current?.signal
-                }),
-                fetch(`${cfg.url}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=500`, {
-                  headers: { 'apikey': cfg.anonKey, 'Authorization': `Bearer ${cfg.anonKey}` },
-                  signal: abortControllerRef.current?.signal
-                })
+              const fetchBatch = async (table) => {
+                let all = [];
+                let offset = 0;
+                const batchSize = 1000;
+                while (true) {
+                  const res = await fetch(`${cfg.url}/rest/v1/${table}?select=*&order=created_at.desc&offset=${offset}&limit=${batchSize}`, {
+                    headers: {
+                      'apikey': cfg.anonKey,
+                      'Authorization': `Bearer ${cfg.anonKey}`,
+                      'Range-Unit': 'items',
+                      'Range': `${offset}-${offset + batchSize - 1}`
+                    },
+                    signal: abortControllerRef.current?.signal
+                  });
+                  if (!res.ok) break;
+                  const data = await res.json();
+                  if (!Array.isArray(data) || data.length === 0) break;
+                  all = all.concat(data);
+                  if (data.length < batchSize) break;
+                  offset += batchSize;
+                }
+                return all;
+              };
+
+              const [allEvents, allMemories] = await Promise.all([
+                fetchBatch('portfolio_telemetry'),
+                fetchBatch('ai_memories')
               ]);
-              if (evRes.status === 'fulfilled' && evRes.value.ok) {
-                const data = await evRes.value.json();
-                if (Array.isArray(data) && data.length > 0) {
-                  loadedEvents = data;
-                  setIsLiveConnected(true);
-                }
+
+              if (allEvents.length > 0) {
+                loadedEvents = allEvents;
+                setIsLiveConnected(true);
               }
-              if (memRes.status === 'fulfilled' && memRes.value.ok) {
-                const memData = await memRes.value.json();
-                if (Array.isArray(memData) && memData.length > 0) {
-                  loadedMemories = memData;
-                }
+              if (allMemories.length > 0) {
+                loadedMemories = allMemories;
               }
             } catch (_) {}
           }
