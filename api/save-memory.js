@@ -100,9 +100,10 @@ export default async function handler(req, res) {
   }
 
   const supabaseUrl = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-  if (!serviceRoleKey) {
-    return res.status(503).json({ success: false, message: 'SUPABASE_SERVICE_ROLE_KEY belum disetel.' });
+  const SUPABASE_DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || SUPABASE_DEFAULT_ANON_KEY;
+  if (!supabaseKey) {
+    return res.status(503).json({ success: false, message: 'Kunci otorisasi Supabase belum disetel.' });
   }
 
   let body = {};
@@ -133,8 +134,8 @@ export default async function handler(req, res) {
     const resSave = await fetch(`${supabaseUrl}/rest/v1/ai_memories`, {
       method: 'POST',
       headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
