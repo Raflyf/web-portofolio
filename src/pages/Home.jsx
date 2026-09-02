@@ -20,10 +20,10 @@ export default function Home() {
 
   return (
     <>
-      <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-hidden">
-        {/* Full-Page Continuous Interactive Scroll Background (Hero to Footer) */}
-        <InteractiveScrollBackground />
+      {/* Full-Page Continuous Interactive Scroll Background (Hero to Footer) */}
+      <InteractiveScrollBackground />
 
+      <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-hidden">
         {/* Scrollytelling Progress & HUD */}
         <ScrollStoryline />
 

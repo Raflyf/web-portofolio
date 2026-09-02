@@ -137,7 +137,7 @@ export default function HorizonHero() {
   return (
     <div 
       ref={containerRef}
-      className="relative w-full min-h-[105vh] flex flex-col justify-center items-center bg-background dark:bg-zinc-950 text-zinc-900 dark:text-white overflow-hidden font-sans pt-20 pb-24"
+      className="relative w-full min-h-[105vh] flex flex-col justify-center items-center bg-transparent text-zinc-900 dark:text-white overflow-hidden font-sans pt-20 pb-24"
     >
       {/* Ambient Deep Space Nebula */}
       <div className="absolute inset-0 pointer-events-none z-0">
