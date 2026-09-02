@@ -28,7 +28,7 @@ export const TerminalProvider = ({ children }) => {
         }
         localStorage.removeItem('terminal_active_convo');
       }
-    } catch(e) {}
+    } catch {}
     return [initialMsg];
   });
 
@@ -39,7 +39,7 @@ export const TerminalProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem('terminal_history_list');
       if (saved) return JSON.parse(saved);
-    } catch(e) {}
+    } catch {}
     return [];
   });
   

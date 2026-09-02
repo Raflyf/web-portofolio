@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Play,
   Pause,
-  Star,
   Hexagon,
   Triangle,
   Command,
@@ -15,7 +14,6 @@ import {
   Gem,
   Cpu,
   Sparkles,
-  ExternalLink,
   Clock
 } from "lucide-react";
 

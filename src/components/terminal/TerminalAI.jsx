@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Send, TerminalSquare, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, History, Maximize2, Minimize2, CheckCircle2, Check, Trash2 } from 'lucide-react';
+import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
 import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
@@ -103,7 +102,7 @@ function saveAIMemory(factText, sessionId) {
       localStorage.setItem(STORAGE_MEM_KEY, JSON.stringify(existing.slice(0, 200)));
       window.dispatchEvent(new Event('telemetry_update'));
     }
-  } catch (_) {}
+  } catch {}
 
   // 2. Asynchronously sync to serverless endpoint
   try {
@@ -119,7 +118,7 @@ function saveAIMemory(factText, sessionId) {
       }),
       signal: ctrl.signal
     }).catch(() => {});
-  } catch (_) {}
+  } catch {}
 }
 
 const CustomSelectEffort = ({ value, onChange }) => {
@@ -198,7 +197,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
   );
 };
 
-export default function TerminalAI({ onClose }) {
+export default function TerminalAI({ onClose } = {}) {
   const { 
     isTerminalPopupOpen, setIsTerminalPopupOpen,
     messages, setMessages,
@@ -213,7 +212,7 @@ export default function TerminalAI({ onClose }) {
   const [selectedModel, setSelectedModel] = useState(() => {
     try {
       return localStorage.getItem('ai_selected_model') || 'auto';
-    } catch (_) {
+    } catch {
       return 'auto';
     }
   });
@@ -569,7 +568,7 @@ export default function TerminalAI({ onClose }) {
           </div>
           <div className="flex items-center gap-2">
              {isTerminalPopupOpen ? (
-               <button onClick={() => setIsTerminalPopupOpen(false)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition" title="Tutup Modal" aria-label="Tutup Modal">
+               <button onClick={() => { setIsTerminalPopupOpen(false); if (onClose) onClose(); }} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition" title="Tutup Modal" aria-label="Tutup Modal">
                  <X className="w-4 h-4" />
                </button>
              ) : (
