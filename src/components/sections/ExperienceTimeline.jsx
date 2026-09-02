@@ -38,12 +38,12 @@ export default function ExperienceTimeline() {
 
       <div className="relative pl-8 sm:pl-0">
         {/* Base Timeline Line (Gray) */}
-        <div className="absolute left-8 sm:left-1/2 top-0 bottom-0 w-[2px] bg-white/10 transform sm:-translate-x-1/2" />
+        <div className="absolute left-8 sm:left-1/2 top-0 bottom-0 w-0.5 bg-white/10 transform sm:-translate-x-1/2" />
 
         {/* Scroll-Driven Light Beam Line */}
         <motion.div 
           style={{ scaleY }}
-          className="absolute left-8 sm:left-1/2 top-0 bottom-0 w-[2px] bg-gradient-to-b from-cyan-400 via-indigo-500 to-emerald-400 origin-top transform sm:-translate-x-1/2 shadow-[0_0_12px_rgba(34,211,238,0.8)] z-0"
+          className="absolute left-8 sm:left-1/2 top-0 bottom-0 w-0.5 bg-linear-to-b from-cyan-400 via-indigo-500 to-emerald-400 origin-top transform sm:-translate-x-1/2 shadow-[0_0_12px_rgba(34,211,238,0.8)] z-0"
         />
 
         <div className="space-y-12">
