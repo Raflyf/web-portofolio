@@ -653,3 +653,12 @@ Released 2026-09-02.
 2. **Penyelarasan Kontras Tema Terang & Gelap:**
    - Menyempurnakan warna teks menu menjadi `text-zinc-800` (mode terang) dan `text-zinc-100` (mode gelap) dengan target sentuh tinggi (`py-3`) dan indikator arah panah `→`.
    - Mengoptimalkan kontras logo RF dan nama brand di header bar atas agar selalu terbaca jelas di seluruh mode tampilan.
+
+### v10.593.0 — Serverless Auth Gateway Repair & Cross-Device PIN Sync
+
+Released 2026-09-02.
+1. **Perbaikan Fatal Crash Backend `/api/admin-otp`:**
+   - Menghapus deklarasi fungsi duplikat `storeSessionToken` pada `api/admin-otp.js` yang sebelumnya memicu `SyntaxError: Identifier 'storeSessionToken' has already been declared` (HTTP 500) saat cold start runtime Vercel.
+2. **Pemulihan Sinkronisasi Multi-Perangkat (Laptop vs HP):**
+   - Dengan pulihnya gateway `/api/admin-otp` ke status `200 OK`, seluruh verifikasi Master PIN kini diverifikasi langsung terhadap tabel `admin_auth_config` di Supabase Cloud (Single Source of Truth), bukan lagi bergantung pada cache `localStorage` lokal perangkat.
+   - Mengubah PIN atau mereset PIN via OTP kini langsung tersinkronisasi secara instan dan dapat digunakan di semua perangkat (Laptop, HP, Tablet) secara konsisten.
