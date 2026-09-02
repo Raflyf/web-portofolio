@@ -55,10 +55,21 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
     : '[GAYA BAHASA: Manusiawi, luwes, komunikatif, dan enak dibaca. Berbicaralah layaknya rekan developer/partner teknis yang ramah dan cerdas. HINDARI bahasa birokratis atau robot kaku.]';
 
   const now = new Date();
-  const dynamicDateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const dynamicTimeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const timeZone = 'Asia/Jakarta';
+  const dynamicDateStr = isEnglish
+    ? now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone })
+    : now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone });
+  const dynamicTimeStr = now.toLocaleTimeString('id-ID', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false,
+    timeZone 
+  }).replace('.', ':');
 
-  return `Status: BAHASA INDONESIA. Waktu: ${dynamicDateStr}, ${dynamicTimeStr} WIB.
+  return `Status: ${isEnglish ? 'ENGLISH' : 'BAHASA INDONESIA'}. Waktu Saat Ini (Ground Truth): ${dynamicDateStr}, Pukul ${dynamicTimeStr} WIB (Waktu Indonesia Barat, UTC+7).
+[INSTRUKSI WAKTU REALTIME]:
+- Waktu di atas adalah Waktu Indonesia Barat (WIB, Asia/Jakarta, UTC+7) yang sudah terkalibrasi secara presisi.
+- Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
 Anda adalah AI Assistant & Developer Agent di website portofolio resmi Rafly Firmansyah (@Raflyf).
 
 ${languageDirective}
