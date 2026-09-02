@@ -858,3 +858,14 @@ Released 2026-09-03.
    - Melewati web search DuckDuckGo yang kerap menyuplai cuplikan berita usang.
 2. **Grounding Deterministik Anti-Halusinasi:**
    - Menyematkan lapisan verifikasi deterministik pasca-inferensi: jika output LLM terdeteksi berhalusinasi atau mencantumkan angka jam yang salah, sistem secara otomatis mengoreksinya dengan tanggal dan jam *Ground Truth* WIB (Asia/Jakarta) terkalibrasi secara presisi.
+
+### v10.613.0 — Continuous RAG Knowledge Auto-Persistence & Supabase Auth Fallback
+
+Released 2026-09-03.
+1. **Penyelamatan Jalur Tulis Memori RAG (`api/save-memory.js` & `api/chat.js`):**
+   - Mengidentifikasi akar masalah terhentinya pembaruan memori RAG sejak 26 Agustus 2026: kode backend menuntut keberadaan variabel `SUPABASE_SERVICE_ROLE_KEY` yang tidak disetel di environment, memicu silent fail pada `saveServerMemory` dan HTTP 503 pada endpoint `/api/save-memory`.
+   - Mengimplementasikan `getSupabaseKey()` dengan fallback hierarkis: `SUPABASE_SERVICE_ROLE_KEY` -> `SUPABASE_ANON_KEY` -> `VITE_SUPABASE_ANON_KEY` -> `DEFAULT_SUPABASE_ANON_KEY`.
+   - Memulihkan operasi SELECT dan INSERT pada tabel Supabase `ai_memories` ke status aktif 100%.
+2. **Pembaruan Protokol Pembelajaran Berkelanjutan (*Proactive RAG Harvesting*):**
+   - Memperluas sistem prompt `memoryInstruction` di `api/chat.js`: AI diinstruksikan tidak hanya menyimpan saat ada klaim baru dari pengguna, melainkan juga secara proaktif menyertakan tag `[SAVE_MEMORY: ...]` ketika menyajikan temuan rilis teknologi atau model AI baru yang terverifikasi via pencarian web (misal: peluncuran Gemini 3.8 Flash).
+   - Menyinkronkan fakta rilis Gemini 3.8 Flash ke basis data Supabase secara realtime.
