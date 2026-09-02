@@ -90,11 +90,11 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, message: 'Sesi admin telah kedaluwarsa. Silakan login ulang.' });
     }
 
-    // Helper: Paginated Batch Fetch for 100% complete row extraction
+    // Helper: High-Speed Paginated Batch Fetch for 100% complete row extraction
     async function fetchAllRows(endpoint) {
       let all = [];
       let offset = 0;
-      const batchSize = 1000;
+      const batchSize = 2500;
       while (true) {
         try {
           const res = await fetch(`${endpoint}&offset=${offset}&limit=${batchSize}`, {
@@ -117,16 +117,17 @@ export default async function handler(req, res) {
       return all;
     }
 
-    // 2. Fetch ALL telemetry (100% of rows) with service role.
-    const events = await fetchAllRows(
-      `${supabaseUrl}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc`
-    );
+    // 2. Fetch ALL telemetry & AI memories in PARALLEL with service role.
+    const [events, memories] = await Promise.all([
+      fetchAllRows(
+        `${supabaseUrl}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc`
+      ),
+      fetchAllRows(
+        `${supabaseUrl}/rest/v1/ai_memories?select=*&order=created_at.desc`
+      )
+    ]);
 
-    // 3. Fetch ALL AI memories (100% of rows) with service role.
-    const memories = await fetchAllRows(
-      `${supabaseUrl}/rest/v1/ai_memories?select=*&order=created_at.desc`
-    );
-
+    res.setHeader('Cache-Control', 'private, max-age=5, stale-while-revalidate=30');
     return res.status(200).json({ success: true, events, memories });
   } catch (err) {
     return res.status(502).json({ success: false, message: 'Gagal mengambil data dashboard.' });
