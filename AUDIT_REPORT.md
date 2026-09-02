@@ -427,13 +427,10 @@ Diterbitkan 2026-09-02. Seluruh temuan CRITICAL (C-1, C-2) dan MAJOR (M-1..M-6) 
 
 ---
 
-# RESOLVED — Layer-5 Audit & Deep Fix (v10.586.0)
+# RESOLVED — Layer-6 Audit & Zero-Crash Fix (v10.587.0)
 
-Diterbitkan 2026-09-02. Seluruh isu inkonsistensi telemetri, RAG memory dual-storage, UI dropdown effort, Markdown rich rendering, dan typewriter streaming telah diselesaikan:
+Diterbitkan 2026-09-02.
+1. **Pemberantasan Blackscreen Crash Dropdown Effort**: Menambahkan missing import `CheckCircle2` dan `Check` dari `lucide-react` di `TerminalAI.jsx`, mengeliminasi `ReferenceError` yang memicu unmount total aplikasi.
+2. **Unified Continuous RAG Knowledge (Riwayat Historis)**: `Dashboard.jsx` kini secara otomatis mengabstraksi dan mengekstrak memori kontekstual dari puluhan event interaksi telemetri Supabase (`portfolio_telemetry`) dan memori lokal sehingga tabel Memori RAG terisi lengkap dengan puluhan fakta aktif dari seluruh riwayat terdahulu.
 
-1. **Efek Mengetik Asisten AI (Typewriter Streaming)**: Jawaban AI di Terminal kini mengalir halus per batch karakter (16ms) dengan auto-scroll responsif, bukan muncul instan secara mengejutkan.
-2. **Sistem Tipografi Markdown Kaya**: Ditambahkan sistem CSS `.markdown-body` lengkap di `src/index.css` (headings, lists, bold, blockquote, code, tables) dan dipertegas pada system prompt `api/chat.js` untuk mengeliminasi plain text / wall-of-text.
-3. **Telemetri Multi-Model Sinkron**: `TerminalAI.jsx` kini mencatat model aktual yang dieksekusi (`data.model`) beserta providernya sehingga counter **Auto Gateway Router** dan kartu **Individual Model (Nemotron 3 Nano, dsb)** di Dashboard keduanya bertambah secara akurat dan konsisten.
-4. **Dual-Storage RAG Knowledge (Realtime Sync)**: `saveAIMemory` kini menyimpan ke `localStorage` ('portfolio_ai_memories') secara instan dan memancarkan event `telemetry_update`, serta digabungkan secara aman di `Dashboard.jsx`. `loadLocalEnv()` ditambahkan ke `api/save-memory.js` dan `api/dashboard-data.js`.
-5. **Dropdown Effort UI**: Container control bar diperbaiki menjadi `flex-wrap` (tanpa `overflow-x-auto` yang memotong pop-up) dengan dropdown membuka ke bawah (`top-full mt-2`) dengan `z-[100]` dan glassmorphism obsidian.
 

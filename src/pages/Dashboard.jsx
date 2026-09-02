@@ -1115,8 +1115,49 @@ export default function Dashboard() {
     };
   }, [events, aiModelsRange]);
 
-  // AI Memories Computed
-  const filteredMemories = useMemo(() => filterByRange(memories, ragMemoriesRange), [memories, ragMemoriesRange]);
+  // AI Memories Computed (Unified: Dedicated ai_memories + Extracted AI Context from Telemetry Events)
+  const allDerivedMemories = useMemo(() => {
+    const list = [...(Array.isArray(memories) ? memories : [])];
+    const existingTexts = new Set(list.map(m => (m.fact_text || '').toLowerCase().trim()));
+
+    // Ekstrak interaksi kueri AI dari telemetri Supabase sebagai memori kontekstual aktif
+    if (Array.isArray(events)) {
+      events.forEach(e => {
+        const type = (e.event_type || '').toLowerCase();
+        const target = (e.event_target || '').trim();
+        const label = (e.event_label || '').trim();
+
+        if (type === 'ai_chat' || type === 'ai_query' || type === 'ai_query_resolved' || (type === 'terminal_cmd' && (target.startsWith('ai:') || target.startsWith('chat:') || target.startsWith('ask:')))) {
+          let factText = '';
+          if (label && !label.startsWith('[') && label.length > 5) {
+            factText = label;
+          } else if (label.includes('->') || label.includes('effort:')) {
+            factText = `Interaksi Percakapan AI ${label}`;
+          } else if (target && target !== 'auto' && target.length > 3) {
+            factText = `Kueri Pengguna: ${target}`;
+          } else {
+            factText = `Sesi Tanya Jawab Portofolio AI (${e.device_type || 'desktop'})`;
+          }
+
+          if (factText && !existingTexts.has(factText.toLowerCase().trim())) {
+            existingTexts.add(factText.toLowerCase().trim());
+            list.push({
+              id: 'mem_ev_' + (e.id || Math.random().toString(36).substring(2, 9)),
+              created_at: e.created_at,
+              fact_text: factText,
+              session_id: e.session_id || 'sess_cloud',
+              type: 'RAG Knowledge'
+            });
+          }
+        }
+      });
+    }
+
+    // Urutkan berdasarkan waktu terbaru
+    return list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }, [memories, events]);
+
+  const filteredMemories = useMemo(() => filterByRange(allDerivedMemories, ragMemoriesRange), [allDerivedMemories, ragMemoriesRange]);
   const memoryTotalPages = Math.ceil(filteredMemories.length / memoryPageSize) || 1;
   const currentMemories = useMemo(() => {
     const start = (memoryCurrentPage - 1) * memoryPageSize;
