@@ -69,8 +69,6 @@ export default function InteractiveScrollBackground() {
     let height = 0;
     let dpr = 1;
 
-    // Check reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const handleResize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -206,29 +204,27 @@ export default function InteractiveScrollBackground() {
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        if (!prefersReducedMotion) {
-          // Kinetic velocity push along Y-axis on scroll
-          p.x += p.vx;
-          p.y += p.vy - velocity * 0.4;
+        // Kinetic velocity push along Y-axis on scroll (Always-On Motion)
+        p.x += p.vx;
+        p.y += p.vy - velocity * 0.4;
 
-          // Mouse gentle interaction
-          if (mouse.active) {
-            const dx = p.x - mouse.x;
-            const dy = p.y - mouse.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < mouseRadius && dist > 0) {
-              const force = (1 - dist / mouseRadius) * 0.8;
-              p.x += (dx / dist) * force;
-              p.y += (dy / dist) * force;
-            }
+        // Mouse gentle interaction
+        if (mouse.active) {
+          const dx = p.x - mouse.x;
+          const dy = p.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < mouseRadius && dist > 0) {
+            const force = (1 - dist / mouseRadius) * 0.8;
+            p.x += (dx / dist) * force;
+            p.y += (dy / dist) * force;
           }
-
-          // Screen wrapping
-          if (p.x < -20) p.x = width + 20;
-          if (p.x > width + 20) p.x = -20;
-          if (p.y < -20) p.y = height + 20;
-          if (p.y > height + 20) p.y = -20;
         }
+
+        // Screen wrapping
+        if (p.x < -20) p.x = width + 20;
+        if (p.x > width + 20) p.x = -20;
+        if (p.y < -20) p.y = height + 20;
+        if (p.y > height + 20) p.y = -20;
 
         // Draw particle dot with gentle breathing
         const alpha = p.baseAlpha * (0.7 + Math.sin(time * 2 + p.phase) * 0.3);

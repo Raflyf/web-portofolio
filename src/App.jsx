@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import Lenis from 'lenis';
 import { Shield, Menu, X, Terminal, Sun, Moon } from 'lucide-react';
 import Home from './pages/Home';
@@ -284,7 +285,8 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
+    <MotionConfig reducedMotion="never">
+      <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
         <FloatingNavbar />
 
         <Routes>
@@ -303,37 +305,38 @@ export default function App() {
           />
         </Routes>
       
-      {/* Floating Action Buttons */}
-      {location.pathname !== '/dashboard' && (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
-          <button 
-            onClick={() => {
-              if (window.__lenis) {
-                window.__lenis.scrollTo(0, { duration: 1.2 });
-              } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-            className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-1"
-            aria-label="Back to top"
-            title="Kembali ke Atas"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-          </button>
-          
-          <button
-            onClick={() => {
-              telemetry.logEvent('terminal_open', 'terminal_modal', 'Buka Jendela Terminal AI Modal');
-              setIsTerminalPopupOpen(true);
-            }}
-            className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow"
-            aria-label="Open Terminal"
-            title="Buka Terminal AI"
-          >
-            <Terminal className="w-5 h-5" />
-          </button>
-        </div>
-      )}
-    </div>
+        {/* Floating Action Buttons */}
+        {location.pathname !== '/dashboard' && (
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+            <button 
+              onClick={() => {
+                if (window.__lenis) {
+                  window.__lenis.scrollTo(0, { duration: 1.2 });
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-1"
+              aria-label="Back to top"
+              title="Kembali ke Atas"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+            </button>
+            
+            <button
+              onClick={() => {
+                telemetry.logEvent('terminal_open', 'terminal_modal', 'Buka Jendela Terminal AI Modal');
+                setIsTerminalPopupOpen(true);
+              }}
+              className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow"
+              aria-label="Open Terminal"
+              title="Buka Terminal AI"
+            >
+              <Terminal className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </MotionConfig>
   );
 }
