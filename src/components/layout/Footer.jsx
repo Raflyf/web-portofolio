@@ -23,7 +23,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative w-full mt-10 liquid-glass-nav">
+    <footer className="relative z-10 w-full mt-10 liquid-glass-nav">
       {/* Glow divider top */}
       <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-cyan-500/40 to-transparent" />
 

@@ -78,7 +78,7 @@ export default function InteractiveScrollBackground() {
       height = window.innerHeight;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     handleResize();
@@ -269,7 +269,7 @@ export default function InteractiveScrollBackground() {
 
   return (
     <div 
-      className="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none"
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none"
       aria-hidden="true"
     >
       <canvas
