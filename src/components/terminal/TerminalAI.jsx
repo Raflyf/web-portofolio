@@ -145,32 +145,49 @@ const CustomSelectEffort = ({ value, onChange }) => {
   const selected = options.find(o => o.value === value) || options[0];
 
   return (
-    <div className="relative inline-block" ref={containerRef}>
+    <div className="relative inline-block text-left" ref={containerRef}>
       <button 
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="flex items-center gap-1.5 bg-transparent text-cyan-400 font-bold text-[10px] sm:text-xs outline-none cursor-pointer uppercase transition-colors hover:text-cyan-300"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
+          isOpen 
+            ? 'bg-cyan-500/15 border border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]' 
+            : 'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/50 text-zinc-200'
+        }`}
       >
-        {selected.label}
-        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="truncate">{selected.label}</span>
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-cyan-400' : 'text-zinc-400'}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-52 bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/30 rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.8)] z-[100] py-1.5 animate-in fade-in zoom-in-95 duration-150">
-          <div className="px-3 py-1 text-[10px] font-mono text-zinc-500 uppercase tracking-wider border-b border-white/5 mb-1">
+        <div 
+          role="listbox"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl bg-zinc-950/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_15px_40px_rgba(0,0,0,0.9)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        >
+          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-400/80 uppercase tracking-wider border-b border-white/5 font-semibold">
             Reasoning Effort
           </div>
-          {options.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { onChange(opt.value); setIsOpen(false); }}
-              className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between cursor-pointer transition-colors ${value === opt.value ? 'bg-cyan-500/20 text-cyan-400 font-bold' : 'text-zinc-300 hover:bg-white/10'}`}
-            >
-              <span>{opt.label}</span>
-              {value === opt.value && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />}
-            </button>
-          ))}
+          <div className="py-1 max-h-60 overflow-y-auto no-scrollbar divide-y divide-white/5">
+            {options.map(opt => (
+              <button
+                key={opt.value}
+                role="option"
+                aria-selected={value === opt.value}
+                type="button"
+                onClick={() => { onChange(opt.value); setIsOpen(false); }}
+                className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                  value === opt.value 
+                    ? 'bg-cyan-500/20 text-cyan-300 font-bold' 
+                    : 'text-zinc-300 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {value === opt.value && <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -555,8 +572,8 @@ export default function TerminalAI({ onClose }) {
 
             <div className="hidden sm:block h-4 w-[1px] bg-white/20 mx-1"></div>
 
-            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0 group" title="Pilih Reasoning Effort & Thinking Mode">
-              <span className="text-zinc-400">Effort:</span>
+            <div className="flex items-center gap-1.5 shrink-0" title="Pilih Reasoning Effort & Thinking Mode">
+              <span className="text-zinc-400 text-xs hidden xs:inline">Effort:</span>
               <CustomSelectEffort value={effort} onChange={(val) => setEffort(val)} />
             </div>
           </div>
