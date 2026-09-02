@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PROJECTS_DATA } from '../../data';
 import { Star, ExternalLink } from 'lucide-react';
@@ -23,6 +23,9 @@ const tabVariants = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } }
 };
 
+const GITHUB_STARS_CACHE_KEY = 'portfolio_github_stars_v1';
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 menit TTL cache agar bebas rate-limit GitHub
+
 export default function ProjectsGrid() {
   const [filter, setFilter] = useState('all');
 
@@ -42,6 +45,66 @@ export default function ProjectsGrid() {
   const displayProjects = isAllFilter 
     ? filteredProjects.filter(p => p.id !== 'open-plagiarism-checker')
     : filteredProjects;
+
+  // Real-time Dynamic GitHub Stars State with SWR Cache
+  const [starsMap, setStarsMap] = useState(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const cached = localStorage.getItem(GITHUB_STARS_CACHE_KEY);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        if (data && timestamp && Date.now() - timestamp < CACHE_TTL_MS) {
+          return data;
+        }
+      }
+    } catch {}
+    return {};
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchStars() {
+      try {
+        const res = await fetch('https://api.github.com/users/Raflyf/repos?per_page=100', {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) return;
+        const repos = await res.json();
+        if (Array.isArray(repos)) {
+          const map = {};
+          repos.forEach(repo => {
+            if (repo.name) {
+              map[repo.name.toLowerCase()] = repo.stargazers_count;
+            }
+          });
+          if (isMounted) {
+            setStarsMap(map);
+            try {
+              localStorage.setItem(GITHUB_STARS_CACHE_KEY, JSON.stringify({
+                data: map,
+                timestamp: Date.now()
+              }));
+            } catch {}
+          }
+        }
+      } catch {
+        // Fallback otomatis ke project.stars default jika offline
+      }
+    }
+
+    fetchStars();
+    return () => { isMounted = false; };
+  }, []);
+
+  const getProjectStars = (project) => {
+    if (!project) return 0;
+    if (!project.githubUrl) return project.stars ?? 0;
+    const repoName = project.githubUrl.split('/').pop()?.toLowerCase();
+    if (repoName && starsMap[repoName] !== undefined) {
+      return starsMap[repoName];
+    }
+    return project.stars ?? 0;
+  };
 
   return (
     <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
@@ -114,7 +177,7 @@ export default function ProjectsGrid() {
                 </span>
                 <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
                   <Star className="w-3.5 h-3.5 fill-current" />
-                  <span>{featuredProject.stars} Stars</span>
+                  <span>{getProjectStars(featuredProject)} Stars</span>
                 </div>
               </div>
 
@@ -207,7 +270,7 @@ export default function ProjectsGrid() {
                   </div>
                   <div className="flex items-center gap-1 text-zinc-400 text-xs">
                     <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
-                    <span>{project.stars}</span>
+                    <span>{getProjectStars(project)}</span>
                   </div>
                 </div>
 
