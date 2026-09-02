@@ -197,7 +197,7 @@ export default function ContactSection() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => telemetry.logEvent('link_click', 'whatsapp', 'Klik Tombol Chat WhatsApp')}
-            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group block"
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -229,7 +229,7 @@ export default function ContactSection() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => telemetry.logEvent('link_click', 'github_profile', 'Klik Profil GitHub')}
-            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group block"
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">

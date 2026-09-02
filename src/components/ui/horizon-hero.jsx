@@ -238,7 +238,7 @@ export default function HorizonHero() {
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
                   </div>
-                  <div className="text-[11px] font-mono font-semibold text-emerald-400 tracking-tight truncate max-w-[200px] sm:max-w-[250px]">
+                  <div className="text-[11px] font-mono font-semibold text-emerald-400 tracking-tight truncate max-w-50 sm:max-w-62.5">
                     rafly@node-ubsi-s1: ~/research-deck
                   </div>
                 </div>
@@ -286,7 +286,7 @@ export default function HorizonHero() {
               </div>
 
               {/* Dynamic Animated Card Content */}
-              <div className="relative min-h-[170px] flex flex-col justify-between z-10">
+              <div className="relative min-h-42.5 flex flex-col justify-between z-10">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeProject.id}
