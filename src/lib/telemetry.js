@@ -17,7 +17,9 @@ class TelemetryEngine {
     this.sessionId = this.getOrCreateSessionId();
     this.supabaseConfig = getSupabaseConfig();
     this.deviceType = this.detectDeviceType();
-    this.screenRes = `${window.screen.width}x${window.screen.height}`;
+    this.screenRes = (typeof window !== 'undefined' && window.screen)
+      ? `${window.screen.width}x${window.screen.height}`
+      : '1920x1080';
     this.initialized = false;
   }
 

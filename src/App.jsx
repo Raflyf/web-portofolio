@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Lenis from 'lenis';
 import { Shield, Sparkles, Menu, X, Terminal, ExternalLink, Sun, Moon } from 'lucide-react';
 import Home from './pages/Home';
@@ -218,8 +218,7 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
+    <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
         <FloatingNavbar />
 
         <Routes>
@@ -264,6 +263,5 @@ export default function App() {
         </div>
       )}
     </div>
-    </BrowserRouter>
   );
 }
