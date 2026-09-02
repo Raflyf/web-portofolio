@@ -680,3 +680,13 @@ Released 2026-09-02.
 2. **Harmonisasi Kontras Lembut (*Soft Frosted Dimmer*):**
    - Menyelaraskan lapisan dimmer menjadi `bg-black/35 dark:bg-black/50 backdrop-blur-sm`, memberikan peredupan latar belakang yang cukup halus agar teks hero tidak bertabrakan, sembari membiarkan efek kilau kristal kaca cair bersinar alami di atasnya.
    - Menggunakan komponen `.liquid-glass-inset` untuk tombol pengalih tema dalam menu mobile.
+
+### v10.596.0 — Dashboard Multi-Device Synchronization & Single Source of Truth
+
+Released 2026-09-02.
+1. **Eliminasi Polusi Data Lokal Browser (`Dashboard.jsx`):**
+   - Menghapus pencampuran otomatis event `localStorage` lokal ke dalam data live server. Sebelumnya, riwayat telemetri lokal di browser laptop yang tidak tersinkronisasi di-prepend ke data server, menyebabkan metrik di laptop tergelembungkan (1181 views) sementara di ponsel hanya (1075 views).
+   - Menetapkan Supabase Cloud sebagai *Single Source of Truth* mutlak: seluruh perangkat (Laptop, HP, Tablet) kini membaca data agregat yang 100% identik langsung dari cloud database.
+2. **Deduplikasi Baris Paginasi Supabase:**
+   - Menambahkan filter deduplikasi berbasis `id` unik pada fungsi paginasi `fetchBatch` untuk menjamin integritas data saat event baru masuk di tengah pengambilan batch.
+   - Mengamankan `localStorage` murni sebagai *offline emergency fallback* hanya jika server tidak dapat dihubungi.
