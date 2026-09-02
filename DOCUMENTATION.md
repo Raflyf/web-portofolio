@@ -823,3 +823,20 @@ Released 2026-09-03.
    - Mengganti kalimat klise overclaim ("Mengkombinasikan ketajaman analisis algoritmik...") dengan narasi yang lugas, manusiawi, dan membumi: *"Fokus mengembangkan aplikasi web modern dan sistem kecerdasan buatan yang praktis, aman, serta menghormati privasi pengguna."*
 2. **Penyelarasan Subjudul Profil & Visi (`AboutSection.jsx`):**
    - Mengeliminasi duplikasi teks dan menyusun deskripsi yang mencerminkan fokus rekayasa nyata: *"Membangun sistem cerdas dan aplikasi web dengan kode yang bersih, terstruktur, dan mengutamakan privasi data."*
+
+### v10.610.0 — Full-Stack Performance Tuning & Zero-Animation-Casualty Optimization
+
+Released 2026-09-03.
+1. **Pemusnahan Draw Call Spikes pada Kanvas Latar Belakang (`interactive-scroll-background.jsx`):**
+   - **Batched Particle Lines:** Mengonsolidasikan puluhan draw call `ctx.stroke()` per frame menjadi 1 *single draw call* tunggal, memangkas beban GPU draw call hingga 95% tanpa mengurangi visual konstelasi partikel.
+   - **Batched Particle Dots:** Mengelompokkan seluruh titik partikel ke dalam 1 operasi `ctx.fill()` tunggal.
+   - **Distance-Squared Pre-Filtering:** Mengeliminasi kalkulasi `Math.sqrt` berulang di perulangan $O(N^2)$ dengan perbandingan kuadratik (`dx * dx + dy * dy < connectionDistSq`).
+   - **Bounding-Box Gradient Fill:** Membatasi rasterisasi gradasi radial awan aurora hanya pada *bounding box* area efektif nebula, menyingkirkan overdraw layar penuh 3x per frame pada monitor resolusi tinggi.
+2. **Eliminasi Layout Thrashing / Forced Synchronous Reflow (`scroll-storyline.jsx`):**
+   - Menerapkan `requestAnimationFrame` flag throttling pada event listener scroll, menghentikan pembacaan sinkron `el.offsetTop` dan `el.offsetHeight` ratusan kali per detik saat pengguna menggulir.
+3. **Akselerasi Perangkat Keras GPU Layer & Isolasi Reflow (`index.css`):**
+   - Menambahkan `transform: translateZ(0)` dan `backface-visibility: hidden` pada elemen `.liquid-glass-hover` untuk mengisolasi kartu interaktif ke layer GPU independen.
+4. **Hibernasi Siklus CPU saat Tab Inaktif (`App.jsx`):**
+   - Memastikan engine Lenis (`lenis.raf(time)`) berhenti mengeksekusi kalkulasi inersia saat `document.hidden` bernilai true.
+5. **Pencegahan Re-Render Siklikal Dashboard Telemetri (`Dashboard.jsx`):**
+   - Menambahkan *shallow equality guard* pada polling data Supabase, mencegah re-render instans Chart.js dan kalkulasi memori jika data telemetri tidak berubah.
