@@ -124,6 +124,29 @@ class TelemetryEngine {
     if (!res.ok) {
       throw new Error(`Supabase API responded with status ${res.status}`);
     }
+    // FIX M3: mark the local copy as synced so the dashboard only merges events
+    // that are NOT yet confirmed in the server (prevents double counting).
+    payload.synced = true;
+    this.markSynced(payload);
+  }
+
+  // FIX M3: update the local ring buffer in place (best-effort) so synced events
+  // are not re-counted on the next dashboard poll.
+  markSynced(payload) {
+    try {
+      const existing = this.getLocalEvents();
+      let changed = false;
+      const next = existing.map((e) => {
+        if (!e.synced && e.created_at === payload.created_at) {
+          changed = true;
+          return { ...e, synced: true };
+        }
+        return e;
+      });
+      if (changed) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      }
+    } catch (_) {}
   }
 
   init() {

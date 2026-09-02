@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+    <!-- Theme pre-paint (m-4): apply saved theme before CSS/body paint to avoid flash-of-wrong-theme. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('portfolio-theme');
+          var dark = saved === 'light' ? false : true; // default to dark
+          document.documentElement.classList.toggle('dark', dark);
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- SEO & OpenGraph Meta Tags -->
     <title>Rafly Firmansyah — Portofolio Resmi | S1 Informatika & AI/ML Software Developer</title>
     <meta name="description" content="Portofolio resmi Rafly Firmansyah (@Raflyf) — Mahasiswa S1 Informatika UBSI & Software Developer berfokus pada riset NLP, Computer Vision, Machine Learning, dan arsitektur web modern." />

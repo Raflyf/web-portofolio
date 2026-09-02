@@ -16,7 +16,7 @@
 
 // Default Hash for Master PIN "080402" (SHA-256 + Salt "rafly_telemetry_salt")
 const PIN_SALT = "rafly_telemetry_salt";
-const DEFAULT_PIN_HASH = "db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c"; 
+const DEFAULT_PIN_HASH = "REVOKED_DEFAULT_PIN_HASH"; 
 const SESSION_AUTH_KEY = "dash_admin_auth_session";
 const LOCKOUT_KEY = "dash_admin_lockout_info";
 const CONFIG_KEY = "portfolio_supabase_config";

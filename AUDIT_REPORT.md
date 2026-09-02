@@ -388,3 +388,43 @@ Diterbitkan 2026-09-01. Paket A (K1-K3, M2, M8), B (M1, M3-M7), C (m2-m7) seluru
 - **Chunk-size warning**: Chunk index utama (~690 kB) tetap memicu peringatan Vite `>500 kB`; opsi split lebih agresif belum diterapkan. **STILL OPEN**.
 - **M3 path kontak publik**: `ContactSection` masih memakai `formsubmit.co` pihak ketiga (dari laporan v10.572.0). **STILL OPEN**.
 - **WIB timezone literal**: `horizon-hero.jsx` memakai `Asia/Bangkok`; penggantian ke `Asia/Jakarta` tetap kosmetik. **STILL OPEN (cosmetic)**.
+
+---
+
+# RESOLVED — Layer-3 Audit (v10.584.0)
+
+Diterbitkan 2026-09-02. Seluruh temuan CRITICAL (C-1, C-2) dan MAJOR (M-1..M-6) dituntaskan, ditambah minor m-1..m-5, m-7, m-9. `npm run build` hijau; `node --check` lolos pada 6 berkas (`api/chat.js`, `api/admin-otp.js`, `api/dashboard-data.js`, `api/save-memory.js`, `src/lib/supabase.js`, `src/lib/telemetry.js`).
+
+## Checklist resolusi
+
+### Critical (C)
+
+- [x] **C-1 — RLS `authenticated` dicabut dari `ai_memories` & `portfolio_telemetry`**: baca/tulis kini hanya `service_role`; anon hanya INSERT telemetri (length-guarded). Akun authenticated tidak lagi bisa membaca telemetri/memori atau menyuntik memori RAG. **RESOLVED** (database/supabase_schema.sql).
+- [x] **C-2 — `DEFAULT_PIN_HASH` dihapus dari API & RPC**: `rpc_admin_verify_pin` tidak lagi me-reseed baris hilang dengan hash default publik (fail-closed: tolak verifikasi); `rpc_admin_save_otp` tidak pernah menimpa `pin_hash`; `update_pin`/`reset_lockout` menolak saat `pin_hash` tersimpan kosong. **RESOLVED**.
+
+### Major (M)
+
+- [x] **M-1 — `/api/save-memory` tanpa batas**: ditambah rate limit per-IP (5 permintaan/menit, `429`) dan body cap 50KB (`413`) sebelum parsing. **RESOLVED**.
+- [x] **M-2 — IP klien mudah di-spoof**: `getClientIp` memakai `x-vercel-forwarded-for`, fallback elemen TERAKHIR `x-forwarded-for` (bukan `[0]`) di `chat.js`, `admin-otp.js`, `save-memory.js`. **RESOLVED**.
+- [x] **M-3 — Double-count telemetri di dashboard**: flag `synced` ditandai setelah kirim sukses; dashboard hanya menggabungkan event lokal yang belum `synced`. **RESOLVED**.
+- [x] **M-4 — Change PIN hanya lokal**: `update_pin` dipanggil ke server lebih dulu (verifikasi `current_pin_hash`); write localStorage hanya setelah server sukses. **RESOLVED**.
+- [x] **M-5 — Sesi bertahan setelah rotasi PIN**: `clearSessionToken` meng-null-kan `session_token`/`session_expires_at` pada update/reset PIN; OTP tidak lagi di-log (bahkan ter-mask). **RESOLVED**.
+- [x] **M-6 — Versi tidak seragam**: `package.json` dan status `/api/chat` disatukan ke `10.584.0`; catatan TTL `rate_limits` ditambahkan di schema. **RESOLVED**.
+
+### Minor (m)
+
+- [x] **m-1 — Sesi tidak diinvalidasi saat PIN berubah**: token sesi dibersihkan di server dan schema. **RESOLVED**.
+- [x] **m-2 — 401 dashboard-data tidak ditangani**: sesi basi memaksa re-login (bukan offline senyap). **RESOLVED**.
+- [x] **m-3 — Event tersinkron dihitung ulang**: lihat M-3 (flag `synced`). **RESOLVED**.
+- [x] **m-4 — FOUC tema**: inline pre-paint script di `index.html` (apply tema sebelum paint). **RESOLVED**.
+- [x] **m-5 — NaN% pada device split**: guard `total > 0` → 0%. **RESOLVED**.
+- [ ] **m-6 — Perbandingan timing belum konsisten** (jam vs timestamp pada beberapa tampilan). **STILL OPEN**.
+- [x] **m-7 — Path `verify_pin` mati dihapus**: cabang duplikat yang tak terjangkau di `api/admin-otp.js` dibuang. **RESOLVED**.
+- [ ] **m-8 — SSRF DNS-rebinding pada `api/chat.js`**: validasi IP saat fetch belum menutup rebinding; mitigasi lanjutan belum diterapkan. **STILL OPEN**.
+- [x] **m-9 — Animasi doughnut chart**: `animation: false` (data stabil, mencegah render ulang berisik). **RESOLVED**.
+- [ ] **m-10 — Listbox keyboard (a11y)**: navigasi keyboard pada listbox/autocomplete belum selesai. **STILL OPEN**.
+- [ ] **m-11 — Abort on close + attachment cap server**: `AbortController` saat close & batas ukuran lampiran di sisi server belum diterapkan. **STILL OPEN**.
+
+### STILL OPEN lainnya
+
+- **Chunk-size warning**: chunk index utama (~690 kB) tetap memicu peringatan Vite `>500 kB`; code-splitting lebih agresif belum diterapkan. **STILL OPEN**.

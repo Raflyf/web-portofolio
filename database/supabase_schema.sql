@@ -45,18 +45,14 @@ WITH CHECK (
     char_length(session_id) <= 64
 );
 
--- Dashboard telemetry is PRIVATE: only the serverless function (service_role)
--- and authenticated sessions may read it. Anonymous visitors may ONLY insert.
+-- Dashboard telemetry is PRIVATE: ONLY the serverless function (service_role)
+-- may read it. `authenticated` is excluded because any Supabase user with an
+-- account could otherwise sign in and read all telemetry. Anonymous visitors
+-- may only INSERT (page_view etc.), never read.
 CREATE POLICY "Allow service role read telemetry"
 ON public.portfolio_telemetry
 FOR SELECT
 TO service_role
-USING (true);
-
-CREATE POLICY "Allow authenticated read telemetry"
-ON public.portfolio_telemetry
-FOR SELECT
-TO authenticated
 USING (true);
 
 -- Prohibit UPDATE and DELETE completely for public client (Immutable Event Log)
@@ -87,34 +83,23 @@ CREATE INDEX IF NOT EXISTS idx_memories_created_at ON public.ai_memories (create
 
 ALTER TABLE public.ai_memories ENABLE ROW LEVEL SECURITY;
 
--- RAG memory writes are trusted only from the serverless function (service_role)
--- or authenticated sessions. Anonymous INSERT is revoked to prevent prompt/RAG
--- poisoning: anyone could otherwise plant false "facts" that the AI repeats.
+-- RAG memory writes are trusted ONLY from the serverless function
+-- (service_role). Anonymous AND authenticated INSERT are revoked to prevent
+-- prompt/RAG poisoning — anyone with a Supabase account could otherwise plant
+-- false "facts" that the AI repeats. Writes go through /api/save-memory.
 CREATE POLICY "Allow service role insert memory"
 ON public.ai_memories
 FOR INSERT
 TO service_role
 WITH CHECK (char_length(fact_text) <= 1000);
 
-CREATE POLICY "Allow authenticated insert memory"
-ON public.ai_memories
-FOR INSERT
-TO authenticated
-WITH CHECK (char_length(fact_text) <= 1000);
-
--- RAG memory is PRIVATE: only service_role (serverless function) and
--- authenticated sessions may read. Anonymous INSERT remains for the public
--- terminal's memory-save path.
+-- RAG memory is PRIVATE: only service_role (serverless function) may read.
+-- `authenticated` is excluded (any Supabase user could otherwise read all
+-- stored memory).
 CREATE POLICY "Allow service role read memory"
 ON public.ai_memories
 FOR SELECT
 TO service_role
-USING (true);
-
-CREATE POLICY "Allow authenticated read memory"
-ON public.ai_memories
-FOR SELECT
-TO authenticated
 USING (true);
 
 CREATE POLICY "Deny public update memory"
@@ -184,11 +169,16 @@ DECLARE
     v_locked_until timestamptz;
 BEGIN
     SELECT * INTO v_row FROM public.admin_auth_config WHERE id = 'master_auth';
-    
+
+    -- FAIL-CLOSED (AGENTS §9b): if the auth row is missing, DO NOT re-seed with
+    -- the publicly-known default hash. Refuse verification instead.
     IF v_row IS NULL THEN
-        INSERT INTO public.admin_auth_config (id, pin_hash, lockout_attempts)
-        VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', 0)
-        RETURNING * INTO v_row;
+        RETURN json_build_object(
+            'success', false,
+            'verified', false,
+            'is_locked', false,
+            'message', 'Konfigurasi autentikasi belum tersedia. Jalankan skema database terlebih dahulu.'
+        );
     END IF;
 
     -- 1. JIKA PIN COCOK: Langsung izinkan masuk, bersihkan semua hitungan gagal & status lockout
@@ -250,8 +240,11 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    INSERT INTO public.admin_auth_config (id, pin_hash, otp_code_hash, otp_expires_at, otp_attempts, otp_blocked_until, updated_at)
-    VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', p_otp_hash, p_expires_at, 0, NULL, now())
+    -- FAIL-CLOSED: never overwrite pin_hash here. This RPC only manages the OTP
+    -- fields; the master PIN must be set/changed via rpc_admin_update_pin or the
+    -- seed, never via the OTP-save path.
+    INSERT INTO public.admin_auth_config (id, otp_code_hash, otp_expires_at, otp_attempts, otp_blocked_until, updated_at)
+    VALUES ('master_auth', p_otp_hash, p_expires_at, 0, NULL, now())
     ON CONFLICT (id) DO UPDATE
     SET otp_code_hash = p_otp_hash,
         otp_expires_at = p_expires_at,
@@ -297,6 +290,8 @@ BEGIN
             otp_blocked_until = NULL,
             lockout_attempts = 0,
             locked_until = NULL,
+            session_token = NULL,
+            session_expires_at = NULL,
             updated_at = v_now
         WHERE id = 'master_auth';
 
@@ -333,6 +328,8 @@ BEGIN
     SET pin_hash = p_new_pin_hash,
         lockout_attempts = 0,
         locked_until = NULL,
+        session_token = NULL,
+        session_expires_at = NULL,
         updated_at = now()
     WHERE id = 'master_auth';
 
@@ -414,6 +411,12 @@ FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE INDEX IF NOT EXISTS idx_rate_limits_window
 ON public.rate_limits (window_start DESC);
+
+-- To prevent unbounded growth of rate_limits (per-request rows, no natural TTL),
+-- schedule a daily cleanup job (matches the telemetry-cleanup pattern below):
+-- SELECT cron.schedule('rate-limits-cleanup', '0 3 * * *', $$
+--   DELETE FROM public.rate_limits WHERE window_start < NOW() - INTERVAL '1 day';
+-- $$);
 
 -- ============================================================================
 -- 9. PARTIAL INDEX: Optimize OMNIROUTE_TUNNEL lookup in ai_memories
