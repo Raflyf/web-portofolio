@@ -179,7 +179,7 @@ export default function HorizonHero() {
             </h1>
 
             <p className="max-w-xl text-base sm:text-lg text-zinc-300 leading-relaxed font-normal">
-              Mengkombinasikan ketajaman analisis algoritmik dengan arsitektur sistem yang transparan, dapat direproduksi, dan beretika privasi.
+              Fokus mengembangkan aplikasi web modern dan sistem kecerdasan buatan yang praktis, aman, serta menghormati privasi pengguna.
             </p>
 
             {/* Pristine iOS Liquid Glass Buttons */}
