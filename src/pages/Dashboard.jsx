@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { telemetry } from '../lib/telemetry';
 import { getSupabaseConfig } from '../lib/supabase';
 import {
@@ -318,6 +318,15 @@ export default function Dashboard() {
     if (typeof window === 'undefined') return true;
     return document.documentElement.classList.contains('dark') || localStorage.getItem('portfolio-theme') !== 'light';
   });
+
+  // Scroll-craft Dashboard Scroll Dynamics
+  const { scrollYProgress } = useScroll();
+  const dashboardProgress = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 28,
+    restDelta: 0.001
+  });
+  const ambientDashboardY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
 
   const handleThemeToggle = () => {
     const nextDark = !isDark;
@@ -1457,8 +1466,21 @@ export default function Dashboard() {
   return (
     <main className="w-full min-h-screen relative z-10 pb-20 bg-background dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans">
       
+      {/* Scroll-craft Kinetic Ambient Atmosphere */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
+        <motion.div 
+          style={{ y: ambientDashboardY }}
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[90vw] max-w-7xl h-[500px] bg-linear-to-b from-cyan-500/8 via-indigo-600/4 to-transparent blur-[130px] rounded-full"
+        />
+      </div>
+
       {/* Top Header Controls Bar (Sleek Compact Navbar) */}
       <div className="sticky top-0 z-50 w-full liquid-glass-nav border-b border-white/10">
+        {/* Real-time Scroll Progress Line */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-linear-to-r from-cyan-400 via-indigo-400 to-purple-400 origin-left pointer-events-none shadow-[0_0_8px_rgba(34,211,238,0.7)]"
+          style={{ scaleX: dashboardProgress }}
+        />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
           <div className="absolute inset-0 bg-linear-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
           
@@ -2267,6 +2289,22 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Floating Smooth Scroll to Top Button for Admin */}
+      <button
+        onClick={() => {
+          if (window.__lenis) {
+            window.__lenis.scrollTo(0, { duration: 1 });
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        className="fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-0.5 shadow-lg cursor-pointer"
+        aria-label="Scroll ke Atas"
+        title="Kembali ke Atas Dashboard"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+      </button>
 
     </main>
   );

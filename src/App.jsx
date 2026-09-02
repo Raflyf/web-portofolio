@@ -64,7 +64,11 @@ function FloatingNavbar() {
       const id = href.replace('/#', '');
       const el = document.getElementById(id);
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+        if (window.__lenis) {
+          window.__lenis.scrollTo(el, { duration: 1.2, offset: -40 });
+        } else {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     }
   };
@@ -202,6 +206,8 @@ export default function App() {
       touchMultiplier: 1.8,
     });
 
+    window.__lenis = lenis;
+
     // RAF loop with a stored id so it is actually canceled on unmount
     // (lenis.destroy() alone does not stop our own loop).
     let rafId = 0;
@@ -214,6 +220,7 @@ export default function App() {
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
+      delete window.__lenis;
     };
   }, []);
 
@@ -241,7 +248,13 @@ export default function App() {
       {location.pathname !== '/dashboard' && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
           <button 
-            onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }) || window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => {
+              if (window.__lenis) {
+                window.__lenis.scrollTo(0, { duration: 1.2 });
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
             className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-1"
             aria-label="Back to top"
             title="Kembali ke Atas"
