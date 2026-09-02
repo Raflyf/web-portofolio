@@ -739,36 +739,11 @@ export default function Dashboard() {
   const handleSendPing = async () => {
     setPingStatus('Mengirim Ping Telemetri...');
     try {
-      const testEvent = {
-        event_type: 'ping_test',
-        event_target: 'Admin Dashboard',
-        event_label: 'Observability Manual Ping Test',
-        device_type: 'desktop',
-        screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
-        referrer: document.referrer || 'direct',
-        session_id: 'admin_test_' + Math.random().toString(36).substring(2, 9),
-        created_at: new Date().toISOString()
-      };
-
-      const res = await fetch(`${supabaseUrl.replace(/\/+$/, '')}/rest/v1/portfolio_telemetry`, {
-        method: 'POST',
-        headers: {
-          'apikey': supabaseAnonKey,
-          'Authorization': `Bearer ${supabaseAnonKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(testEvent)
-      });
-
-      if (res.ok) {
-        setPingStatus('Ping Berhasil Terkirim ke Supabase! (HTTP 201)');
-        fetchTelemetryData();
-      } else {
-        setPingStatus(`Ping Gagal: Status HTTP ${res.status}`);
-      }
+      telemetry.logEvent('ping_test', 'Admin Dashboard', 'Observability Manual Ping Test');
+      await fetchTelemetryData();
+      setPingStatus('Ping Berhasil Terkirim & Telemetri Diperbarui!');
     } catch (e) {
-      setPingStatus('Ping Gagal: Gangguan Jaringan.');
+      setPingStatus('Ping Gagal: Terjadi gangguan jaringan.');
     }
     timeoutsRef.current.push(setTimeout(() => setPingStatus(''), 4000));
   };
