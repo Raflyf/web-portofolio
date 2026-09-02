@@ -86,20 +86,20 @@ function FloatingNavbar() {
   return (
     <header className="fixed top-0 inset-x-0 z-50 pointer-events-none transition-all duration-300">
       <div className={`w-full pointer-events-auto px-6 lg:px-8 py-3.5 flex items-center justify-between transition-all duration-300 ${
-        scrolled
-          ? 'liquid-glass-nav'
+        scrolled || mobileMenuOpen
+          ? 'bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-200/80 dark:border-white/10 shadow-md'
           : 'bg-transparent border-b border-transparent'
       }`}>
         {/* Brand / Logo - Clicking smoothly scrolls to the very top */}
         <Link to="/" onClick={handleBrandClick} className="flex items-center gap-3 group cursor-pointer" title="Kembali ke Paling Atas">
           <div className="w-9 h-9 rounded-full bg-linear-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] group-hover:scale-105 transition-transform">
-            <span className="text-sm font-bold text-white tracking-tight">RF</span>
+            <span className="text-sm font-bold text-zinc-900 dark:text-white tracking-tight">RF</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-bold text-white tracking-tight leading-snug group-hover:text-cyan-300 transition-colors">
+            <span className="text-base font-bold text-zinc-900 dark:text-white tracking-tight leading-snug group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
               Rafly Firmansyah
             </span>
-            <span className="text-xs font-mono text-zinc-400 leading-none flex items-center gap-1.5 mt-0.5">
+            <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 leading-none flex items-center gap-1.5 mt-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
               Online
             </span>
@@ -116,7 +116,7 @@ function FloatingNavbar() {
                 handleNavClick(e, link.href);
                 telemetry.logEvent('nav_click', link.href, `Navigasi Menu: ${link.name}`);
               }}
-              className="px-4 py-2 rounded-full text-sm font-medium text-zinc-200 hover:text-white hover:bg-white/10 liquid-press transition-all"
+              className="px-4 py-2 rounded-full text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 liquid-press transition-all"
             >
               {link.name}
             </a>
@@ -127,7 +127,7 @@ function FloatingNavbar() {
         <div className="hidden md:flex items-center gap-3">
           <button
             onClick={handleThemeToggle}
-            className="w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-200 hover:text-white cursor-pointer"
+            className="w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
             aria-label="Ubah Mode Tema"
             title="Ubah Mode Tema (Terang/Gelap)"
           >
@@ -135,7 +135,7 @@ function FloatingNavbar() {
           </button>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 hover:text-emerald-200 liquid-press transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 liquid-press transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)]"
           >
             <Shield className="w-4 h-4" />
             <span>Dashboard</span>
@@ -145,48 +145,74 @@ function FloatingNavbar() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-200 hover:text-white cursor-pointer"
+          className="md:hidden w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
           aria-label="Menu Navigasi"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
+      {/* Mobile Menu Dropdown with Backdrop Dimmer */}
       {mobileMenuOpen && (
-        <nav className="md:hidden mt-3 p-2 liquid-glass-strong glass-spring-in flex flex-col gap-1 pointer-events-auto">
-          {navLinks.map((link) => (
+        <>
+          {/* Backdrop Dimmer Overlay: Menutup teks hero di belakang dan memungkinkan tap-to-close */}
+          <div 
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md z-[-1] pointer-events-auto transition-opacity"
+            aria-hidden="true"
+          />
+
+          {/* Solid & High-Contrast Mobile Navigation Panel */}
+          <nav 
+            className="md:hidden mx-4 mt-2 p-3.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-zinc-200/90 dark:border-white/15 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.8)] glass-spring-in flex flex-col gap-1.5 pointer-events-auto"
+            aria-label="Menu Mobile"
+          >
+            {navLinks.map((link) => (
+              <button
+                key={link.name}
+                onClick={(e) => {
+                  handleNavClick(e, link.href);
+                  telemetry.logEvent('nav_click', link.href, `Navigasi Menu: ${link.name}`);
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full px-4 py-3 rounded-xl text-sm font-semibold text-zinc-800 dark:text-zinc-100 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/10 active:bg-zinc-200/80 dark:active:bg-white/15 liquid-press transition-all text-left flex items-center justify-between cursor-pointer"
+              >
+                <span>{link.name}</span>
+                <span className="text-zinc-400 dark:text-zinc-500 text-xs">→</span>
+              </button>
+            ))}
+
+            <div className="h-px bg-zinc-200 dark:bg-white/10 my-1 mx-2" />
+
             <button
-              key={link.name}
-              onClick={(e) => {
-                handleNavClick(e, link.href);
-                telemetry.logEvent('nav_click', link.href, `Navigasi Menu: ${link.name}`);
+              onClick={() => {
+                handleThemeToggle();
                 setMobileMenuOpen(false);
               }}
-              className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-200 hover:text-white hover:bg-white/10 liquid-press transition-colors text-left"
+              className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold bg-zinc-100 dark:bg-white/5 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-white/10 active:bg-zinc-300/80 dark:active:bg-white/15 liquid-press transition-colors cursor-pointer"
             >
-              {link.name}
+              <div className="flex items-center gap-2.5">
+                {isDark ? <Sun className="w-4 h-4 text-amber-500 dark:text-cyan-400" /> : <Moon className="w-4 h-4 text-indigo-600 dark:text-cyan-400" />}
+                <span>Ubah Mode Tema</span>
+              </div>
+              <span className="text-xs font-mono font-medium text-zinc-500 dark:text-zinc-400">
+                {isDark ? 'Mode Gelap' : 'Mode Terang'}
+              </span>
             </button>
-          ))}
-          <div className="h-px bg-white/10 my-1 mx-2" />
-          <button
-            onClick={() => {
-              handleThemeToggle();
-              setMobileMenuOpen(false);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white/5 text-zinc-200 hover:bg-white/10 liquid-press transition-colors"
-          >
-            {isDark ? <Sun className="w-4 h-4 text-cyan-400" /> : <Moon className="w-4 h-4 text-cyan-400" />}
-            <span>Ubah Mode Tema</span>
-          </button>
-          <Link
-            to="/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 liquid-press transition-colors"
-          >
-            <Shield className="w-4 h-4" />
-            <span>Dashboard Admin</span>
-          </Link>
-        </nav>
+
+            <Link
+              to="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold bg-emerald-500/15 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25 border border-emerald-500/30 dark:border-emerald-500/40 liquid-press transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Dashboard Observabilitas</span>
+              </div>
+              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">LIVE</span>
+            </Link>
+          </nav>
+        </>
       )}
     </header>
   );
