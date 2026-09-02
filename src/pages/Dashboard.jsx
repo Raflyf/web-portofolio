@@ -36,7 +36,9 @@ import {
   Monitor,
   Tablet,
   ExternalLink,
-  Sliders
+  Sliders,
+  Sun,
+  Moon
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -250,23 +252,23 @@ const CustomSelect = ({ value, onChange, options }) => {
         aria-expanded={isOpen}
         className={`flex items-center justify-between w-40 sm:w-48 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
           isOpen 
-            ? 'bg-cyan-500/15 border border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]' 
-            : 'bg-zinc-900/90 hover:bg-zinc-800/90 border border-white/10 hover:border-cyan-400/50 text-zinc-200'
+            ? 'bg-cyan-500/15 border border-cyan-400 text-cyan-600 dark:text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]' 
+            : 'bg-white dark:bg-[#090d16] hover:bg-zinc-100 dark:hover:bg-zinc-800/90 border border-zinc-300 dark:border-white/10 hover:border-cyan-400/50 text-zinc-800 dark:text-zinc-200 shadow-sm'
         }`}
       >
         <span className="truncate">{selectedOption?.label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-cyan-400" : "rotate-0 text-zinc-400"}`} />
+        <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-cyan-500 dark:text-cyan-400" : "rotate-0 text-zinc-500 dark:text-zinc-400"}`} />
       </button>
 
       {isOpen && (
         <div
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 z-[100] mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl bg-[#090d16] border border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 z-[100] mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl bg-white dark:bg-[#090d16] border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         >
           <div 
             data-lenis-prevent="true" 
-            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-100 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map((option) => (
               <button
@@ -279,12 +281,12 @@ const CustomSelect = ({ value, onChange, options }) => {
                 }}
                 className={`flex w-full items-center justify-between px-3.5 py-2.5 text-left text-xs transition-colors cursor-pointer ${
                   value === option.value 
-                    ? "bg-cyan-500/20 text-cyan-300 font-bold" 
-                    : "text-zinc-200 hover:bg-white/10 hover:text-white"
+                    ? "bg-cyan-50 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-bold" 
+                    : "text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/10"
                 }`}
               >
                 <span className="truncate pr-2">{option.label}</span>
-                {value === option.value && <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+                {value === option.value && <Check className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 shrink-0" />}
               </button>
             ))}
           </div>
@@ -319,6 +321,20 @@ const alwaysShowDataLabelPlugin = {
 };
 
 export default function Dashboard() {
+  // Theme State
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return document.documentElement.classList.contains('dark') || localStorage.getItem('portfolio-theme') !== 'light';
+  });
+
+  const handleThemeToggle = () => {
+    const nextDark = !isDark;
+    document.documentElement.classList.toggle('dark', nextDark);
+    localStorage.setItem('portfolio-theme', nextDark ? 'dark' : 'light');
+    setIsDark(nextDark);
+    telemetry.logEvent('theme_toggle', 'admin_switch', `Ubah Tema Admin ke ${nextDark ? 'gelap' : 'terang'}`);
+  };
+
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
@@ -1424,38 +1440,48 @@ export default function Dashboard() {
           <div className="flex items-center gap-3 relative z-10">
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full shrink-0 ${isLiveConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]' : 'bg-amber-400'}`} />
-              <h1 className="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-2 whitespace-nowrap">
+              <h1 className="text-sm sm:text-base font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2 whitespace-nowrap">
                 Admin Observability
               </h1>
             </div>
-            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-400">
+            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-[10px] font-mono text-zinc-600 dark:text-zinc-400">
               {isLiveConnected ? 'Supabase Live' : 'Local Cache'}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 relative z-10">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={handleThemeToggle}
+              className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer"
+              title={isDark ? "Beralih ke Mode Terang" : "Beralih ke Mode Gelap"}
+            >
+              {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-500" />}
+              <span className="hidden sm:inline">{isDark ? "Light" : "Dark"}</span>
+            </button>
+
             <button
               onClick={handleSendPing}
-              className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-[11px] font-medium text-cyan-300 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-[11px] font-medium text-cyan-600 dark:text-cyan-300 flex items-center gap-1.5 transition-all cursor-pointer"
               title="Kirim event tes langsung ke Supabase"
             >
-              <Zap className="w-3 h-3" />
+              <Zap className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
               <span className="hidden sm:inline">Uji Ping</span>
             </button>
 
             <button
               onClick={() => setIsChangePinOpen(true)}
-              className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-medium text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
               title="Ubah Master PIN"
             >
-              <KeyRound className="w-3 h-3 text-purple-400" />
+              <KeyRound className="w-3 h-3 text-purple-500 dark:text-purple-400" />
               <span className="hidden sm:inline">Ubah PIN</span>
             </button>
 
             <button
               onClick={fetchTelemetryData}
               disabled={isLoading}
-              className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-medium text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+              className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
               title="Segarkan Data"
             >
               <RefreshCw className={`w-3 h-3 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`} />
@@ -1809,23 +1835,23 @@ export default function Dashboard() {
           </div>
 
           {/* Standalone Full-Width Auto Gateway Router Banner */}
-          <div className="p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-slate-900/50 to-indigo-950/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 dark:from-cyan-950/40 via-indigo-500/10 dark:via-slate-900/50 to-purple-500/10 dark:to-indigo-950/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                   SMART AUTO GATEWAY
                 </span>
-                <span className="text-xs font-mono text-zinc-400">Automatic Load-Balancing & Failover</span>
+                <span className="text-xs font-mono text-zinc-600 dark:text-zinc-400">Automatic Load-Balancing & Failover</span>
               </div>
-              <h3 className="text-base font-bold text-white">Auto Gateway Router (Smart Cascades)</h3>
-              <p className="text-xs text-zinc-300 max-w-2xl">
+              <h3 className="text-base font-bold text-zinc-900 dark:text-white">Auto Gateway Router (Smart Cascades)</h3>
+              <p className="text-xs text-zinc-700 dark:text-zinc-300 max-w-2xl">
                 Routing otomatis cerdas yang mendeteksi latensi, kuota, dan kapabilitas kueri pengguna untuk mengarahkan ke model AI terbaik secara real-time.
               </p>
             </div>
 
-            <div className="text-right flex-shrink-0 bg-black/40 px-5 py-3 rounded-xl border border-white/10">
-              <div className="text-[10px] uppercase font-mono text-zinc-400">Total Resolusi Router</div>
-              <div className="text-2xl font-bold font-mono text-cyan-300">{aiModelsStats.autoRouterCount}x</div>
+            <div className="text-right flex-shrink-0 bg-white/80 dark:bg-black/40 px-5 py-3 rounded-xl border border-zinc-200 dark:border-white/10 shadow-sm">
+              <div className="text-[10px] uppercase font-mono text-zinc-500 dark:text-zinc-400">Total Resolusi Router</div>
+              <div className="text-2xl font-bold font-mono text-cyan-600 dark:text-cyan-300">{aiModelsStats.autoRouterCount}x</div>
             </div>
           </div>
 
