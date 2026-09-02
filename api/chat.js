@@ -97,18 +97,19 @@ ${effortDirective}
    - Jika pengguna bertanya tentang siapa Anda, model apa ini, atau peran Anda (misalnya: "model apa kamu", "siapa kamu", "who are you"): Jawab secara luwes, ramah, komunikatif, dan DINAMIS (DILARANG menggunakan template kaku yang sama persis). Jelaskan peran Anda dalam membantu eksplorasi riset skripsi/ML Rafly (Concept Drift & Deteksi Plagiarisme), membedah arsitektur kode 5 repositori GitHub, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), atau mendiskusikan topik rekayasa perangkat lunak.
    - DILARANG KERAS menganggap pertanyaan "model apa kamu" sebagai permintaan mencari atau membuat daftar model AI eksternal (DILARANG membuat bullet list GLM, Llama, Mistral, Gemini, dsb)!
    - HANYA fokus pada peran Anda di portofolio ini. Susun jawaban secara mengalir alami dan kontekstual.
-5. ATURAN PENEMPATAN TAUTAN / URL RESMI:
-   - HANYA sertakan bagian "Tautan Terkait:" jika memang ada link URL nyata yang relevan untuk dibagikan (misalnya saat membahas proyek GitHub atau sumber artikel spesifik).
-   - Jika TIDAK ADA link yang perlu dibagikan (misalnya saat menjawab sapaan, identitas, atau diskusi topik umum), DILARANG KERAS menuliskan judul "Tautan Terkait:" atau catatan "(tidak ada tautan)". Cukup akhiri jawaban secara bersih dan natural.
-   - DILARANG menyisipkan tautan Markdown di tengah kalimat. Jika ada link, letakkan di baris paling akhir.
+5. ATURAN TAUTAN (NO EXTERNAL NEWS URLS):
+   - **DILARANG KERAS** menyertakan link berita eksternal atau URL redirect RSS (seperti `https://news.google.com/rss/...`).
+   - DILARANG membuat bagian "Tautan Terkait" untuk berita/informasi umum.
+   - HANYA sertakan tautan resmi portofolio jika pengguna secara eksplisit menanyakan 5 repositori GitHub Rafly atau sertifikasi resmi.
 6. Nol Monolog / Nol Emoji: Jangan menghasilkan teks monolog pemikiran bahasa Inggris, dan jangan gunakan emoji apapun.
 
-[BATASAN ANTI-HALUSINASI & PEMISAHAN TOPIK]:
+[BATASAN ANTI-HALUSINASI & AKURASI FAKTA TINGGI]:
+- **AKURASI JADWAL & STATUS RESMI**:
+  - Jika publisher/developer resmi hanya mengumumkan jendela rilis umum (misal: "Fall 2025" atau "Tahun 2026"), DILARANG MENGARANG tanggal/bulan spesifik fiktif (seperti "19 November 2026").
+  - Pisahkan dengan tegas antara **Pengumuman Resmi Developer** vs **Spekulasi / Rumor Komunitas**.
+  - DILARANG mengarang platform tayang fiktif (seperti mengklaim trailer resmi tayang di Netflix jika itu hanya kanal YouTube/website resmi).
 - Portofolio resmi Rafly Firmansyah HANYA memiliki 5 proyek di Ground Truth di bawah: OpenPlagiarismChecker, Spam-Email Detection System, laser_pointer_PPT, FotoKitaBlur, dan web-portofolio.
-- Jika pengguna bertanya tentang rilis model AI industri global (seperti DeepSeek, OpenAI GPT, Anthropic Claude, Google Gemini, Meta Llama, Mistral, Nvidia Nemotron, dll), jelaskan perkembangan model AI dunia nyata tersebut HANYA berdasarkan fakta penelusuran web yang tersedia. DILARANG KERAS mengarang bahwa Rafly Firmansyah membuat model bernama 'Perilisann' atau mengklaim rilis produk fiktif!
-- DILARANG MEMBUAT URL PALSU / FIKTIF. Hanya sertakan URL yang benar-benar ada di [FAKTA & PERKEMBANGAN BERITA TERKINI] di atas.
-- DILARANG MENYEBUT NAMA MEDIA / SUMBER kecuali nama media tersebut secara eksplisit tercantum di data pencarian di atas.
-- DILARANG MENGARANG ANGKA BENCHMARK SPESIFIK jika angka tersebut tidak tercantum di data pencarian.
+- DILARANG MEMBUAT URL PALSU / FIKTIF. DILARANG MENYEBUTKAN LINK REDIRECT GOOGLE NEWS.
 
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
 - **OpenPlagiarismChecker**: Deteksi plagiarisme akademik 100% lokal offline. Dual Engine: 5-Word N-Gram Shingling Exact Match + Multilingual SBERT 384-dim Cosine Similarity, 15+ basis data jurnal. URL Repositori: https://github.com/Raflyf/OpenPlagiarismChecker
@@ -1386,31 +1387,27 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?:\n\n|\n)(?:Jika Anda (?:memerlukan|membutuhkan|tertarik|ingin|butuh)[\s\S]*?(?:siap membantu|hubungi|mengeksplorasi|contoh kode| relevan)[\s\S]*?$)/i, '').trim();
 
       // 6. Strip URL fiktif / dikarang model (Anti-Hallucination URL Forgery Filter)
-      // Whitelist: domain resmi Rafly + domain berita/ref terpercaya + URL yang memang ada di rawSnippets scraping nyata
+      // Whitelist: domain resmi Rafly + domain dokumentasi resmi terpercaya
       const officialDomains = [
         'github.com', 'raflyfirmansyah-portofolio.vercel.app', 'bnsp.go.id', 'mikrotik.com', 'netacad.com',
-        'wa.me', 'google.com', 'news.google.com', 'bing.com', 'wikipedia.org', 'wikimedia.org',
-        'techcrunch.com', 'reuters.com', 'bbc.com', 'bbc.co.uk', 'theverge.com', 'wired.com',
-        'bloomberg.com', 'wsj.com', 'nytimes.com', 'apnews.com', 'aljazeera.com',
-        'kompas.com', 'detik.com', 'tempo.co', 'cnnindonesia.com', 'tribunnews.com',
-        'liputan6.com', 'cnbcindonesia.com', 'idntimes.com', 'kumparan.com', 'republika.co.id',
-        'antara.co.id', 'antaranews.com', 'sindonews.com', 'bisnis.com', 'medcom.id',
-        'suara.com', 'jpnn.com', 'okezone.com', 'merdeka.com', 'rmol.id', 'viva.co.id',
-        'huggingface.co', 'arxiv.org', 'openai.com', 'anthropic.com', 'deepmind.google',
-        'deepseek.com', 'mistral.ai', 'meta.com', 'nvidia.com', 'microsoft.com',
-        'spacex.com', 'nasa.gov', 'nature.com', 'science.org', 'vercel.com', 'supabase.com',
-        'r.jina.ai'
+        'wa.me', 'wikipedia.org', 'wikimedia.org', 'huggingface.co', 'arxiv.org',
+        'openai.com', 'anthropic.com', 'deepmind.google', 'deepseek.com', 'mistral.ai', 'meta.com', 'nvidia.com', 'microsoft.com'
       ];
       cleaned = cleaned.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, (match, linkText, url) => {
         try {
           const hostname = new URL(url).hostname.replace(/^www\./, '');
           const isOfficialDomain = officialDomains.some(d => hostname === d || hostname.endsWith('.' + d));
           if (isOfficialDomain) return match; // URL resmi, biarkan
-          return linkText; // URL tidak dikenal, strip jadi teks saja
+          return linkText; // URL tidak dikenal / berita RSS, strip jadi teks saja
         } catch (_) {
           return linkText; // URL malformed, strip
         }
       });
+
+      // 6.5. Strip all Google News / Bing RSS raw link artifacts completely
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*(?:\*\*)?Tautan Terkait(?:\*\*)?:?\s*[\s\S]*?(?:news\.google\.com|bing\.com)[^\n]*/gi, '');
+      cleaned = cleaned.replace(/https?:\/\/(?:news\.google\.com|www\.bing\.com\/news)[^\s)"'>]+/gi, '');
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*(?:\*\*)?Tautan Terkait(?:\*\*)?:?\s*$/gim, '');
 
       // 7. Relocate inline links from the middle of prose paragraphs to the bottom
       const hasInlineLinksInProse = /([a-zA-Z0-9\.\,\)])\s*(\[[^\]]+\]\(https?:\/\/[^)]+\))\s*([a-zA-Z0-9])/i.test(cleaned);
