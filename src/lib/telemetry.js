@@ -151,6 +151,66 @@ class TelemetryEngine {
     } catch {}
   }
 
+  // Auto-sync any offline events that were buffered in localStorage back to Supabase Cloud
+  async flushUnsyncedEvents() {
+    if (!this.supabaseConfig || !this.supabaseConfig.url || !this.supabaseConfig.anonKey) return;
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+
+    try {
+      const localEvents = this.getLocalEvents();
+      // Filter strictly genuine unsynced events (buffered within the last 7 days)
+      const now = Date.now();
+      const unsynced = localEvents.filter(e => {
+        if (e.synced) return false;
+        const evTime = new Date(e.created_at || 0).getTime();
+        return (now - evTime) < 7 * 24 * 60 * 60 * 1000;
+      });
+
+      if (unsynced.length === 0) return;
+
+      // Clean payloads to strictly match Supabase table schema
+      const cleanPayloads = unsynced.map(e => ({
+        event_type: (e.event_type || 'unknown').toString().substring(0, 50),
+        event_target: (e.event_target || 'unknown').toString().substring(0, 150),
+        event_label: (e.event_label || e.event_target || '').toString().substring(0, 255),
+        device_type: (e.device_type || 'desktop').toString().substring(0, 20),
+        screen_resolution: (e.screen_resolution || '1920x1080').toString().substring(0, 30),
+        referrer: (e.referrer || 'Direct / Bookmark').toString().substring(0, 255),
+        session_id: (e.session_id || 'sess_default').toString().substring(0, 64),
+        created_at: e.created_at
+      }));
+
+      const endpoint = `${this.supabaseConfig.url.replace(/\/$/, '')}/rest/v1/portfolio_telemetry`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': this.supabaseConfig.anonKey,
+          'Authorization': `Bearer ${this.supabaseConfig.anonKey}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(cleanPayloads)
+      });
+
+      if (res.ok) {
+        const flushedSet = new Set(unsynced.map(e => e.created_at));
+        const updated = localEvents.map(e => {
+          if (flushedSet.has(e.created_at)) {
+            return { ...e, synced: true };
+          }
+          return e;
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('telemetry_update'));
+        }
+      }
+    } catch {
+      // Best-effort silent catch
+    }
+  }
+
   init() {
     if (this.initialized) return;
     this.initialized = true;
@@ -162,6 +222,12 @@ class TelemetryEngine {
       pageTarget = 'Admin Dashboard & Telemetri';
     }
     this.logEvent('page_view', pageTarget, `Kunjungan Halaman: ${document.title || 'Portofolio'}`);
+
+    // Flush any unsynced offline events immediately and listen for online reconnection
+    this.flushUnsyncedEvents();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => this.flushUnsyncedEvents());
+    }
   }
 }
 
