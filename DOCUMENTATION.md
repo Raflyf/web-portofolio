@@ -754,3 +754,15 @@ Released 2026-09-03.
    - Memastikan elemen `Footer` eksplisit bertengger di `relative z-10` di atas kanvas.
 2. **Transform Sizing Anti-Akumulatif:**
    - Menggunakan `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` pada event resize jendela untuk mencegah distorsi skala atau terpotongnya batas kanvas saat ukuran viewport berubah.
+
+### v10.603.0 — Forced Always-On Motion & Battery Saver Bypass
+
+Released 2026-09-03.
+1. **Penerapan Framer Motion Always-On (`App.jsx`):**
+   - Membungkus seluruh aplikasi dengan `<MotionConfig reducedMotion="never">`.
+   - Mengabaikan pembatasan preferensi sistem operasi, browser, atau mode hemat baterai (*battery saver*) yang secara default mematikan atau mempercepat transisi Framer Motion secara instan.
+2. **Aktivasi Gerak Kanvas & Fisika Partikel Penuh (`interactive-scroll-background.jsx`):**
+   - Menghapus pembatasan `prefers-reduced-motion` pada pergerakan partikel konstelasi saraf dan *kinetic velocity scroll physics*.
+   - Partikel dan fluid nebula kini dijamin 100% selalu bergerak secara aktif di semua perangkat pengguna.
+3. **CSS Motion Play-State Override (`index.css`):**
+   - Menambahkan rule `@media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-play-state: running !important; } }` untuk mencegah user-agent stylesheet atau ekstensi browser mematikan animasi CSS.
