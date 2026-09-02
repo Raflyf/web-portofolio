@@ -1336,12 +1336,23 @@ export default async function handler(req, res) {
         cleaned = cleaned.replace(/^(?:Hai|Halo|Hei|Hello|Hi|Hey)[!,\s.-]+/i, '').trim();
       }
 
-      // 3.5. Ensure distinct line breaks for bullet points and sections
-      cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*(\*\*[^*]+?\*\*)/g, '$1\n\n- $2');
-      cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–]+?)[\*]+\s*/g, '$1\n\n- **$2**: ');
+      // 3.5. Ensure distinct line breaks for inline sub-sections and bullet points
+      cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–,]+?)(?:\*+|\*\*|:)?\s*[-–—:]\s*/g, '$1\n\n- **$2**: ');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–—:]\s*/g, '\n- **$1**: ');
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\*+([^*:\n]+)\*+\s*[\-–—:]\s*/g, '\n- **$1**: ');
 
-      // 3.6. Deterministic Identity Grounding: Cegah klaim pihak ketiga dan hilangkan dump nama model teknis
+      // 3.6. Clean rogue colons and malformed bullet point headers
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]\s*:\s*/g, '\n- ');
+      cleaned = cleaned.replace(/(?:^|\n)\s*:\s*/g, '\n- ');
+      cleaned = cleaned.replace(/:\s*:\s*/g, ': ');
+      cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
+      cleaned = cleaned.replace(/\s*\*\s*-\s*/g, ' - ');
+
+      // 3.62. Clean rogue unclosed asterisks on isolated words (e.g. "Zombie*" or "*Dead Party*")
+      cleaned = cleaned.replace(/(?<=[a-zA-Z0-9])\*(?!\*)/g, '');
+      cleaned = cleaned.replace(/(?<!\*)\*(?=[a-zA-Z0-9])/g, '');
+
+      // 3.65. Deterministic Identity Grounding: Cegah klaim pihak ketiga dan hilangkan dump nama model teknis
       if (isIdentityQuery) {
         const isHallucinatedModelList = /(?:glm|llama\s*3|mistral\s*7b|gemini\s*1\.5|model[- ]model ini tersedia|z\.ai|zhipu)/i.test(cleaned) || cleaned.includes('MODEL APA KAMU') || cleaned.length < 25;
         if (isHallucinatedModelList) {
@@ -1354,23 +1365,14 @@ export default async function handler(req, res) {
         }
       }
 
-      // 3.65. Ensure each bullet point is on a separate line
-      cleaned = cleaned.replace(/([^\n])\s+[-•*]\s+\*\*/g, '$1\n- **');
-      cleaned = cleaned.replace(/([^\n])\s+[-•*]\s+\[/g, '$1\n- [');
-      cleaned = cleaned.replace(/([^\n])\s+•\s+/g, '$1\n- ');
-
       // 3.7. Clean duplicate bullet dashes & normalize bold markdown
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*[\-\*•\s]*/gm, '$1**');
       cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\[([^\]\n]+)\](?:\*\*|:|\*\*:)?\s*/gm, '$1**$2**: ');
-      cleaned = cleaned.replace(/^([•\-\*]\s*)\*(?!\*)([^\n*]+)\*\*/gm, '$1**$2**');
-      cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*(?!\*)/gm, '$1**$2**');
+      cleaned = cleaned.replace(/^([•\-\*]\s*)\*+([^\n*:-]+)\*+\s*[-–—:]\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)([^\n*:-]+)\*\s*-\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*\s*-\s*/gm, '$1**$2**: ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*([^\n*]+)\*\s*:\s*/gm, '$1**$2**: ');
-      cleaned = cleaned.replace(/:\s*:\s*/g, ': ');
-      cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
-      cleaned = cleaned.replace(/\s*\*\s*-\s*/g, ' - ');
       cleaned = cleaned.replace(/([^\n])\s{2,}([^\n])/g, '$1 $2');
       cleaned = cleaned.replace(/([^\n])\s+((?:Semoga|Jika ada|Ada topik|Kalau ada|Silakan)\s+[^\n]+)$/i, '$1\n\n$2');
       cleaned = cleaned.replace(/\n\s*-\s*-\s*(?:\n|$)/g, '\n\n');
