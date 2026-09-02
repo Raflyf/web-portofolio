@@ -10,6 +10,45 @@
 
 const SUPABASE_DEFAULT_URL = 'https://rphyzcqwpkxtzllvymss.supabase.co';
 
+// Trusted client IP: prefer Vercel's trusted header, else the LAST element of
+// x-forwarded-for (the value appended by the outermost trusted proxy), else the
+// raw socket address. Never trust the first x-forwarded-for segment — clients
+// can spoof it to bypass per-IP rate limits.
+function getClientIp(req) {
+  const trusted = req.headers['x-vercel-forwarded-for'];
+  if (trusted && typeof trusted === 'string') return trusted.split(',')[0].trim();
+  const xff = req.headers['x-forwarded-for'];
+  if (xff && typeof xff === 'string') {
+    const parts = xff.split(',');
+    return (parts[parts.length - 1] || '').trim() || req.socket?.remoteAddress || 'unknown-client';
+  }
+  return req.socket?.remoteAddress || 'unknown-client';
+}
+
+// In-memory per-IP limiter (max 5 posts/minute). Best-effort fast path;
+// keeps the write path bounded against DB-write DoS on a single warm instance.
+const memorySaveCache = new Map();
+const SAVE_MAX_PER_WINDOW = 5;
+const SAVE_WINDOW_MS = 60 * 1000;
+
+function isSaveLimited(clientIp) {
+  const now = Date.now();
+  const rec = memorySaveCache.get(clientIp);
+  if (!rec || (now - rec.start) > SAVE_WINDOW_MS) {
+    memorySaveCache.set(clientIp, { count: 1, start: now });
+    if (memorySaveCache.size > 2000) {
+      for (const [k, v] of memorySaveCache.entries()) {
+        if (now - v.start > SAVE_WINDOW_MS) memorySaveCache.delete(k);
+      }
+    }
+    return false;
+  }
+  rec.count += 1;
+  return rec.count > SAVE_MAX_PER_WINDOW;
+}
+
+const MAX_BODY_BYTES = 50 * 1024; // 50KB
+
 export default async function handler(req, res) {
   const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://raflyfirmansyah-portofolio.vercel.app';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
@@ -18,6 +57,18 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ success: false, message: 'Method tidak diizinkan.' });
+
+  // Body size cap before any parsing: reject oversized payloads (413).
+  const contentLength = Number(req.headers['content-length']);
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    return res.status(413).json({ success: false, message: 'Payload terlalu besar (maks 50KB).' });
+  }
+
+  // Per-IP rate limit before any DB write.
+  const clientIp = getClientIp(req);
+  if (isSaveLimited(clientIp)) {
+    return res.status(429).json({ success: false, message: 'Terlalu banyak permintaan. Coba lagi sebentar lagi.' });
+  }
 
   const supabaseUrl = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';

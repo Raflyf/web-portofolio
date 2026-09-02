@@ -9,7 +9,8 @@
 import crypto from 'crypto';
 
 const PIN_SALT = 'rafly_telemetry_salt';
-const DEFAULT_PIN_HASH = 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c';
+// NOTE: the seeded default PIN hash exists ONLY in the schema seed and is never
+// accepted as a credential here (fail-closed). The constant was removed.
 const TARGET_EMAIL = 'raflyfirmansyah02@gmail.com';
 
 // OTP verification attempt limiter (FIX M6): the in-memory cache is only a fast
@@ -26,6 +27,21 @@ const otpSendCache = new Map();
 const OTP_SEND_MAX = 3;
 const OTP_SEND_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const OTP_SEND_MIN_INTERVAL_MS = 60 * 1000; // 60 seconds between sends for the same IP
+
+// Trusted client IP: prefer Vercel's trusted header, else the LAST element of
+// x-forwarded-for (the value appended by the outermost trusted proxy), else the
+// raw socket address. Never trust the first x-forwarded-for segment — clients
+// can spoof it to bypass the OTP throttle.
+function getClientIp(req) {
+  const trusted = req.headers['x-vercel-forwarded-for'];
+  if (trusted && typeof trusted === 'string') return trusted.split(',')[0].trim();
+  const xff = req.headers['x-forwarded-for'];
+  if (xff && typeof xff === 'string') {
+    const parts = xff.split(',');
+    return (parts[parts.length - 1] || '').trim() || req.socket?.remoteAddress || 'unknown-client';
+  }
+  return req.socket?.remoteAddress || 'unknown-client';
+}
 
 async function isOtpBlocked(ip, supabaseUrl, headers) {
   const now = Date.now();
@@ -257,10 +273,29 @@ async function dispatchEmail(otpCode) {
     }
   }
 
-  // Fallback: Log only partial OTP (first 2 digits masked) — do NOT log plaintext OTP
-  const maskedOtp = otpCode.substring(0, 2) + '****';
-  console.warn(`[Admin OTP Security] OTP generated for ${TARGET_EMAIL.replace(/(.{3})(.*)(@.*)/, '$1***$3')}: ${maskedOtp} (Valid for 10 min — email provider not configured)`);
-  return { dispatched: false, provider: 'cloud_log', note: 'Email provider credentials not configured. OTP partially logged.' };
+  // Fallback: log only the target email — never log OTP digits (even masked).
+  console.warn(`[Admin OTP Security] OTP generated for ${TARGET_EMAIL.replace(/(.{3})(.*)(@.*)/, '$1***$3')} (Valid for 10 min — email provider not configured)`);
+  return { dispatched: false, provider: 'cloud_log', note: 'Email provider credentials not configured. OTP not logged.' };
+}
+
+// Invalidate any active admin session when the PIN changes (m-1): the session
+// token must not survive a credential rotation.
+async function clearSessionToken(supabaseUrl, headers) {
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        id: 'master_auth',
+        session_token: null,
+        session_expires_at: null,
+        updated_at: new Date().toISOString()
+      })
+    });
+  } catch (_) {}
 }
 
 async function storeSessionToken(supabaseUrl, headers, token) {
@@ -325,7 +360,7 @@ export default async function handler(req, res) {
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
-  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || 'unknown-client';
+  const clientIp = getClientIp(req);
 
   const requireServiceRole = () => {
     if (!serviceRoleKey) {
@@ -502,65 +537,39 @@ export default async function handler(req, res) {
         console.warn('[Admin OTP] Supabase verify_pin fetch error:', err.message);
       }
 
-      const isMatch = (inputHash === storedHash);
+      // m-7: duplicate match path removed — the direct-table match branch above
+      // already returns with a stored session token, so this block was dead.
+      const newAttempts = currentAttempts + 1;
+      const willLock = newAttempts >= 5;
+      const lockedUntil = willLock ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
 
-      if (isMatch) {
-        try {
-          await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-            method: 'POST',
-            headers: {
-              ...headers,
-              'Prefer': 'resolution=merge-duplicates,return=representation'
-            },
-            body: JSON.stringify({
-              id: 'master_auth',
-              lockout_attempts: 0,
-              locked_until: null,
-              updated_at: new Date().toISOString()
-            })
-          });
-        } catch (_) {}
-
-        const sessionToken = 'adm_' + crypto.randomBytes(32).toString('hex');
-        return res.status(200).json({
-          success: true,
-          verified: true,
-          session_token: sessionToken,
-          message: 'Autentikasi Master PIN berhasil.'
+      try {
+        await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+          method: 'POST',
+          headers: {
+            ...headers,
+            'Prefer': 'resolution=merge-duplicates,return=representation'
+          },
+          body: JSON.stringify({
+            id: 'master_auth',
+            lockout_attempts: newAttempts,
+            locked_until: lockedUntil,
+            updated_at: new Date().toISOString()
+          })
         });
-      } else {
-        const newAttempts = currentAttempts + 1;
-        const willLock = newAttempts >= 5;
-        const lockedUntil = willLock ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
+      } catch (_) {}
 
-        try {
-          await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-            method: 'POST',
-            headers: {
-              ...headers,
-              'Prefer': 'resolution=merge-duplicates,return=representation'
-            },
-            body: JSON.stringify({
-              id: 'master_auth',
-              lockout_attempts: newAttempts,
-              locked_until: lockedUntil,
-              updated_at: new Date().toISOString()
-            })
-          });
-        } catch (_) {}
-
-        return res.status(401).json({
-          success: false,
-          verified: false,
-          lockout_attempts: newAttempts,
-          remaining_attempts: Math.max(0, 5 - newAttempts),
-          is_locked: willLock,
-          locked_until: lockedUntil,
-          message: willLock
-            ? 'Batas 5 kali percobaan PIN terlampaui. Sistem dikunci selama 15 menit. Silakan gunakan pemulihan OTP.'
-            : `Master PIN salah. Sisa percobaan: ${Math.max(0, 5 - newAttempts)} kali.`
-        });
-      }
+      return res.status(401).json({
+        success: false,
+        verified: false,
+        lockout_attempts: newAttempts,
+        remaining_attempts: Math.max(0, 5 - newAttempts),
+        is_locked: willLock,
+        locked_until: lockedUntil,
+        message: willLock
+          ? 'Batas 5 kali percobaan PIN terlampaui. Sistem dikunci selama 15 menit. Silakan gunakan pemulihan OTP.'
+          : `Master PIN salah. Sisa percobaan: ${Math.max(0, 5 - newAttempts)} kali.`
+      });
     }
 
     // =========================================================================
@@ -661,6 +670,7 @@ export default async function handler(req, res) {
         const d = rpcResult.data;
         if (d.success) {
           await clearOtpAttempts(clientIp, supabaseUrl, headers);
+          await clearSessionToken(supabaseUrl, headers); // m-1: invalidate sessions on PIN change
           return res.status(200).json({
             success: true,
             message: d.message || 'Master PIN keamanan berhasil diperbarui dan semua status kunci telah direset.'
@@ -731,6 +741,8 @@ export default async function handler(req, res) {
           });
         }
 
+        await clearSessionToken(supabaseUrl, headers); // m-1: invalidate sessions on PIN change
+
         return res.status(200).json({
           success: true,
           message: 'Master PIN keamanan berhasil diperbarui dan semua status kunci telah direset.'
@@ -766,6 +778,7 @@ export default async function handler(req, res) {
       if (rpcResult.ok && rpcResult.data) {
         const d = rpcResult.data;
         if (d.success) {
+          await clearSessionToken(supabaseUrl, headers); // m-1: invalidate sessions on PIN change
           return res.status(200).json({
             success: true,
             message: d.message || 'Master PIN keamanan berhasil disimpan ke Supabase Cloud.'
@@ -788,8 +801,10 @@ export default async function handler(req, res) {
           return res.status(502).json({ success: false, message: 'Gagal memverifikasi status keamanan di cloud.' });
         }
         const verifyData = await verifyRes.json();
-        const storedHash = verifyData?.[0]?.pin_hash || DEFAULT_PIN_HASH;
-        if (providedCurrentHash !== storedHash) {
+        // FAIL-CLOSED: no default-hash fallback. If the stored hash is missing,
+        // refuse the change — the seeded default must never be an accepted proof.
+        const storedHash = verifyData?.[0]?.pin_hash || '';
+        if (!storedHash || providedCurrentHash !== storedHash) {
           return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
         }
       } catch (err) {
@@ -821,6 +836,8 @@ export default async function handler(req, res) {
       if (!directPinSaved) {
         return res.status(502).json({ success: false, message: 'Gagal menyimpan PIN baru ke Supabase Cloud.' });
       }
+
+      await clearSessionToken(supabaseUrl, headers); // m-1: invalidate sessions on PIN change
 
       return res.status(200).json({
         success: true,
@@ -864,8 +881,9 @@ export default async function handler(req, res) {
           return res.status(502).json({ success: false, message: 'Gagal memverifikasi status keamanan di cloud.' });
         }
         const verifyData = await verifyRes.json();
-        const storedHash = verifyData?.[0]?.pin_hash || DEFAULT_PIN_HASH;
-        if (providedCurrentHash !== storedHash) {
+        // FAIL-CLOSED: no default-hash fallback.
+        const storedHash = verifyData?.[0]?.pin_hash || '';
+        if (!storedHash || providedCurrentHash !== storedHash) {
           return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
         }
       } catch (err) {

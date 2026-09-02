@@ -864,6 +864,21 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
   };
 }
 
+// Trusted client IP: prefer Vercel's trusted header, else the LAST element of
+// x-forwarded-for (the value appended by the outermost trusted proxy), else the
+// raw socket address. Never trust the first x-forwarded-for segment — clients
+// can spoof it to bypass per-IP rate limits.
+function getClientIp(req) {
+  const trusted = req.headers['x-vercel-forwarded-for'];
+  if (trusted && typeof trusted === 'string') return trusted.split(',')[0].trim();
+  const xff = req.headers['x-forwarded-for'];
+  if (xff && typeof xff === 'string') {
+    const parts = xff.split(',');
+    return (parts[parts.length - 1] || '').trim() || req.socket?.remoteAddress || '127.0.0.1';
+  }
+  return req.socket?.remoteAddress || '127.0.0.1';
+}
+
 // Rate limiting (35 requests per minute per IP).
 // The in-memory cache is the fast path; the source of truth is persisted in a
 // `rate_limits` table via Supabase so the limit survives cold starts and
@@ -1080,7 +1095,7 @@ export default async function handler(req, res) {
     const hasOllama = resolvedKeys.ollama.length > 0;
     const hasMiniMax = resolvedKeys.minimax.length > 0;
     return res.status(200).json({ 
-      version: 'v10.572.0', 
+      version: 'v10.584.0',
       status: 'online', 
       keys: { hasOpenRouter, hasOpenCode, hasOllama, hasMiniMax },
       timestamp: Date.now() 
@@ -1101,8 +1116,8 @@ export default async function handler(req, res) {
     // IGNORED — memory is read server-side from ai_memories (service_role) only.
     const { query, history = [], attachments = [], model = 'auto', customKey = null, customProvider = null, sessionLanguage = 'id', reasoningEffort = 'auto' } = body;
 
-    // Rate Limiting
-    const clientIp = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1').split(',')[0].trim();
+    // Rate Limiting (trusted client IP — see getClientIp)
+    const clientIp = getClientIp(req);
     if (await isRateLimited(clientIp)) {
       return res.status(429).json({
         error: 'Terlalu banyak permintaan. Silakan tunggu beberapa detik sebelum mengirim pesan berikutnya.',

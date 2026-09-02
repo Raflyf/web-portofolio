@@ -437,17 +437,25 @@ export default function Dashboard() {
           if (Array.isArray(payload.events)) loadedEvents = payload.events;
           if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
           setIsLiveConnected(true);
+        } else if (dataRes.status === 401) {
+          // m-2: expired/invalid session — force re-login instead of silent offline.
+          sessionStorage.removeItem(SESSION_AUTH_KEY);
+          setIsAuthenticated(false);
+          setIsLiveConnected(false);
         } else {
           setIsLiveConnected(false);
         }
 
-        // Merge local storage events (so terminal chat events reflect instantly on dashboard)
+        // Merge local storage events (so terminal chat events reflect instantly on dashboard).
+        // FIX M3: only merge events NOT yet synced to the server — synced events are
+        // already counted in the server payload and would double-count here.
         const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
         if (localEventsStr) {
           try {
             const localEvents = JSON.parse(localEventsStr);
             if (Array.isArray(localEvents)) {
-              loadedEvents = [...localEvents, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
+              const unsynced = localEvents.filter((e) => !e.synced);
+              loadedEvents = [...unsynced, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
             }
           } catch (e) {}
         }
@@ -593,9 +601,24 @@ export default function Dashboard() {
         return;
       }
 
+      // FIX M4: persist the change server-side FIRST. The API verifies
+      // current_pin_hash and hashes the new PIN itself. localStorage is only
+      // updated AFTER the server confirms success.
+      const res = await fetch('/api/admin-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_pin', current_pin_hash: currentHashed, new_pin: newPinChange })
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        setChangePinMessage(data.message || data.error || 'Gagal mengubah PIN di cloud. PIN lokal tidak diubah.');
+        return;
+      }
+
       const newHashed = await sha256(newPinChange + PIN_SALT);
       localStorage.setItem(PIN_STORAGE_KEY, newHashed);
-      setChangePinMessage('Master PIN berhasil diperbarui secara lokal & tersimpan!');
+      setChangePinMessage('Master PIN berhasil diperbarui & tersimpan!');
       timeoutsRef.current.push(setTimeout(() => {
         setIsChangePinOpen(false);
         setCurrentPinChange('');
@@ -888,13 +911,15 @@ export default function Dashboard() {
       else desktop++;
     });
     const total = desktop + mobile + tablet;
+    // m-5: guard division-by-zero so an empty dashboard shows 0% instead of NaN%.
+    const pct = (n) => (total > 0 ? ((n / total) * 100).toFixed(0) : '0');
     return {
       desktop,
       mobile,
       tablet,
-      desktopPct: ((desktop / total) * 100).toFixed(0),
-      mobilePct: ((mobile / total) * 100).toFixed(0),
-      tabletPct: ((tablet / total) * 100).toFixed(0)
+      desktopPct: pct(desktop),
+      mobilePct: pct(mobile),
+      tabletPct: pct(tablet)
     };
   }, [gridFilteredEvents]);
 
@@ -1540,7 +1565,7 @@ export default function Dashboard() {
               </div>
 
               <div className="h-36 w-full flex items-center justify-center">
-                <Doughnut data={deviceDoughnutData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
+                <Doughnut data={deviceDoughnutData} options={{ responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } } }} />
               </div>
 
               <div className="space-y-1.5 text-xs">
