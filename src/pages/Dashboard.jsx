@@ -1470,7 +1470,7 @@ export default function Dashboard() {
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
         <motion.div 
           style={{ y: ambientDashboardY }}
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[90vw] max-w-7xl h-[500px] bg-linear-to-b from-cyan-500/8 via-indigo-600/4 to-transparent blur-[130px] rounded-full"
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[90vw] max-w-7xl h-125 bg-linear-to-b from-cyan-500/8 via-indigo-600/4 to-transparent blur-[130px] rounded-full"
         />
       </div>
 
@@ -1478,7 +1478,7 @@ export default function Dashboard() {
       <div className="sticky top-0 z-50 w-full liquid-glass-nav border-b border-white/10">
         {/* Real-time Scroll Progress Line */}
         <motion.div
-          className="absolute bottom-0 left-0 right-0 h-[2px] bg-linear-to-r from-cyan-400 via-indigo-400 to-purple-400 origin-left pointer-events-none shadow-[0_0_8px_rgba(34,211,238,0.7)]"
+          className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-400 via-indigo-400 to-purple-400 origin-left pointer-events-none shadow-[0_0_8px_rgba(34,211,238,0.7)]"
           style={{ scaleX: dashboardProgress }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
