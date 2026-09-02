@@ -840,3 +840,11 @@ Released 2026-09-03.
    - Memastikan engine Lenis (`lenis.raf(time)`) berhenti mengeksekusi kalkulasi inersia saat `document.hidden` bernilai true.
 5. **Pencegahan Re-Render Siklikal Dashboard Telemetri (`Dashboard.jsx`):**
    - Menambahkan *shallow equality guard* pada polling data Supabase, mencegah re-render instans Chart.js dan kalkulasi memori jika data telemetri tidak berubah.
+
+### v10.611.0 — Calibration of Serverless Realtime WIB Timezone
+
+Released 2026-09-03.
+1. **Kalibrasi Timezone Serverless Vercel (`api/chat.js`):**
+   - Mengidentifikasi anomali jawaban AI ("Jam 19:03 WIB" saat waktu aktual menunjukkan "02:03 WIB dini hari").
+   - Serverless backend di cloud Vercel berjalan pada waktu UTC (GMT+0). Penggunaan `toLocaleTimeString('id-ID')` tanpa spesifikasi zona waktu otomatis mengambil jam lokal server UTC (19:03), kemudian menyuntikkannya ke prompt sistem dengan label "WIB", menyebabkan model AI memberikan jam yang meleset 7 jam.
+   - Menambahkan opsi eksplisit `{ timeZone: 'Asia/Jakarta' }` pada format tanggal dan waktu, serta membekali prompt sistem dengan instruksi *Ground Truth* waktu realtime WIB yang tegas agar model AI menjawab waktu secara presisi dan akurat.
