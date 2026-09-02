@@ -879,8 +879,8 @@ Released 2026-09-03.
 2. **Isolasi Topik Multi-Turn Query (*Anti-Contamination*):**
    - Memperbaiki `formulateSmartSearchQueries`: jika pertanyaan lanjutan pengguna merujuk ke entitas independen baru (misal beralih dari Gemini ke Claude), sistem tidak lagi menggabungkan nama produk lama ("gemini claude") ke dalam query pencarian internet.
    - Melarang model mencampurkan informasi produk terdahulu ke jawaban topik baru kecuali diminta secara eksplisit oleh pengguna.
-3. **Pemberantasan Halusinasi Nama Model AI:**
-   - Menambahkan aturan ketat penamaan model resmi di prompt sistem: melarang keras mengarang nama model fiktif (seperti Claude Fable atau Claude Mythos). Menyajikan fakta jajaran resmi Anthropic (seri Claude 3 / 3.5 / 3.7 Sonnet) secara objektif.
+3. **Prinsip Grounding Web Dinamis (Zero-Hallucination):**
+   - Menghapus pembatasan hardcode versi model AI agar sistem dapat mengenali perkembangan rilis terkini dari internet secara dinamis dan organik tanpa dibatasi versi masa lalu.
 
 ### v10.615.0 — Full Synchronization of Laguna S 2.1 & OpenCode Models in Telemetry Monitoring
 
@@ -892,3 +892,11 @@ Released 2026-09-03.
 2. **Sinkronisasi Terminal AI (`src/components/terminal/TerminalAI.jsx`):**
    - Mendaftarkan `laguna`, `opencode-laguna`, `mimo`, dan `opencode-mimo` ke dalam whitelist `VALID_MODELS`.
    - Memperbarui katalog perintah `/models` agar pengguna dapat memilih model Laguna secara langsung via `model laguna`.
+
+### v10.616.0 — Elimination of Hardcoded Model Directives & Pure Dynamic Web Grounding
+
+Released 2026-09-03.
+1. **Pembersihan Total Instruksi Hardcode Versi Model AI (`api/chat.js`):**
+   - Menghapus seluruh instruksi yang mendikte versi spesifik model AI dari prompt sistem.
+   - Memberikan kebebasan penuh bagi AI untuk mengeksplorasi web dan mengenali model rilis terkini (termasuk Claude 5.1 dan rilis frontier terbaru lainnya) secara dinamis tanpa hambatan aturan statis.
+   - Menjaga fokus inti: bebas halusinasi, berpegang pada fakta pencarian web, tidak ada noise template kaku, dan isolasi subjek pembicaraan.

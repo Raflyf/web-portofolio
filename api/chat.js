@@ -118,11 +118,9 @@ ${effortDirective}
   - Jawab HANYA apa yang ditanyakan secara padat dan langsung ke inti topik.
   - DILARANG mencampurkan informasi dari topik percakapan sebelumnya jika pengguna beralih subjek (contoh: DILARANG mengulang atau membawa-bawa informasi Google/Gemini ketika pengguna beralih bertanya tentang Anthropic/Claude, kecuali pengguna secara eksplisit meminta komparasi/perbandingan).
   - DILARANG menambahkan informasi sampingan berlebihan yang tidak ditanyakan (seperti spekulasi tak berdasar, rincian enterprise acak, atau penawaran bantuan berulang).
-- **GROUND TRUTH RESMI MODEL AI DUNIA (DILARANG MENGARANG NAMA FIKTIF)**:
-  - **Anthropic Claude**: Model resmi adalah seri Claude 3 (Haiku, Sonnet, Opus), Claude 3.5 (Sonnet, Haiku), dan Claude 3.7 Sonnet (Hybrid Reasoning). DILARANG KERAS MENGARANG nama fiktif seperti "Claude Fable", "Claude Mythos", dsb.
-  - **Google Gemini**: Seri resmi mencakup Gemini 1.5 Pro/Flash, Gemini 2.0 Flash/Thinking, dan Gemini 3.x Flash.
-  - **OpenAI**: Seri resmi mencakup GPT-4o, GPT-4o mini, o1, o3-mini.
-  - Jika suatu versi masa depan belum diumumkan secara resmi, akui secara jujur dan lugas bahwa belum ada rilis resmi untuk versi tersebut.
+- **GROUNDING DINAMIS BERBASIS WEB TERKINI (ZERO-HALLUCINATION)**:
+  - Rujuk informasi model AI, teknologi, dan rilis terkini secara dinamis berdasarkan data web dan laporan resmi yang ditemukan di internet.
+  - Dilarang mengarang klaim tanpa dasar fakta pencarian; sajikan perkembangan apa adanya secara objektif, aktual, dan akurat sesuai temuan web.
 - **AKURASI JADWAL & STATUS PRODUK RESMI**:
   - Jika publisher/developer resmi hanya mengumumkan jendela rilis umum (misal: "Fall 2025" atau "Tahun 2026"), DILARANG MENGARANG tanggal/bulan spesifik fiktif (seperti "19 November 2026").
   - DILARANG mengarang platform tayang fiktif (seperti trailer resmi tayang di Netflix jika itu hanya kanal YouTube/website resmi).
@@ -879,10 +877,9 @@ ${uniqueSnippets.join('\n')}
   * HANYA gunakan struktur panjang jika pengguna secara eksplisit meminta breakdown komprehensif atau analisis mendalam.
 - FOKUS MURNI PADA TOPIK YANG DITANYAKAN:
   * Jika pengguna beralih topik (misal dari Gemini ke Claude), jawab HANYA tentang topik baru tersebut. DILARANG mencampurkan informasi produk/model dari percakapan sebelumnya ke dalam jawaban topik baru kecuali diminta membandingkan.
-- KEJUJURAN FAKTUAL & ANTI-HALUSINASI NAMA MODEL:
-  * DILARANG KERAS MENGARANG nama model fiktif yang tidak ada di fakta resmi (misal: Claude Fable, Claude Mythos, atau seri khayalan lainnya).
-  * Untuk Anthropic Claude, model resmi adalah seri Claude 3, Claude 3.5 (Haiku, Sonnet, Opus), atau Claude 3.7 Sonnet.
-  * Jika suatu versi masa depan belum diumumkan resmi oleh pihak developer, akui dengan jujur bahwa belum ada pengumuman resmi, dan sebutkan model resmi terbaru yang saat ini tersedia.\n`;
+- KEJUJURAN FAKTUAL & GROUNDING WEB DINAMIS:
+  * Rujuk nama model, versi, dan rilis teknologi secara dinamis dan faktual dari data pencarian web terkini.
+  * Jawab berbasis bukti nyata hasil web tanpa mengarang fakta yang tidak ada di sumber.\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
