@@ -23,6 +23,7 @@ import {
   KeyRound,
   Mail,
   CheckCircle2,
+  Check,
   AlertCircle,
   TrendingUp,
   Download,
@@ -241,24 +242,32 @@ const CustomSelect = ({ value, onChange, options }) => {
   const selectedOption = options.find(opt => opt.value === value) || options[0];
 
   return (
-    <div ref={containerRef} className="relative inline-block text-left z-[50]">
+    <div ref={containerRef} className="relative inline-block text-left z-[60]">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className="flex items-center justify-between w-36 sm:w-44 px-3 py-1.5 liquid-glass-inset text-xs text-zinc-300 hover:border-cyan-400/50 focus:outline-none focus:border-cyan-400 transition-colors cursor-pointer"
+        className={`flex items-center justify-between w-40 sm:w-48 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
+          isOpen 
+            ? 'bg-cyan-500/15 border border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]' 
+            : 'bg-zinc-900/90 hover:bg-zinc-800/90 border border-white/10 hover:border-cyan-400/50 text-zinc-200'
+        }`}
       >
         <span className="truncate">{selectedOption?.label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : "rotate-0"}`} />
+        <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-cyan-400" : "rotate-0 text-zinc-400"}`} />
       </button>
 
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 z-[60] mt-1 w-full sm:w-44 origin-top-right liquid-glass-strong focus:outline-none overflow-hidden glass-spring-in"
+          data-lenis-prevent="true"
+          className="absolute right-0 z-[100] mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl bg-[#090d16] border border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         >
-          <div className="py-1 max-h-60 overflow-y-auto no-scrollbar">
+          <div 
+            data-lenis-prevent="true" 
+            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+          >
             {options.map((option) => (
               <button
                 key={option.value}
@@ -268,11 +277,14 @@ const CustomSelect = ({ value, onChange, options }) => {
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`flex w-full items-center px-4 py-2.5 text-left text-xs transition-colors ${
-                  value === option.value ? "bg-cyan-500/20 text-cyan-400 font-medium" : "text-zinc-300 hover:bg-white/5 hover:text-white"
+                className={`flex w-full items-center justify-between px-3.5 py-2.5 text-left text-xs transition-colors cursor-pointer ${
+                  value === option.value 
+                    ? "bg-cyan-500/20 text-cyan-300 font-bold" 
+                    : "text-zinc-200 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {option.label}
+                <span className="truncate pr-2">{option.label}</span>
+                {value === option.value && <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
               </button>
             ))}
           </div>

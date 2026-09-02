@@ -164,12 +164,16 @@ const CustomSelectEffort = ({ value, onChange }) => {
       {isOpen && (
         <div 
           role="listbox"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl bg-zinc-950/95 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_15px_40px_rgba(0,0,0,0.9)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          data-lenis-prevent="true"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl bg-[#090d16] border border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         >
           <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-400/80 uppercase tracking-wider border-b border-white/5 font-semibold">
             Reasoning Effort
           </div>
-          <div className="py-1 max-h-60 overflow-y-auto no-scrollbar divide-y divide-white/5">
+          <div 
+            data-lenis-prevent="true"
+            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+          >
             {options.map(opt => (
               <button
                 key={opt.value}
@@ -180,7 +184,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
                 className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between cursor-pointer transition-colors ${
                   value === opt.value 
                     ? 'bg-cyan-500/20 text-cyan-300 font-bold' 
-                    : 'text-zinc-300 hover:bg-white/5 hover:text-white'
+                    : 'text-zinc-200 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 <span>{opt.label}</span>
