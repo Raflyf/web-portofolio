@@ -329,8 +329,22 @@ export default function Dashboard() {
     telemetry.logEvent('theme_toggle', 'admin_switch', `Ubah Tema Admin ke ${nextDark ? 'gelap' : 'terang'}`);
   };
 
-  // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Authentication State with Instant Synchronous Session Restore (Eliminates PIN Screen Flash on Refresh)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const session = sessionStorage.getItem(SESSION_AUTH_KEY);
+      if (session) {
+        const parsed = JSON.parse(session);
+        if (parsed && parsed.auth) {
+          return true;
+        }
+      }
+    } catch {
+      // Ignore JSON parse error
+    }
+    return false;
+  });
   const [pinInput, setPinInput] = useState('');
   const [authError, setAuthError] = useState('');
   const [lockoutSeconds, setLockoutSeconds] = useState(0);
@@ -444,16 +458,20 @@ export default function Dashboard() {
     telemetry.init();
   }, []);
 
-  // 1. Session Auth Check
+  // 1. Session Auth Expiry Check
   useEffect(() => {
-    const session = sessionStorage.getItem(SESSION_AUTH_KEY);
-    if (session) {
-      try {
+    try {
+      const session = sessionStorage.getItem(SESSION_AUTH_KEY);
+      if (!session) {
+        setIsAuthenticated(false);
+      } else {
         const parsed = JSON.parse(session);
-        if (parsed && parsed.auth) {
-          setIsAuthenticated(true);
+        if (!parsed || !parsed.auth) {
+          setIsAuthenticated(false);
         }
-      } catch {}
+      }
+    } catch {
+      setIsAuthenticated(false);
     }
   }, []);
 
