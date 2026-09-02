@@ -670,3 +670,13 @@ Released 2026-09-02.
    - Mengondisikan Featured Showcase Card raksasa agar **hanya aktif pada tab "Semua Proyek"** (`filter === 'all'`).
    - Saat pengguna memilih tab kategori spesifik (seperti *AI & Machine Learning*, *Vision & Tools*, atau *Web Systems*), seluruh proyek dalam kategori tersebut (termasuk *OpenPlagiarismChecker*) dirender ke dalam grid 2-kolom dengan dimensi kartu yang seragam, proporsional, dan rapi.
    - Menambahkan rendering badge kategori sekunder pada kartu grid standar untuk mempertahankan konteks label proyek.
+
+### v10.595.0 — Authentic Liquid Glass Mobile Navbar & Soft Frosted Dimmer
+
+Released 2026-09-02.
+1. **Pemulihan Estetika Kaca Cair Asli (`App.jsx`):**
+   - Mengembalikan kelas `.liquid-glass-nav` pada header top bar saat halaman di-scroll atau saat menu mobile aktif, memulihkan transparansi optik dinamis dan pembiasan specular border.
+   - Menerapkan `.liquid-glass-strong` murni pada panel menu mobile dengan efek frosted blur multi-layer (`backdrop-filter: blur(40px) saturate(200%)`), mengeliminasi tampilan kotak solid datar (*flat solid box*).
+2. **Harmonisasi Kontras Lembut (*Soft Frosted Dimmer*):**
+   - Menyelaraskan lapisan dimmer menjadi `bg-black/35 dark:bg-black/50 backdrop-blur-sm`, memberikan peredupan latar belakang yang cukup halus agar teks hero tidak bertabrakan, sembari membiarkan efek kilau kristal kaca cair bersinar alami di atasnya.
+   - Menggunakan komponen `.liquid-glass-inset` untuk tombol pengalih tema dalam menu mobile.
