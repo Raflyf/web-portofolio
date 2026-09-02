@@ -63,9 +63,9 @@ export default function ScrollStoryline() {
 
   return (
     <>
-      {/* Top Global Scroll Progress Bar with Dynamic Glow */}
+      {/* Top Global Scroll Progress Bar with Dynamic Glow - Always visible above navbar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-50 origin-left shadow-[0_0_12px_rgba(34,211,238,0.8)] pointer-events-none"
+        className="fixed top-0 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-[60] origin-left shadow-[0_0_12px_rgba(34,211,238,0.9)] pointer-events-none"
         style={{ scaleX: scaleY }}
       />
 

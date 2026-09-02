@@ -412,6 +412,40 @@ export default function Dashboard() {
   // Ping Toast
   const [pingStatus, setPingStatus] = useState('');
 
+  // Smart Auto-Hide Dashboard Header on Scroll
+  const [dashboardNavVisible, setDashboardNavVisible] = useState(true);
+  const lastDashboardScrollY = useRef(0);
+
+  useEffect(() => {
+    const threshold = 10;
+    let ticking = false;
+
+    const handleDashboardScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          const delta = currentY - lastDashboardScrollY.current;
+
+          if (currentY < 70) {
+            setDashboardNavVisible(true);
+          } else if (Math.abs(delta) > threshold) {
+            if (delta > 0) {
+              setDashboardNavVisible(false); // Scroll down -> hide
+            } else {
+              setDashboardNavVisible(true);  // Scroll up -> reveal
+            }
+            lastDashboardScrollY.current = currentY;
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleDashboardScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleDashboardScroll);
+  }, []);
+
   // 0. Telemetry: record dashboard visit
   useEffect(() => {
     telemetry.init();
@@ -1468,13 +1502,16 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Top Header Controls Bar (Sleek Compact Navbar) */}
-      <div className="sticky top-0 z-50 w-full liquid-glass-nav border-b border-white/10">
-        {/* Real-time Scroll Progress Line */}
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-400 via-indigo-400 to-purple-400 origin-left pointer-events-none shadow-[0_0_8px_rgba(34,211,238,0.7)]"
-          style={{ scaleX: dashboardProgress }}
-        />
+      {/* Real-time Global Scroll Progress Bar on Dashboard - Fixed at top-0 z-[60] */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-[60] origin-left pointer-events-none shadow-[0_0_12px_rgba(34,211,238,0.9)]"
+        style={{ scaleX: dashboardProgress }}
+      />
+
+      {/* Top Header Controls Bar (Sleek Compact Navbar with Smart Auto-Hide) */}
+      <header className={`fixed top-0 inset-x-0 z-50 w-full liquid-glass-nav border-b border-white/10 transition-transform duration-300 ease-in-out ${
+        dashboardNavVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
           <div className="absolute inset-0 bg-linear-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
           
@@ -1539,9 +1576,9 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 space-y-8">
 
         {pingStatus && (
           <div className="p-3 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-xs font-mono text-cyan-300 text-center animate-fade-in">
