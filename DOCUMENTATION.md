@@ -848,3 +848,13 @@ Released 2026-09-03.
    - Mengidentifikasi anomali jawaban AI ("Jam 19:03 WIB" saat waktu aktual menunjukkan "02:03 WIB dini hari").
    - Serverless backend di cloud Vercel berjalan pada waktu UTC (GMT+0). Penggunaan `toLocaleTimeString('id-ID')` tanpa spesifikasi zona waktu otomatis mengambil jam lokal server UTC (19:03), kemudian menyuntikkannya ke prompt sistem dengan label "WIB", menyebabkan model AI memberikan jam yang meleset 7 jam.
    - Menambahkan opsi eksplisit `{ timeZone: 'Asia/Jakarta' }` pada format tanggal dan waktu, serta membekali prompt sistem dengan instruksi *Ground Truth* waktu realtime WIB yang tegas agar model AI menjawab waktu secara presisi dan akurat.
+
+### v10.612.0 — Deterministic Realtime Clock Grounding & History Isolation
+
+Released 2026-09-03.
+1. **Klasifikasi Pertanyaan Waktu & Isolasi Riwayat Chat (`api/chat.js`):**
+   - Menambahkan pola `isTimeQuery` untuk mendeteksi pertanyaan seputar jam, waktu sekarang, tanggal, dan zona wilayah (misal Cianjur, Jawa Barat, WIB).
+   - Memotong (*bypass*) riwayat percakapan lama (`validHistory`) saat mendeteksi query waktu, mencegah teks usang dari percakapan sebelumnya yang pernah mencatat jam salah meracuni pemikiran model.
+   - Melewati web search DuckDuckGo yang kerap menyuplai cuplikan berita usang.
+2. **Grounding Deterministik Anti-Halusinasi:**
+   - Menyematkan lapisan verifikasi deterministik pasca-inferensi: jika output LLM terdeteksi berhalusinasi atau mencantumkan angka jam yang salah, sistem secara otomatis mengoreksinya dengan tanggal dan jam *Ground Truth* WIB (Asia/Jakarta) terkalibrasi secara presisi.
