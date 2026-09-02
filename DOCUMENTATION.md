@@ -4,27 +4,7 @@ Dokumen ini mencatat keputusan arsitektur konseptual, sistem desain, standar aks
 
 ---
 
-## Log Pembaruan Terkini: v10.584.0 (Model Routing Harmonization, Zero Slop & Production Hardening)
 
-1. **Model Gateway Harmonization:**
-   - Menyempurnakan terminal multi-model engine (`terminal.js`, `TerminalAI.jsx`, dan `Dashboard.jsx`) untuk konsistensi provider LLM OpenCode Zen Gateway dan NVIDIA NIM/Groq/Ollama router.
-   - Membersihkan redundansi referensi provider yang sudah deprecated.
-2. **iOS Liquid Glass Aesthetics & Inertia:**
-   - Menyelaraskan seluruh permukaan komponen (`AboutSection`, `SkillsBento`, `ProjectsGrid`, `CertificatesGrid`, `ExperienceTimeline`, `TerminalAI`, dan `Dashboard`) dengan sistem obsidian dark glass (`bg-slate-950/70`, `border-white/10`, `backdrop-blur-2xl`, specular highlight inset).
-   - Menghilangkan seluruh emoji generik dan menggantikannya dengan ikon semantik presisi dari pustaka Lucide SVG.
-3. **Animasi Marquee & Bidirectional Scroll Reveal:**
-   - Menambahkan keyframes infinite marquee dua arah (kiri dan kanan) di `index.css` dan diterapkan pada `SkillsBento`.
-   - Mengonfigurasi `viewport: { once: false, amount: 0.15 }` pada seluruh elemen `framer-motion` sehingga animasi masuk dan keluar terjadi secara dinamis saat digulir ke atas maupun ke bawah.
-4. **Fisika Pengguliran Halus (Lenis Scroll):**
-   - Mengintegrasikan mesin _momentum inertia wheel physics_ (Lenis) di `App.jsx` untuk pengalaman pengguliran yang sangat mulus tanpa jeda frame.
-5. **Navigasi Floating Capsule Glass:**
-   - Menambahkan navbar mengambang kapsul iOS Liquid Glass di `App.jsx` dengan status konektivitas, tautan bagian, dan navigasi langsung ke Dashboard Observabilitas.
-6. **Dashboard Observabilitas & Telemetri Supabase:**
-   - Integrasi langsung Supabase Cloud API untuk `portfolio_telemetry_events` dan `portfolio_ai_memories`.
-   - Gerbang keamanan autentikasi Master PIN berbasis Web Crypto SHA-256 + salt dan alur pemulihan OTP via email.
-   - Visualisasi grafik tren aktivitas mingguan menggunakan Chart.js (Line & Doughnut).
-
----
 
 ## 1. Filosofi Desain & Anti-AI Slop
 
@@ -525,6 +505,7 @@ eferrer, session_id di elemetry.js dengan schema Supabase; (15) **DEAD-5:** Upda
 | **10.583.0** | 2026-09-01 | **Horizon Hero & Scrollytelling Parallax Architecture**: (1) Mengimplementasikan `HorizonHero` dengan kurva horizon bumi berpendar neon cyan-indigo, ambient nebula, dan layer paralaks bertingkat (framer-motion `useScroll` dan `useTransform`); (2) Menambahkan HUD `ScrollStoryline` floating sidebar dan progress bar atas untuk navigasi scrollytelling real-time; (3) Menerapkan transisi kemunculan berjenjang (staggered scroll reveals & 3D tilt hover) pada `AboutSection`, `SkillsBento`, `ProjectsGrid` (dengan highlight riset terisolasi `OpenPlagiarismChecker`), `CertificatesGrid`, dan `ExperienceTimeline` (dengan sinar cahaya progresif scroll beam); (4) Memperbaiki assertion error react-markdown v10 pada `TerminalAI.jsx` dan referensi ikon `ProjectsGrid.jsx`. |
 | **10.584.0** | 2026-09-01 | **Model Routing Harmonization, Zero Slop & Production Hardening**: (1) Menyelaraskan seluruh permukaan komponen dengan sistem obsidian dark glass (`bg-slate-950/70`, `border-white/10`, `backdrop-blur-2xl`); (2) Menghilangkan seluruh emoji generik dan menggantikannya dengan ikon semantik presisi dari pustaka Lucide SVG; (3) Menambahkan keyframes infinite marquee dua arah (kiri dan kanan) dan bidirectional scroll reveal framer-motion; (4) Mengintegrasikan mesin peredam inersia Lenis Scroll di `App.jsx`. |
 | **10.585.0** | 2026-09-01 | **Dashboard Telemetry Filtering & Modal Management**: (1) Menambahkan fitur filter tipe log interaktif (Semua, Error, AI Query, Security, Navigasi) dan pagination tabel 10 baris pada Dashboard Observabilitas; (2) Menyempurnakan modal Ubah Master PIN dan modal Konfigurasi Supabase Cloud dengan enkapsulasi dialog yang aman; (3) Memverifikasi build produksi dan sinkronisasi branch git. |
+| **10.586.0** | 2026-09-01 | **Terminal Auto-Archive & UI Consistency**: (1) Memperbaiki logika status memori Terminal AI, sekarang memuat ulang (refresh) halaman otomatis mengarsipkan percakapan berjalan ke dalam panel Riwayat Obrolan dan membersihkan kanvas terminal; (2) Menerapkan utilitas class `no-scrollbar` pada body terminal agar konsisten dan menghilangkan scrollbar abu-abu tebal native browser. |
 
 ### [2026-09-01] UI/UX Dashboard, Motion Scroll & Parallax Fixes
 
@@ -569,3 +550,23 @@ eferrer, session_id di elemetry.js dengan schema Supabase; (15) **DEAD-5:** Upda
    - Dropdown custom diberi atribut ARIA.
    - Carousel dapat di-pause/play.
    - `jsconfig.json` ditambahkan untuk path alias.
+
+### v10.584.0 - Model Routing Harmonization, Zero Slop & Production Hardening
+
+1. **Model Gateway Harmonization:**
+   - Menyempurnakan terminal multi-model engine (`terminal.js`, `TerminalAI.jsx`, dan `Dashboard.jsx`) untuk konsistensi provider LLM OpenCode Zen Gateway dan NVIDIA NIM/Groq/Ollama router.
+   - Membersihkan redundansi referensi provider yang sudah deprecated.
+2. **iOS Liquid Glass Aesthetics & Inertia:**
+   - Menyelaraskan seluruh permukaan komponen (`AboutSection`, `SkillsBento`, `ProjectsGrid`, `CertificatesGrid`, `ExperienceTimeline`, `TerminalAI`, dan `Dashboard`) dengan sistem obsidian dark glass (`bg-slate-950/70`, `border-white/10`, `backdrop-blur-2xl`, specular highlight inset).
+   - Menghilangkan seluruh emoji generik dan menggantikannya dengan ikon semantik presisi dari pustaka Lucide SVG.
+3. **Animasi Marquee & Bidirectional Scroll Reveal:**
+   - Menambahkan keyframes infinite marquee dua arah (kiri dan kanan) di `index.css` dan diterapkan pada `SkillsBento`.
+   - Mengonfigurasi `viewport: { once: false, amount: 0.15 }` pada seluruh elemen `framer-motion` sehingga animasi masuk dan keluar terjadi secara dinamis saat digulir ke atas maupun ke bawah.
+4. **Fisika Pengguliran Halus (Lenis Scroll):**
+   - Mengintegrasikan mesin _momentum inertia wheel physics_ (Lenis) di `App.jsx` untuk pengalaman pengguliran yang sangat mulus tanpa jeda frame.
+5. **Navigasi Floating Capsule Glass:**
+   - Menambahkan navbar mengambang kapsul iOS Liquid Glass di `App.jsx` dengan status konektivitas, tautan bagian, dan navigasi langsung ke Dashboard Observabilitas.
+6. **Dashboard Observabilitas & Telemetri Supabase:**
+   - Integrasi langsung Supabase Cloud API untuk `portfolio_telemetry_events` dan `portfolio_ai_memories`.
+   - Gerbang keamanan autentikasi Master PIN berbasis Web Crypto SHA-256 + salt dan alur pemulihan OTP via email.
+   - Visualisasi grafik tren aktivitas mingguan menggunakan Chart.js (Line & Doughnut).
