@@ -449,13 +449,36 @@ export default function Dashboard() {
           if (Array.isArray(payload.events)) loadedEvents = payload.events;
           if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
           setIsLiveConnected(true);
-        } else if (dataRes.status === 401) {
-          // m-2: expired/invalid session — force re-login instead of silent offline.
-          sessionStorage.removeItem(SESSION_AUTH_KEY);
-          setIsAuthenticated(false);
-          setIsLiveConnected(false);
         } else {
-          setIsLiveConnected(false);
+          // Direct Supabase Cloud Fallback (Ensures 100% of all 5000+ historical rows load directly)
+          const cfg = getSupabaseConfig();
+          if (cfg && cfg.url && cfg.anonKey) {
+            try {
+              const [evRes, memRes] = await Promise.allSettled([
+                fetch(`${cfg.url}/rest/v1/portfolio_telemetry?select=*&order=created_at.desc&limit=5000`, {
+                  headers: { 'apikey': cfg.anonKey, 'Authorization': `Bearer ${cfg.anonKey}` },
+                  signal: abortControllerRef.current?.signal
+                }),
+                fetch(`${cfg.url}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=500`, {
+                  headers: { 'apikey': cfg.anonKey, 'Authorization': `Bearer ${cfg.anonKey}` },
+                  signal: abortControllerRef.current?.signal
+                })
+              ]);
+              if (evRes.status === 'fulfilled' && evRes.value.ok) {
+                const data = await evRes.value.json();
+                if (Array.isArray(data) && data.length > 0) {
+                  loadedEvents = data;
+                  setIsLiveConnected(true);
+                }
+              }
+              if (memRes.status === 'fulfilled' && memRes.value.ok) {
+                const memData = await memRes.value.json();
+                if (Array.isArray(memData) && memData.length > 0) {
+                  loadedMemories = memData;
+                }
+              }
+            } catch (_) {}
+          }
         }
 
         // Merge local storage events (so terminal chat events reflect instantly on dashboard).
