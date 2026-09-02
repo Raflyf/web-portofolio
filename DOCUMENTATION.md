@@ -881,3 +881,14 @@ Released 2026-09-03.
    - Melarang model mencampurkan informasi produk terdahulu ke jawaban topik baru kecuali diminta secara eksplisit oleh pengguna.
 3. **Pemberantasan Halusinasi Nama Model AI:**
    - Menambahkan aturan ketat penamaan model resmi di prompt sistem: melarang keras mengarang nama model fiktif (seperti Claude Fable atau Claude Mythos). Menyajikan fakta jajaran resmi Anthropic (seri Claude 3 / 3.5 / 3.7 Sonnet) secara objektif.
+
+### v10.615.0 — Full Synchronization of Laguna S 2.1 & OpenCode Models in Telemetry Monitoring
+
+Released 2026-09-03.
+1. **Penyempurnaan Matriks 16 Model di Dashboard Monitoring (`src/pages/Dashboard.jsx`):**
+   - Menambahkan definisi dan matcher untuk `opencode-laguna` (Poolside Laguna S 2.1 Free) dan `opencode-mimo` (Mimo v2.5 Free) ke dalam array `INDIVIDUAL_MODELS`.
+   - Mengeliminasi *misattribution bug* di mana event eksekusi Laguna dari Terminal (`auto:laguna-s-2.1-free`) sebelumnya salah dialihkan ke default fallback `ollama-nemotron-nano`.
+   - Menyelaraskan kartu monitoring sehingga eksekusi model Laguna langsung tampil terpisah dengan hit count dan timestamp `AKTIF TERBARU` yang akurat.
+2. **Sinkronisasi Terminal AI (`src/components/terminal/TerminalAI.jsx`):**
+   - Mendaftarkan `laguna`, `opencode-laguna`, `mimo`, dan `opencode-mimo` ke dalam whitelist `VALID_MODELS`.
+   - Memperbarui katalog perintah `/models` agar pengguna dapat memilih model Laguna secara langsung via `model laguna`.

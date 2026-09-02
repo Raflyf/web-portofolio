@@ -217,6 +217,24 @@ const INDIVIDUAL_MODELS = [
     badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => s.includes('opencode') && s.includes('ultra')
+  },
+  {
+    id: 'opencode-laguna',
+    name: 'Laguna S 2.1 Free (OpenCode)',
+    desc: 'Engine penalaran dan arsitektur kode presisi dari OpenCode Zen Gateway',
+    provider: 'OPENCODE',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    matcher: (s) => s.includes('laguna') || s.includes('poolside')
+  },
+  {
+    id: 'opencode-mimo',
+    name: 'Mimo v2.5 Free (OpenCode)',
+    desc: 'Model multimodal untuk analisis citra dan teks via OpenCode Zen API',
+    provider: 'OPENCODE',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    matcher: (s) => s.includes('mimo') || (s.includes('opencode') && s.includes('vision'))
   }
 ];
 
