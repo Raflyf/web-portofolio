@@ -319,6 +319,9 @@ export default function TerminalAI({ onClose }) {
     try {
       // FIX M4: forward attachments ({name,type,data}; images carry a data URL
       // plus isImage:true — matches /api/chat consumption). _bytes is client-only.
+      const payloadAttachments = Array.isArray(attachments) 
+        ? attachments.map(({ _bytes, ...att }) => att) 
+        : [];
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
