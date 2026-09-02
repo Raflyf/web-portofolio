@@ -141,7 +141,7 @@ export default function HorizonHero() {
     >
       {/* Ambient Deep Space Nebula */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-b from-indigo-500/20 via-cyan-500/10 to-transparent blur-[120px] rounded-full" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-linear-to-b from-indigo-500/20 via-cyan-500/10 to-transparent blur-[120px] rounded-full" />
         <div className="absolute top-1/3 left-1/4 w-[400px] h-[300px] bg-purple-500/10 blur-[100px] rounded-full" />
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[300px] bg-emerald-500/10 blur-[100px] rounded-full" />
       </div>
@@ -152,10 +152,10 @@ export default function HorizonHero() {
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-[100vw] h-[320px] sm:h-[500px] pointer-events-none z-0"
       >
         <div 
-          className="w-full h-full border-t border-cyan-400/40 bg-gradient-to-b from-cyan-500/15 via-indigo-950/20 to-transparent shadow-[0_-20px_80px_rgba(34,211,238,0.25)] relative"
+          className="w-full h-full border-t border-cyan-400/40 bg-linear-to-b from-cyan-500/15 via-indigo-950/20 to-transparent shadow-[0_-20px_80px_rgba(34,211,238,0.25)] relative"
           style={{ borderTopLeftRadius: '100%', borderTopRightRadius: '100%' }}
         >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent shadow-[0_0_20px_#fff]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-0.5 bg-linear-to-r from-transparent via-white to-transparent shadow-[0_0_20px_#fff]" />
           <div className="absolute top-1 left-1/2 -translate-x-1/2 w-1/2 h-[40px] bg-cyan-400/20 blur-xl" />
         </div>
       </motion.div>
@@ -188,7 +188,7 @@ export default function HorizonHero() {
               className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-medium tracking-tighter leading-[0.95]"
             >
               Rafly<br />
-              <span className="bg-gradient-to-br from-white via-zinc-100 to-zinc-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(255,255,255,0.2)]">
+              <span className="bg-linear-to-br from-white via-zinc-100 to-zinc-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(255,255,255,0.2)]">
                 Firmansyah
               </span>
             </h1>
@@ -201,7 +201,7 @@ export default function HorizonHero() {
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <a 
                 href="#projects"
-                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-gradient-to-b from-cyan-400 to-cyan-600 hover:from-cyan-300 hover:to-cyan-500 border border-cyan-300/60 text-white font-semibold tracking-wide text-sm shadow-[0_8px_24px_rgba(6,182,212,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-[1.03] group"
+                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 hover:from-cyan-300 hover:to-cyan-500 border border-cyan-300/60 text-white font-semibold tracking-wide text-sm shadow-[0_8px_24px_rgba(6,182,212,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-[1.03] group"
               >
                 <span>Jelajahi Karya</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

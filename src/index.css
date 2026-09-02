@@ -759,6 +759,12 @@ html.lenis, html.lenis body {
    specificity high enough to beat the global .text-white ink remap above).
    Slate/zinc ink remaps are re-excluded the same way so gradient buttons keep
    their intended light label color. */
+:root:not(.dark) a.bg-linear-to-b.text-white,
+:root:not(.dark) button.bg-linear-to-b.text-white,
+:root:not(.dark) a.bg-linear-to-b.text-slate-200,
+:root:not(.dark) a.bg-linear-to-b.text-slate-300,
+:root:not(.dark) button.bg-linear-to-b.text-slate-200,
+:root:not(.dark) button.bg-linear-to-b.text-slate-300,
 :root:not(.dark) a.bg-gradient-to-b.text-white,
 :root:not(.dark) button.bg-gradient-to-b.text-white,
 :root:not(.dark) a.bg-gradient-to-b.text-slate-200,
@@ -769,6 +775,7 @@ html.lenis, html.lenis body {
 }
 
 /* Hero gradient headline: dark ink gradient on light glass background */
+:root:not(.dark) .bg-linear-to-br.text-transparent,
 :root:not(.dark) .bg-gradient-to-br.text-transparent {
   background-image: linear-gradient(to bottom right, rgb(24 24 27), rgb(63 63 70), rgb(113 113 122));
 }

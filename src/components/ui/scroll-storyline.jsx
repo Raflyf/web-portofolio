@@ -53,7 +53,7 @@ export default function ScrollStoryline() {
     <>
       {/* Top Global Scroll Progress Bar */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-50 origin-left shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-50 origin-left shadow-[0_0_12px_rgba(34,211,238,0.8)]"
         style={{ scaleX: scaleY }}
       />
 
@@ -82,7 +82,7 @@ export default function ScrollStoryline() {
                 <div
                   className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
                     isActive
-                      ? 'w-3 h-3 bg-gradient-to-tr from-cyan-400 to-white shadow-[0_0_10px_rgba(34,211,238,1)] ring-2 ring-cyan-400/40 scale-110'
+                      ? 'w-3 h-3 bg-linear-to-tr from-cyan-400 to-white shadow-[0_0_10px_rgba(34,211,238,1)] ring-2 ring-cyan-400/40 scale-110'
                       : 'bg-zinc-600 group-hover:bg-zinc-400 group-hover:scale-110'
                   }`}
                 />
