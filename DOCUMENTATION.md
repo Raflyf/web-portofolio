@@ -869,3 +869,15 @@ Released 2026-09-03.
 2. **Pembaruan Protokol Pembelajaran Berkelanjutan (*Proactive RAG Harvesting*):**
    - Memperluas sistem prompt `memoryInstruction` di `api/chat.js`: AI diinstruksikan tidak hanya menyimpan saat ada klaim baru dari pengguna, melainkan juga secara proaktif menyertakan tag `[SAVE_MEMORY: ...]` ketika menyajikan temuan rilis teknologi atau model AI baru yang terverifikasi via pencarian web (misal: peluncuran Gemini 3.8 Flash).
    - Menyinkronkan fakta rilis Gemini 3.8 Flash ke basis data Supabase secara realtime.
+
+### v10.614.0 — Elimination of Rigid Search Templates, Anti-Noise & Topic Isolation
+
+Released 2026-09-03.
+1. **Pemusnahan Template Laporan 4 Bab Kaku (`api/chat.js`):**
+   - Menghapus template prompt web search yang sebelumnya memaksakan 4 subjudul kaku ("Latar Belakang & Intisari Rilis", "Fitur & Spesifikasi Teknis", "Jadwal Peluncuran", "Kesimpulan & Rekomendasi") pada semua pertanyaan berbasis web search.
+   - Menggantinya dengan panduan sintesis adaptif: jika pengguna bertanya singkat/santai ("kalo claude"), AI menjawab padat langsung ke pokok topik (1-3 paragraf) tanpa memaksakan subjudul atau materi sampingan yang tidak ditanyakan.
+2. **Isolasi Topik Multi-Turn Query (*Anti-Contamination*):**
+   - Memperbaiki `formulateSmartSearchQueries`: jika pertanyaan lanjutan pengguna merujuk ke entitas independen baru (misal beralih dari Gemini ke Claude), sistem tidak lagi menggabungkan nama produk lama ("gemini claude") ke dalam query pencarian internet.
+   - Melarang model mencampurkan informasi produk terdahulu ke jawaban topik baru kecuali diminta secara eksplisit oleh pengguna.
+3. **Pemberantasan Halusinasi Nama Model AI:**
+   - Menambahkan aturan ketat penamaan model resmi di prompt sistem: melarang keras mengarang nama model fiktif (seperti Claude Fable atau Claude Mythos). Menyajikan fakta jajaran resmi Anthropic (seri Claude 3 / 3.5 / 3.7 Sonnet) secara objektif.
