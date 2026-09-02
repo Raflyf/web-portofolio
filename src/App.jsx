@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { MotionConfig } from 'framer-motion';
+import { MotionConfig, motion, useScroll, useSpring } from 'framer-motion';
 import Lenis from 'lenis';
 import { Shield, Menu, X, Terminal, Sun, Moon } from 'lucide-react';
 import Home from './pages/Home';
@@ -252,6 +252,22 @@ function FloatingNavbar() {
   );
 }
 
+function GlobalScrollProgressBar() {
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 140,
+    damping: 26,
+    restDelta: 0.001
+  });
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 h-[3.5px] bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-[100] origin-left shadow-[0_1px_14px_rgba(34,211,238,1),0_0_24px_rgba(99,102,241,0.7)] pointer-events-none"
+      style={{ scaleX }}
+    />
+  );
+}
+
 export default function App() {
   const { setIsTerminalPopupOpen } = useTerminal();
   const location = useLocation();
@@ -286,6 +302,9 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="never">
+      {/* Root-Level Unobstructed Scroll Progress Bar (z-[100] always floats above navbar) */}
+      <GlobalScrollProgressBar />
+
       <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
         <FloatingNavbar />
 
