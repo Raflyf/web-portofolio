@@ -745,3 +745,12 @@ Released 2026-09-03.
    - Kini seluruh pendaran nebula kanvas dan konstelasi partikel mengalir mulus tanpa batas patahan dari puncak Hero hingga ke section paling bawah.
 2. **Elevasi Canvas ke Tingkat Root Halaman (`Home.jsx`):**
    - Menggeser posisi `<InteractiveScrollBackground />` ke luar kontainer `<main>` sehingga meliputi seluruh kanvas viewport secara utuh hingga ujung footer.
+
+### v10.602.0 — Stacking Context Normalization & Resilient Canvas Transform
+
+Released 2026-09-03.
+1. **Normalisasi Stacking Context Kanvas (`interactive-scroll-background.jsx` & `Footer.jsx`):**
+   - Menyelaraskan kontainer kanvas interaktif ke `z-0` (menggantikan `-z-10` yang berisiko tertelan di balik latar belakang `dark:bg-zinc-950` dari root body/div).
+   - Memastikan elemen `Footer` eksplisit bertengger di `relative z-10` di atas kanvas.
+2. **Transform Sizing Anti-Akumulatif:**
+   - Menggunakan `ctx.setTransform(dpr, 0, 0, dpr, 0, 0)` pada event resize jendela untuk mencegah distorsi skala atau terpotongnya batas kanvas saat ukuran viewport berubah.
