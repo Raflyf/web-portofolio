@@ -379,9 +379,14 @@
 
 /* ==========================================================================
    Always-On Motion (the site is Always-On Motion - animations NEVER disable,
-   even when the OS requests reduced motion. Micro-interactions below always
-   run; no prefers-reduced-motion gate anywhere in this stylesheet.)
+   even when the OS requests reduced motion or is in battery saver mode.
+   Micro-interactions and spring dynamics always execute at full fidelity.)
    ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-play-state: running !important;
+  }
+}
 
 /* Reveal: fade + slide up (scroll-triggered via IntersectionObserver / framer) */
 @keyframes glass-reveal {
