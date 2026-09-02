@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
+import InteractiveScrollBackground from '../components/ui/interactive-scroll-background.jsx';
 import { telemetry } from '../lib/telemetry';
 import { getSupabaseConfig } from '../lib/supabase';
 import {
@@ -319,9 +320,6 @@ export default function Dashboard() {
     return document.documentElement.classList.contains('dark') || localStorage.getItem('portfolio-theme') !== 'light';
   });
 
-  // Scroll-craft Dashboard Scroll Dynamics
-  const { scrollYProgress } = useScroll();
-  const ambientDashboardY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
 
   const handleThemeToggle = () => {
     const nextDark = !isDark;
@@ -1339,12 +1337,10 @@ export default function Dashboard() {
   // ==========================================
   if (!isAuthenticated) {
     return (
-      <main className="w-full min-h-screen relative z-10 flex items-center justify-center p-4 pt-24 bg-background dark:bg-zinc-950">
-        {/* Ambient Glows */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Auth Glass Card */}
+      <>
+        <InteractiveScrollBackground />
+        <main className="w-full min-h-screen relative z-10 flex items-center justify-center p-4 pt-24 bg-transparent text-zinc-900 dark:text-white font-sans">
+          {/* Auth Glass Card */}
         <div className="w-full max-w-md liquid-glass-strong p-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
           
@@ -1480,22 +1476,17 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-    );
-  }
+    </>
+  );
+}
 
   // ==========================================
   // MAIN AUTHENTICATED OBSERVABILITY DASHBOARD
   // ==========================================
   return (
-    <main className="w-full min-h-screen relative z-10 pb-20 bg-background dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans">
-      
-      {/* Scroll-craft Kinetic Ambient Atmosphere */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
-        <motion.div 
-          style={{ y: ambientDashboardY }}
-          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[90vw] max-w-7xl h-125 bg-linear-to-b from-cyan-500/8 via-indigo-600/4 to-transparent blur-[130px] rounded-full"
-        />
-      </div>
+    <>
+      <InteractiveScrollBackground />
+      <main className="w-full min-h-screen relative z-10 pb-20 bg-transparent text-zinc-900 dark:text-white font-sans">
 
 
       {/* Top Header Controls Bar (Sleek Compact Navbar with Smart Auto-Hide) */}
@@ -2339,5 +2330,6 @@ export default function Dashboard() {
       </button>
 
     </main>
+    </>
   );
 }
