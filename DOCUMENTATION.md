@@ -622,4 +622,19 @@ Released 2026-09-02.
 2. **Optimalisasi Ukuran Bundle:**
    - Bundling produksi Vite menghasilkan penurunan ukuran bundle JavaScript utama dari 696 kB menjadi 657 kB gzip-optimized tanpa sisa peringatan diagnostik di sidebar editor.
 
+### v10.590.0 — Scroll-Craft Motion Integration & Zero-Layout-Shift Dynamics
+
+Released 2026-09-02.
+1. **Instalasi Skill Global scroll-craft**:
+   - Mengintegrasikan modul skill scroll-craft dari Nate Herk ke konfigurasi global Antigravity IDE (`~/.gemini/config/skills/scroll-craft/`) lengkap dengan seluruh playbook interaksi, panduan page grammars, kurva emosi, dan rule anti-slop.
+2. **Penerapan Scroll Motion di Landing Page (Zero Layout Shift)**:
+   - **Lenis Physics Global Binding**: Mengikat instance Lenis smooth scroll ke `window.__lenis` di `App.jsx`, memungkinkan seluruh navigasi anchor dan tombol kembali ke atas menggunakan deselerasi kinetik yang mewah.
+   - **Scroll Storyline Scrubber**: Menambahkan persentase numerik live progress (`00% - 100%`) dan spring damping fisik pada floating navigation pill di `scroll-storyline.jsx`.
+   - **Ambient Ground Atmosphere**: Menambahkan layer latar belakang dinamis di `Home.jsx` yang bergeser secara parallax dan beradaptasi warnanya mengikuti posisi scroll pembaca tanpa mengubah struktur tata letak elemen apa pun.
+3. **Penerapan Scroll Motion di Dashboard Admin (`Dashboard.jsx`)**:
+   - **Top Sticky Progress Line**: Menambahkan bilah progres scroll linear presisi tinggi tepat di bawah header observabilitas admin untuk navigasi log data yang panjang.
+   - **Ambient Lighting Parallax**: Menambahkan aksen ambient glow di latar belakang dashboard yang merespons pergerakan scroll.
+   - **Quick Jump Floating Button**: Tombol kembali ke atas yang terhubung langsung ke mesin smooth scroll Lenis untuk efisiensi audit data.
+
+
 

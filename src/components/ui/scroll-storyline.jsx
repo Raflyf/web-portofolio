@@ -14,12 +14,20 @@ const SECTIONS = [
 
 export default function ScrollStoryline() {
   const [activeSection, setActiveSection] = useState('hero');
+  const [percent, setPercent] = useState(0);
   const { scrollYProgress } = useScroll();
   const scaleY = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: 120,
+    damping: 28,
     restDelta: 0.001
   });
+
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on('change', (latest) => {
+      setPercent(Math.min(100, Math.max(0, Math.round(latest * 100))));
+    });
+    return () => unsubscribe();
+  }, [scrollYProgress]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,20 +53,24 @@ export default function ScrollStoryline() {
   const scrollTo = (id) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      if (window.__lenis) {
+        window.__lenis.scrollTo(el, { duration: 1.2, offset: -30 });
+      } else {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
   return (
     <>
-      {/* Top Global Scroll Progress Bar */}
+      {/* Top Global Scroll Progress Bar with Dynamic Glow */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-50 origin-left shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-50 origin-left shadow-[0_0_12px_rgba(34,211,238,0.8)] pointer-events-none"
         style={{ scaleX: scaleY }}
       />
 
       {/* Floating Scrollytelling Sidebar Navigation */}
-      <aside className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col items-end gap-3 pointer-events-auto" aria-label="Navigasi Cerita">
+      <aside className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col items-end gap-3 pointer-events-auto select-none" aria-label="Navigasi Cerita">
         <div className="flex flex-col items-center gap-3 p-2.5 liquid-glass-inset liquid-glass-pill">
           {SECTIONS.map((sec) => {
             const isActive = activeSection === sec.id;
@@ -66,7 +78,7 @@ export default function ScrollStoryline() {
               <button
                 key={sec.id}
                 onClick={() => scrollTo(sec.id)}
-                className="group relative flex items-center justify-center p-1.5 focus:outline-none"
+                className="group relative flex items-center justify-center p-1.5 focus:outline-none cursor-pointer"
                 aria-label={`Scroll ke bagian ${sec.label}`}
               >
                 {/* Hover / Active Tooltip */}
@@ -78,17 +90,22 @@ export default function ScrollStoryline() {
                   {sec.label}
                 </span>
 
-                {/* Dot */}
+                {/* Dot with Spring Motion */}
                 <div
-                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  className={`rounded-full transition-all duration-300 ${
                     isActive
                       ? 'w-3 h-3 bg-linear-to-tr from-cyan-400 to-white shadow-[0_0_10px_rgba(34,211,238,1)] ring-2 ring-cyan-400/40 scale-110'
-                      : 'bg-zinc-600 group-hover:bg-zinc-400 group-hover:scale-110'
+                      : 'w-2.5 h-2.5 bg-zinc-600 group-hover:bg-zinc-400 group-hover:scale-110'
                   }`}
                 />
               </button>
             );
           })}
+
+          {/* Minimalist Live Scrubber Percentage Indicator */}
+          <div className="pt-1.5 mt-1 border-t border-white/10 text-[9px] font-mono font-bold text-zinc-500 tracking-tighter" title="Scroll Progress">
+            {percent.toString().padStart(2, '0')}%
+          </div>
         </div>
       </aside>
     </>
