@@ -32,8 +32,16 @@ export default function ProjectsGrid() {
     return project.category === filter;
   });
 
-  const featuredProject = PROJECTS_DATA.find(p => p.id === 'open-plagiarism-checker');
-  const secondaryProjects = filteredProjects.filter(p => p.id !== 'open-plagiarism-checker');
+  const isAllFilter = filter === 'all';
+  // Featured Project Showcase Card (raksasa) HANYA tampil saat tab 'Semua Proyek' (filter === 'all')
+  const featuredProject = isAllFilter ? PROJECTS_DATA.find(p => p.id === 'open-plagiarism-checker') : null;
+
+  // Saat filter === 'all': proyek selain open-plagiarism-checker ditampilkan di grid bawah
+  // Saat memilih kategori (filter !== 'all'): SELURUH proyek kategori tersebut (termasuk open-plagiarism-checker)
+  // ditampilkan di grid dengan ukuran card yang SAMA PERSIS dengan proyek lainnya
+  const displayProjects = isAllFilter 
+    ? filteredProjects.filter(p => p.id !== 'open-plagiarism-checker')
+    : filteredProjects;
 
   return (
     <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
@@ -84,8 +92,8 @@ export default function ProjectsGrid() {
         ))}
       </motion.div>
 
-      {/* Featured Project Showcase Card */}
-      {featuredProject && (filter === 'all' || featuredProject.category === filter) && (
+      {/* Featured Project Showcase Card (HANYA tampil pada tab 'Semua Proyek') */}
+      {featuredProject && (
         <motion.div 
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -166,10 +174,10 @@ export default function ProjectsGrid() {
         </motion.div>
       )}
 
-      {/* Secondary Projects Grid */}
+      {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AnimatePresence mode="popLayout">
-          {secondaryProjects.map((project, index) => (
+          {displayProjects.map((project, index) => (
             <motion.div 
               layout
               key={project.id}
@@ -187,9 +195,16 @@ export default function ProjectsGrid() {
             >
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 rounded-full">
-                    {project.categoryLabel}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 rounded-full">
+                      {project.categoryLabel}
+                    </span>
+                    {project.badge && (
+                      <span className="hidden sm:inline-block px-2.5 py-0.5 text-[10px] font-medium text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                        {project.badge}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 text-zinc-400 text-xs">
                     <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
                     <span>{project.stars}</span>
