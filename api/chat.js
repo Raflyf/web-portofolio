@@ -87,8 +87,12 @@ ${effortDirective}
      - Jika pengguna bertanya santai/pendek (misal: "kalo gta 6", "gimana cara kerja openplagiarism"): Tanggapi secara luwes, santai, ringkas, langsung ke inti jawaban, tanpa pembuka formal yang kaku.
      - Jika pengguna meminta analisis mendalam/teknis: Berikan uraian teknis komprehensif yang membedah arsitektur sistem, trade-off, dan efisiensi rekayasa.
      - Jika pengguna adalah pemula/awam: Jelaskan konsep kompleks dengan analogi intuitif yang bersahabat dan mudah dipahami.
-   - Berbicaralah layaknya rekan insinyur senior yang cerdas, empatik, rendah hati, dan solutif—bukan seperti bot kuesioner kaku.
-   - **DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK**: Hindari kalimat penutup template seperti "Jika Anda memerlukan bantuan lain...", "Semoga membantu!", atau "Silakan tanyakan lagi!". Langsung akhiri jawaban secara natural.
+    - Berbicaralah layaknya rekan insinyur senior yang cerdas, empatik, rendah hati, dan solutif, bukan seperti bot kuesioner kaku.
+    - **ANTI-EM-DASH & ANTI-AI CLICHE (STOP-SLOP)**:
+      - DILARANG KERAS menyisipkan tanda hubung panjang em-dash (—) atau en-dash (–) yang menempel tanpa spasi (contoh terlarang: "Rafly—seperti", "bahasa—misalnya").
+      - Gunakan tanda koma (,), tanda kurung (), titik dua (:), atau spasi alami biasa (contoh benar: "proyek Rafly, seperti...", "bahasa (misalnya...)").
+      - DILARANG menggunakan karakter non-breaking hyphen khusus. Gunakan tanda hubung biasa (-) hanya untuk kata ulang (misal: "proyek-proyek", "kira-kira").
+    - **DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK**: Hindari kalimat penutup template seperti "Jika Anda memerlukan bantuan lain...", "Semoga membantu!", atau "Silakan tanyakan lagi!". Langsung akhiri jawaban secara natural.
 
 3. Pembelajaran Berkelanjutan & Pemutakhiran Memori (Continuous Learning Protocol):
    - Perhatikan Memori Jangka Panjang dari sesi-sesi sebelumnya yang tertera di bawah.
@@ -1500,6 +1504,18 @@ export default async function handler(req, res) {
       }
 
       cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
+
+      // Clean AI punctuation artifacts (remove robotic em-dashes and non-breaking hyphens)
+      cleaned = cleaned
+        .replace(/[\u2010\u2011]/g, '-')
+        .replace(/[\u202F\u00A0]/g, ' ')
+        .replace(/(\b[A-Za-z0-9_]+)\s*[\u2013\u2014]\s*(seperti|misalnya|contohnya|yakni|yaitu|termasuk)\b/gi, '$1, $2')
+        .replace(/([a-zA-Z0-9_]+)[\u2013\u2014]([a-zA-Z0-9_]+)/g, '$1, $2')
+        .replace(/\s*[\u2013\u2014]\s*/g, ', ')
+        .replace(/,\s*,+/g, ',')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = 'Maaf, saya tidak dapat menyusun jawaban saat ini.';
       }

@@ -368,8 +368,17 @@ export default function TerminalAI({ onClose } = {}) {
           saveAIMemory(memoryMatch[1].trim(), telemetry.sessionId || 'unknown');
         }
       }
-      // Clean memory tags
+      // Clean memory tags & AI punctuation artifacts (remove robotic em-dashes and non-breaking hyphens)
       finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+      finalResponse = finalResponse
+        .replace(/[\u2010\u2011]/g, '-')
+        .replace(/[\u202F\u00A0]/g, ' ')
+        .replace(/(\b[A-Za-z0-9_]+)\s*[\u2013\u2014]\s*(seperti|misalnya|contohnya|yakni|yaitu|termasuk)\b/gi, '$1, $2')
+        .replace(/([a-zA-Z0-9_]+)[\u2013\u2014]([a-zA-Z0-9_]+)/g, '$1, $2')
+        .replace(/\s*[\u2013\u2014]\s*/g, ', ')
+        .replace(/,\s*,+/g, ',')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
 
       // RAG Auto-Injection for Dashboard Logging (only queries >= 8 chars, not slash commands)
       if (userQuery.length >= 8 && !userQuery.startsWith('/')) {
