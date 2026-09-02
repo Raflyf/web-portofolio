@@ -785,3 +785,15 @@ Released 2026-09-03.
    - Menghapus elemen dekoratif `Horizon Curved Arc` yang sebelumnya terpasang di bagian bawah Hero.
    - Elemen tersebut mengandung `border-t border-cyan-400/40`, garis putih `h-0.5 bg-linear-to-r`, dan gradasi gelap `via-indigo-950/20`. Pada Light Mode, elemen ini membelah latar belakang putih secara tajam dan terlihat seperti garis pemotong cacat, serta menimbulkan garis horizontal samar pada Dark Mode.
    - Dengan penghapusan ini, seluruh pendaran nebula kanvas interaktif dan partikel kini 100% menyatu mulus dan kontinu dari Hero hingga ke seluruh bagian halaman tanpa ada garis pemotong buatan.
+
+### v10.606.0 — Dashboard Interactive Canvas & Laptop Inertia Scroll Fix
+
+Released 2026-09-03.
+1. **Penyematan InteractiveScrollBackground pada Dashboard (`Dashboard.jsx`):**
+   - Mengintegrasikan kanvas partikel konstelasi saraf dan fluid nebula kontinu pada halaman Dashboard (baik layar login gerbang keamanan maupun layar metrik telemetri terautentikasi).
+   - Menghapus ambient glow statis lama (`ambientDashboardY`) demi konsistensi visual di seluruh aplikasi.
+2. **Perbaikan Smooth & Inertia Scroll pada Laptop (`App.jsx`):**
+   - **Bypass Reduced Motion:** Mengonfigurasi Lenis dengan `respectReducedMotion: false`. Secara default di Lenis v1, `respectReducedMotion` bernilai `true`, sehingga jika Windows laptop menyalakan mode hemat baterai (*battery saver*) atau mematikan animasi di setelan aksesibilitas, Lenis secara otomatis menonaktifkan smooth scroll menjadi loncat instan (`immediate: true`).
+   - **Aktivasi Touchpad / Trackpad Laptop:** Mengaktifkan `syncTouch: true`, `wheelMultiplier: 1.25`, dan `touchMultiplier: 1.8` agar gesekan dua jari di trackpad laptop dan roda mouse memiliki akselerasi inersia luncur yang nyata.
+   - **Impor CSS Resmi Lenis:** Mengimpor `import 'lenis/dist/lenis.css'` untuk memastikan class `html.lenis` memiliki reset overflow dan scroll-behavior yang benar.
+   - **Reset Scroll Antar Rute:** Menambahkan listener `useEffect` untuk mereset posisi scroll ke 0 saat rute berpindah.
