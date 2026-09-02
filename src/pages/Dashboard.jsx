@@ -1135,7 +1135,14 @@ export default function Dashboard() {
 
       if (isAIEvent) {
         totalAIQueries++;
-        const isAutoRouted = target.startsWith('auto') || label.includes('[auto') || label.includes('[Auto') || target === 'auto';
+        const isAutoRouted = target.startsWith('auto') || 
+                             label.includes('auto') || 
+                             label.includes('[auto') || 
+                             label.includes('smart cascade') ||
+                             target === 'auto' ||
+                             type === 'ai_chat' ||
+                             type === 'ai_query' ||
+                             type === 'ai_query_resolved';
         if (isAutoRouted) autoRouterCount++;
 
         let matched = false;
@@ -1147,12 +1154,11 @@ export default function Dashboard() {
             break;
           }
         }
-        // Atribusi riwayat lama: Jika kueri adalah Auto Router (atau tidak ada nama model spesifik),
+        // Atribusi riwayat lama: Jika tidak ada matcher spesifik,
         // atribusikan ke prioritas default #1 (Nemotron 3 Nano - Ollama Cloud)
         if (!matched) {
           modelCounts['ollama-nemotron-nano']++;
           if (ts > modelLastUsed['ollama-nemotron-nano']) modelLastUsed['ollama-nemotron-nano'] = ts;
-          if (!isAutoRouted) autoRouterCount++;
         }
       }
     });
