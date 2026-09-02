@@ -45,15 +45,19 @@ export const TerminalProvider = ({ children }) => {
   
   const [effort, setEffort] = useState('auto');
 
-  // Sync to local storage
+  // Sync to local storage with try-catch safety
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('terminal_active_convo', JSON.stringify(messages));
-    }
+    try {
+      if (messages.length > 0) {
+        localStorage.setItem('terminal_active_convo', JSON.stringify(messages));
+      }
+    } catch {}
   }, [messages]);
 
   useEffect(() => {
-    localStorage.setItem('terminal_history_list', JSON.stringify(historyList));
+    try {
+      localStorage.setItem('terminal_history_list', JSON.stringify(historyList));
+    } catch {}
   }, [historyList]);
 
   return (

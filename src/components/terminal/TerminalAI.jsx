@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
