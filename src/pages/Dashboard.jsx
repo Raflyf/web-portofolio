@@ -1314,7 +1314,7 @@ export default function Dashboard() {
 
         {/* Auth Glass Card */}
         <div className="w-full max-w-md liquid-glass-strong p-8 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
           
           <div className="flex justify-center mb-6 relative z-10">
             <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
@@ -1460,7 +1460,7 @@ export default function Dashboard() {
       {/* Top Header Controls Bar (Sleek Compact Navbar) */}
       <div className="sticky top-0 z-50 w-full liquid-glass-nav border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
           
           <div className="flex items-center gap-3 relative z-10">
             <div className="flex items-center gap-2">
@@ -1763,7 +1763,7 @@ export default function Dashboard() {
                       <span className="font-mono text-purple-700 dark:text-purple-300 font-semibold">{proj.count}x</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 transition-all duration-500" style={{ width: `${proj.pct}%` }} />
+                      <div className="h-full rounded-full bg-linear-to-r from-purple-500 to-cyan-500 transition-all duration-500" style={{ width: `${proj.pct}%` }} />
                     </div>
                   </div>
                 ))}
@@ -1787,7 +1787,7 @@ export default function Dashboard() {
                       <span className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold">{cert.count}x</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500" style={{ width: `${cert.pct}%` }} />
+                      <div className="h-full rounded-full bg-linear-to-r from-emerald-500 to-teal-400 transition-all duration-500" style={{ width: `${cert.pct}%` }} />
                     </div>
                   </div>
                 ))}
@@ -1811,7 +1811,7 @@ export default function Dashboard() {
                       <span className="font-mono text-indigo-700 dark:text-indigo-300 font-semibold">{ref.count}x</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
-                      <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 transition-all duration-500" style={{ width: `${ref.pct}%` }} />
+                      <div className="h-full rounded-full bg-linear-to-r from-indigo-500 to-pink-500 transition-all duration-500" style={{ width: `${ref.pct}%` }} />
                     </div>
                   </div>
                 ))}
@@ -1860,7 +1860,7 @@ export default function Dashboard() {
           </div>
 
           {/* Standalone Full-Width Auto Gateway Router Banner */}
-          <div className="p-5 rounded-2xl border border-cyan-300 dark:border-cyan-500/30 bg-gradient-to-r from-cyan-50 dark:from-cyan-950/40 via-indigo-50 dark:via-slate-900/50 to-purple-50 dark:to-indigo-950/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="p-5 rounded-2xl border border-cyan-300 dark:border-cyan-500/30 bg-linear-to-r from-cyan-50 dark:from-cyan-950/40 via-indigo-50 dark:via-slate-900/50 to-purple-50 dark:to-indigo-950/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">

@@ -600,7 +600,7 @@ export default function TerminalAI({ onClose } = {}) {
               <Plus className="w-3.5 h-3.5" /> Baru
             </button>
             
-            <div className="hidden sm:block h-4 w-[1px] bg-zinc-300 dark:bg-white/20 mx-1"></div>
+            <div className="hidden sm:block h-4 w-px bg-zinc-300 dark:bg-white/20 mx-1"></div>
             
             <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0" title={`Model AI Aktif: ${selectedModel.toUpperCase()}`}>
               <span className="text-zinc-600 dark:text-zinc-400">Model:</span> 
@@ -609,7 +609,7 @@ export default function TerminalAI({ onClose } = {}) {
               </span>
             </div>
 
-            <div className="hidden sm:block h-4 w-[1px] bg-zinc-300 dark:bg-white/20 mx-1"></div>
+            <div className="hidden sm:block h-4 w-px bg-zinc-300 dark:bg-white/20 mx-1"></div>
 
             <div className="flex items-center gap-1.5 shrink-0" title="Pilih Reasoning Effort & Thinking Mode">
               <span className="text-zinc-600 dark:text-zinc-400 text-xs hidden xs:inline">Effort:</span>
