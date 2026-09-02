@@ -98,7 +98,7 @@ export const PROJECTS_DATA = [
     techStack: ["JavaScript", "MediaPipe Vision", "OpenCV", "Flask", "WebRTC"],
     githubUrl: "https://github.com/Raflyf/FotoKitaBlur",
     demoUrl: null,
-    stars: 0
+    stars: 1
   },
   {
     id: "web-portofolio",
