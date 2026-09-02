@@ -723,3 +723,15 @@ Released 2026-09-03.
    - Mengimplementasikan fungsi `flushUnsyncedEvents()` pada engine telemetri.
    - Jika pengunjung berinteraksi saat koneksi internet terputus sesaat, event disimpan secara aman di *buffer* lokal. Begitu koneksi internet pulih (`window.addEventListener('online')`) atau saat sesi baru diinisialisasi, sistem secara otomatis mengunggah kumpulan event tersebut ke Supabase Cloud via batch REST POST.
    - Setelah sukses terunggah ke database awan, event lokal ditandai dengan flag `synced: true`, menjamin *zero data loss* sekaligus mencegah terjadinya duplikasi data.
+
+### v10.600.0 — Smart Auto-Hide Navbar & Top-Layer Scroll Progress
+
+Released 2026-09-03.
+1. **Smart Auto-Hide Navigasi Publik (`App.jsx`):**
+   - Menerapkan mekanisme sembunyi otomatis pada navbar saat pengguna melakukan scroll ke bawah (`-translate-y-full`), dan otomatis muncul kembali saat pengguna melakukan scroll ke atas (`translate-y-0`) dengan transisi 300ms yang halus.
+   - Navbar selalu tetap ditampilkan jika posisi scroll berada di dekat puncak halaman (< 70px) atau saat menu mobile sedang terbuka.
+2. **Smart Auto-Hide Navigasi Admin Dashboard (`Dashboard.jsx`):**
+   - Mengadopsi perilaku yang sama pada header dashboard admin: otomatis sembunyi ke atas saat scroll ke bawah dan muncul kembali saat scroll ke atas.
+3. **Elevasi Top-Layer Indikator Scroll Progress (`scroll-storyline.jsx` & `Dashboard.jsx`):**
+   - Mengangkat z-index progress bar garis scroll ke `z-[60]` (di atas seluruh elemen navbar `z-50`).
+   - Garis progress scroll kini senantiasa terlihat jelas di tepi paling atas layar tanpa terpotong atau terhalang oleh badan navbar.
