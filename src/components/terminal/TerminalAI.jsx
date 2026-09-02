@@ -63,8 +63,10 @@ const COMMAND_REGISTRY = {
     "4. OPENCODE ZEN DIRECT MODELS:",
     "   - opencode-lightning (Nemotron 3.5 Lightning)",
     "   - opencode-ultra (Nemotron 3 Ultra Free)",
+    "   - laguna / opencode-laguna (Poolside Laguna S 2.1 Free)",
+    "   - mimo / opencode-mimo (Mimo v2.5 Free Multimodal)",
     "",
-    "Perintah Penggantian: Ketik 'model <nama>' (contoh: model nano / model lightning / model auto)."
+    "Perintah Penggantian: Ketik 'model <nama>' (contoh: model nano / model laguna / model auto)."
   ],
   'ai-status': () => [
     "--- AI ENGINE STATUS ---",
@@ -209,7 +211,7 @@ export default function TerminalAI({ onClose } = {}) {
     getCurrentTime, initialMsg
   } = useTerminal();
   
-  const VALID_MODELS = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision'];
+  const VALID_MODELS = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision', 'laguna', 'opencode-laguna', 'mimo', 'opencode-mimo'];
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedModel, setSelectedModel] = useState(() => {
