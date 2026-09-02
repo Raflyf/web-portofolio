@@ -90,19 +90,42 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, message: 'Sesi admin telah kedaluwarsa. Silakan login ulang.' });
     }
 
-    // 2. Fetch telemetry (up to 5000 rows) with service role.
-    const evRes = await fetch(
-      `${supabaseUrl}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc&limit=5000`,
-      { headers: serviceHeaders }
-    );
-    const events = evRes.ok ? await evRes.json() : [];
+    // Helper: Paginated Batch Fetch for 100% complete row extraction
+    async function fetchAllRows(endpoint) {
+      let all = [];
+      let offset = 0;
+      const batchSize = 1000;
+      while (true) {
+        try {
+          const res = await fetch(`${endpoint}&offset=${offset}&limit=${batchSize}`, {
+            headers: {
+              ...serviceHeaders,
+              'Range-Unit': 'items',
+              'Range': `${offset}-${offset + batchSize - 1}`
+            }
+          });
+          if (!res.ok) break;
+          const rows = await res.json();
+          if (!Array.isArray(rows) || rows.length === 0) break;
+          all = all.concat(rows);
+          if (rows.length < batchSize) break;
+          offset += batchSize;
+        } catch (_) {
+          break;
+        }
+      }
+      return all;
+    }
 
-    // 3. Fetch AI memories (up to 200) with service role.
-    const memRes = await fetch(
-      `${supabaseUrl}/rest/v1/ai_memories?select=*&order=created_at.desc&limit=200`,
-      { headers: serviceHeaders }
+    // 2. Fetch ALL telemetry (100% of rows) with service role.
+    const events = await fetchAllRows(
+      `${supabaseUrl}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc`
     );
-    const memories = memRes.ok ? await memRes.json() : [];
+
+    // 3. Fetch ALL AI memories (100% of rows) with service role.
+    const memories = await fetchAllRows(
+      `${supabaseUrl}/rest/v1/ai_memories?select=*&order=created_at.desc`
+    );
 
     return res.status(200).json({ success: true, events, memories });
   } catch (err) {
