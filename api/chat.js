@@ -76,13 +76,18 @@ ${effortDirective}
    - Jika pengguna meminta visualisasi perbandingan model atau benchmark skor, sajikan dalam bentuk tabel Markdown yang rapi atau format baris metrik visual berbasis karakter/tabel yang informatif.
 
 [PANDUAN GAYA KOMUNIKASI MANUSIAWI & FORMAT MARKDOWN KAYA]:
-1. Wajib Format Markdown Terstruktur & Bersih:
-   - Gunakan format **Markdown yang kaya dan jelas**: gunakan **teks tebal** untuk kata kunci/topik utama, bullet points dengan spasi baris yang rapi, dan heading jika penjelasan memiliki beberapa sub-bagian.
+1. Wajib Format Markdown Terstruktur, Analitis & Bernilai Tambah:
+   - Gunakan format **Markdown yang kaya, bersih, dan komunikatif**: gunakan **teks tebal** untuk kata kunci/topik utama, bullet points dengan spasi baris yang rapi, dan heading jika penjelasan memiliki beberapa sub-bagian.
    - **DILARANG KERAS** menghasilkan satu paragraf panjang polos tanpa jeda (wall-of-text). Pecah selalu menjadi 2-3 butir poin terstruktur atau paragraf-paragraf pendek (maksimal 2 kalimat per paragraf).
-   - Untuk pertanyaan BERITA / PERKEMBANGAN TERKINI: Wajib sajikan dalam bentuk **3-4 Poin Sorotan Utama (Scannable Bullet List)**. Format:
-     - **[Headline / Topik Utama]**: Penjelasan 1-2 kalimat padat mengenai esensi peristiwa dan faktanya.
+   - **SINTESIS HASIL BERITA & PENELUSURAN INFORMASI**:
+     - KETIKA MENJAWAB PERKEMBANGAN/BERITA/RISET: Berikan **rangkuman analitis cerdas yang mengalir** dari intisari fakta yang ditemukan, BUKAN menyalin judul artikel atau potongan teks mentah.
+     - **DILARANG KERAS** menggunakan tanda kurung siku seperti "[Judul Berita] – Isi".
+     - Sajikan dalam bentuk butir poin terstruktur yang rapi:
+       - **Topik / Inovasi Utama**: Penjelasan padat mengenai esensi peristiwa, kapabilitas, atau dampaknya.
+       - **Aspek Performa & Efisiensi**: Uraian teknis mengenai arsitektur, efisiensi komputasi, atau biaya.
+       - **Ketersediaan & Penerapan**: Penjelasan mengenai implementasi, aksesibilitas, atau dampaknya bagi ekosistem.
    - Untuk pertanyaan PERBANDINGAN / BENCHMARK / DATA: Wajib gunakan **tabel Markdown** yang rapi dengan kolom Header yang jelas.
-   - Untuk pertanyaan UMUM / IDENTITAS / FITUR: Sajikan dengan pengantar 1 kalimat ramah, lalu butir poin **[Fitur / Peran]**: penjelasan, dan 1 kalimat penutup.
+   - Untuk pertanyaan UMUM / IDENTITAS / FITUR: Sajikan dengan pengantar 1 kalimat ramah, lalu butir poin **Nama Topik**: penjelasan, dan 1 kalimat penutup.
 2. Faktual, Alami & Tanpa Sapaan Repetitif:
    - DILARANG mengawali setiap jawaban dengan 'Hai!' atau 'Halo!'. Langsung masuk ke inti topik secara luwes.
    - Berbicaralah layaknya rekan developer/partner teknis yang ramah, komunikatif, dan cerdas.
@@ -740,12 +745,13 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN BERITA TERKINI 2026]:\n${uniqueSnippets.join('\n')}\n\n[PANDUAN SINTESIS]:
-- DILARANG KERAS menghasilkan satu paragraf panjang monoton yang padat (wall-of-text).
-- Sajikan informasi dalam bentuk 3-4 **Poin Sorotan Utama (Bullet Points)**: awali setiap butir dengan **[Topik Tebal]**: ikuti dengan 1-2 kalimat esensi fakta yang informatif dan mudah dibaca cepat.
-- DILARANG mengutip mentah judul artikel dalam bahasa Inggris. Ekstrak substansi informasinya secara langsung ke dalam Bahasa Indonesia yang komunikatif.
+      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN BERITA TERKINI 2026]:\n${uniqueSnippets.join('\n')}\n\n[PANDUAN SINTESIS AI]:
+- JANGAN PERNAH menyalin mentah format judul atau baris teks berita di atas (DILARANG membuat daftar '[Judul] - Isi').
+- Rangkum dan olah fakta-fakta tersebut menjadi penjelasan atau intisari analitis yang bernas, padat, dan mengalir dalam Bahasa Indonesia.
+- Sajikan dalam 3-4 butir poin terstruktur dengan judul topik tebal tanpa kurung siku:
+  - **Topik / Sorotan Utama**: Rangkuman intisari fakta dan penjelasannya.
 - Jangan mengarang angka benchmark atau metrik teknis palsu. Jika tidak disebutkan, tulis "Belum ada data skor resmi".
-- Awali dengan 1 kalimat pengantar singkat dan akhiri dengan 1 kalimat kesimpulan/takeaway.\n`;
+- Awali dengan 1 kalimat pengantar singkat dan akhiri dengan 1 kalimat kesimpulan/takeaway ringkas.\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
@@ -1250,7 +1256,11 @@ export default async function handler(req, res) {
         cleaned = cleaned.replace(/^(?:Hai|Halo|Hei|Hello|Hi|Hey)[!,\s.-]+/i, '').trim();
       }
 
-      // 3.5. Deterministic Identity Grounding: Cegah klaim pihak ketiga dan hilangkan dump nama model teknis
+      // 3.5. Ensure distinct line breaks for bullet points and sections
+      cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*(\*\*[^*]+?\*\*)/g, '$1\n\n- $2');
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–—:]\s*/g, '\n- **$1**: ');
+
+      // 3.6. Deterministic Identity Grounding: Cegah klaim pihak ketiga dan hilangkan dump nama model teknis
       if (isIdentityQuery) {
         const isHallucinatedModelList = /(?:glm|llama\s*3|mistral\s*7b|gemini\s*1\.5|model[- ]model ini tersedia|z\.ai|zhipu)/i.test(cleaned) || cleaned.includes('MODEL APA KAMU') || cleaned.length < 25;
         if (isHallucinatedModelList) {
