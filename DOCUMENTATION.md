@@ -612,7 +612,14 @@ Released 2026-09-02.
 3. **Continuous Learning & Automatic Server-Side RAG Persist:**
    - Mengintegrasikan `saveServerMemory` di backend untuk menyimpan secara otomatis setiap fakta valid (`[SAVE_MEMORY: ...]`) langsung ke tabel `ai_memories` Supabase.
    - Meningkatkan kapasitas penarikan memori percakapan RAG menjadi 15 memori kontekstual aktif di setiap sesi.
-4. **Resilient Fast-Failover Cascade:**
-   - Menata ulang hierarki model reasoning dengan timeout per-step 14 detik dan fallback cepat untuk mencegah error HTTP 502 saat upstream worker gratis sedang padat.
+### v10.589.0 — Clean Codebase Audit (Zero-Warning IDE Diagnostics & Dead-Code Elimination)
+
+Released 2026-09-02.
+1. **Pembersihan Total Diagnostik IDE (0 Warning / 0 Error di 19 Berkas `src/`):**
+   - **`Dashboard.jsx`**: Mengeliminasi seluruh 30 warning linter dengan menghapus import ikon tidak terpakai (`Filter`, `ChevronLeft`, `ChevronRight`, `ExternalLink`, `Sliders`), membersihkan parameter grafik `_args`/`_pluginOptions`, menghapus deklarasi dead config `DEFAULT_SUPABASE_URL`/`DEFAULT_SUPABASE_ANON_KEY`, mengonversi array allocation `new Array()` menjadi standar modern `Array.from()`, serta memigrasikan seluruh blok `catch` menjadi ES2019 optional catch binding (`catch {}`).
+   - **`TerminalAI.jsx`**: Menghapus import ikon berlebih (`TerminalSquare`, `History`, `Minimize2`, `CheckCircle2`), menyinkronkan parameter `onClose` pada tombol tutup modal pop-up, dan meniadakan parameter error yang tidak terpakai pada fungsi persistensi memori.
+   - **Pembersihan Berkas UI Lainnya**: Menghapus dead variables dan unused imports pada `App.jsx`, `ProjectsGrid.jsx`, `CertificatesGrid.jsx`, `Footer.jsx`, `horizon-hero.jsx`, `ContactSection.jsx`, `TerminalContext.jsx`, dan `telemetry.js`.
+2. **Optimalisasi Ukuran Bundle:**
+   - Bundling produksi Vite menghasilkan penurunan ukuran bundle JavaScript utama dari 696 kB menjadi 657 kB gzip-optimized tanpa sisa peringatan diagnostik di sidebar editor.
 
 

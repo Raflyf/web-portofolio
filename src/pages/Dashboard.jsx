@@ -14,10 +14,7 @@ import {
   Database,
   RefreshCw,
   Search,
-  Filter,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   Cpu,
   KeyRound,
@@ -35,8 +32,6 @@ import {
   Smartphone,
   Monitor,
   Tablet,
-  ExternalLink,
-  Sliders,
   Sun,
   Moon
 } from 'lucide-react';
@@ -79,9 +74,6 @@ const PIN_STORAGE_KEY = "admin_master_pin_hash";
 // Shared Supabase config (single source of truth, see src/lib/supabase.js).
 // FAIL-CLOSED: no hardcoded key fallback. The dashboard reads telemetry via
 // /api/dashboard-data; direct Supabase writes (ping test) only use env config.
-const supabaseConfig = getSupabaseConfig();
-const DEFAULT_SUPABASE_URL = supabaseConfig?.url || "";
-const DEFAULT_SUPABASE_ANON_KEY = supabaseConfig?.anonKey || "";
 
 async function sha256(message) {
   const msgBuffer = new TextEncoder().encode(message);
@@ -299,7 +291,7 @@ const CustomSelect = ({ value, onChange, options }) => {
 // Plugin kustom untuk selalu menampilkan label data di atas grafik batang
 const alwaysShowDataLabelPlugin = {
   id: 'alwaysShowDataLabel',
-  afterDatasetsDraw(chart, args, pluginOptions) {
+  afterDatasetsDraw(chart) {
     const { ctx } = chart;
     ctx.font = 'bold 11px Inter, sans-serif';
     ctx.textAlign = 'center';
@@ -359,11 +351,6 @@ export default function Dashboard() {
   const [confirmPinChange, setConfirmPinChange] = useState('');
   const [changePinMessage, setChangePinMessage] = useState('');
 
-  // Supabase config comes from the shared src/lib/supabase.js source of truth.
-  // The obsolete "Supabase Config" modal (which persisted url+anonKey to
-  // localStorage) was removed — the data path goes through /api/dashboard-data.
-  const supabaseUrl = DEFAULT_SUPABASE_URL;
-  const supabaseAnonKey = DEFAULT_SUPABASE_ANON_KEY;
   const CACHE_EVENTS_KEY = 'portfolio_dashboard_cached_events';
   const CACHE_MEMORIES_KEY = 'portfolio_dashboard_cached_memories';
 
@@ -372,7 +359,7 @@ export default function Dashboard() {
     try {
       const cached = localStorage.getItem(CACHE_EVENTS_KEY);
       return cached ? JSON.parse(cached) : [];
-    } catch (_) {
+    } catch {
       return [];
     }
   });
@@ -380,7 +367,7 @@ export default function Dashboard() {
     try {
       const cached = localStorage.getItem(CACHE_MEMORIES_KEY);
       return cached ? JSON.parse(cached) : [];
-    } catch (_) {
+    } catch {
       return [];
     }
   });
@@ -388,7 +375,7 @@ export default function Dashboard() {
     try {
       const cached = localStorage.getItem(CACHE_EVENTS_KEY);
       return !cached || JSON.parse(cached).length === 0;
-    } catch (_) {
+    } catch {
       return true;
     }
   });
@@ -429,7 +416,7 @@ export default function Dashboard() {
         if (parsed && parsed.auth) {
           setIsAuthenticated(true);
         }
-      } catch (e) {}
+      } catch {}
     }
   }, []);
 
@@ -472,7 +459,7 @@ export default function Dashboard() {
         try {
           const session = JSON.parse(sessionRaw || '{}');
           if (session?.session_token) sessionToken = session.session_token;
-        } catch (_) {}
+        } catch {}
 
         const dataRes = await fetch('/api/dashboard-data', {
           method: 'GET',
@@ -529,7 +516,7 @@ export default function Dashboard() {
               if (allMemories.length > 0) {
                 loadedMemories = allMemories;
               }
-            } catch (_) {}
+            } catch {}
           }
         }
 
@@ -544,7 +531,7 @@ export default function Dashboard() {
               const unsynced = localEvents.filter((e) => !e.synced);
               loadedEvents = [...unsynced, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
             }
-          } catch (e) {}
+          } catch {}
         }
 
         // Dual-Storage: Merge local AI memories so newly saved facts appear instantly
@@ -557,7 +544,7 @@ export default function Dashboard() {
               const uniqueLocal = localMems.filter(m => !existingTexts.has(m.fact_text));
               loadedMemories = [...uniqueLocal, ...(Array.isArray(loadedMemories) ? loadedMemories : [])];
             }
-          } catch (e) {}
+          } catch {}
         }
       } catch (err) {
         // FIX M3: aborted requests (unmount / superseded) are expected; skip noise.
@@ -569,13 +556,13 @@ export default function Dashboard() {
         if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
           const local = localStorage.getItem('portfolio_telemetry_events');
           if (local) {
-            try { loadedEvents = JSON.parse(local); } catch (e) {}
+            try { loadedEvents = JSON.parse(local); } catch {}
           }
         }
         if (!Array.isArray(loadedMemories) || loadedMemories.length === 0) {
           const localMem = localStorage.getItem('portfolio_ai_memories');
           if (localMem) {
-            try { loadedMemories = JSON.parse(localMem); } catch (e) {}
+            try { loadedMemories = JSON.parse(localMem); } catch {}
           }
         }
       } finally {
@@ -583,13 +570,13 @@ export default function Dashboard() {
           setEvents(loadedEvents);
           try {
             localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(loadedEvents.slice(0, 10000)));
-          } catch (_) {}
+          } catch {}
         }
         if (Array.isArray(loadedMemories) && loadedMemories.length > 0) {
           setMemories(loadedMemories);
           try {
             localStorage.setItem(CACHE_MEMORIES_KEY, JSON.stringify(loadedMemories.slice(0, 10000)));
-          } catch (_) {}
+          } catch {}
         }
         setIsLoading(false);
         isFetchingRef.current = false;
@@ -669,7 +656,7 @@ export default function Dashboard() {
             serverVerified = true;
           }
         }
-      } catch (_) {}
+      } catch {}
 
       // 2. Jika server verified atau cocok dengan local synced hash
       if (serverVerified || (savedHash && hashedInput === savedHash)) {
@@ -693,7 +680,7 @@ export default function Dashboard() {
           setAuthError(`Master PIN tidak valid. Percobaan ${failedAttemptsRef.current}/5.`);
         }
       }
-    } catch (err) {
+    } catch {
       setAuthError('Kesalahan sistem kriptografi internal.');
     }
   };
@@ -752,7 +739,7 @@ export default function Dashboard() {
         setConfirmPinChange('');
         setChangePinMessage('');
       }, 1500));
-    } catch (err) {
+    } catch {
       setChangePinMessage('Gagal mengubah PIN.');
     }
   };
@@ -776,7 +763,7 @@ export default function Dashboard() {
       } else {
         setOtpMessage(data.error || 'Gagal mengirim OTP pemulihan.');
       }
-    } catch (e) {
+    } catch {
       setOtpMessage('Koneksi ke API OTP terganggu.');
     } finally {
       setOtpLoading(false);
@@ -813,7 +800,7 @@ export default function Dashboard() {
       } else {
         setOtpMessage(data.error || 'Kode OTP salah atau kedaluwarsa.');
       }
-    } catch (e) {
+    } catch {
       setOtpMessage('Gagal memverifikasi OTP.');
     } finally {
       setOtpLoading(false);
@@ -827,7 +814,7 @@ export default function Dashboard() {
       telemetry.logEvent('ping_test', 'Admin Dashboard', 'Observability Manual Ping Test');
       await fetchTelemetryData();
       setPingStatus('Ping Berhasil Terkirim & Telemetri Diperbarui!');
-    } catch (e) {
+    } catch {
       setPingStatus('Ping Gagal: Terjadi gangguan jaringan.');
     }
     timeoutsRef.current.push(setTimeout(() => setPingStatus(''), 4000));
@@ -906,8 +893,7 @@ export default function Dashboard() {
     }
 
     const labels = [];
-    const viewsPerDay = new Array(daysCount).fill(0);
-    const visitorsPerDay = new Array(daysCount).fill(0);
+    const viewsPerDay = Array.from({ length: daysCount }, () => 0);
 
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();

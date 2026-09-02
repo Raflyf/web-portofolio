@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Shield, ExternalLink, Heart, Zap } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
 import { telemetry } from '../../lib/telemetry';
 
@@ -17,15 +17,6 @@ const socialLinks = [
     href: `mailto:${DEVELOPER_PROFILE.email}`,
     color: 'hover:text-cyan-400 hover:border-cyan-400/40',
   },
-];
-
-const quickLinks = [
-  { label: 'Tentang', href: '/#about' },
-  { label: 'Keahlian', href: '/#skills' },
-  { label: 'Proyek', href: '/#projects' },
-  { label: 'Sertifikat', href: '/#certificates' },
-  { label: 'Riwayat', href: '/#timeline' },
-  { label: 'Lab AI', href: '/#lab' },
 ];
 
 export default function Footer() {

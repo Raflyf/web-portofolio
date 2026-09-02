@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PROJECTS_DATA } from '../../data';
-import { ArrowRight, Star, ExternalLink } from 'lucide-react';
+import { Star, ExternalLink } from 'lucide-react';
 import { telemetry } from '../../lib/telemetry';
 
 const GithubIcon = ({ className = "w-5 h-5" }) => (
@@ -16,16 +16,6 @@ const containerVariants = {
     opacity: 1,
     transition: { staggerChildren: 0.08 }
   }
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 25 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
-  },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
 };
 
 const tabVariants = {

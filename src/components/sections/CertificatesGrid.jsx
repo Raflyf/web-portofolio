@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CERTIFICATES_DATA } from '../../data';
-import { FileText, Award, ExternalLink, Calendar, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, Award, Calendar, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { telemetry } from '../../lib/telemetry';
 
 const containerVariants = {
@@ -12,15 +12,6 @@ const containerVariants = {
   }
 };
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 25 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
-  },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
-};
 const tabVariants = {
   hidden: { opacity: 0, scale: 0.9 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } }

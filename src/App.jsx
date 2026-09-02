@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Lenis from 'lenis';
-import { Shield, Sparkles, Menu, X, Terminal, ExternalLink, Sun, Moon } from 'lucide-react';
+import { Shield, Menu, X, Terminal, Sun, Moon } from 'lucide-react';
 import Home from './pages/Home';
 // Dashboard is heavy (Chart.js) — code-split so the landing bundle stays light.
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));

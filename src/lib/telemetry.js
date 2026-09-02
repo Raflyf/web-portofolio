@@ -31,7 +31,7 @@ class TelemetryEngine {
         sessionStorage.setItem(SESSION_KEY, sid);
       }
       return sid;
-    } catch (_) {
+    } catch {
       return 'sess_unknown';
     }
   }
@@ -47,7 +47,7 @@ class TelemetryEngine {
         return 'mobile';
       }
       return 'desktop';
-    } catch (_) {
+    } catch {
       return 'desktop';
     }
   }
@@ -57,7 +57,7 @@ class TelemetryEngine {
     if (document.referrer) {
       try {
         referrerHost = new URL(document.referrer, window.location.origin).hostname || 'Direct / Bookmark';
-      } catch (_) {
+      } catch {
         referrerHost = 'External Domain';
       }
     }
@@ -97,14 +97,14 @@ class TelemetryEngine {
         existing.length = MAX_LOCAL_EVENTS;
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
-    } catch (_) {}
+    } catch {}
   }
 
   getLocalEvents() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
-    } catch (_) {
+    } catch {
       return [];
     }
   }
@@ -148,7 +148,7 @@ class TelemetryEngine {
       if (changed) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       }
-    } catch (_) {}
+    } catch {}
   }
 
   init() {

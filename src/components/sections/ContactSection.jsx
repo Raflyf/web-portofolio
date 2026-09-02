@@ -107,7 +107,7 @@ export default function ContactSection() {
       } else {
         throw new Error(data.message || 'Gagal mengirimkan pesan');
       }
-    } catch (err) {
+    } catch {
       // Fallback message with direct WA backup
       const waText = encodeURIComponent(`Halo Rafly, saya ${name.trim()} (${email.trim()}). Pesan: ${message.trim()}`);
       const waUrl = `${DEVELOPER_PROFILE.whatsappUrl}?text=${waText}`;
