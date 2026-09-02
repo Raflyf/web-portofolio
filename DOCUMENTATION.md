@@ -777,3 +777,11 @@ Released 2026-09-03.
 2. **Pembersihan Progress Bar Lokal & Unused Hooks:**
    - Menghapus elemen progress bar lama di `scroll-storyline.jsx` dan `Dashboard.jsx`.
    - Menghapus dependensi dan hooks yang tidak lagi digunakan (`useSpring`, `motion` lokal).
+
+### v10.605.0 — Complete Elimination of Horizon Arc Line (100% Seamless Dark & Light Mode)
+
+Released 2026-09-03.
+1. **Pemusnahan Elemen Garis Busur Horizon (`horizon-hero.jsx`):**
+   - Menghapus elemen dekoratif `Horizon Curved Arc` yang sebelumnya terpasang di bagian bawah Hero.
+   - Elemen tersebut mengandung `border-t border-cyan-400/40`, garis putih `h-0.5 bg-linear-to-r`, dan gradasi gelap `via-indigo-950/20`. Pada Light Mode, elemen ini membelah latar belakang putih secara tajam dan terlihat seperti garis pemotong cacat, serta menimbulkan garis horizontal samar pada Dark Mode.
+   - Dengan penghapusan ini, seluruh pendaran nebula kanvas interaktif dan partikel kini 100% menyatu mulus dan kontinu dari Hero hingga ke seluruh bagian halaman tanpa ada garis pemotong buatan.
