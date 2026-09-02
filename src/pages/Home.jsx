@@ -30,7 +30,7 @@ export default function Home() {
         <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
           <motion.div 
             style={{ y: ambientY, opacity: glowOpacity }}
-            className="absolute -top-40 left-1/2 -translate-x-1/2 w-[90vw] max-w-7xl h-[600px] bg-linear-to-b from-cyan-500/10 via-indigo-600/5 to-emerald-500/10 blur-[140px] rounded-full"
+            className="absolute -top-40 left-1/2 -translate-x-1/2 w-[90vw] max-w-7xl h-150 bg-linear-to-b from-cyan-500/10 via-indigo-600/5 to-emerald-500/10 blur-[140px] rounded-full"
           />
         </div>
 
