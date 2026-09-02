@@ -1,0 +1,7 @@
+{
+  // Tailwind CSS IntelliSense understands Tailwind v4 CSS-first directives
+  // (@custom-variant, @theme, ...) and provides autocomplete + real diagnostics.
+  "recommendations": [
+    "bradlc.vscode-tailwindcss"
+  ]
+}

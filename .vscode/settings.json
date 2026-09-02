@@ -1,0 +1,9 @@
+{
+  // Tailwind CSS v4 uses CSS-first configuration directives (@custom-variant,
+  // @theme, @utility, @apply, ...) that are NOT standard CSS at-rules.
+  // VS Code's built-in CSS linter flags them as "Unknown at rule", which is a
+  // false positive here. Real validation is provided by the Tailwind CSS
+  // IntelliSense extension (recommended in .vscode/extensions.json), so we
+  // silence the built-in linter for these directives only.
+  "css.lint.unknownAtRules": "ignore"
+}
