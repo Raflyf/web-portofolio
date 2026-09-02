@@ -391,7 +391,7 @@ Diterbitkan 2026-09-01. Paket A (K1-K3, M2, M8), B (M1, M3-M7), C (m2-m7) seluru
 
 ---
 
-# RESOLVED — Layer-3 Audit (v10.584.0)
+# RESOLVED — Layer-3 Audit (v10.585.0)
 
 Diterbitkan 2026-09-02. Seluruh temuan CRITICAL (C-1, C-2) dan MAJOR (M-1..M-6) dituntaskan, ditambah minor m-1..m-5, m-7, m-9. `npm run build` hijau; `node --check` lolos pada 6 berkas (`api/chat.js`, `api/admin-otp.js`, `api/dashboard-data.js`, `api/save-memory.js`, `src/lib/supabase.js`, `src/lib/telemetry.js`).
 
@@ -409,11 +409,11 @@ Diterbitkan 2026-09-02. Seluruh temuan CRITICAL (C-1, C-2) dan MAJOR (M-1..M-6) 
 - [x] **M-3 — Double-count telemetri di dashboard**: flag `synced` ditandai setelah kirim sukses; dashboard hanya menggabungkan event lokal yang belum `synced`. **RESOLVED**.
 - [x] **M-4 — Change PIN hanya lokal**: `update_pin` dipanggil ke server lebih dulu (verifikasi `current_pin_hash`); write localStorage hanya setelah server sukses. **RESOLVED**.
 - [x] **M-5 — Sesi bertahan setelah rotasi PIN**: `clearSessionToken` meng-null-kan `session_token`/`session_expires_at` pada update/reset PIN; OTP tidak lagi di-log (bahkan ter-mask). **RESOLVED**.
-- [x] **M-6 — Versi tidak seragam**: `package.json` dan status `/api/chat` disatukan ke `10.584.0`; catatan TTL `rate_limits` ditambahkan di schema. **RESOLVED**.
+- [x] **M-6 — Versi tidak seragam**: `package.json` dan status `/api/chat` disatukan ke `10.585.0`; catatan TTL `rate_limits` ditambahkan di schema. **RESOLVED**.
 
 ### Minor (m)
 
-- [x] **m-1 — Sesi tidak diinvalidasi saat PIN berubah**: token sesi dibersihkan di server dan schema. **RESOLVED**.
+- [x] **m-1 — Sesi tidak diinvalidasi saat PIN berubah**: token sesi dibersihkan di server dan schema. **RESOLVED**. (Resolusi: Komponen custom select / dropdown buatan sendiri ditambahkan ke Terminal AI untuk mengganti menu select native sistem operasi. Tata letak header pada Log Aktivitas Dashboard disusun ulang dengan Flexbox. Perhitungan statistik kueri AI (bar chart) dimodifikasi dengan logika regex yang mendeteksi `terminal` dan `ai_` events).
 - [x] **m-2 — 401 dashboard-data tidak ditangani**: sesi basi memaksa re-login (bukan offline senyap). **RESOLVED**.
 - [x] **m-3 — Event tersinkron dihitung ulang**: lihat M-3 (flag `synced`). **RESOLVED**.
 - [x] **m-4 — FOUC tema**: inline pre-paint script di `index.html` (apply tema sebelum paint). **RESOLVED**.

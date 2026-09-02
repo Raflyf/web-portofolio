@@ -870,7 +870,7 @@ export default function Dashboard() {
       else if (/\b(fotokita|foto)\b/.test(combined)) counts[5]++;
       else if (/\b(portfolio|web)\b/.test(combined)) counts[6]++;
       else if (/\b(cert|sertifikat)\b/.test(combined)) counts[7]++;
-      else if (/\b(terminal|ai)\b/.test(combined)) counts[8]++;
+      else if (/\b(terminal)\b/.test(combined) || combined.includes('ai_')) counts[8]++;
     });
 
     return {
@@ -1865,22 +1865,22 @@ export default function Dashboard() {
         {/* 6. REAL-TIME ACTIVITY STREAM TABLE & EXPORT */}
         {/* ========================================================================= */}
         <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-5">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-cyan-400" />
-                <h2 className="text-lg font-bold text-white">Log Aktivitas Pengunjung Terkini</h2>
-                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <Activity className="w-4 h-4 text-cyan-400 shrink-0" />
+                <h2 className="text-lg font-bold text-white truncate">Log Aktivitas Pengunjung Terkini</h2>
+                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400 shrink-0">
                   {filteredActivityEvents.length} entri
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-400 mt-1 line-clamp-2">
                 Rekaman telemetri event lengkap termasuk navigasi, interaksi tombol, klik proyek, dan kueri terminal
               </p>
             </div>
 
-            <div className="flex flex-col xl:flex-row items-start xl:items-center gap-3">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={handleExportCsv}
                   className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
@@ -1900,15 +1900,15 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="relative">
+              <div className="flex flex-wrap items-center gap-2 flex-1 sm:flex-none w-full sm:w-auto">
+                <div className="relative flex-1 sm:flex-none">
                   <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="Cari target / sesi..."
                     value={tableSearchTerm}
                     onChange={(e) => { setTableSearchTerm(e.target.value); setTableCurrentPage(1); }}
-                    className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 w-44 sm:w-56"
+                    className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 w-full sm:w-56"
                   />
                 </div>
 
