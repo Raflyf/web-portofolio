@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Lenis from 'lenis';
 import { Shield, Menu, X, Terminal, Sun, Moon } from 'lucide-react';
@@ -10,6 +10,8 @@ import { telemetry } from './lib/telemetry';
 
 function FloatingNavbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [navVisible, setNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -39,12 +41,41 @@ function FloatingNavbar() {
   };
 
   useEffect(() => {
+    const threshold = 10;
+    let ticking = false;
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          const delta = currentY - lastScrollY.current;
+
+          // Always show navbar near the top of the page (< 70px)
+          if (currentY < 70) {
+            setNavVisible(true);
+          } else if (Math.abs(delta) > threshold) {
+            if (delta > 0) {
+              // Scrolling down: hide navbar unless mobile menu is open
+              if (!mobileMenuOpen) {
+                setNavVisible(false);
+              }
+            } else {
+              // Scrolling up: reveal navbar
+              setNavVisible(true);
+            }
+            lastScrollY.current = currentY;
+          }
+
+          setScrolled(currentY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [mobileMenuOpen]);
 
   // Isolate Dashboard: Hide public floating navbar on dashboard route
   if (location.pathname === '/dashboard') {
@@ -84,7 +115,9 @@ function FloatingNavbar() {
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 pointer-events-none transition-all duration-300">
+    <header className={`fixed top-0 inset-x-0 z-50 pointer-events-none transition-transform duration-300 ease-in-out ${
+      navVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <div className={`w-full pointer-events-auto px-6 lg:px-8 py-3.5 flex items-center justify-between transition-all duration-300 ${
         scrolled || mobileMenuOpen
           ? 'liquid-glass-nav'
