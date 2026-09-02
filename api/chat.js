@@ -213,20 +213,28 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push(qClean);
   }
 
-  // 2. Specific Tech / AI Industry Intent Detection: Add global search queries
+  // 2. Automated Global Freshness & Recency Query Generation
+  if (coreSubject.length >= 3) {
+    queries.push(`${coreSubject} latest official news update 2025 2026`);
+    if (/\b(game|gta|playstation|xbox|nintendo|film|movie|anime|trailer|rilis|release)\b/i.test(qNorm)) {
+      queries.push(`${coreSubject} release date trailer gameplay official news`);
+    }
+  }
+
+  // 2b. Specific Tech / AI Industry Intent Detection: Add global search queries
   if (/\b(model ai|rilis ai|perilisan ai|llm|deepseek|openai|chatgpt|claude|gemini|llama|mistral|nemotron|ai terbaru)\b/i.test(qNorm)) {
     queries.push('latest AI model release 2026 DeepSeek OpenAI Anthropic Gemini Meta');
     queries.push('rilis model AI terbaru 2026');
   }
 
-  // 2b. Benchmark / Perbandingan AI Model Intent: Fetch real leaderboard & eval news
+  // 2c. Benchmark / Perbandingan AI Model Intent: Fetch real leaderboard & eval news
   const isBenchmarkQuery = /\b(benchmark|perbandingan|bandingkan|leaderboard|arena ai|lmsys|skor|score|ranking|peringkat|evaluasi model|vs|versus|terbaik|terkuat)\b/i.test(qNorm);
   if (isBenchmarkQuery) {
     queries.push('AI model benchmark leaderboard 2026 latest results');
     queries.push('LMSYS Chatbot Arena leaderboard 2026');
   }
 
-  // 2c. Dynamic Provider-Specific Search Queries (No hardcoded versions)
+  // 2d. Dynamic Provider-Specific Search Queries (No hardcoded versions)
   if (/\bclaude\b/i.test(qNorm)) {
     queries.push('Anthropic Claude AI latest model release benchmark');
   }
@@ -590,18 +598,18 @@ async function searchWebContext(query, history = []) {
     // 2. Parallel Real-Time Global Search Queries across Multi-Engine Multi-Language Aggregator
     // (Google News Global US/UK/ID, Bing News, DuckDuckGo Web API, arXiv Papers)
     const searchFetches = searchQueries.flatMap(targetQ => [
-      // Google News Global (US / English)
+      // Google News Global (US / English) - Fresh News (30 days)
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=en-US&gl=US&ceid=US:en`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: controller.signal
+      }),
+      // Google News Global (US / English) - Comprehensive
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-US&gl=US&ceid=US:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
-      // Google News Global (UK / Europe)
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-GB&gl=GB&ceid=GB:en`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // Google News Indonesia
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=id&gl=ID&ceid=ID:id`, {
+      // Google News Indonesia - Fresh News
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=id&gl=ID&ceid=ID:id`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
@@ -685,7 +693,7 @@ async function searchWebContext(query, history = []) {
               structuredSnippets.push({
                 text: `[DuckDuckGo Web Index (${parsed.Heading || 'Web Result'})]: ${snip}`,
                 timestamp: Date.now() + 500000,
-                score: 6
+                score: 8
               });
               rawSnippets.push(`[DuckDuckGo]: ${parsed.Heading || 'Web Knowledge'}`);
             }
@@ -768,11 +776,19 @@ async function searchWebContext(query, history = []) {
             const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
             if (title && !isJunkArticle(title)) {
               let ts = 0;
+              let recencyBonus = 0;
               if (pubDate) {
                 const parsedDate = new Date(pubDate).getTime();
-                if (!isNaN(parsedDate)) ts = parsedDate;
+                if (!isNaN(parsedDate)) {
+                  ts = parsedDate;
+                  const daysOld = (Date.now() - parsedDate) / (1000 * 60 * 60 * 24);
+                  if (daysOld <= 7) recencyBonus = 10;
+                  else if (daysOld <= 30) recencyBonus = 7;
+                  else if (daysOld <= 90) recencyBonus = 4;
+                  else if (daysOld <= 365) recencyBonus = 2;
+                }
               }
-              const relScore = calcScore(title + ' ' + desc);
+              const relScore = calcScore(title + ' ' + desc) + recencyBonus;
               if (searchKeywords.length === 0 || relScore > 0) {
                 const fullText = desc && desc.length > 20 ? `${title} — ${desc.slice(0, 250)}` : title;
                 const entry = pubDate ? `[Global Live Web/News (${pubDate})]: ${fullText}` : `[Global Live Web/News]: ${fullText}`;
@@ -785,7 +801,7 @@ async function searchWebContext(query, history = []) {
       }
     }
 
-    // Sort all snippets by relevance score first, then newest timestamp
+    // Sort all snippets by relevance score first (including recency bonus), then newest timestamp
     structuredSnippets.sort((a, b) => ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp));
 
     // Deduplicate snippets (top 12 for rich, comprehensive multi-language factual grounding)
@@ -801,18 +817,19 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN DARI MESIN PENCARI & WEB GLOBAL (MULTI-BAHASA)]:
+      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN TERKINI DARI MESIN PENCARI & WEB GLOBAL (MULTI-BAHASA)]:
 ${uniqueSnippets.join('\n')}
 
 [PANDUAN SINTESIS & ANALISIS RINCI AI]:
 - Anda telah menampung informasi dari berbagai sumber web dan mesin pencari global dalam berbagai bahasa (Inggris, Indonesia, dll).
+- **PRIORITASKAN FAKTA DENGAN TANGGAL PUBLIKASI PALING BARU (2025/2026/bulan ini)**. Jangan memakai rumor kadaluarsa jika ada laporan resmi atau pengumuman terkini.
 - TUGAS ANDA: Olah, rangkum, dan jelaskan secara **sangat rinci, mendalam, dan terstruktur** dalam Bahasa Indonesia yang komunikatif dan profesional.
 - **DILARANG KERAS** menyalin judul mentah atau potongan teks scraper (DILARANG membuat daftar '[Judul] - Isi').
 - Pecah penjelasan ke dalam 3-4 bagian terstruktur dengan judul topik tebal tanpa kurung siku:
-  - **Latar Belakang & Intisari Rilis/Peristiwa**: Penjelasan menyeluruh mengenai peristiwa, inovasi, dan konteksnya.
-  - **Spesifikasi & Kapabilitas Teknis**: Rincian performa, arsitektur, atau fitur unggulan yang dirilis.
-  - **Efisiensi, Biaya & Privasi**: Uraian perbandingan biaya, skalabilitas on-premise/cloud, atau keamanan data.
-  - **Ketersediaan & Rekomendasi Penerapan**: Panduan akses (API/open-weight/web), implementasi praktis, dan kesimpulan bernas.
+  - **Latar Belakang & Intisari Rilis/Peristiwa Terkini**: Penjelasan komprehensif mengenai update resmi, timeline, atau status terkini.
+  - **Fitur, Spesifikasi & Detail Gameplay/Teknis**: Rincian mekanisme baru, platform yang dituju, atau peningkatan teknis.
+  - **Jadwal Peluncuran & Pernyataan Resmi Developer**: Informasi jadwal rilis resmi (misal kuartal/tahun) dari developer/publisher (seperti Take-Two / Rockstar) berdasarkan laporan keuangan atau pernyataan resmi terbaru.
+  - **Kesimpulan & Rekomendasi**: Rangkuman intisari untuk audiens.
 - Berikan analisis bernilai tambah yang utuh dan komprehensif, bukan sekadar ringkasan 1-2 baris pendek.\n`;
     }
 
