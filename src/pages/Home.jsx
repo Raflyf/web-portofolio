@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import { telemetry } from '../lib/telemetry';
+import InteractiveScrollBackground from '../components/ui/interactive-scroll-background';
 import HorizonHero from '../components/ui/horizon-hero';
 import ScrollStoryline from '../components/ui/scroll-storyline';
 import TerminalAI from '../components/terminal/TerminalAI';
@@ -13,12 +13,6 @@ import ContactSection from '../components/sections/ContactSection';
 import Footer from '../components/layout/Footer';
 
 export default function Home() {
-  const { scrollYProgress } = useScroll();
-
-  // Scroll-craft Ambient Ground Color & Parallax Shifter
-  const ambientY = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
-  const glowOpacity = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [0.15, 0.25, 0.2, 0.25, 0.15]);
-
   useEffect(() => {
     telemetry.init();
   }, []);
@@ -26,13 +20,8 @@ export default function Home() {
   return (
     <>
       <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-hidden">
-        {/* Scroll-craft Kinetic Ambient Ground Atmosphere */}
-        <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
-          <motion.div 
-            style={{ y: ambientY, opacity: glowOpacity }}
-            className="absolute -top-40 left-1/2 -translate-x-1/2 w-[90vw] max-w-7xl h-150 bg-linear-to-b from-cyan-500/10 via-indigo-600/5 to-emerald-500/10 blur-[140px] rounded-full"
-          />
-        </div>
+        {/* Full-Page Continuous Interactive Scroll Background (Hero to Footer) */}
+        <InteractiveScrollBackground />
 
         {/* Scrollytelling Progress & HUD */}
         <ScrollStoryline />
