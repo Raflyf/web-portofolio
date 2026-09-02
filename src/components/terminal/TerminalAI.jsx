@@ -645,7 +645,7 @@ export default function TerminalAI({ onClose } = {}) {
             
             {msg.role === 'user' ? (
               // User Bubble
-              <div className="flex flex-col items-end max-w-[90%] sm:max-w-[75%]">
+              <div className="flex flex-col items-end max-w-[90%] sm:max-w-3/4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-[10px] sm:text-xs text-zinc-500 font-medium">{msg.time || getCurrentTime()}</span>
                   <span className="text-xs font-semibold text-emerald-400">You (Pengunjung)</span>
@@ -723,7 +723,7 @@ export default function TerminalAI({ onClose } = {}) {
       {/* History Modal */}
       {showHistoryModal && (
         <div 
-          className="fixed inset-0 z-[150] flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4"
+          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowHistoryModal(false);
