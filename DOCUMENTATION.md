@@ -600,4 +600,19 @@ Released 2026-09-02.
 1. **Zero-Crash Effort Dropdown Fix:** Fixed runtime `ReferenceError: CheckCircle2 is not defined` by adding missing icon imports from `lucide-react` in `TerminalAI.jsx`, completely eliminating blackscreen crashes when clicking the effort dropdown.
 2. **Unified Historical RAG Knowledge Extraction:** `Dashboard.jsx` now dynamically extracts and combines AI interaction facts from Supabase `portfolio_telemetry` events with dedicated `ai_memories`, ensuring historical sessions and continuous knowledge are displayed immediately in the RAG table.
 
+### v10.588.0 — Frontier Agent Tuning & Epistemic Honesty (Zero-Hallucination & Continuous RAG Auto-Persist)
+
+Released 2026-09-02.
+1. **Frontier Agent Knowledge Tuning (`api/chat.js` & `src/data.js`):**
+   - **Epistemic Humility (Kejujuran Mutlak):** Menegakkan aturan pengakuan batas pengetahuan jika informasi belum diumumkan resmi oleh publisher/developer alih-alih mengarang tanggal atau fitur spekulatif.
+   - **Zero-Overclaim & Zero-Noise:** Melarang keras klaim fiktif pada proyek web-portofolio (menghapus residu legacy "Vanilla JS", klaim backend Flask fiktif, CLI `portfolio-cli`, dan metrik SIMD/NumPy palsu). Memperbarui spesifikasi asli menjadi React 19, Vite, Tailwind CSS, Framer Motion, Vercel Serverless Functions, dan Supabase PostgreSQL.
+   - **Ground Truth Blueprint Mendalam:** Menyelaraskan seluruh spesifikasi arsitektur 5 repositori resmi (@Raflyf) dan sertifikasi kompetensi (BNSP, MikroTik, Cisco) ke dalam prompt sistem.
+2. **Adaptive Persona & Dynamic Tone Matching:**
+   - Model AI secara otomatis mendeteksi gaya komunikasi pengunjung (santai/ringkas vs mendalam/teknis) dan menyajikan jawaban to-the-point tanpa template pembuka/penutup robotik.
+3. **Continuous Learning & Automatic Server-Side RAG Persist:**
+   - Mengintegrasikan `saveServerMemory` di backend untuk menyimpan secara otomatis setiap fakta valid (`[SAVE_MEMORY: ...]`) langsung ke tabel `ai_memories` Supabase.
+   - Meningkatkan kapasitas penarikan memori percakapan RAG menjadi 15 memori kontekstual aktif di setiap sesi.
+4. **Resilient Fast-Failover Cascade:**
+   - Menata ulang hierarki model reasoning dengan timeout per-step 14 detik dan fallback cepat untuk mencegah error HTTP 502 saat upstream worker gratis sedang padat.
+
 
