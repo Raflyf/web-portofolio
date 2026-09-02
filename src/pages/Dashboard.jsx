@@ -236,7 +236,7 @@ const CustomSelect = ({ value, onChange, options }) => {
   const selectedOption = options.find(opt => opt.value === value) || options[0];
 
   return (
-    <div ref={containerRef} className="relative inline-block text-left z-[60]">
+    <div ref={containerRef} className="relative inline-block text-left z-60">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -256,7 +256,7 @@ const CustomSelect = ({ value, onChange, options }) => {
         <div
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 z-[100] mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+          className="absolute right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
         >
           <div 
             data-lenis-prevent="true" 
@@ -1349,7 +1349,7 @@ export default function Dashboard() {
 
               {authError && (
                 <div className="text-rose-400 text-xs text-center font-medium bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-xl flex items-center justify-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{authError}</span>
                 </div>
               )}
@@ -1874,7 +1874,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="text-right flex-shrink-0 bg-white/80 dark:bg-black/40 px-5 py-3 rounded-xl border border-zinc-200 dark:border-white/10 shadow-sm">
+            <div className="text-right shrink-0 bg-white/80 dark:bg-black/40 px-5 py-3 rounded-xl border border-zinc-200 dark:border-white/10 shadow-sm">
               <div className="text-[10px] uppercase font-mono text-zinc-500 dark:text-zinc-400">Total Resolusi Router</div>
               <div className="text-2xl font-bold font-mono text-cyan-700 dark:text-cyan-300">{aiModelsStats.autoRouterCount}x</div>
             </div>
@@ -1890,7 +1890,7 @@ export default function Dashboard() {
                   className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
                     isLatestUsed 
                       ? 'border-cyan-300 dark:border-cyan-400/50 bg-cyan-50 dark:bg-cyan-950/30 shadow-[0_10px_30px_rgba(6,182,212,0.15)] ring-1 ring-cyan-300 dark:ring-cyan-500/40' 
-                      : 'bg-white/70 dark:bg-white/[0.03] border-zinc-200/80 dark:border-white/10 hover:border-cyan-300 dark:hover:border-cyan-500/40 hover:shadow-md'
+                      : 'bg-white/70 dark:bg-white/3 border-zinc-200/80 dark:border-white/10 hover:border-cyan-300 dark:hover:border-cyan-500/40 hover:shadow-md'
                   }`}
                 >
                   <div className="space-y-2">

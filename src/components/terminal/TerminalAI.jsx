@@ -164,7 +164,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
         <div 
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
         >
           <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-200/50 dark:border-white/5 font-semibold">
             Reasoning Effort
@@ -546,7 +546,7 @@ export default function TerminalAI({ onClose } = {}) {
   const terminalContent = (
     <div 
       className={cn(
-        isTerminalPopupOpen ? "fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4 sm:p-8" : "relative w-full"
+        isTerminalPopupOpen ? "fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4 sm:p-8" : "relative w-full"
       )}
       onClick={(e) => {
         if (isTerminalPopupOpen && e.target === e.currentTarget) {
@@ -556,7 +556,7 @@ export default function TerminalAI({ onClose } = {}) {
     >
       <div className={cn(
         "w-full max-w-5xl mx-auto flex flex-col overflow-hidden liquid-glass-strong font-mono text-sm relative transition-all duration-300",
-        isTerminalPopupOpen ? "h-[85vh] shadow-[0_0_50px_rgba(34,211,238,0.15)] glass-spring-in" : "h-[600px] sm:h-[700px]"
+        isTerminalPopupOpen ? "h-[85vh] shadow-[0_0_50px_rgba(34,211,238,0.15)] glass-spring-in" : "h-150 sm:h-175"
       )}>
         
         {/* Terminal App Header */}
@@ -762,7 +762,7 @@ export default function TerminalAI({ onClose } = {}) {
                <div key={hist.id} onClick={() => {
                  setMessages(hist.messages);
                  setShowHistoryModal(false);
-               }} className="p-4 bg-white/[0.02] border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between">
+               }} className="p-4 bg-white/2 border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between">
                  <div className="flex-1 min-w-0 pr-3">
                    <div className="flex items-center justify-between mb-1">
                      <span className="text-zinc-300 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
@@ -784,7 +784,7 @@ export default function TerminalAI({ onClose } = {}) {
              ))}
 
              {historyList.length === 0 && (
-               <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/[0.02]">
+               <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2">
                   <p className="text-sm text-zinc-500">Belum ada riwayat sesi terdahulu tersimpan.</p>
                </div>
              )}

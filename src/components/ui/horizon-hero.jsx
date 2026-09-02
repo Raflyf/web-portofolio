@@ -141,22 +141,22 @@ export default function HorizonHero() {
     >
       {/* Ambient Deep Space Nebula */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-linear-to-b from-indigo-500/20 via-cyan-500/10 to-transparent blur-[120px] rounded-full" />
-        <div className="absolute top-1/3 left-1/4 w-[400px] h-[300px] bg-purple-500/10 blur-[100px] rounded-full" />
-        <div className="absolute top-1/3 right-1/4 w-[400px] h-[300px] bg-emerald-500/10 blur-[100px] rounded-full" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-100 bg-linear-to-b from-indigo-500/20 via-cyan-500/10 to-transparent blur-[120px] rounded-full" />
+        <div className="absolute top-1/3 left-1/4 w-100 h-75 bg-purple-500/10 blur-[100px] rounded-full" />
+        <div className="absolute top-1/3 right-1/4 w-100 h-75 bg-emerald-500/10 blur-[100px] rounded-full" />
       </div>
 
       {/* Horizon Curved Arc (Liquid Glass Glow Curve) */}
       <motion.div 
         style={{ scale: horizonScale, y: horizonY }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-[100vw] h-[320px] sm:h-[500px] pointer-events-none z-0"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-[100vw] h-80 sm:h-125 pointer-events-none z-0"
       >
         <div 
           className="w-full h-full border-t border-cyan-400/40 bg-linear-to-b from-cyan-500/15 via-indigo-950/20 to-transparent shadow-[0_-20px_80px_rgba(34,211,238,0.25)] relative"
           style={{ borderTopLeftRadius: '100%', borderTopRightRadius: '100%' }}
         >
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-0.5 bg-linear-to-r from-transparent via-white to-transparent shadow-[0_0_20px_#fff]" />
-          <div className="absolute top-1 left-1/2 -translate-x-1/2 w-1/2 h-[40px] bg-cyan-400/20 blur-xl" />
+          <div className="absolute top-1 left-1/2 -translate-x-1/2 w-1/2 h-10 bg-cyan-400/20 blur-xl" />
         </div>
       </motion.div>
 
