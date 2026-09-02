@@ -662,3 +662,11 @@ Released 2026-09-02.
 2. **Pemulihan Sinkronisasi Multi-Perangkat (Laptop vs HP):**
    - Dengan pulihnya gateway `/api/admin-otp` ke status `200 OK`, seluruh verifikasi Master PIN kini diverifikasi langsung terhadap tabel `admin_auth_config` di Supabase Cloud (Single Source of Truth), bukan lagi bergantung pada cache `localStorage` lokal perangkat.
    - Mengubah PIN atau mereset PIN via OTP kini langsung tersinkronisasi secara instan dan dapat digunakan di semua perangkat (Laptop, HP, Tablet) secara konsisten.
+
+### v10.594.0 — Uniform Project Card Layout on Category Filtering
+
+Released 2026-09-02.
+1. **Penyelarasan Dimensi Grid Portofolio (`ProjectsGrid.jsx`):**
+   - Mengondisikan Featured Showcase Card raksasa agar **hanya aktif pada tab "Semua Proyek"** (`filter === 'all'`).
+   - Saat pengguna memilih tab kategori spesifik (seperti *AI & Machine Learning*, *Vision & Tools*, atau *Web Systems*), seluruh proyek dalam kategori tersebut (termasuk *OpenPlagiarismChecker*) dirender ke dalam grid 2-kolom dengan dimensi kartu yang seragam, proporsional, dan rapi.
+   - Menambahkan rendering badge kategori sekunder pada kartu grid standar untuk mempertahankan konteks label proyek.
