@@ -7,6 +7,34 @@
  */
 
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+
+// Automatic local environment loader (reads .env.local / .env for local testing)
+function loadLocalEnv() {
+  try {
+    const envFiles = ['.env.local', '.env'];
+    for (const f of envFiles) {
+      const fullPath = path.resolve(process.cwd(), f);
+      if (fs.existsSync(fullPath)) {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        content.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+            const idx = trimmed.indexOf('=');
+            const k = trimmed.substring(0, idx).trim();
+            const v = trimmed.substring(idx + 1).trim().replace(/^["']|["']$/g, '');
+            if (k) {
+              process.env[k] = v;
+            }
+          }
+        });
+        break;
+      }
+    }
+  } catch (_) {}
+}
+loadLocalEnv();
 
 const PIN_SALT = 'rafly_telemetry_salt';
 // NOTE: the seeded default PIN hash exists ONLY in the schema seed and is never
@@ -318,6 +346,29 @@ async function storeSessionToken(supabaseUrl, headers, token) {
     return res.ok;
   } catch (_) {
     return false;
+  }
+}
+
+async function storeSessionToken(supabaseUrl, headers, sessionToken) {
+  try {
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify({
+        id: 'master_auth',
+        session_token: sessionToken,
+        session_expires_at: expiresAt,
+        lockout_attempts: 0,
+        locked_until: null,
+        updated_at: new Date().toISOString()
+      })
+    });
+  } catch (err) {
+    console.warn('[Admin OTP] Failed to persist session token:', err.message);
   }
 }
 

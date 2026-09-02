@@ -567,28 +567,38 @@ export default function Dashboard() {
       const hashedInput = await sha256(pinInput + PIN_SALT);
       const savedHash = localStorage.getItem(PIN_STORAGE_KEY);
 
-      // FAIL-CLOSED: only the stored (cloud-synced) hash may authenticate.
-      // No hardcoded default PIN backdoor.
-      if (savedHash && hashedInput === savedHash) {
-        // Obtain a real admin session token from the serverless API (used by
-        // /api/dashboard-data to authorize private telemetry reads).
-        let sessionToken = '';
-        try {
-          const verifyRes = await fetch('/api/admin-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'verify_pin', pin_hash: hashedInput })
-          });
-          if (verifyRes.ok) {
-            const verifyData = await verifyRes.json();
-            if (verifyData?.session_token) sessionToken = verifyData.session_token;
-          }
-        } catch (_) { /* offline fallback: token kosong, data lokal saja */ }
+      // 1. Verifikasi langsung ke Serverless Supabase Gateway (Source of Truth)
+      let sessionToken = '';
+      let serverVerified = false;
 
-        sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ auth: true, session_token: sessionToken, timestamp: Date.now() }));
+      try {
+        const verifyRes = await fetch('/api/admin-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'verify_pin', pin_hash: hashedInput })
+        });
+        if (verifyRes.ok) {
+          const verifyData = await verifyRes.json();
+          if (verifyData?.verified && verifyData?.session_token) {
+            sessionToken = verifyData.session_token;
+            serverVerified = true;
+          }
+        }
+      } catch (_) {}
+
+      // 2. Jika server verified atau cocok dengan local synced hash
+      if (serverVerified || (savedHash && hashedInput === savedHash)) {
+        localStorage.setItem(PIN_STORAGE_KEY, hashedInput);
+        sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ 
+          auth: true, 
+          session_token: sessionToken, 
+          timestamp: Date.now() 
+        }));
         setIsAuthenticated(true);
         setAuthError('');
         failedAttemptsRef.current = 0;
+        // Panggil langsung pemuatan data telemetri real-time
+        setTimeout(() => fetchTelemetryData(), 50);
       } else {
         failedAttemptsRef.current += 1;
         if (failedAttemptsRef.current >= 5) {
