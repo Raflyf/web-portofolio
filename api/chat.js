@@ -1333,9 +1333,10 @@ export default async function handler(req, res) {
 
     const qClean = (query || '').trim();
     const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda)$/i.test(qClean);
+    const isTimeQuery = /(?:jam\s*berapa|waktu\s*sekarang|tanggal\s*berapa|hari\s*apa\s*sekarang|sekarang\s*jam|sekarang\s*tanggal|pukul\s*berapa|zona\s*waktu|wib\b|wita\b|wit\b)/i.test(qClean);
     const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
     const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
-    const isSkipSearch = isIdentityQuery || isCasualGreeting || isInternalPortfolioQuery;
+    const isSkipSearch = isIdentityQuery || isTimeQuery || isCasualGreeting || isInternalPortfolioQuery;
 
     // DEAD-1/KONFLIK-3: Removed fetchLiveRepoContext (was always ''). Direct await is cleaner.
     const searchResult = isSkipSearch
@@ -1439,6 +1440,26 @@ export default async function handler(req, res) {
           cleaned = cleaned.replace(/(?:model yang saya gunakan merupakan|saya adalah model)[^.\n]*(?:glm|gpt|claude|ox alpha|gemini)[^.\n]*[.]?/gi, 'Saya adalah AI Assistant & Developer Agent yang terintegrasi di website portofolio resmi Rafly Firmansyah.');
           cleaned = cleaned.replace(/(?:ditenagai oleh model|dijalankan oleh model|menggunakan model)\s+[*_]*[a-zA-Z0-9\-\:\/]+[*_]*/gi, 'siap membantu Anda');
           cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
+        }
+      }
+
+      // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
+      if (isTimeQuery) {
+        const nowTime = new Date();
+        const tz = 'Asia/Jakarta';
+        const dateStr = sessionLanguage === 'en'
+          ? nowTime.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: tz })
+          : nowTime.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: tz });
+        const timeStr = nowTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz }).replace('.', ':');
+        const curHour = timeStr.slice(0, 2);
+
+        // Deteksi jika model halusinasi jam lama yang salah (seperti 19:xx atau angka jam meleset)
+        const isHallucinatedTime = /(?:19:03|19\.03|kemarin)/i.test(cleaned) || !cleaned.includes(curHour);
+        if (isHallucinatedTime) {
+          const cianjurNote = /(?:cianjur|cianhur|jawabarat|jawa\s*barat|bandung|jakarta)/i.test(qClean)
+            ? ' Wilayah Cianjur dan seluruh Jawa Barat berada dalam zona Waktu Indonesia Barat (WIB).'
+            : '';
+          cleaned = `Sekarang hari ${dateStr}, pukul ${timeStr} WIB (Waktu Indonesia Barat, UTC+7).${cianjurNote}`;
         }
       }
 
@@ -1577,7 +1598,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah data yang BELUM DIVERIF
       let currentBudget = maxTotalChars - (systemStr.length + userStr.length);
       if (currentBudget < 1500) currentBudget = 1500;
 
-      const validHistory = (isIdentityQuery ? [] : (Array.isArray(historyList) ? historyList : [])).filter(item => {
+      const validHistory = ((isIdentityQuery || isTimeQuery) ? [] : (Array.isArray(historyList) ? historyList : [])).filter(item => {
         if (!item || !item.content) return false;
         const c = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
         return !c.includes('antrean seluruh provider AI sedang penuh') && !c.includes('kendala jaringan') && !c.includes('[AI Fallback]');
