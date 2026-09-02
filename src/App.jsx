@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { MotionConfig, motion, useScroll, useSpring } from 'framer-motion';
 import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import { Shield, Menu, X, Terminal, Sun, Moon } from 'lucide-react';
 import Home from './pages/Home';
 // Dashboard is heavy (Chart.js) — code-split so the landing bundle stays light.
@@ -274,12 +275,15 @@ export default function App() {
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.25,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
+      syncTouch: true,
+      wheelMultiplier: 1.25,
       touchMultiplier: 1.8,
+      respectReducedMotion: false, // Memaksa smooth & inertia scroll selalu aktif di laptop (abaikan Windows battery saver / reduced-motion)
     });
 
     window.__lenis = lenis;
@@ -299,6 +303,15 @@ export default function App() {
       delete window.__lenis;
     };
   }, []);
+
+  // Scroll to top on route change via Lenis
+  useEffect(() => {
+    if (window.__lenis) {
+      window.__lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   return (
     <MotionConfig reducedMotion="never">
