@@ -98,8 +98,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3 Nano (Ollama Cloud)',
     desc: 'Prioritas #1 - Model text-to-text dense 30B inferensi instan',
     provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => (s.includes('ollama') && (s.includes('nano') || s.includes('30b') || s.includes('nemotron'))) || s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || /\bnano\b/.test(s)
   },
   {
@@ -107,8 +107,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3.5 Lightning (OpenRouter)',
     desc: 'Prioritas #2 - Model berkecepatan tinggi OpenRouter Cloud',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => (s.includes('openrouter') || !s.includes('opencode')) && (s.includes('lightning') || s.includes('lighting'))
   },
   {
@@ -116,8 +116,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3 Nano Omni (OpenRouter)',
     desc: 'Prioritas #3 - Model multimodal & penalaran CoT 30B',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
     matcher: (s) => s.includes('omni') || s.includes('30b-a3b') || s.includes('reasoning:free')
   },
 
@@ -127,8 +127,8 @@ const INDIVIDUAL_MODELS = [
     name: 'OpenRouter Free (Auto SOTA Pool)',
     desc: 'Dynamic SOTA Free router otomatis',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free') && !s.includes('nemotron') && !s.includes('minimax') && !s.includes('ultra'))
   },
   {
@@ -136,8 +136,8 @@ const INDIVIDUAL_MODELS = [
     name: 'DeepSeek Chat V3 (OpenRouter)',
     desc: 'Frontier Intelligence logika koding',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
     matcher: (s) => s.includes('deepseek')
   },
   {
@@ -145,8 +145,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3 Super 120B (OpenRouter)',
     desc: 'Model penalaran dense 120B teroptimasi latensi rendah',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => (s.includes('openrouter') && (s.includes('super-120b') || s.includes('super:120b') || s.includes('a12b'))) || (s.includes('super') && !s.includes('ollama'))
   },
   {
@@ -154,8 +154,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3 Ultra 550B (OpenRouter)',
     desc: 'Arsitektur MoE 550B parameter penuh',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => (s.includes('openrouter') && (s.includes('ultra-550b') || s.includes('ultra:550b') || s.includes('a55b'))) || (s.includes('ultra') && !s.includes('ollama') && !s.includes('opencode'))
   },
   {
@@ -163,8 +163,8 @@ const INDIVIDUAL_MODELS = [
     name: 'MiniMax M3 Free (OpenRouter)',
     desc: 'Model multimodal untuk pemrosesan teks dan citra',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
     matcher: (s) => (s.includes('openrouter') && s.includes('minimax')) || (s.includes('minimax') && !s.includes('ollama'))
   },
   {
@@ -172,8 +172,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Cohere North Mini Code (OpenRouter)',
     desc: 'Model penalaran logika kode',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
     matcher: (s) => s.includes('cohere') || s.includes('north-mini')
   },
 
@@ -183,8 +183,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3 Ultra (Ollama Cloud)',
     desc: 'Model frontier reasoning di Ollama Cloud AI Gateway',
     provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => s.includes('ollama') && s.includes('ultra')
   },
   {
@@ -192,8 +192,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3 Super (Ollama Cloud)',
     desc: 'Model dense 120B teroptimasi latensi rendah',
     provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => s.includes('ollama') && s.includes('super')
   },
   {
@@ -201,8 +201,8 @@ const INDIVIDUAL_MODELS = [
     name: 'MiniMax M3 (Ollama Cloud)',
     desc: 'Multimodal vision and text model',
     provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    iconColor: 'text-cyan-400',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
     matcher: (s) => s.includes('ollama') && s.includes('minimax')
   },
 
@@ -212,8 +212,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3.5 Lightning (OpenCode)',
     desc: 'Model super kilat via endpoint langsung OpenCode Zen API',
     provider: 'OPENCODE',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => s.includes('opencode') && (s.includes('lightning') || s.includes('lighting'))
   },
   {
@@ -221,8 +221,8 @@ const INDIVIDUAL_MODELS = [
     name: 'Nemotron 3 Ultra Free (OpenCode)',
     desc: 'Frontier reasoning engine via direct endpoint OpenCode Zen',
     provider: 'OPENCODE',
-    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    iconColor: 'text-emerald-400',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     matcher: (s) => s.includes('opencode') && s.includes('ultra')
   }
 ];
@@ -1670,10 +1670,10 @@ export default function Dashboard() {
         <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
-              <Radar className="w-4 h-4 text-indigo-400" />
-              <h2 className="text-base font-bold text-white">Analisis Intelijen Platform & Konten</h2>
+              <Radar className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+              <h2 className="text-base font-bold text-zinc-900 dark:text-white">Analisis Intelijen Platform & Konten</h2>
             </div>
-            <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-[11px] font-mono">
+            <div className="flex items-center gap-1 bg-zinc-200/80 dark:bg-black/40 p-1 rounded-xl border border-zinc-300/80 dark:border-white/10 text-[11px] font-mono">
               {[
                 { id: 'today', label: 'Hari Ini' },
                 { id: '7d', label: '7 Hari' },
@@ -1683,7 +1683,7 @@ export default function Dashboard() {
                 <button
                   key={tab.id}
                   onClick={() => setGridRange(tab.id)}
-                  className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${gridRange === tab.id ? 'bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30' : 'text-zinc-400 hover:text-white'}`}
+                  className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${gridRange === tab.id ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 font-semibold border border-indigo-300 dark:border-indigo-500/30' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                 >
                   {tab.label}
                 </button>
@@ -1695,8 +1695,8 @@ export default function Dashboard() {
             {/* Intel Card 1: Rasio Perangkat */}
             <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                  <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
                   <span>Rasio Perangkat</span>
                 </h3>
               </div>
@@ -1706,17 +1706,17 @@ export default function Dashboard() {
               </div>
 
               <div className="space-y-1.5 text-xs">
-                <div className="flex justify-between items-center text-zinc-300">
-                  <span className="flex items-center gap-1.5"><Monitor className="w-3 h-3 text-cyan-400" /> Desktop</span>
-                  <span className="font-mono text-cyan-300 font-semibold">{deviceStats.desktopPct}% ({deviceStats.desktop})</span>
+                <div className="flex justify-between items-center text-zinc-700 dark:text-zinc-300">
+                  <span className="flex items-center gap-1.5"><Monitor className="w-3 h-3 text-cyan-500 dark:text-cyan-400" /> Desktop</span>
+                  <span className="font-mono text-cyan-700 dark:text-cyan-300 font-semibold">{deviceStats.desktopPct}% ({deviceStats.desktop})</span>
                 </div>
-                <div className="flex justify-between items-center text-zinc-300">
-                  <span className="flex items-center gap-1.5"><Smartphone className="w-3 h-3 text-purple-400" /> Mobile</span>
-                  <span className="font-mono text-purple-300 font-semibold">{deviceStats.mobilePct}% ({deviceStats.mobile})</span>
+                <div className="flex justify-between items-center text-zinc-700 dark:text-zinc-300">
+                  <span className="flex items-center gap-1.5"><Smartphone className="w-3 h-3 text-purple-500 dark:text-purple-400" /> Mobile</span>
+                  <span className="font-mono text-purple-700 dark:text-purple-300 font-semibold">{deviceStats.mobilePct}% ({deviceStats.mobile})</span>
                 </div>
-                <div className="flex justify-between items-center text-zinc-300">
-                  <span className="flex items-center gap-1.5"><Tablet className="w-3 h-3 text-emerald-400" /> Tablet</span>
-                  <span className="font-mono text-emerald-300 font-semibold">{deviceStats.tabletPct}% ({deviceStats.tablet})</span>
+                <div className="flex justify-between items-center text-zinc-700 dark:text-zinc-300">
+                  <span className="flex items-center gap-1.5"><Tablet className="w-3 h-3 text-emerald-500 dark:text-emerald-400" /> Tablet</span>
+                  <span className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold">{deviceStats.tabletPct}% ({deviceStats.tablet})</span>
                 </div>
               </div>
             </div>
@@ -1724,8 +1724,8 @@ export default function Dashboard() {
             {/* Intel Card 2: Repositori Proyek Unggulan */}
             <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-purple-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                   <span>Proyek Terpopuler</span>
                 </h3>
               </div>
@@ -1734,10 +1734,10 @@ export default function Dashboard() {
                 {topProjects.map((proj, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-zinc-300 truncate max-w-[170px]">{proj.name}</span>
-                      <span className="font-mono text-purple-300 font-semibold">{proj.count}x</span>
+                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-[170px]">{proj.name}</span>
+                      <span className="font-mono text-purple-700 dark:text-purple-300 font-semibold">{proj.count}x</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
                       <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 transition-all duration-500" style={{ width: `${proj.pct}%` }} />
                     </div>
                   </div>
@@ -1748,8 +1748,8 @@ export default function Dashboard() {
             {/* Intel Card 3: Sertifikat Paling Diminati */}
             <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-emerald-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
                   <span>Sertifikat Diminati</span>
                 </h3>
               </div>
@@ -1758,10 +1758,10 @@ export default function Dashboard() {
                 {topCertificates.map((cert, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-zinc-300 truncate max-w-[170px]">{cert.name}</span>
-                      <span className="font-mono text-emerald-300 font-semibold">{cert.count}x</span>
+                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-[170px]">{cert.name}</span>
+                      <span className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold">{cert.count}x</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
                       <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500" style={{ width: `${cert.pct}%` }} />
                     </div>
                   </div>
@@ -1772,8 +1772,8 @@ export default function Dashboard() {
             {/* Intel Card 4: Saluran Trafik & Referrer */}
             <div className="p-6 liquid-glass flex flex-col justify-between space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
                   <span>Saluran Trafik (Referrer)</span>
                 </h3>
               </div>
@@ -1782,10 +1782,10 @@ export default function Dashboard() {
                 {topReferrers.map((ref, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-zinc-300 truncate max-w-[170px]">{ref.name}</span>
-                      <span className="font-mono text-indigo-300 font-semibold">{ref.count}x</span>
+                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-[170px]">{ref.name}</span>
+                      <span className="font-mono text-indigo-700 dark:text-indigo-300 font-semibold">{ref.count}x</span>
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
                       <div className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-pink-500 transition-all duration-500" style={{ width: `${ref.pct}%` }} />
                     </div>
                   </div>
@@ -1802,20 +1802,20 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-cyan-400" />
-                <h2 className="text-lg font-bold text-white">Pemantauan Eksekusi AI Multi-Model</h2>
+                <Cpu className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Pemantauan Eksekusi AI Multi-Model</h2>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
                 Multi-Tier Smart Inference Cascades (OpenRouter, Ollama Cloud & OpenCode Zen)
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">
+              <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300">
                 Total Inferensi: <strong>{aiModelsStats.totalAIQueries}x</strong>
               </span>
 
-              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-[10px] font-mono">
+              <div className="flex items-center gap-1 bg-zinc-200/80 dark:bg-black/40 p-1 rounded-xl border border-zinc-300/80 dark:border-white/10 text-[10px] font-mono">
                 {[
                   { id: 'today', label: 'Hari Ini' },
                   { id: '7d', label: '7 Hari' },
@@ -1825,7 +1825,7 @@ export default function Dashboard() {
                   <button
                     key={tab.id}
                     onClick={() => setAiModelsRange(tab.id)}
-                    className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${aiModelsRange === tab.id ? 'bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30' : 'text-zinc-400 hover:text-white'}`}
+                    className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${aiModelsRange === tab.id ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 font-semibold border border-cyan-300 dark:border-cyan-500/30' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                   >
                     {tab.label}
                   </button>
@@ -1835,10 +1835,10 @@ export default function Dashboard() {
           </div>
 
           {/* Standalone Full-Width Auto Gateway Router Banner */}
-          <div className="p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 dark:from-cyan-950/40 via-indigo-500/10 dark:via-slate-900/50 to-purple-500/10 dark:to-indigo-950/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="p-5 rounded-2xl border border-cyan-300 dark:border-cyan-500/30 bg-gradient-to-r from-cyan-50 dark:from-cyan-950/40 via-indigo-50 dark:via-slate-900/50 to-purple-50 dark:to-indigo-950/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
                   SMART AUTO GATEWAY
                 </span>
                 <span className="text-xs font-mono text-zinc-600 dark:text-zinc-400">Automatic Load-Balancing & Failover</span>
@@ -1851,7 +1851,7 @@ export default function Dashboard() {
 
             <div className="text-right flex-shrink-0 bg-white/80 dark:bg-black/40 px-5 py-3 rounded-xl border border-zinc-200 dark:border-white/10 shadow-sm">
               <div className="text-[10px] uppercase font-mono text-zinc-500 dark:text-zinc-400">Total Resolusi Router</div>
-              <div className="text-2xl font-bold font-mono text-cyan-600 dark:text-cyan-300">{aiModelsStats.autoRouterCount}x</div>
+              <div className="text-2xl font-bold font-mono text-cyan-700 dark:text-cyan-300">{aiModelsStats.autoRouterCount}x</div>
             </div>
           </div>
 
@@ -1862,15 +1862,19 @@ export default function Dashboard() {
               return (
                 <div 
                   key={m.id}
-                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${isLatestUsed ? 'border-cyan-400/50 bg-cyan-950/30 shadow-[0_0_20px_rgba(6,182,212,0.15)] ring-1 ring-cyan-400/40' : 'liquid-glass-inset hover:border-white/20'}`}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
+                    isLatestUsed 
+                      ? 'border-cyan-300 dark:border-cyan-400/50 bg-cyan-50 dark:bg-cyan-950/30 shadow-[0_10px_30px_rgba(6,182,212,0.15)] ring-1 ring-cyan-300 dark:ring-cyan-500/40' 
+                      : 'bg-white/70 dark:bg-white/[0.03] border-zinc-200/80 dark:border-white/10 hover:border-cyan-300 dark:hover:border-cyan-500/40 hover:shadow-md'
+                  }`}
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-zinc-400">#{idx + 1}</span>
+                      <span className="text-[10px] font-mono font-bold text-zinc-500 dark:text-zinc-400">#{idx + 1}</span>
                       <div className="flex items-center gap-1.5">
                         {isLatestUsed && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 animate-pulse">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" /> AKTIF TERBARU
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/40 animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-600 dark:bg-cyan-400" /> AKTIF TERBARU
                           </span>
                         )}
                         <span className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-semibold border ${m.badgeClass}`}>
@@ -1880,14 +1884,14 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <h4 className="text-xs font-bold text-white tracking-tight">{m.name}</h4>
-                      <p className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5">{m.desc}</p>
+                      <h4 className="text-xs font-bold text-zinc-900 dark:text-white tracking-tight">{m.name}</h4>
+                      <p className="text-[10px] text-zinc-600 dark:text-zinc-400 line-clamp-2 mt-0.5">{m.desc}</p>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-white/5 flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 font-mono text-[10px]">Total Eksekusi</span>
-                    <span className="font-mono text-cyan-300 font-bold">{m.count}x</span>
+                  <div className="pt-2 border-t border-zinc-200/60 dark:border-white/5 flex justify-between items-center text-[11px]">
+                    <span className="text-zinc-500 dark:text-zinc-400 font-mono text-[10px]">Total Eksekusi</span>
+                    <span className="font-mono text-cyan-700 dark:text-cyan-300 font-bold">{m.count}x</span>
                   </div>
                 </div>
               );
@@ -1902,20 +1906,20 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-emerald-400" />
-                <h2 className="text-lg font-bold text-white">Memori Jangka Panjang AI (Continuous RAG Knowledge)</h2>
+                <Database className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Memori Jangka Panjang AI (Continuous RAG Knowledge)</h2>
               </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
                 Fakta dan pengetahuan kontekstual yang dipelajari AI dari sesi pengguna dan dipersistenkan di Supabase
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+              <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
                 {filteredMemories.length} Fakta Aktif
               </span>
 
-              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-[10px] font-mono">
+              <div className="flex items-center gap-1 bg-zinc-200/80 dark:bg-black/40 p-1 rounded-xl border border-zinc-300/80 dark:border-white/10 text-[10px] font-mono">
                 {[
                   { id: 'today', label: 'Hari Ini' },
                   { id: '7d', label: '7 Hari' },
@@ -1924,7 +1928,7 @@ export default function Dashboard() {
                   <button
                     key={tab.id}
                     onClick={() => setRagMemoriesRange(tab.id)}
-                    className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${ragMemoriesRange === tab.id ? 'bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30' : 'text-zinc-400 hover:text-white'}`}
+                    className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${ragMemoriesRange === tab.id ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-500/30' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                   >
                     {tab.label}
                   </button>
@@ -1934,8 +1938,8 @@ export default function Dashboard() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-zinc-300">
-              <thead className="text-[11px] uppercase tracking-wider text-zinc-400 border-b border-white/10 bg-white/5">
+            <table className="w-full text-left text-xs text-zinc-700 dark:text-zinc-300">
+              <thead className="text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-white/10 bg-zinc-100/70 dark:bg-white/5">
                 <tr>
                   <th className="py-3 px-4">Waktu (WIB)</th>
                   <th className="py-3 px-4">Tipe Memori</th>
@@ -1943,19 +1947,19 @@ export default function Dashboard() {
                   <th className="py-3 px-4">Session ID</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5">
                 {currentMemories.length > 0 ? (
                   currentMemories.map((m, i) => (
-                    <tr key={m.id || i} className="hover:bg-white/5 transition-colors">
-                      <td className="py-3 px-4 font-mono text-zinc-400 whitespace-nowrap">
+                    <tr key={m.id || i} className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
                         {m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja'}
                       </td>
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300">
                           RAG KNOWLEDGE
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-medium text-white max-w-lg">
+                      <td className="py-3 px-4 font-medium text-zinc-900 dark:text-white max-w-lg">
                         {m.fact_text || m.memory_text || m.content || '—'}
                       </td>
                       <td className="py-3 px-4 font-mono text-zinc-500 text-[10px] whitespace-nowrap">
@@ -1975,22 +1979,22 @@ export default function Dashboard() {
           </div>
 
           {/* Memories Pagination */}
-          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs">
-            <span className="text-zinc-400 text-[11px] font-mono">
+          <div className="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-white/10 text-xs">
+            <span className="text-zinc-600 dark:text-zinc-400 text-[11px] font-mono">
               Halaman {memoryCurrentPage} dari {memoryTotalPages} ({filteredMemories.length} entri)
             </span>
             <div className="flex gap-1.5">
               <button
                 onClick={() => setMemoryCurrentPage(p => Math.max(1, p - 1))}
                 disabled={memoryCurrentPage === 1}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
+                className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
                 &lsaquo; Sebelumnya
               </button>
               <button
                 onClick={() => setMemoryCurrentPage(p => Math.min(memoryTotalPages, p + 1))}
                 disabled={memoryCurrentPage === memoryTotalPages}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
+                className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
                 Berikutnya &rsaquo;
               </button>
@@ -2005,13 +2009,13 @@ export default function Dashboard() {
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <Activity className="w-4 h-4 text-cyan-400 shrink-0" />
-                <h2 className="text-lg font-bold text-white truncate">Log Aktivitas Pengunjung Terkini</h2>
-                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400 shrink-0">
+                <Activity className="w-4 h-4 text-cyan-500 dark:text-cyan-400 shrink-0" />
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white truncate">Log Aktivitas Pengunjung Terkini</h2>
+                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-400 shrink-0">
                   {filteredActivityEvents.length} entri
                 </span>
               </div>
-              <p className="text-xs text-zinc-400 mt-1 line-clamp-2">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 line-clamp-2">
                 Rekaman telemetri event lengkap termasuk navigasi, interaksi tombol, klik proyek, dan kueri terminal
               </p>
             </div>
@@ -2020,32 +2024,32 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={handleExportCsv}
-                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
                   title="Ekspor sebagai CSV"
                 >
-                  <Download className="w-3.5 h-3.5 text-cyan-400" />
+                  <Download className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
                   <span>CSV</span>
                 </button>
 
                 <button
                   onClick={handleExportJson}
-                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
                   title="Ekspor sebagai JSON"
                 >
-                  <Download className="w-3.5 h-3.5 text-purple-400" />
+                  <Download className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                   <span>JSON</span>
                 </button>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 flex-1 sm:flex-none w-full sm:w-auto">
                 <div className="relative flex-1 sm:flex-none">
-                  <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="Cari target / sesi..."
                     value={tableSearchTerm}
                     onChange={(e) => { setTableSearchTerm(e.target.value); setTableCurrentPage(1); }}
-                    className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-white/10 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-400 w-full sm:w-56"
+                    className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-cyan-500 w-full sm:w-56"
                   />
                 </div>
 
@@ -2079,8 +2083,8 @@ export default function Dashboard() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-zinc-300">
-              <thead className="text-[11px] uppercase tracking-wider text-zinc-400 border-b border-white/10 bg-white/5">
+            <table className="w-full text-left text-xs text-zinc-700 dark:text-zinc-300">
+              <thead className="text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-white/10 bg-zinc-100/70 dark:bg-white/5">
                 <tr>
                   <th className="py-3 px-4">Waktu (WIB)</th>
                   <th className="py-3 px-4">Tipe Event</th>
@@ -2089,24 +2093,24 @@ export default function Dashboard() {
                   <th className="py-3 px-4">Sesi ID</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5">
                 {currentActivityEvents.length > 0 ? (
                   currentActivityEvents.map((ev, i) => {
                     const targetText = ev.event_label ? `${ev.event_target} (${ev.event_label})` : (ev.event_target || '—');
                     return (
-                      <tr key={ev.id || i} className="hover:bg-white/5 transition-colors">
-                        <td className="py-3 px-4 font-mono text-zinc-400 whitespace-nowrap">
+                      <tr key={ev.id || i} className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
                           {ev.created_at ? new Date(ev.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/20 text-cyan-800 dark:text-cyan-300">
                             {ev.event_type || 'event'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-medium text-white max-w-md">
+                        <td className="py-3 px-4 font-medium text-zinc-900 dark:text-white max-w-md">
                           {targetText}
                         </td>
-                        <td className="py-3 px-4 font-mono text-zinc-400 whitespace-nowrap">
+                        <td className="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
                           {ev.device_type || 'desktop'}
                         </td>
                         <td className="py-3 px-4 font-mono text-zinc-500 text-[10px] whitespace-nowrap">
@@ -2127,22 +2131,22 @@ export default function Dashboard() {
           </div>
 
           {/* Activity Table Pagination */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/10 text-xs">
-            <span className="text-zinc-400 text-[11px] font-mono">
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-white/10 text-xs">
+            <span className="text-zinc-600 dark:text-zinc-400 text-[11px] font-mono">
               Halaman {tableCurrentPage} dari {activityTotalPages} ({filteredActivityEvents.length} entri)
             </span>
             <div className="flex gap-1.5">
               <button
                 onClick={() => setTableCurrentPage(p => Math.max(1, p - 1))}
                 disabled={tableCurrentPage === 1}
-                className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
+                className="px-3 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
                 &lsaquo; Sebelumnya
               </button>
               <button
                 onClick={() => setTableCurrentPage(p => Math.min(activityTotalPages, p + 1))}
                 disabled={tableCurrentPage === activityTotalPages}
-                className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
+                className="px-3 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
                 Berikutnya &rsaquo;
               </button>
