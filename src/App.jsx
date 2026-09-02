@@ -219,7 +219,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
+      <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
         <FloatingNavbar />
 
         <Routes>
@@ -228,7 +228,7 @@ export default function App() {
             path="/dashboard"
             element={
               <React.Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+                <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
                   <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat dashboard" />
                 </div>
               }>
