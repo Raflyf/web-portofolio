@@ -210,6 +210,13 @@ export default function TerminalAI({ onClose }) {
   } = useTerminal();
   
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedModel, setSelectedModel] = useState(() => {
+    try {
+      return localStorage.getItem('ai_selected_model') || 'auto';
+    } catch (_) {
+      return 'auto';
+    }
+  });
   const scrollRef = useRef(null);
 
   const [showSlashMenu, setShowSlashMenu] = useState(false);
@@ -300,6 +307,7 @@ export default function TerminalAI({ onClose }) {
       if (chosen === '' || validModels.includes(chosen)) {
         const finalModel = chosen === '' ? 'auto' : chosen;
         localStorage.setItem('ai_selected_model', finalModel);
+        setSelectedModel(finalModel);
         telemetry.logEvent('model_select', finalModel, `Pilihan Model: ${finalModel}`);
 
         setMessages(prev => [
@@ -322,12 +330,13 @@ export default function TerminalAI({ onClose }) {
       const payloadAttachments = Array.isArray(attachments) 
         ? attachments.map(({ _bytes, ...att }) => att) 
         : [];
+      const currentChosenModel = selectedModel || localStorage.getItem('ai_selected_model') || 'auto';
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: userQuery,
-          model: localStorage.getItem('ai_selected_model') || 'auto',
+          model: currentChosenModel,
           reasoningEffort: effort,
           history: messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
           attachments: payloadAttachments
@@ -364,18 +373,19 @@ export default function TerminalAI({ onClose }) {
       }
 
       // Format model name & provider for message header
-      const chosenModel = localStorage.getItem('ai_selected_model') || 'auto';
-      const actualModel = data.model || chosenModel || 'nemotron-3-nano:30b';
+      const actualModel = data.model || currentChosenModel || 'nemotron-3-nano:30b';
       const providerName = data.provider || (actualModel.includes('nano') ? 'Ollama Cloud SOTA Engine' : 'AI Gateway');
-      const headerModelName = chosenModel === 'auto'
+      const isAuto = !currentChosenModel || currentChosenModel === 'auto';
+      const headerModelName = isAuto
         ? `Auto Router -> ${actualModel.toUpperCase().replace(/^NVIDIA\//i, '')}`
         : actualModel.toUpperCase();
 
-      // Log accurate multi-model event to telemetry
-      const routeLabel = chosenModel === 'auto'
+      // Log accurate multi-model event to telemetry with auto prefix for smart cascade routing
+      const targetModel = isAuto ? `auto:${actualModel}` : actualModel;
+      const routeLabel = isAuto
         ? `[Auto Router -> ${actualModel}] [${providerName}] effort:${effort}`
         : `[Direct -> ${actualModel}] [${providerName}] effort:${effort}`;
-      telemetry.logEvent('ai_chat', actualModel, routeLabel);
+      telemetry.logEvent('ai_chat', targetModel, routeLabel);
 
       // Typewriter Effect Streaming
       const aiMsgId = Date.now();
@@ -593,9 +603,11 @@ export default function TerminalAI({ onClose }) {
             
             <div className="hidden sm:block h-4 w-[1px] bg-zinc-300 dark:bg-white/20 mx-1"></div>
             
-            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0" title="Smart Cascade Auto Router">
+            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0" title={`Model AI Aktif: ${selectedModel.toUpperCase()}`}>
               <span className="text-zinc-600 dark:text-zinc-400">Model:</span> 
-              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-400 font-bold px-2 py-0.5 rounded text-[10px]">AUTO ROUTER</span>
+              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-400 font-bold px-2 py-0.5 rounded text-[10px] uppercase">
+                {selectedModel === 'auto' ? 'AUTO ROUTER' : selectedModel}
+              </span>
             </div>
 
             <div className="hidden sm:block h-4 w-[1px] bg-zinc-300 dark:bg-white/20 mx-1"></div>
