@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Send, TerminalSquare, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, History, Maximize2, Minimize2, CheckCircle2, Check } from 'lucide-react';
+import { Send, TerminalSquare, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, History, Maximize2, Minimize2, CheckCircle2, Check, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
 import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
@@ -251,6 +251,20 @@ export default function TerminalAI({ onClose }) {
     setShowHistoryModal(false);
   };
 
+  const handleDeleteHistoryItem = (id, e) => {
+    if (e) e.stopPropagation();
+    setHistoryList(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      localStorage.setItem('terminal_history_list', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleClearAllHistory = () => {
+    setHistoryList([]);
+    localStorage.removeItem('terminal_history_list');
+  };
+
   const sendMessage = async (text) => {
     // FIX M4: allow sending when only attachments are present (server accepts
     // attachments-only requests).
@@ -305,7 +319,6 @@ export default function TerminalAI({ onClose }) {
     try {
       // FIX M4: forward attachments ({name,type,data}; images carry a data URL
       // plus isImage:true — matches /api/chat consumption). _bytes is client-only.
-      const payloadAttachments = attachments.map(({ _bytes, ...att }) => att);
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -318,13 +331,18 @@ export default function TerminalAI({ onClose }) {
         })
       });
 
-      if (!res.ok) throw new Error('API Error');
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const errorDetail = data?.error || data?.message || `HTTP ${res.status} Error Gateway`;
+        throw new Error(errorDetail);
+      }
+      
       // Clear consumed attachments on success (keep them on error so retry is easy).
       setAttachments([]);
       setAttachError('');
-      const data = await res.json();
       
-      let finalResponse = data.response || "Maaf, terjadi kesalahan atau antrean penuh.";
+      let finalResponse = data?.response || "Maaf, terjadi kesalahan atau antrean penuh.";
       // Save continuous RAG memories (explicit facts the model wants to persist)
       const memoryRegex = /\[SAVE_MEMORY:\s*([\s\S]*?)\]/gi;
       const rawResponse = data.response || "";
@@ -390,7 +408,10 @@ export default function TerminalAI({ onClose }) {
       }, 16);
 
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'ai', content: '⚠️ Gagal terhubung ke API Gateway lokal. Jika Anda menjalankan secara lokal dengan Vite, pastikan `/api/chat` tersedia atau Vercel Dev dijalankan.', time: getCurrentTime() }]);
+      const errMsg = err?.message && err.message !== 'API Error' 
+        ? `⚠️ ${err.message}` 
+        : '⚠️ Gagal terhubung ke API Gateway. Pastikan koneksi atau server dev aktif.';
+      setMessages(prev => [...prev, { role: 'ai', content: errMsg, time: getCurrentTime() }]);
     } finally {
       setIsLoading(false);
     }
@@ -698,7 +719,20 @@ export default function TerminalAI({ onClose }) {
           <div className="w-full max-w-2xl liquid-glass-strong rounded-2xl overflow-hidden font-mono glass-spring-in">
             <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 p-6">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2"><Clock className="w-5 h-5 text-cyan-400" /> Riwayat Percakapan</h3>
-              <button onClick={() => setShowHistoryModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition"><X className="w-4 h-4 text-zinc-400 hover:text-white" /></button>
+              <div className="flex items-center gap-2">
+                {historyList.length > 0 && (
+                  <button 
+                    onClick={handleClearAllHistory}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-xs transition cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Hapus Semua</span>
+                  </button>
+                )}
+                <button onClick={() => setShowHistoryModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer">
+                  <X className="w-4 h-4 text-zinc-400 hover:text-white" />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto max-h-[60vh] no-scrollbar space-y-3 p-6 pt-0">
                <div className="p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group relative">
@@ -714,14 +748,24 @@ export default function TerminalAI({ onClose }) {
                <div key={hist.id} onClick={() => {
                  setMessages(hist.messages);
                  setShowHistoryModal(false);
-               }} className="p-4 bg-white/[0.02] border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group">
-                 <div className="flex items-center justify-between mb-1">
-                   <span className="text-zinc-300 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
-                   <span className="text-[10px] text-zinc-500">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+               }} className="p-4 bg-white/[0.02] border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between">
+                 <div className="flex-1 min-w-0 pr-3">
+                   <div className="flex items-center justify-between mb-1">
+                     <span className="text-zinc-300 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
+                     <span className="text-[10px] text-zinc-500">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+                   </div>
+                   <p className="text-xs text-zinc-500 truncate">
+                     {hist.messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
+                   </p>
                  </div>
-                 <p className="text-xs text-zinc-500 truncate">
-                   {hist.messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
-                 </p>
+                 <button
+                   type="button"
+                   onClick={(e) => handleDeleteHistoryItem(hist.id, e)}
+                   title="Hapus sesi ini"
+                   className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 hover:text-red-300 border border-transparent hover:border-red-500/30 transition opacity-80 group-hover:opacity-100 cursor-pointer shrink-0"
+                 >
+                   <Trash2 className="w-3.5 h-3.5" />
+                 </button>
                </div>
              ))}
 
