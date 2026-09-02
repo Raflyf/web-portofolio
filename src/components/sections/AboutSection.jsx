@@ -42,7 +42,7 @@ export default function AboutSection() {
         </motion.h2>
         
         <motion.p variants={itemVariants} className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-          Mengkombinasikan ketajaman analisis algoritmik dengan arsitektur sistem yang transparan, dapat direproduksi, dan beretika privasi.
+          Membangun sistem cerdas dan aplikasi web dengan kode yang bersih, terstruktur, dan mengutamakan privasi data.
         </motion.p>
       </motion.div>
 
