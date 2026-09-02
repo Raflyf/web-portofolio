@@ -690,3 +690,12 @@ Released 2026-09-02.
 2. **Deduplikasi Baris Paginasi Supabase:**
    - Menambahkan filter deduplikasi berbasis `id` unik pada fungsi paginasi `fetchBatch` untuk menjamin integritas data saat event baru masuk di tengah pengambilan batch.
    - Mengamankan `localStorage` murni sebagai *offline emergency fallback* hanya jika server tidak dapat dihubungi.
+
+### v10.597.0 — Pure Continuous RAG Knowledge Segregation & In-Memory Search
+
+Released 2026-09-02.
+1. **Pemisahan Tegas Antara RAG Knowledge dan Log Telemetri (`Dashboard.jsx`):**
+   - Menghapus penyuntikan otomatis log aktivitas router (`ai_query_resolved`, `ai_query`, `terminal_cmd`) ke dalam tabel *Continuous RAG Knowledge*. Sebelumnya, seluruh log kueri terminal disulap menjadi entri memori RAG semu, menyebabkan tabel RAG dan tabel Log Aktivitas Pengunjung menampilkan baris yang identik.
+   - Tabel RAG kini 100% murni memuat fakta dan memori pengetahuan jangka panjang yang tersimpan di tabel `ai_memories` Supabase (1.697+ entri pengetahuan aktual hasil scraping berita, literatur akademik, dan fakta model AI).
+2. **Penambahan Fitur Pencarian Cerdas (*RAG Fact Search*):**
+   - Menyematkan input pencarian real-time pada header panel RAG Knowledge, memungkinkan admin memfilter dan mencari basis pengetahuan tersimpan berdasarkan kata kunci secara instan.
