@@ -1374,58 +1374,58 @@ export default function Dashboard() {
   return (
     <main className="w-full min-h-screen relative z-10 pb-20 bg-background dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans">
       
-      {/* Top Header Controls Bar */}
-      <div className="sticky top-0 z-50 w-full liquid-glass-nav">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+      {/* Top Header Controls Bar (Sleek Compact Navbar) */}
+      <div className="sticky top-0 z-50 w-full liquid-glass-nav border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
           
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`w-2 h-2 rounded-full ${isLiveConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]' : 'bg-amber-400'}`} />
-              <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-emerald-400">
-                {isLiveConnected ? 'Live Supabase Cloud Telemetry Gateway' : 'Offline / Local Cache Mode'}
-              </span>
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${isLiveConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]' : 'bg-amber-400'}`} />
+              <h1 className="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-2 whitespace-nowrap">
+                Admin Observability
+              </h1>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              Admin Observability Dashboard
-            </h1>
-            <p className="text-[11px] text-zinc-400 mt-0.5 hidden sm:block">
-              Pemantauan Real-time Traffic Velocity, AI Execution Matrix, RAG Memories & Telemetry Stream
-            </p>
+            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-400">
+              {isLiveConnected ? 'Supabase Live' : 'Local Cache'}
+            </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 relative z-10">
+          <div className="flex items-center gap-1.5 sm:gap-2 relative z-10">
             <button
               onClick={handleSendPing}
-              className="px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-xs font-semibold text-cyan-300 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-[11px] font-medium text-cyan-300 flex items-center gap-1.5 transition-all cursor-pointer"
               title="Kirim event tes langsung ke Supabase"
             >
-              <Zap className="w-3.5 h-3.5" />
-              <span>Uji Ping</span>
+              <Zap className="w-3 h-3" />
+              <span className="hidden sm:inline">Uji Ping</span>
             </button>
 
             <button
               onClick={() => setIsChangePinOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-medium text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
+              title="Ubah Master PIN"
             >
-              <KeyRound className="w-3.5 h-3.5 text-purple-400" />
-              <span>Ubah PIN</span>
+              <KeyRound className="w-3 h-3 text-purple-400" />
+              <span className="hidden sm:inline">Ubah PIN</span>
             </button>
 
             <button
               onClick={fetchTelemetryData}
               disabled={isLoading}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+              className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-medium text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+              title="Segarkan Data"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`} />
-              <span>Segarkan</span>
+              <RefreshCw className={`w-3 h-3 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Segarkan</span>
             </button>
 
             <button
               onClick={handleLogout}
-              className="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-xs font-semibold text-rose-300 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-[11px] font-medium text-rose-300 flex items-center gap-1.5 transition-all cursor-pointer"
+              title="Keluar dari Admin"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-3 h-3" />
               <span>Keluar</span>
             </button>
           </div>
