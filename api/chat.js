@@ -114,7 +114,15 @@ ${effortDirective}
    - DILARANG menghasilkan dinding teks masif (*wall of text*).
    - Untuk perbandingan atau data terukur: Gunakan tabel Markdown yang bersih.
 
-[BATASAN ANTI-HALUSINASI, ANTI-NOISE & ANTI-OVERCLAIM]:
+- **ANTI-NOISE & ISOLASI TOPIK PERCAKAPAN**:
+  - Jawab HANYA apa yang ditanyakan secara padat dan langsung ke inti topik.
+  - DILARANG mencampurkan informasi dari topik percakapan sebelumnya jika pengguna beralih subjek (contoh: DILARANG mengulang atau membawa-bawa informasi Google/Gemini ketika pengguna beralih bertanya tentang Anthropic/Claude, kecuali pengguna secara eksplisit meminta komparasi/perbandingan).
+  - DILARANG menambahkan informasi sampingan berlebihan yang tidak ditanyakan (seperti spekulasi tak berdasar, rincian enterprise acak, atau penawaran bantuan berulang).
+- **GROUND TRUTH RESMI MODEL AI DUNIA (DILARANG MENGARANG NAMA FIKTIF)**:
+  - **Anthropic Claude**: Model resmi adalah seri Claude 3 (Haiku, Sonnet, Opus), Claude 3.5 (Sonnet, Haiku), dan Claude 3.7 Sonnet (Hybrid Reasoning). DILARANG KERAS MENGARANG nama fiktif seperti "Claude Fable", "Claude Mythos", dsb.
+  - **Google Gemini**: Seri resmi mencakup Gemini 1.5 Pro/Flash, Gemini 2.0 Flash/Thinking, dan Gemini 3.x Flash.
+  - **OpenAI**: Seri resmi mencakup GPT-4o, GPT-4o mini, o1, o3-mini.
+  - Jika suatu versi masa depan belum diumumkan secara resmi, akui secara jujur dan lugas bahwa belum ada rilis resmi untuk versi tersebut.
 - **AKURASI JADWAL & STATUS PRODUK RESMI**:
   - Jika publisher/developer resmi hanya mengumumkan jendela rilis umum (misal: "Fall 2025" atau "Tahun 2026"), DILARANG MENGARANG tanggal/bulan spesifik fiktif (seperti "19 November 2026").
   - DILARANG mengarang platform tayang fiktif (seperti trailer resmi tayang di Netflix jika itu hanya kanal YouTube/website resmi).
@@ -294,8 +302,9 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push('Meta Llama AI latest model release benchmark');
   }
 
-  // 3. Multi-Turn Conversational Awareness (Combine past user topic with follow-up query)
-  if (Array.isArray(history) && history.length > 0) {
+  // 3. Multi-Turn Conversational Awareness (Only combine if current query is a dependent follow-up like "kalo harganya", "fiturnya apa")
+  const isIndependentEntity = /\b(claude|gemini|openai|chatgpt|gpt|deepseek|llama|mistral|nemotron|qwen|grok|apple|iphone|samsung|xiaomi|google|microsoft|meta|nvidia)\b/i.test(coreSubject || qClean);
+  if (!isIndependentEntity && Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
     for (const pastQ of pastUserTurns.slice(0, 2)) {
       const pastSubject = stripFillers(pastQ);
@@ -860,20 +869,20 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN TERKINI DARI MESIN PENCARI & WEB GLOBAL (MULTI-BAHASA)]:
+      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN TERKINI DARI MESIN PENCARI & WEB GLOBAL]:
 ${uniqueSnippets.join('\n')}
 
-[PANDUAN SINTESIS & ANALISIS RINCI AI]:
-- Anda telah menampung informasi dari berbagai sumber web dan mesin pencari global dalam berbagai bahasa (Inggris, Indonesia, dll).
-- **PRIORITASKAN FAKTA DENGAN TANGGAL PUBLIKASI PALING BARU (2025/2026/bulan ini)**. Jangan memakai rumor kadaluarsa jika ada laporan resmi atau pengumuman terkini.
-- TUGAS ANDA: Olah, rangkum, dan jelaskan secara **sangat rinci, mendalam, dan terstruktur** dalam Bahasa Indonesia yang komunikatif dan profesional.
-- **DILARANG KERAS** menyalin judul mentah atau potongan teks scraper (DILARANG membuat daftar '[Judul] - Isi').
-- Pecah penjelasan ke dalam 3-4 bagian terstruktur dengan judul topik tebal tanpa kurung siku:
-  - **Latar Belakang & Intisari Rilis/Peristiwa Terkini**: Penjelasan komprehensif mengenai update resmi, timeline, atau status terkini.
-  - **Fitur, Spesifikasi & Detail Gameplay/Teknis**: Rincian mekanisme baru, platform yang dituju, atau peningkatan teknis.
-  - **Jadwal Peluncuran & Pernyataan Resmi Developer**: Informasi jadwal rilis resmi (misal kuartal/tahun) dari developer/publisher (seperti Take-Two / Rockstar) berdasarkan laporan keuangan atau pernyataan resmi terbaru.
-  - **Kesimpulan & Rekomendasi**: Rangkuman intisari untuk audiens.
-- Berikan analisis bernilai tambah yang utuh dan komprehensif, bukan sekadar ringkasan 1-2 baris pendek.\n`;
+[PANDUAN SINTESIS INFORMASI WEB & ANTI-NOISE]:
+- PRIORITASKAN FAKTA RESMI & TERBARU (2025/2026).
+- ADAPTIF TERHADAP GAYA PERTANYAAN (ANTI-NOISE):
+  * Jika pengguna bertanya santai/singkat (contoh: "kalo claude", "model apa", "kapan rilis"): Jawab LANGSUNG ke inti topik (1-3 paragraf padat). DILARANG memaksakan subjudul template birokratis atau bab-bab panjang yang tidak diminta.
+  * HANYA gunakan struktur panjang jika pengguna secara eksplisit meminta breakdown komprehensif atau analisis mendalam.
+- FOKUS MURNI PADA TOPIK YANG DITANYAKAN:
+  * Jika pengguna beralih topik (misal dari Gemini ke Claude), jawab HANYA tentang topik baru tersebut. DILARANG mencampurkan informasi produk/model dari percakapan sebelumnya ke dalam jawaban topik baru kecuali diminta membandingkan.
+- KEJUJURAN FAKTUAL & ANTI-HALUSINASI NAMA MODEL:
+  * DILARANG KERAS MENGARANG nama model fiktif yang tidak ada di fakta resmi (misal: Claude Fable, Claude Mythos, atau seri khayalan lainnya).
+  * Untuk Anthropic Claude, model resmi adalah seri Claude 3, Claude 3.5 (Haiku, Sonnet, Opus), atau Claude 3.7 Sonnet.
+  * Jika suatu versi masa depan belum diumumkan resmi oleh pihak developer, akui dengan jujur bahwa belum ada pengumuman resmi, dan sebutkan model resmi terbaru yang saat ini tersedia.\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
