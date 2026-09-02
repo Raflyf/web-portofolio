@@ -111,8 +111,6 @@ export default function HorizonHero() {
   // Parallax layer transforms
   const heroTextY = useTransform(smoothProgress, [0, 1], [0, 80]);
   const heroOpacity = useTransform(smoothProgress, [0, 0.7], [1, 0]);
-  const horizonScale = useTransform(smoothProgress, [0, 1], [1, 1.25]);
-  const horizonY = useTransform(smoothProgress, [0, 1], [0, 40]);
   const showcaseY = useTransform(smoothProgress, [0, 1], [0, -60]);
 
   // Auto slide interval
@@ -146,19 +144,6 @@ export default function HorizonHero() {
         <div className="absolute top-1/3 right-1/4 w-100 h-75 bg-emerald-500/10 blur-[100px] rounded-full" />
       </div>
 
-      {/* Horizon Curved Arc (Liquid Glass Glow Curve) */}
-      <motion.div 
-        style={{ scale: horizonScale, y: horizonY }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-screen h-80 sm:h-125 pointer-events-none z-0"
-      >
-        <div 
-          className="w-full h-full border-t border-cyan-400/40 bg-linear-to-b from-cyan-500/15 via-indigo-950/20 to-transparent shadow-[0_-20px_80px_rgba(34,211,238,0.25)] relative"
-          style={{ borderTopLeftRadius: '100%', borderTopRightRadius: '100%' }}
-        >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-0.5 bg-linear-to-r from-transparent via-white to-transparent shadow-[0_0_20px_#fff]" />
-          <div className="absolute top-1 left-1/2 -translate-x-1/2 w-1/2 h-10 bg-cyan-400/20 blur-xl" />
-        </div>
-      </motion.div>
 
       {/* Main Grid Container */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full pt-10 md:pt-14">
