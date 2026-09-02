@@ -364,11 +364,34 @@ export default function Dashboard() {
   // localStorage) was removed — the data path goes through /api/dashboard-data.
   const supabaseUrl = DEFAULT_SUPABASE_URL;
   const supabaseAnonKey = DEFAULT_SUPABASE_ANON_KEY;
+  const CACHE_EVENTS_KEY = 'portfolio_dashboard_cached_events';
+  const CACHE_MEMORIES_KEY = 'portfolio_dashboard_cached_memories';
 
-  // Telemetry & Data State
-  const [events, setEvents] = useState([]);
-  const [memories, setMemories] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // Telemetry & DB State with Instant SWR (Stale-While-Revalidate) Cache
+  const [events, setEvents] = useState(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_EVENTS_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+  const [memories, setMemories] = useState(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_MEMORIES_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_EVENTS_KEY);
+      return !cached || JSON.parse(cached).length === 0;
+    } catch (_) {
+      return true;
+    }
+  });
   const [isLiveConnected, setIsLiveConnected] = useState(true);
 
   // Range Filters
@@ -473,7 +496,7 @@ export default function Dashboard() {
               const fetchBatch = async (table) => {
                 let all = [];
                 let offset = 0;
-                const batchSize = 1000;
+                const batchSize = 2500;
                 while (true) {
                   const res = await fetch(`${cfg.url}/rest/v1/${table}?select=*&order=created_at.desc&offset=${offset}&limit=${batchSize}`, {
                     headers: {
@@ -556,8 +579,18 @@ export default function Dashboard() {
           }
         }
       } finally {
-        if (Array.isArray(loadedEvents)) setEvents(loadedEvents);
-        if (Array.isArray(loadedMemories)) setMemories(loadedMemories);
+        if (Array.isArray(loadedEvents) && loadedEvents.length > 0) {
+          setEvents(loadedEvents);
+          try {
+            localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(loadedEvents.slice(0, 3000)));
+          } catch (_) {}
+        }
+        if (Array.isArray(loadedMemories) && loadedMemories.length > 0) {
+          setMemories(loadedMemories);
+          try {
+            localStorage.setItem(CACHE_MEMORIES_KEY, JSON.stringify(loadedMemories.slice(0, 2000)));
+          } catch (_) {}
+        }
         setIsLoading(false);
         isFetchingRef.current = false;
       }
