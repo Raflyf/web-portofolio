@@ -797,3 +797,11 @@ Released 2026-09-03.
    - **Aktivasi Touchpad / Trackpad Laptop:** Mengaktifkan `syncTouch: true`, `wheelMultiplier: 1.25`, dan `touchMultiplier: 1.8` agar gesekan dua jari di trackpad laptop dan roda mouse memiliki akselerasi inersia luncur yang nyata.
    - **Impor CSS Resmi Lenis:** Mengimpor `import 'lenis/dist/lenis.css'` untuk memastikan class `html.lenis` memiliki reset overflow dan scroll-behavior yang benar.
    - **Reset Scroll Antar Rute:** Menambahkan listener `useEffect` untuk mereset posisi scroll ke 0 saat rute berpindah.
+
+### v10.607.0 — Elimination of Dashboard Refresh Auth Flicker (Synchronous Session Restore)
+
+Released 2026-09-03.
+1. **Pemusnahan Flash of Unauthenticated Content (FOUC) pada Dashboard (`Dashboard.jsx`):**
+   - Mengubah inisialisasi state `isAuthenticated` dari nilai default statis `false` menjadi *lazy state initializer* sinkron: `useState(() => { ... sessionStorage.getItem(SESSION_AUTH_KEY) ... })`.
+   - Sebelumnya, komponen me-render layar masukkan PIN terlebih dahulu pada frame 0 karena state default `false`, kemudian baru memanggil `useEffect` asynchronous yang membaca session dan men-trigger re-render ke dashboard (memicu kedipan cepat).
+   - Dengan pembacaan sinkron pada inisialisasi state, React merender tampilan Dashboard Observabilitas secara langsung sejak frame pertama tanpa ada jeda atau kedipan layar PIN sama sekali saat halaman di-refresh.
