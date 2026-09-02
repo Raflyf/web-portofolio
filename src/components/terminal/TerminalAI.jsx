@@ -153,26 +153,26 @@ const CustomSelectEffort = ({ value, onChange }) => {
         aria-expanded={isOpen}
         className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
           isOpen 
-            ? 'bg-cyan-500/15 border border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]' 
-            : 'bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/50 text-zinc-200'
+            ? 'bg-cyan-50 dark:bg-cyan-500/15 border border-cyan-400 text-cyan-700 dark:text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]' 
+            : 'bg-white/80 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 hover:border-cyan-400/50 text-zinc-800 dark:text-zinc-200 shadow-sm'
         }`}
       >
         <span className="truncate">{selected.label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-cyan-400' : 'text-zinc-400'}`} />
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-cyan-600 dark:text-cyan-400' : 'text-zinc-500 dark:text-zinc-400'}`} />
       </button>
       
       {isOpen && (
         <div 
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl bg-[#090d16] border border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl bg-white dark:bg-[#090d16] border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         >
-          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-400/80 uppercase tracking-wider border-b border-white/5 font-semibold">
+          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-100 dark:border-white/5 font-semibold">
             Reasoning Effort
           </div>
           <div 
             data-lenis-prevent="true"
-            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-100 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map(opt => (
               <button
@@ -183,12 +183,12 @@ const CustomSelectEffort = ({ value, onChange }) => {
                 onClick={() => { onChange(opt.value); setIsOpen(false); }}
                 className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between cursor-pointer transition-colors ${
                   value === opt.value 
-                    ? 'bg-cyan-500/20 text-cyan-300 font-bold' 
-                    : 'text-zinc-200 hover:bg-white/10 hover:text-white'
+                    ? 'bg-cyan-50 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 font-bold' 
+                    : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <span>{opt.label}</span>
-                {value === opt.value && <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+                {value === opt.value && <Check className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />}
               </button>
             ))}
           </div>
@@ -551,19 +551,19 @@ export default function TerminalAI({ onClose }) {
       )}>
         
         {/* Terminal App Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-slate-950/80 shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-slate-100 dark:bg-slate-950/80 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-700 dark:text-slate-400 uppercase">
               Terminal Developer Lab & AI Assistant
             </span>
           </div>
           <div className="flex items-center gap-2">
              {isTerminalPopupOpen ? (
-               <button onClick={() => setIsTerminalPopupOpen(false)} className="text-zinc-500 hover:text-white transition" title="Tutup Modal" aria-label="Tutup Modal">
+               <button onClick={() => setIsTerminalPopupOpen(false)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition" title="Tutup Modal" aria-label="Tutup Modal">
                  <X className="w-4 h-4" />
                </button>
              ) : (
-               <button onClick={() => setIsTerminalPopupOpen(true)} className="text-zinc-500 hover:text-white transition" title="Buka Pop-up Jendela Terminal" aria-label="Buka Pop-up">
+               <button onClick={() => setIsTerminalPopupOpen(true)} className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition" title="Buka Pop-up Jendela Terminal" aria-label="Buka Pop-up">
                  <Maximize2 className="w-3.5 h-3.5" />
                </button>
              )}
@@ -571,57 +571,57 @@ export default function TerminalAI({ onClose }) {
         </div>
   
         {/* Control Bar (Riwayat, Baru, Pop-up) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-white/10 liquid-glass-inset gap-3 shrink-0 relative z-20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-white/10 liquid-glass-inset gap-3 shrink-0 relative z-20">
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex gap-1.5 shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
               <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
               <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
             </div>
-            <span className="text-zinc-400 text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
+            <span className="text-zinc-700 dark:text-zinc-400 text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
               rafly@portfolio-lab:~ (bash / AI Engine)
             </span>
           </div>
           
-          <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs text-zinc-400 font-medium pb-1 sm:pb-0 w-full sm:w-auto">
-            <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-1.5 hover:text-white transition px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0">
-              <Clock className="w-3.5 h-3.5" /> Riwayat
+          <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs text-zinc-700 dark:text-zinc-400 font-medium pb-1 sm:pb-0 w-full sm:w-auto">
+            <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-white transition px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0 cursor-pointer">
+              <Clock className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> Riwayat
             </button>
-            <button onClick={handleNewChat} className="flex items-center gap-1.5 hover:text-white transition px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
+            <button onClick={handleNewChat} className="flex items-center gap-1.5 hover:text-emerald-950 dark:hover:text-white transition px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 shrink-0 cursor-pointer">
               <Plus className="w-3.5 h-3.5" /> Baru
             </button>
             
-            <div className="hidden sm:block h-4 w-[1px] bg-white/20 mx-1"></div>
+            <div className="hidden sm:block h-4 w-[1px] bg-zinc-300 dark:bg-white/20 mx-1"></div>
             
-            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0" title="Smart Cascade Auto Router">
-              Model: 
-              <span className="bg-cyan-500/20 text-cyan-400 font-bold px-2 py-0.5 rounded text-[10px]">AUTO ROUTER</span>
+            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0" title="Smart Cascade Auto Router">
+              <span className="text-zinc-600 dark:text-zinc-400">Model:</span> 
+              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-400 font-bold px-2 py-0.5 rounded text-[10px]">AUTO ROUTER</span>
             </div>
 
-            <div className="hidden sm:block h-4 w-[1px] bg-white/20 mx-1"></div>
+            <div className="hidden sm:block h-4 w-[1px] bg-zinc-300 dark:bg-white/20 mx-1"></div>
 
             <div className="flex items-center gap-1.5 shrink-0" title="Pilih Reasoning Effort & Thinking Mode">
-              <span className="text-zinc-400 text-xs hidden xs:inline">Effort:</span>
+              <span className="text-zinc-600 dark:text-zinc-400 text-xs hidden xs:inline">Effort:</span>
               <CustomSelectEffort value={effort} onChange={(val) => setEffort(val)} />
             </div>
           </div>
         </div>
 
       {/* Shortcut Bar */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-white/5 bg-slate-900/40 overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-200 dark:border-white/5 bg-slate-100/70 dark:bg-slate-900/40 overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
         <span className="text-[10px] sm:text-xs text-zinc-500 font-medium mr-1">Pintasan:</span>
         {["skills", "projects", "certifs", "benchmarks", "models", "ai-status", "about", "contact"].map(cmd => (
           <button 
             key={cmd}
             onClick={() => handleShortcutClick(`/${cmd}`)}
-            className="text-[10px] sm:text-xs px-2.5 py-1 rounded-md bg-white/5 hover:bg-cyan-500/20 text-zinc-400 hover:text-cyan-300 border border-transparent hover:border-cyan-500/30 transition-all shrink-0"
+            className="text-[10px] sm:text-xs px-2.5 py-1 rounded-md bg-white dark:bg-white/5 hover:bg-cyan-50 dark:hover:bg-cyan-500/20 text-zinc-700 dark:text-zinc-400 hover:text-cyan-700 dark:hover:text-cyan-300 border border-zinc-200 dark:border-transparent hover:border-cyan-300 dark:hover:border-cyan-500/30 transition-all shrink-0 cursor-pointer shadow-xs"
           >
             {cmd}
           </button>
         ))}
         <button 
           onClick={() => setMessages([{ role: 'system', content: 'Console cleared.', time: getCurrentTime() }])}
-          className="text-[10px] sm:text-xs px-2.5 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-transparent hover:border-red-500/30 transition-all ml-auto shrink-0"
+          className="text-[10px] sm:text-xs px-2.5 py-1 rounded-md bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 border border-red-200 dark:border-transparent hover:border-red-300 dark:hover:border-red-500/30 transition-all ml-auto shrink-0 cursor-pointer shadow-xs"
         >
           clear
         </button>
@@ -842,14 +842,14 @@ export default function TerminalAI({ onClose }) {
               />
               
               {showSlashMenu && availableCommands.length > 0 && (
-                <div data-lenis-prevent="true" className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto overscroll-contain no-scrollbar bg-slate-800 border border-indigo-500/30 rounded-xl shadow-2xl z-50 py-1">
+                <div data-lenis-prevent="true" className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto overscroll-contain no-scrollbar bg-white dark:bg-slate-800 border border-zinc-300 dark:border-indigo-500/30 rounded-xl shadow-2xl z-50 py-1">
                   {availableCommands.map((cmd, idx) => (
                     <div 
                       key={cmd} 
                       onClick={() => sendMessage(`/${cmd}`)}
                       className={cn(
                         "px-4 py-2 text-sm cursor-pointer transition-colors",
-                        idx === slashSelectedIndex ? "bg-indigo-500/30 text-white" : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                        idx === slashSelectedIndex ? "bg-indigo-50 dark:bg-indigo-500/30 text-indigo-700 dark:text-white font-semibold" : "text-zinc-700 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
                       )}
                     >
                       /{cmd}
