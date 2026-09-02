@@ -805,3 +805,13 @@ Released 2026-09-03.
    - Mengubah inisialisasi state `isAuthenticated` dari nilai default statis `false` menjadi *lazy state initializer* sinkron: `useState(() => { ... sessionStorage.getItem(SESSION_AUTH_KEY) ... })`.
    - Sebelumnya, komponen me-render layar masukkan PIN terlebih dahulu pada frame 0 karena state default `false`, kemudian baru memanggil `useEffect` asynchronous yang membaca session dan men-trigger re-render ke dashboard (memicu kedipan cepat).
    - Dengan pembacaan sinkron pada inisialisasi state, React merender tampilan Dashboard Observabilitas secara langsung sejak frame pertama tanpa ada jeda atau kedipan layar PIN sama sekali saat halaman di-refresh.
+
+### v10.608.0 — Real-Time GitHub Stars Integration with SWR Caching
+
+Released 2026-09-03.
+1. **Integrasi GitHub REST API Publik (`ProjectsGrid.jsx`):**
+   - Menggantikan angka bintang hardcoded statis dengan fetch dinamis dari endpoint resmi GitHub REST API (`https://api.github.com/users/Raflyf/repos?per_page=100`).
+   - Setiap kartu proyek (termasuk *FotoKitaBlur*, *OpenPlagiarismChecker*, *Spam-Email*, dsb) kini otomatis membaca nilai `stargazers_count` langsung dari repository GitHub yang bersangkutan.
+2. **Arsitektur Ketahanan SWR (Stale-While-Revalidate):**
+   - Menyimpan hasil fetch ke dalam `localStorage` (`portfolio_github_stars_v1`) dengan TTL 10 menit agar aman dari GitHub rate limiting.
+   - Jika perangkat offline atau GitHub API lambat, antarmuka langsung menggunakan data cache lokal dan fallback baseline yang akurat (`FotoKitaBlur`: 1 star) dari `data.js`.
