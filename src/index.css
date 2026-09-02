@@ -216,12 +216,20 @@
               box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
               background 0.3s ease;
   will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .liquid-glass-hover:hover {
-  transform: translateY(-4px);
+  transform: translateY(-4px) translateZ(0);
   border-color: rgba(34, 211, 238, 0.4);
   box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+/* High-Performance Rendering & Containment */
+.section-contain {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 850px;
 }
 
 /* Light-mode liquid glass overrides (white translucent, dark text) */

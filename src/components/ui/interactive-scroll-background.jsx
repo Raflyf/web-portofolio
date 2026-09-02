@@ -164,43 +164,54 @@ export default function InteractiveScrollBackground() {
       const auraAlpha = isDark ? 0.08 : 0.04;
       const auraAlpha2 = isDark ? 0.06 : 0.03;
 
-      // Primary traveling nebula
+      // Primary traveling nebula with bounded fillRect to prevent fullscreen overdraw
       const nebula1X = width * 0.5 + Math.sin(time * 0.7 + progress * 4) * (width * 0.25);
       const nebula1Y = height * 0.35 + Math.cos(time * 0.5 + progress * 3) * (height * 0.2);
-      const grad1 = ctx.createRadialGradient(nebula1X, nebula1Y, 10, nebula1X, nebula1Y, width * 0.45);
+      const r1 = width * 0.45;
+      const grad1 = ctx.createRadialGradient(nebula1X, nebula1Y, 10, nebula1X, nebula1Y, r1);
       grad1.addColorStop(0, `rgba(${palette.primary[0]}, ${palette.primary[1]}, ${palette.primary[2]}, ${auraAlpha + velocity * 0.01})`);
       grad1.addColorStop(0.5, `rgba(${palette.secondary[0]}, ${palette.secondary[1]}, ${palette.secondary[2]}, ${auraAlpha * 0.4})`);
       grad1.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
       ctx.fillStyle = grad1;
-      ctx.fillRect(0, 0, width, height);
+      const bx1 = Math.max(0, nebula1X - r1);
+      const by1 = Math.max(0, nebula1Y - r1);
+      ctx.fillRect(bx1, by1, Math.min(width - bx1, r1 * 2), Math.min(height - by1, r1 * 2));
 
-      // Secondary counter-rotating nebula
+      // Secondary counter-rotating nebula with bounded fillRect
       const nebula2X = width * 0.3 + Math.cos(time * 0.6 - progress * 3) * (width * 0.2);
       const nebula2Y = height * 0.65 + Math.sin(time * 0.8 + progress * 2) * (height * 0.2);
-      const grad2 = ctx.createRadialGradient(nebula2X, nebula2Y, 10, nebula2X, nebula2Y, width * 0.4);
+      const r2 = width * 0.4;
+      const grad2 = ctx.createRadialGradient(nebula2X, nebula2Y, 10, nebula2X, nebula2Y, r2);
       grad2.addColorStop(0, `rgba(${palette.secondary[0]}, ${palette.secondary[1]}, ${palette.secondary[2]}, ${auraAlpha2})`);
       grad2.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
       ctx.fillStyle = grad2;
-      ctx.fillRect(0, 0, width, height);
+      const bx2 = Math.max(0, nebula2X - r2);
+      const by2 = Math.max(0, nebula2Y - r2);
+      ctx.fillRect(bx2, by2, Math.min(width - bx2, r2 * 2), Math.min(height - by2, r2 * 2));
 
-      // Tertiary subtle accent nebula
+      // Tertiary subtle accent nebula with bounded fillRect
       const nebula3X = width * 0.7 + Math.sin(time * 0.5) * (width * 0.15);
       const nebula3Y = height * 0.8 + Math.cos(time * 0.4) * (height * 0.15);
-      const grad3 = ctx.createRadialGradient(nebula3X, nebula3Y, 5, nebula3X, nebula3Y, width * 0.35);
+      const r3 = width * 0.35;
+      const grad3 = ctx.createRadialGradient(nebula3X, nebula3Y, 5, nebula3X, nebula3Y, r3);
       grad3.addColorStop(0, `rgba(${palette.tertiary[0]}, ${palette.tertiary[1]}, ${palette.tertiary[2]}, ${auraAlpha2 * 0.8})`);
       grad3.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
       ctx.fillStyle = grad3;
-      ctx.fillRect(0, 0, width, height);
+      const bx3 = Math.max(0, nebula3X - r3);
+      const by3 = Math.max(0, nebula3Y - r3);
+      ctx.fillRect(bx3, by3, Math.min(width - bx3, r3 * 2), Math.min(height - by3, r3 * 2));
 
       // 2. Interactive Neural Constellation Mesh
       const mouse = mouseRef.current;
       const connectionDist = Math.min(width * 0.13, 140);
+      const connectionDistSq = connectionDist * connectionDist;
       const mouseRadius = 150;
+      const mouseRadiusSq = mouseRadius * mouseRadius;
 
-      // Update and draw particles
+      // Update particle physics and positions
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
@@ -212,8 +223,9 @@ export default function InteractiveScrollBackground() {
         if (mouse.active) {
           const dx = p.x - mouse.x;
           const dy = p.y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < mouseRadius && dist > 0) {
+          const distSq = dx * dx + dy * dy;
+          if (distSq < mouseRadiusSq && distSq > 0) {
+            const dist = Math.sqrt(distSq);
             const force = (1 - dist / mouseRadius) * 0.8;
             p.x += (dx / dist) * force;
             p.y += (dy / dist) * force;
@@ -225,32 +237,36 @@ export default function InteractiveScrollBackground() {
         if (p.x > width + 20) p.x = -20;
         if (p.y < -20) p.y = height + 20;
         if (p.y > height + 20) p.y = -20;
+      }
 
-        // Draw particle dot with gentle breathing
-        const alpha = p.baseAlpha * (0.7 + Math.sin(time * 2 + p.phase) * 0.3);
-        ctx.beginPath();
+      // Single batched draw call for all particle dots (eliminates 65 separate fill operations)
+      ctx.beginPath();
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        ctx.moveTo(p.x + p.radius, p.y);
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${palette.primary[0]}, ${palette.primary[1]}, ${palette.primary[2]}, ${alpha})`;
-        ctx.fill();
+      }
+      ctx.fillStyle = `rgba(${palette.primary[0]}, ${palette.primary[1]}, ${palette.primary[2]}, ${isDark ? 0.32 : 0.2})`;
+      ctx.fill();
 
-        // Connect nearby particles
+      // Single batched draw call for constellation connecting lines (eliminates up to 100 draw calls per frame)
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(${palette.primary[0]}, ${palette.primary[1]}, ${palette.primary[2]}, ${0.08 * (isDark ? 1 : 0.55)})`;
+      ctx.lineWidth = 0.75;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const dx = p.x - p2.x;
           const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < connectionDist) {
-            const lineAlpha = (1 - dist / connectionDist) * 0.12 * (isDark ? 1 : 0.6);
-            ctx.beginPath();
+          if (dx * dx + dy * dy < connectionDistSq) {
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(${palette.primary[0]}, ${palette.primary[1]}, ${palette.primary[2]}, ${lineAlpha})`;
-            ctx.lineWidth = 0.75;
-            ctx.stroke();
           }
         }
       }
+      ctx.stroke();
 
       animationFrameId = requestAnimationFrame(render);
     };

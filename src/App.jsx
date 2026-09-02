@@ -292,7 +292,9 @@ export default function App() {
     // (lenis.destroy() alone does not stop our own loop).
     let rafId = 0;
     function raf(time) {
-      lenis.raf(time);
+      if (!document.hidden) {
+        lenis.raf(time);
+      }
       rafId = requestAnimationFrame(raf);
     }
     rafId = requestAnimationFrame(raf);
