@@ -25,7 +25,7 @@ export default function Footer() {
   return (
     <footer className="relative w-full mt-10 liquid-glass-nav">
       {/* Glow divider top */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-cyan-500/40 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -39,7 +39,7 @@ export default function Footer() {
             className="flex flex-col items-center md:items-start space-y-3"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
+              <div className="w-8 h-8 rounded-full bg-linear-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
                 <span className="text-xs font-bold text-white tracking-tight">RF</span>
               </div>
               <div>

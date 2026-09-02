@@ -871,7 +871,7 @@ export default function TerminalAI({ onClose } = {}) {
               <button
                 type="submit"
                 disabled={(!input.trim() && attachments.length === 0) || isLoading}
-                className="absolute right-2 p-2 sm:p-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="absolute right-2 p-2 sm:p-2.5 bg-linear-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Send className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>

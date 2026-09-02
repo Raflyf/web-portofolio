@@ -109,7 +109,7 @@ export default function SkillsBento() {
           whileHover={{ y: -4 }}
           className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Cpu className="w-5 h-5" />
@@ -131,7 +131,7 @@ export default function SkillsBento() {
           whileHover={{ y: -4 }}
           className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Network className="w-5 h-5" />
@@ -153,7 +153,7 @@ export default function SkillsBento() {
           whileHover={{ y: -4 }}
           className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Server className="w-5 h-5" />
@@ -175,7 +175,7 @@ export default function SkillsBento() {
           whileHover={{ y: -4 }}
           className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
           <h3 className="text-lg sm:text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Eye className="w-5 h-5" />

@@ -150,7 +150,7 @@ export default function CertificatesGrid() {
                     />
                   )}
                   
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent z-20" />
                   
                   <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-zinc-300">
                     <Calendar className="w-3 h-3 text-cyan-400" />
