@@ -25,19 +25,26 @@ export default function ScrollStoryline() {
   }, [scrollYProgress]);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollPosition = window.scrollY + window.innerHeight / 3;
 
-      for (const section of SECTIONS) {
-        const el = document.getElementById(section.id);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(section.id);
-            break;
+          for (const section of SECTIONS) {
+            const el = document.getElementById(section.id);
+            if (el) {
+              const top = el.offsetTop;
+              const height = el.offsetHeight;
+              if (scrollPosition >= top && scrollPosition < top + height) {
+                setActiveSection(section.id);
+                break;
+              }
+            }
           }
-        }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

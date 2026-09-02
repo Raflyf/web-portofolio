@@ -631,16 +631,26 @@ export default function Dashboard() {
         }
       } finally {
         if (Array.isArray(loadedEvents) && loadedEvents.length > 0) {
-          setEvents(loadedEvents);
-          try {
-            localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(loadedEvents.slice(0, 10000)));
-          } catch {}
+          setEvents(prev => {
+            if (prev.length === loadedEvents.length && prev[0]?.id === loadedEvents[0]?.id && prev[0]?.created_at === loadedEvents[0]?.created_at) {
+              return prev;
+            }
+            try {
+              localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(loadedEvents.slice(0, 10000)));
+            } catch {}
+            return loadedEvents;
+          });
         }
         if (Array.isArray(loadedMemories) && loadedMemories.length > 0) {
-          setMemories(loadedMemories);
-          try {
-            localStorage.setItem(CACHE_MEMORIES_KEY, JSON.stringify(loadedMemories.slice(0, 10000)));
-          } catch {}
+          setMemories(prev => {
+            if (prev.length === loadedMemories.length && prev[0]?.id === loadedMemories[0]?.id && prev[0]?.created_at === loadedMemories[0]?.created_at) {
+              return prev;
+            }
+            try {
+              localStorage.setItem(CACHE_MEMORIES_KEY, JSON.stringify(loadedMemories.slice(0, 10000)));
+            } catch {}
+            return loadedMemories;
+          });
         }
         setIsLoading(false);
         isFetchingRef.current = false;
