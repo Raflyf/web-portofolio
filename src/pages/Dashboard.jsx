@@ -250,25 +250,25 @@ const CustomSelect = ({ value, onChange, options }) => {
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`flex items-center justify-between w-40 sm:w-48 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
+        className={`flex items-center justify-between w-40 sm:w-48 px-3.5 py-1.5 liquid-glass-inset rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none border border-zinc-300 dark:border-white/10 ${
           isOpen 
-            ? 'bg-cyan-500/15 border border-cyan-400 text-cyan-600 dark:text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.35)]' 
-            : 'bg-white dark:bg-[#090d16] hover:bg-zinc-100 dark:hover:bg-zinc-800/90 border border-zinc-300 dark:border-white/10 hover:border-cyan-400/50 text-zinc-800 dark:text-zinc-200 shadow-sm'
+            ? 'border-cyan-400 text-cyan-700 dark:text-cyan-300 ring-1 ring-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]' 
+            : 'hover:border-cyan-400/50 text-zinc-800 dark:text-zinc-200'
         }`}
       >
         <span className="truncate">{selectedOption?.label}</span>
-        <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-cyan-500 dark:text-cyan-400" : "rotate-0 text-zinc-500 dark:text-zinc-400"}`} />
+        <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-cyan-600 dark:text-cyan-400" : "rotate-0 text-zinc-500 dark:text-zinc-400"}`} />
       </button>
 
       {isOpen && (
         <div
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 z-[100] mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl bg-white dark:bg-[#090d16] border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 z-[100] mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
         >
           <div 
             data-lenis-prevent="true" 
-            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-100 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-200/50 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map((option) => (
               <button
@@ -281,12 +281,12 @@ const CustomSelect = ({ value, onChange, options }) => {
                 }}
                 className={`flex w-full items-center justify-between px-3.5 py-2.5 text-left text-xs transition-colors cursor-pointer ${
                   value === option.value 
-                    ? "bg-cyan-50 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 font-bold" 
-                    : "text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/10"
+                    ? "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-bold" 
+                    : "text-zinc-800 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white"
                 }`}
               >
                 <span className="truncate pr-2">{option.label}</span>
-                {value === option.value && <Check className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 shrink-0" />}
+                {value === option.value && <Check className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />}
               </button>
             ))}
           </div>

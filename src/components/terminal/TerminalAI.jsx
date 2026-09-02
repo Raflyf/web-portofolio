@@ -151,10 +151,10 @@ const CustomSelectEffort = ({ value, onChange }) => {
         onClick={() => setIsOpen(prev => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none ${
+        className={`flex items-center justify-between gap-2 px-3 py-1.5 liquid-glass-inset rounded-xl text-xs font-medium transition-all duration-200 cursor-pointer outline-none border border-zinc-300 dark:border-white/10 ${
           isOpen 
-            ? 'bg-cyan-50 dark:bg-cyan-500/15 border border-cyan-400 text-cyan-700 dark:text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]' 
-            : 'bg-white/80 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 hover:border-cyan-400/50 text-zinc-800 dark:text-zinc-200 shadow-sm'
+            ? 'border-cyan-400 text-cyan-700 dark:text-cyan-300 ring-1 ring-cyan-400/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]' 
+            : 'hover:border-cyan-400/50 text-zinc-800 dark:text-zinc-200'
         }`}
       >
         <span className="truncate">{selected.label}</span>
@@ -165,14 +165,14 @@ const CustomSelectEffort = ({ value, onChange }) => {
         <div 
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl bg-white dark:bg-[#090d16] border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
         >
-          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-100 dark:border-white/5 font-semibold">
+          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-200/50 dark:border-white/5 font-semibold">
             Reasoning Effort
           </div>
           <div 
             data-lenis-prevent="true"
-            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-100 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-200/50 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map(opt => (
               <button
@@ -183,8 +183,8 @@ const CustomSelectEffort = ({ value, onChange }) => {
                 onClick={() => { onChange(opt.value); setIsOpen(false); }}
                 className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between cursor-pointer transition-colors ${
                   value === opt.value 
-                    ? 'bg-cyan-50 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 font-bold' 
-                    : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'
+                    ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-bold' 
+                    : 'text-zinc-800 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <span>{opt.label}</span>
