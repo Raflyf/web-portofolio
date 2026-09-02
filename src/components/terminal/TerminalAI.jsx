@@ -802,7 +802,7 @@ export default function TerminalAI({ onClose } = {}) {
               {attachments.map((att, idx) => (
                 <span
                   key={`${att.name}-${idx}`}
-                  className="inline-flex items-center gap-1.5 max-w-[190px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300"
+                  className="inline-flex items-center gap-1.5 max-w-47.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300"
                 >
                   <span className="truncate">{att.name}</span>
                   <button

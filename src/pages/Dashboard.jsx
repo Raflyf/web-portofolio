@@ -1759,7 +1759,7 @@ export default function Dashboard() {
                 {topProjects.map((proj, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-[170px]">{proj.name}</span>
+                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-42.5">{proj.name}</span>
                       <span className="font-mono text-purple-700 dark:text-purple-300 font-semibold">{proj.count}x</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
@@ -1783,7 +1783,7 @@ export default function Dashboard() {
                 {topCertificates.map((cert, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-[170px]">{cert.name}</span>
+                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-42.5">{cert.name}</span>
                       <span className="font-mono text-emerald-700 dark:text-emerald-300 font-semibold">{cert.count}x</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
@@ -1807,7 +1807,7 @@ export default function Dashboard() {
                 {topReferrers.map((ref, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between items-center text-[11px]">
-                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-[170px]">{ref.name}</span>
+                      <span className="text-zinc-800 dark:text-zinc-300 truncate max-w-42.5">{ref.name}</span>
                       <span className="font-mono text-indigo-700 dark:text-indigo-300 font-semibold">{ref.count}x</span>
                     </div>
                     <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/5 overflow-hidden">
