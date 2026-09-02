@@ -97,7 +97,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OLLAMA CLOUD',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
-    matcher: (s) => (s.includes('ollama') && (s.includes('nano:30b') || s.includes('nano-30b') || s.includes('nemotron-3-nano') || s.includes('nano'))) || s === 'nemotron-3-nano:30b' || s === 'nemotron-3-nano'
+    matcher: (s) => (s.includes('ollama') && (s.includes('nano:30b') || s.includes('nano-30b') || s.includes('nemotron-3-nano') || s.includes('nano'))) || s === 'nemotron-3-nano:30b' || s === 'nemotron-3-nano' || s === 'nano'
   },
   {
     id: 'openrouter-nemotron-lightning',
@@ -106,7 +106,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('lightning') || s.includes('lighting'))
+    matcher: (s) => s.includes('openrouter') && (s.includes('lightning') || s.includes('lighting')) || s === 'lightning'
   },
   {
     id: 'openrouter-nemotron-nano-omni',
@@ -115,7 +115,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
     iconColor: 'text-cyan-400',
-    matcher: (s) => (s.includes('openrouter') || s.includes('omni')) && (s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('30b-a3b') || s.includes('reasoning:free'))
+    matcher: (s) => (s.includes('openrouter') || s.includes('omni')) && (s.includes('nano-omni') || s.includes('nemotron-3-nano') || s.includes('30b-a3b') || s.includes('reasoning:free')) || s === 'omni'
   },
 
   // SISA MODEL (TIER OPENROUTER)
@@ -126,7 +126,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
-    matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free') && !s.includes('nemotron') && !s.includes('minimax'))
+    matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free') && !s.includes('nemotron') && !s.includes('minimax')) || s === 'free'
   },
   {
     id: 'openrouter-deepseek',
@@ -135,7 +135,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
     iconColor: 'text-cyan-400',
-    matcher: (s) => s.includes('deepseek')
+    matcher: (s) => s.includes('deepseek') || s === 'deepseek'
   },
   {
     id: 'openrouter-nemotron-super',
@@ -144,7 +144,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('super-120b') || s.includes('super:120b') || s.includes('a12b'))
+    matcher: (s) => s.includes('openrouter') && (s.includes('super-120b') || s.includes('super:120b') || s.includes('a12b')) || s === 'super'
   },
   {
     id: 'openrouter-nemotron-ultra',
@@ -153,7 +153,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     iconColor: 'text-emerald-400',
-    matcher: (s) => s.includes('openrouter') && (s.includes('ultra-550b') || s.includes('ultra:550b') || s.includes('a55b'))
+    matcher: (s) => s.includes('openrouter') && (s.includes('ultra-550b') || s.includes('ultra:550b') || s.includes('a55b')) || s === 'ultra'
   },
   {
     id: 'openrouter-minimax',
@@ -162,7 +162,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
     iconColor: 'text-cyan-400',
-    matcher: (s) => s.includes('openrouter') && s.includes('minimax')
+    matcher: (s) => s.includes('openrouter') && s.includes('minimax') || s === 'minimax'
   },
   {
     id: 'openrouter-cohere',
@@ -171,7 +171,7 @@ const INDIVIDUAL_MODELS = [
     provider: 'OPENROUTER',
     badgeClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
     iconColor: 'text-cyan-400',
-    matcher: (s) => s.includes('cohere') || s.includes('north-mini')
+    matcher: (s) => s.includes('cohere') || s.includes('north-mini') || s === 'cohere'
   },
 
   // SISA MODEL (TIER OLLAMA)
@@ -459,6 +459,19 @@ export default function Dashboard() {
             }
           } catch (e) {}
         }
+
+        // Dual-Storage: Merge local AI memories so newly saved facts appear instantly
+        const localMemStr = localStorage.getItem('portfolio_ai_memories');
+        if (localMemStr) {
+          try {
+            const localMems = JSON.parse(localMemStr);
+            if (Array.isArray(localMems)) {
+              const existingTexts = new Set((loadedMemories || []).map(m => m.fact_text));
+              const uniqueLocal = localMems.filter(m => !existingTexts.has(m.fact_text));
+              loadedMemories = [...uniqueLocal, ...(Array.isArray(loadedMemories) ? loadedMemories : [])];
+            }
+          } catch (e) {}
+        }
       } catch (err) {
         // FIX M3: aborted requests (unmount / superseded) are expected; skip noise.
         if (err && err.name === 'AbortError') return;
@@ -470,6 +483,12 @@ export default function Dashboard() {
           const local = localStorage.getItem('portfolio_telemetry_events');
           if (local) {
             try { loadedEvents = JSON.parse(local); } catch (e) {}
+          }
+        }
+        if (!Array.isArray(loadedMemories) || loadedMemories.length === 0) {
+          const localMem = localStorage.getItem('portfolio_ai_memories');
+          if (localMem) {
+            try { loadedMemories = JSON.parse(localMem); } catch (e) {}
           }
         }
       } finally {

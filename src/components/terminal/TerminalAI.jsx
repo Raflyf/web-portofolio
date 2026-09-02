@@ -80,22 +80,42 @@ const COMMAND_REGISTRY = {
   clear: () => []
 };
 
-// Persist an explicit fact taught by the AI to Supabase ai_memories (anon INSERT allowed by RLS).
+// Persist an explicit fact taught by the AI to Supabase ai_memories (Dual-Storage & Realtime Telemetry Sync)
 function saveAIMemory(factText, sessionId) {
   if (!factText) return;
+  const trimmedFact = String(factText).trim().substring(0, 1000);
+  const sid = (sessionId || 'sess_anon').substring(0, 64);
+
+  // 1. Dual-Storage: Save to local storage memory cache instantly
   try {
-    // Trusted path: the browser posts to the serverless endpoint, which
-    // validates + inserts with SUPABASE_SERVICE_ROLE_KEY. Direct anon INSERT
-    // is revoked (anti RAG-poisoning).
+    const STORAGE_MEM_KEY = 'portfolio_ai_memories';
+    const existingRaw = localStorage.getItem(STORAGE_MEM_KEY);
+    const existing = existingRaw ? JSON.parse(existingRaw) : [];
+    const newEntry = {
+      id: 'mem_' + Date.now(),
+      fact_text: trimmedFact,
+      session_id: sid,
+      type: 'Continuous RAG Knowledge',
+      created_at: new Date().toISOString()
+    };
+    if (!existing.some(e => e.fact_text === trimmedFact)) {
+      existing.unshift(newEntry);
+      localStorage.setItem(STORAGE_MEM_KEY, JSON.stringify(existing.slice(0, 200)));
+      window.dispatchEvent(new Event('telemetry_update'));
+    }
+  } catch (_) {}
+
+  // 2. Asynchronously sync to serverless endpoint
+  try {
     const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 3000);
+    setTimeout(() => ctrl.abort(), 4000);
     fetch('/api/save-memory', {
       method: 'POST',
       keepalive: true,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        fact_text: String(factText).substring(0, 1000),
-        session_id: (sessionId || 'unknown').substring(0, 64)
+        fact_text: trimmedFact,
+        session_id: sid
       }),
       signal: ctrl.signal
     }).catch(() => {});
@@ -125,25 +145,31 @@ const CustomSelectEffort = ({ value, onChange }) => {
   const selected = options.find(o => o.value === value) || options[0];
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative inline-block" ref={containerRef}>
       <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-transparent text-cyan-400 font-bold text-[10px] sm:text-xs outline-none cursor-pointer uppercase transition-colors hover:text-cyan-300"
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className="flex items-center gap-1.5 bg-transparent text-cyan-400 font-bold text-[10px] sm:text-xs outline-none cursor-pointer uppercase transition-colors hover:text-cyan-300"
       >
         {selected.label}
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-slate-900 border border-white/10 rounded-lg shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute right-0 top-full mt-2 w-52 bg-slate-900/95 backdrop-blur-2xl border border-cyan-500/30 rounded-xl shadow-[0_10px_35px_rgba(0,0,0,0.8)] z-[100] py-1.5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="px-3 py-1 text-[10px] font-mono text-zinc-500 uppercase tracking-wider border-b border-white/5 mb-1">
+            Reasoning Effort
+          </div>
           {options.map(opt => (
-            <div 
+            <button
               key={opt.value}
+              type="button"
               onClick={() => { onChange(opt.value); setIsOpen(false); }}
-              className={`px-3 py-2 text-xs cursor-pointer transition-colors ${value === opt.value ? 'bg-cyan-500/20 text-cyan-400 font-bold' : 'text-zinc-300 hover:bg-white/10'}`}
+              className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between cursor-pointer transition-colors ${value === opt.value ? 'bg-cyan-500/20 text-cyan-400 font-bold' : 'text-zinc-300 hover:bg-white/10'}`}
             >
-              {opt.label}
-            </div>
+              <span>{opt.label}</span>
+              {value === opt.value && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />}
+            </button>
           ))}
         </div>
       )}
@@ -290,15 +316,57 @@ export default function TerminalAI({ onClose }) {
       // Clean memory tags
       finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
 
-      // RAG Auto-Injection for Dashboard Logging (only queries > 10 chars, not slash commands)
-      if (userQuery.length >= 10 && !userQuery.startsWith('/')) {
-        saveAIMemory(`Visitor Query: ${userQuery}`, telemetry.sessionId || 'unknown');
+      // RAG Auto-Injection for Dashboard Logging (only queries >= 8 chars, not slash commands)
+      if (userQuery.length >= 8 && !userQuery.startsWith('/')) {
+        saveAIMemory(`Kueri Pengunjung: ${userQuery}`, telemetry.sessionId || 'unknown');
       }
 
-      setMessages(prev => [...prev, { role: 'ai', content: finalResponse, time: getCurrentTime() }]);
+      // Format model name & provider for message header
+      const chosenModel = localStorage.getItem('ai_selected_model') || 'auto';
+      const actualModel = data.model || chosenModel || 'nemotron-3-nano:30b';
+      const providerName = data.provider || (actualModel.includes('nano') ? 'Ollama Cloud SOTA Engine' : 'AI Gateway');
+      const headerModelName = chosenModel === 'auto'
+        ? `Auto Router -> ${actualModel.toUpperCase().replace(/^NVIDIA\//i, '')}`
+        : actualModel.toUpperCase();
 
-      // Log to telemetry (Auto Router / Ollama Nano)
-      telemetry.logEvent('ai_chat', localStorage.getItem('ai_selected_model') || 'auto', `[${localStorage.getItem('ai_selected_model') || 'auto'}] effort:${effort}`);
+      // Log accurate multi-model event to telemetry
+      const routeLabel = chosenModel === 'auto'
+        ? `[Auto Router -> ${actualModel}] [${providerName}] effort:${effort}`
+        : `[Direct -> ${actualModel}] [${providerName}] effort:${effort}`;
+      telemetry.logEvent('ai_chat', actualModel, routeLabel);
+
+      // Typewriter Effect Streaming
+      const aiMsgId = Date.now();
+      const newAiMsg = {
+        id: aiMsgId,
+        role: 'ai',
+        content: '',
+        modelName: headerModelName,
+        providerName: `(${providerName})`,
+        effort: effort,
+        time: getCurrentTime(),
+        isTyping: true
+      };
+
+      setMessages(prev => [...prev, newAiMsg]);
+
+      // Stream characters at high speed with auto-scroll
+      let charIndex = 0;
+      const totalLen = finalResponse.length;
+      const chunkSize = Math.max(2, Math.ceil(totalLen / 80)); // Smooth 1-2s total duration
+      
+      const typeTimer = setInterval(() => {
+        charIndex += chunkSize;
+        if (charIndex >= totalLen) {
+          clearInterval(typeTimer);
+          setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: finalResponse, isTyping: false } : m));
+          if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        } else {
+          const partial = finalResponse.substring(0, charIndex);
+          setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: partial } : m));
+          if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 16);
 
     } catch (err) {
       setMessages(prev => [...prev, { role: 'ai', content: '⚠️ Gagal terhubung ke API Gateway lokal. Jika Anda menjalankan secara lokal dengan Vite, pastikan `/api/chat` tersedia atau Vercel Dev dijalankan.', time: getCurrentTime() }]);
@@ -458,7 +526,7 @@ export default function TerminalAI({ onClose }) {
         </div>
   
         {/* Control Bar (Riwayat, Baru, Pop-up) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-white/10 liquid-glass-inset gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-white/10 liquid-glass-inset gap-3 shrink-0 relative z-20">
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex gap-1.5 shrink-0">
               <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -470,7 +538,7 @@ export default function TerminalAI({ onClose }) {
             </span>
           </div>
           
-          <div className="flex items-center flex-nowrap gap-2 sm:gap-3 text-xs text-zinc-400 font-medium overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full sm:w-auto">
+          <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs text-zinc-400 font-medium pb-1 sm:pb-0 w-full sm:w-auto">
             <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-1.5 hover:text-white transition px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0">
               <Clock className="w-3.5 h-3.5" /> Riwayat
             </button>
@@ -548,22 +616,22 @@ export default function TerminalAI({ onClose }) {
                     <Cpu className="w-3 h-3 text-cyan-400" />
                   </div>
                   <span className="text-[10px] sm:text-xs font-semibold text-cyan-400">
-                    {msg.isStatic ? "System Engine" : "Auto Router -> NEMOTRON 3 NANO"}
-                    {!msg.isStatic && <span className="text-zinc-500 mx-1 uppercase">[Effort: {effort}]</span>}
+                    {msg.modelName || (msg.isStatic ? "System Engine" : "Auto Router -> NEMOTRON 3 NANO")}
+                    {!msg.isStatic && <span className="text-zinc-500 mx-1 uppercase">[Effort: {msg.effort || effort}]</span>}
                   </span>
-                  {!msg.isStatic && <span className="hidden lg:inline text-[10px] text-zinc-500">(Ollama Cloud SOTA Engine)</span>}
+                  {!msg.isStatic && <span className="hidden lg:inline text-[10px] text-zinc-500">{msg.providerName || "(Ollama Cloud SOTA Engine)"}</span>}
                   <span className="text-[10px] sm:text-xs text-zinc-500 font-medium sm:ml-2">{msg.time || getCurrentTime()}</span>
                   
                   <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
                     <button 
                       onClick={() => navigator.clipboard.writeText(msg.content)}
-                      className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 transition"
+                      className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 transition cursor-pointer"
                     >
                       <Copy className="w-3 h-3" /> <span className="hidden sm:inline">Salin</span>
                     </button>
                     <button 
                       onClick={() => handleDownload(msg.content)}
-                      className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 transition"
+                      className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 transition cursor-pointer"
                     >
                       <Download className="w-3 h-3" /> <span className="hidden sm:inline">Unduh .md</span>
                     </button>
@@ -575,6 +643,9 @@ export default function TerminalAI({ onClose }) {
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content}
                     </ReactMarkdown>
+                    {msg.isTyping && (
+                      <span className="inline-block w-2 h-4 bg-cyan-400 animate-pulse ml-1 align-middle" />
+                    )}
                   </div>
                 </div>
               </div>

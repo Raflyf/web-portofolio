@@ -8,7 +8,36 @@
  * ============================================================================
  */
 
+import fs from 'fs';
+import path from 'path';
+
 const SUPABASE_DEFAULT_URL = 'https://rphyzcqwpkxtzllvymss.supabase.co';
+
+// Automatic local environment loader (reads .env.local / .env for local testing)
+function loadLocalEnv() {
+  try {
+    const envFiles = ['.env.local', '.env'];
+    for (const f of envFiles) {
+      const fullPath = path.resolve(process.cwd(), f);
+      if (fs.existsSync(fullPath)) {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        content.split('\n').forEach(line => {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+            const idx = trimmed.indexOf('=');
+            const k = trimmed.substring(0, idx).trim();
+            const v = trimmed.substring(idx + 1).trim().replace(/^["']|["']$/g, '');
+            if (k) {
+              process.env[k] = v;
+            }
+          }
+        });
+        break;
+      }
+    }
+  } catch (_) {}
+}
+loadLocalEnv();
 
 // Trusted client IP: prefer Vercel's trusted header, else the LAST element of
 // x-forwarded-for (the value appended by the outermost trusted proxy), else the
