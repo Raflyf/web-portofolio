@@ -587,10 +587,16 @@ async function searchWebContext(query, history = []) {
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Parallel Real-Time News & Global Search Queries across Google News (Global + ID) and Bing News
+    // 2. Parallel Real-Time Global Search Queries across Multi-Engine Multi-Language Aggregator
+    // (Google News Global US/UK/ID, Bing News, DuckDuckGo Web API, arXiv Papers)
     const searchFetches = searchQueries.flatMap(targetQ => [
       // Google News Global (US / English)
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-US&gl=US&ceid=US:en`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: controller.signal
+      }),
+      // Google News Global (UK / Europe)
+      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-GB&gl=GB&ceid=GB:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
@@ -603,11 +609,21 @@ async function searchWebContext(query, history = []) {
       fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
+      }),
+      // DuckDuckGo Instant Answers & Global Web Knowledge API
+      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetQ)}&format=json&no_html=1&skip_disambig=1`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: controller.signal
+      }),
+      // arXiv Academic Research & Global Science Papers API
+      fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(targetQ)}&max_results=2`, {
+        headers: { 'User-Agent': 'Antigravity-Research-Engine/2026' },
+        signal: controller.signal
       })
     ]);
 
     // 3. GitHub Open-Source & Library Discovery (For tech / framework / code / repo queries)
-    const isTechOrCode = /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt)\b/i.test(query);
+    const isTechOrCode = /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt|anthropic|openai|mistral|nemotron)\b/i.test(query);
     if (isTechOrCode) {
       const techKeyword = searchQueries[0] || query.slice(0, 60);
       searchFetches.push(
@@ -624,16 +640,16 @@ async function searchWebContext(query, history = []) {
       );
     }
 
-    // 4. Open-Web Encyclopedic Knowledge (Definitions, History, Science, Biographies)
-    const isEncyclopedic = /\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|siapa|apa|jelaskan)\b/i.test(query);
+    // 4. Open-Web Encyclopedic Knowledge (Multi-Language: English & Indonesian)
+    const isEncyclopedic = /\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|siapa|apa|jelaskan|how does)\b/i.test(query);
     if (isEncyclopedic) {
-      const mainKeyword = query.replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|dong)\b/gi, ' ').trim();
+      const mainKeyword = query.replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|dong|how does)\b/gi, ' ').trim();
       if (mainKeyword.length >= 3) {
         searchFetches.push(
-          fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
             signal: controller.signal
           }),
-          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+          fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
             signal: controller.signal
           })
         );
@@ -663,6 +679,27 @@ async function searchWebContext(query, history = []) {
         if (textData.startsWith('{') || textData.startsWith('[')) {
           try {
             const parsed = JSON.parse(textData);
+            // DuckDuckGo Instant Answers
+            if (parsed?.AbstractText && parsed.AbstractText.length > 20) {
+              const snip = cleanStr(parsed.AbstractText);
+              structuredSnippets.push({
+                text: `[DuckDuckGo Web Index (${parsed.Heading || 'Web Result'})]: ${snip}`,
+                timestamp: Date.now() + 500000,
+                score: 6
+              });
+              rawSnippets.push(`[DuckDuckGo]: ${parsed.Heading || 'Web Knowledge'}`);
+            }
+            if (Array.isArray(parsed?.RelatedTopics)) {
+              parsed.RelatedTopics.slice(0, 2).forEach(rt => {
+                if (rt?.Text && rt.Text.length > 25) {
+                  structuredSnippets.push({
+                    text: `[Web Topic Reference]: ${cleanStr(rt.Text)}`,
+                    timestamp: 500,
+                    score: 4
+                  });
+                }
+              });
+            }
             // Wikipedia
             if (parsed?.query?.search) {
               const hits = parsed.query.search;
@@ -702,13 +739,32 @@ async function searchWebContext(query, history = []) {
               rawSnippets.push(`[HuggingFace]: ${models}`);
             }
           } catch (_) {}
+        } else if (textData.includes('<feed') || textData.includes('<entry>')) {
+          // arXiv XML Feed
+          const entries = textData.match(/<entry>[\s\S]*?<\/entry>/gi) || [];
+          entries.slice(0, 2).forEach(entry => {
+            const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/i);
+            const summaryMatch = entry.match(/<summary>([\s\S]*?)<\/summary>/i);
+            const title = cleanStr(titleMatch ? titleMatch[1] : '');
+            const summary = cleanStr(summaryMatch ? summaryMatch[1] : '');
+            if (title && summary) {
+              structuredSnippets.push({
+                text: `[arXiv Research Paper (${title})]: ${summary.slice(0, 400)}...`,
+                timestamp: Date.now(),
+                score: 5
+              });
+              rawSnippets.push(`[arXiv]: ${title}`);
+            }
+          });
         } else {
-          // RSS News Feed
+          // RSS News Feeds (Google News Global, UK, ID, Bing)
           const items = textData.match(/<item>[\s\S]*?<\/item>/gi) || [];
           items.slice(0, 8).forEach((item) => {
             const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
+            const descMatch = item.match(/<description>([\s\S]*?)<\/description>/i);
             const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
             const title = cleanStr(titleMatch ? titleMatch[1] : '');
+            const desc = cleanStr(descMatch ? descMatch[1] : '');
             const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
             if (title && !isJunkArticle(title)) {
               let ts = 0;
@@ -716,10 +772,10 @@ async function searchWebContext(query, history = []) {
                 const parsedDate = new Date(pubDate).getTime();
                 if (!isNaN(parsedDate)) ts = parsedDate;
               }
-              const relScore = calcScore(title);
-              // Only accept news articles that match search subject keywords or high-confidence feeds
+              const relScore = calcScore(title + ' ' + desc);
               if (searchKeywords.length === 0 || relScore > 0) {
-                const entry = pubDate ? `[Berita Terkini (${pubDate})]: ${title}` : `[Berita Terkini]: ${title}`;
+                const fullText = desc && desc.length > 20 ? `${title} — ${desc.slice(0, 250)}` : title;
+                const entry = pubDate ? `[Global Live Web/News (${pubDate})]: ${fullText}` : `[Global Live Web/News]: ${fullText}`;
                 structuredSnippets.push({ text: entry, timestamp: ts, score: relScore });
                 rawSnippets.push(title);
               }
@@ -732,7 +788,7 @@ async function searchWebContext(query, history = []) {
     // Sort all snippets by relevance score first, then newest timestamp
     structuredSnippets.sort((a, b) => ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp));
 
-    // Deduplicate snippets (top 10 for rich, authentic factual grounding)
+    // Deduplicate snippets (top 12 for rich, comprehensive multi-language factual grounding)
     const seen = new Set();
     const uniqueSnippets = [];
     for (const item of structuredSnippets) {
@@ -740,18 +796,24 @@ async function searchWebContext(query, history = []) {
         seen.add(item.text);
         uniqueSnippets.push(item.text);
       }
-      if (uniqueSnippets.length >= 10) break;
+      if (uniqueSnippets.length >= 12) break;
     }
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN BERITA TERKINI 2026]:\n${uniqueSnippets.join('\n')}\n\n[PANDUAN SINTESIS AI]:
-- JANGAN PERNAH menyalin mentah format judul atau baris teks berita di atas (DILARANG membuat daftar '[Judul] - Isi').
-- Rangkum dan olah fakta-fakta tersebut menjadi penjelasan atau intisari analitis yang bernas, padat, dan mengalir dalam Bahasa Indonesia.
-- Sajikan dalam 3-4 butir poin terstruktur dengan judul topik tebal tanpa kurung siku:
-  - **Topik / Sorotan Utama**: Rangkuman intisari fakta dan penjelasannya.
-- Jangan mengarang angka benchmark atau metrik teknis palsu. Jika tidak disebutkan, tulis "Belum ada data skor resmi".
-- Awali dengan 1 kalimat pengantar singkat dan akhiri dengan 1 kalimat kesimpulan/takeaway ringkas.\n`;
+      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN DARI MESIN PENCARI & WEB GLOBAL (MULTI-BAHASA)]:
+${uniqueSnippets.join('\n')}
+
+[PANDUAN SINTESIS & ANALISIS RINCI AI]:
+- Anda telah menampung informasi dari berbagai sumber web dan mesin pencari global dalam berbagai bahasa (Inggris, Indonesia, dll).
+- TUGAS ANDA: Olah, rangkum, dan jelaskan secara **sangat rinci, mendalam, dan terstruktur** dalam Bahasa Indonesia yang komunikatif dan profesional.
+- **DILARANG KERAS** menyalin judul mentah atau potongan teks scraper (DILARANG membuat daftar '[Judul] - Isi').
+- Pecah penjelasan ke dalam 3-4 bagian terstruktur dengan judul topik tebal tanpa kurung siku:
+  - **Latar Belakang & Intisari Rilis/Peristiwa**: Penjelasan menyeluruh mengenai peristiwa, inovasi, dan konteksnya.
+  - **Spesifikasi & Kapabilitas Teknis**: Rincian performa, arsitektur, atau fitur unggulan yang dirilis.
+  - **Efisiensi, Biaya & Privasi**: Uraian perbandingan biaya, skalabilitas on-premise/cloud, atau keamanan data.
+  - **Ketersediaan & Rekomendasi Penerapan**: Panduan akses (API/open-weight/web), implementasi praktis, dan kesimpulan bernas.
+- Berikan analisis bernilai tambah yang utuh dan komprehensif, bukan sekadar ringkasan 1-2 baris pendek.\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
@@ -1258,6 +1320,7 @@ export default async function handler(req, res) {
 
       // 3.5. Ensure distinct line breaks for bullet points and sections
       cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*(\*\*[^*]+?\*\*)/g, '$1\n\n- $2');
+      cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–]+?)[\*]+\s*/g, '$1\n\n- **$2**: ');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–—:]\s*/g, '\n- **$1**: ');
 
       // 3.6. Deterministic Identity Grounding: Cegah klaim pihak ketiga dan hilangkan dump nama model teknis
