@@ -766,3 +766,14 @@ Released 2026-09-03.
    - Partikel dan fluid nebula kini dijamin 100% selalu bergerak secara aktif di semua perangkat pengguna.
 3. **CSS Motion Play-State Override (`index.css`):**
    - Menambahkan rule `@media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-play-state: running !important; } }` untuk mencegah user-agent stylesheet atau ekstensi browser mematikan animasi CSS.
+
+### v10.604.0 — Universal Root-Level Scroll Progress Bar (z-[100] Stacking Fix)
+
+Released 2026-09-03.
+1. **Elevasi Mutlak Progress Bar ke Tingkat Root (`App.jsx`):**
+   - Memindahkan komponen indikator garis progress scroll dari sub-komponen lokal (`ScrollStoryline` & `Dashboard`) langsung ke tingkat root aplikasi (`GlobalScrollProgressBar` di dalam `App.jsx`).
+   - Memberikan `z-[100]` pada tingkat root terluar sehingga berada di atas `FloatingNavbar` (`z-50`) dalam hierarki stacking context global yang sama.
+   - Sebelumnya, progress bar terkurung di dalam `<main className="relative z-10">`, sehingga nilai `z-[60]` miliknya kalah terhadap navbar `z-50` di root. Kini garis progress neon cyan-indigo setebal 3.5px senantiasa bertengger di atas tepi navbar baik saat diam, saat scroll ke bawah, maupun saat scroll ke atas.
+2. **Pembersihan Progress Bar Lokal & Unused Hooks:**
+   - Menghapus elemen progress bar lama di `scroll-storyline.jsx` dan `Dashboard.jsx`.
+   - Menghapus dependensi dan hooks yang tidak lagi digunakan (`useSpring`, `motion` lokal).
