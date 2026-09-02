@@ -510,7 +510,13 @@ export default function Dashboard() {
                   if (data.length < batchSize) break;
                   offset += data.length;
                 }
-                return all;
+                const seenIds = new Set();
+                return all.filter(item => {
+                  if (!item.id) return true;
+                  if (seenIds.has(item.id)) return false;
+                  seenIds.add(item.id);
+                  return true;
+                });
               };
 
               const [allEvents, allMemories] = await Promise.all([
@@ -529,31 +535,34 @@ export default function Dashboard() {
           }
         }
 
-        // Merge local storage events (so terminal chat events reflect instantly on dashboard).
-        // FIX M3: only merge events NOT yet synced to the server — synced events are
-        // already counted in the server payload and would double-count here.
-        const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
-        if (localEventsStr) {
-          try {
-            const localEvents = JSON.parse(localEventsStr);
-            if (Array.isArray(localEvents)) {
-              const unsynced = localEvents.filter((e) => !e.synced);
-              loadedEvents = [...unsynced, ...(Array.isArray(loadedEvents) ? loadedEvents : [])];
-            }
-          } catch {}
+        // SINGLE SOURCE OF TRUTH:
+        // Jika server Supabase Cloud berhasil mengembalikan data (loadedEvents.length > 0),
+        // gunakan 100% data resmi dari server tanpa mencampurkan riwayat lokal localStorage browser.
+        // Mencampurkan localStorage lokal menyebabkan angka metrik berbeda-beda antara Laptop dan HP
+        // karena setiap perangkat menyimpan ring-buffer lokal yang berbeda.
+        // localStorage HANYA digunakan sebagai fallback darurat saat perangkat sedang offline.
+        if (!Array.isArray(loadedEvents) || loadedEvents.length === 0) {
+          const localEventsStr = localStorage.getItem('portfolio_telemetry_events');
+          if (localEventsStr) {
+            try {
+              const localEvents = JSON.parse(localEventsStr);
+              if (Array.isArray(localEvents)) {
+                loadedEvents = localEvents;
+              }
+            } catch {}
+          }
         }
 
-        // Dual-Storage: Merge local AI memories so newly saved facts appear instantly
-        const localMemStr = localStorage.getItem('portfolio_ai_memories');
-        if (localMemStr) {
-          try {
-            const localMems = JSON.parse(localMemStr);
-            if (Array.isArray(localMems)) {
-              const existingTexts = new Set((loadedMemories || []).map(m => m.fact_text));
-              const uniqueLocal = localMems.filter(m => !existingTexts.has(m.fact_text));
-              loadedMemories = [...uniqueLocal, ...(Array.isArray(loadedMemories) ? loadedMemories : [])];
-            }
-          } catch {}
+        if (!Array.isArray(loadedMemories) || loadedMemories.length === 0) {
+          const localMemStr = localStorage.getItem('portfolio_ai_memories');
+          if (localMemStr) {
+            try {
+              const localMems = JSON.parse(localMemStr);
+              if (Array.isArray(localMems)) {
+                loadedMemories = localMems;
+              }
+            } catch {}
+          }
         }
       } catch (err) {
         // FIX M3: aborted requests (unmount / superseded) are expected; skip noise.
