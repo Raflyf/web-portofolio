@@ -149,7 +149,7 @@ export default function HorizonHero() {
       {/* Horizon Curved Arc (Liquid Glass Glow Curve) */}
       <motion.div 
         style={{ scale: horizonScale, y: horizonY }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-[100vw] h-80 sm:h-125 pointer-events-none z-0"
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[140vw] sm:w-[120vw] lg:w-screen h-80 sm:h-125 pointer-events-none z-0"
       >
         <div 
           className="w-full h-full border-t border-cyan-400/40 bg-linear-to-b from-cyan-500/15 via-indigo-950/20 to-transparent shadow-[0_-20px_80px_rgba(34,211,238,0.25)] relative"
