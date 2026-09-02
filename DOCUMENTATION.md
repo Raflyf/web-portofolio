@@ -815,3 +815,11 @@ Released 2026-09-03.
 2. **Arsitektur Ketahanan SWR (Stale-While-Revalidate):**
    - Menyimpan hasil fetch ke dalam `localStorage` (`portfolio_github_stars_v1`) dengan TTL 10 menit agar aman dari GitHub rate limiting.
    - Jika perangkat offline atau GitHub API lambat, antarmuka langsung menggunakan data cache lokal dan fallback baseline yang akurat (`FotoKitaBlur`: 1 star) dari `data.js`.
+
+### v10.609.0 — Clear & Non-Overclaiming Human Copy
+
+Released 2026-09-03.
+1. **Penyelarasan Teks Hero (`horizon-hero.jsx`):**
+   - Mengganti kalimat klise overclaim ("Mengkombinasikan ketajaman analisis algoritmik...") dengan narasi yang lugas, manusiawi, dan membumi: *"Fokus mengembangkan aplikasi web modern dan sistem kecerdasan buatan yang praktis, aman, serta menghormati privasi pengguna."*
+2. **Penyelarasan Subjudul Profil & Visi (`AboutSection.jsx`):**
+   - Mengeliminasi duplikasi teks dan menyusun deskripsi yang mencerminkan fokus rekayasa nyata: *"Membangun sistem cerdas dan aplikasi web dengan kode yang bersih, terstruktur, dan mengutamakan privasi data."*
