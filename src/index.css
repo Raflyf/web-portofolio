@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "tailwindcss-animate";
 
 /* Class-based dark mode (theme toggle toggles .dark on <html>) */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -15,6 +14,16 @@
     50% {
       opacity: 0.85;
       box-shadow: 0 0 30px rgba(34, 211, 238, 0.65);
+    }
+  }
+  --animate-fade-in: fade-in 0.6s ease-out both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
   --color-background: hsl(var(--background));
