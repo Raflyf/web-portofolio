@@ -77,7 +77,7 @@ ${effortDirective}
 
 [PANDUAN GAYA KOMUNIKASI MANUSIAWI & FORMAT MARKDOWN KAYA]:
 1. Wajib Format Markdown Terstruktur & Bersih:
-   - Gunakan format **Markdown yang kaya dan jelas**: gunakan **teks tebal** untuk kata kunci/topik utama, bullet points (`- `) dengan spasi baris yang rapi, dan heading (`### `) jika penjelasan memiliki beberapa sub-bagian.
+   - Gunakan format **Markdown yang kaya dan jelas**: gunakan **teks tebal** untuk kata kunci/topik utama, bullet points dengan spasi baris yang rapi, dan heading jika penjelasan memiliki beberapa sub-bagian.
    - **DILARANG KERAS** menghasilkan satu paragraf panjang polos tanpa jeda (wall-of-text). Pecah selalu menjadi 2-3 butir poin terstruktur atau paragraf-paragraf pendek (maksimal 2 kalimat per paragraf).
    - Untuk pertanyaan BERITA / PERKEMBANGAN TERKINI: Wajib sajikan dalam bentuk **3-4 Poin Sorotan Utama (Scannable Bullet List)**. Format:
      - **[Headline / Topik Utama]**: Penjelasan 1-2 kalimat padat mengenai esensi peristiwa dan faktanya.
@@ -865,14 +865,15 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
 // raw socket address. Never trust the first x-forwarded-for segment — clients
 // can spoof it to bypass per-IP rate limits.
 function getClientIp(req) {
-  const trusted = req.headers['x-vercel-forwarded-for'];
+  const headers = req?.headers || {};
+  const trusted = headers['x-vercel-forwarded-for'];
   if (trusted && typeof trusted === 'string') return trusted.split(',')[0].trim();
-  const xff = req.headers['x-forwarded-for'];
+  const xff = headers['x-forwarded-for'];
   if (xff && typeof xff === 'string') {
     const parts = xff.split(',');
-    return (parts[parts.length - 1] || '').trim() || req.socket?.remoteAddress || '127.0.0.1';
+    return (parts[parts.length - 1] || '').trim() || req?.socket?.remoteAddress || '127.0.0.1';
   }
-  return req.socket?.remoteAddress || '127.0.0.1';
+  return req?.socket?.remoteAddress || '127.0.0.1';
 }
 
 // Rate limiting (35 requests per minute per IP).
@@ -1064,12 +1065,14 @@ export default async function handler(req, res) {
   const ALLOWED_ORIGINS = [
     process.env.ALLOWED_ORIGIN,
     'https://raflyfirmansyah-portofolio.vercel.app',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'http://localhost:3877',
     'http://localhost:3000',
     'http://127.0.0.1:3877',
     'http://127.0.0.1:3000'
   ].filter(Boolean);
-  const requestOrigin = req.headers.origin || '';
+  const requestOrigin = (req.headers && req.headers.origin) ? req.headers.origin : '';
   const origin = ALLOWED_ORIGINS.includes(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0];
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Vary', 'Origin');
