@@ -102,20 +102,20 @@ export const PROJECTS_DATA = [
   },
   {
     id: "web-portofolio",
-    title: "Bespoke Web Portfolio",
+    title: "Bespoke Web Portfolio & AI Platform",
     category: "web",
     categoryLabel: "Frontend & Systems",
     badge: "Live Production",
-    description: "Platform portofolio web rekayasa performa tinggi berarsitektur modular. Mengusung tema dark tech OKLCH, simulator terminal CLI interaktif, viewer sertifikat kebal IDM, dan kepatuhan aksesibilitas WCAG 2.2 AA.",
-    longDescription: "Situs web portofolio profesional dan riset yang dibangun dari nol tanpa dependensi pustaka berat. Mengintegrasikan sistem token desain OKLCH presisi, emulator terminal berbasis perintah riil, penampil berkas sertifikat multi-halaman beresolusi tinggi, integrasi pengiriman form asinkron, dan kepatuhan aksesibilitas WCAG 2.2 AA.",
+    description: "Platform portofolio web modern dan riset interaktif. Dibangun dengan React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions, dan Supabase Telemetry & RAG Memory.",
+    longDescription: "Situs web portofolio profesional berarsitektur modern dengan integrasi AI interaktif. Menggabungkan frontend React 19 yang responsif, animasi fisik scrollytelling Framer Motion, Terminal AI interaktif berbasis Auto Router Gateway, backend serverless Node.js di Vercel, serta telemetri observabilitas dan memori percakapan real-time di Supabase PostgreSQL.",
     keyFeatures: [
-      "Sistem token warna modern OKLCH & Dark Obsidian aesthetic",
-      "Emulator terminal interaktif dengan riwayat perintah dan navigasi keyboard",
-      "Penampil berkas sertifikat multi-halaman anti-intersepsi IDM",
-      "Kepatuhan aksesibilitas WCAG 2.2 AA dengan rasio kontras tinggi",
-      "Arsitektur Vanilla JavaScript ES6+ modular tanpa framework bloat"
+      "Arsitektur modern: React 19, Vite, Tailwind CSS, dan Framer Motion",
+      "Terminal AI interaktif dengan Auto Router Gateway & RAG Memory",
+      "Backend serverless Vercel Node.js untuk pemrosesan inferensi & pencarian global",
+      "Database Supabase PostgreSQL untuk telemetri pengunjung dan riwayat percakapan",
+      "Desain Liquid Glassmorphism, Horizon Scrollytelling, dan kepatuhan WCAG 2.2 AA"
     ],
-    techStack: ["JavaScript (ES6+)", "HTML5 Semantic", "CSS3 / OKLCH", "GitHub Pages", "Responsive UI"],
+    techStack: ["React 19", "Vite", "Tailwind CSS", "Framer Motion", "Vercel Serverless", "Supabase PostgreSQL"],
     githubUrl: "https://github.com/Raflyf/web-portofolio",
     demoUrl: "https://raflyfirmansyah-portofolio.vercel.app/",
     stars: 1
