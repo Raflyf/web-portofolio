@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import { useScroll } from 'framer-motion';
 
 const SECTIONS = [
   { id: 'hero', label: 'Overview' },
@@ -16,11 +16,6 @@ export default function ScrollStoryline() {
   const [activeSection, setActiveSection] = useState('hero');
   const [percent, setPercent] = useState(0);
   const { scrollYProgress } = useScroll();
-  const scaleY = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 28,
-    restDelta: 0.001
-  });
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (latest) => {
@@ -63,11 +58,6 @@ export default function ScrollStoryline() {
 
   return (
     <>
-      {/* Top Global Scroll Progress Bar with Dynamic Glow - Always visible above navbar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-[60] origin-left shadow-[0_0_12px_rgba(34,211,238,0.9)] pointer-events-none"
-        style={{ scaleX: scaleY }}
-      />
 
       {/* Floating Scrollytelling Sidebar Navigation */}
       <aside className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col items-end gap-3 pointer-events-auto select-none" aria-label="Navigasi Cerita">

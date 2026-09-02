@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { telemetry } from '../lib/telemetry';
 import { getSupabaseConfig } from '../lib/supabase';
 import {
@@ -321,11 +321,6 @@ export default function Dashboard() {
 
   // Scroll-craft Dashboard Scroll Dynamics
   const { scrollYProgress } = useScroll();
-  const dashboardProgress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 28,
-    restDelta: 0.001
-  });
   const ambientDashboardY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
 
   const handleThemeToggle = () => {
@@ -1502,11 +1497,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Real-time Global Scroll Progress Bar on Dashboard - Fixed at top-0 z-[60] */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-[60] origin-left pointer-events-none shadow-[0_0_12px_rgba(34,211,238,0.9)]"
-        style={{ scaleX: dashboardProgress }}
-      />
 
       {/* Top Header Controls Bar (Sleek Compact Navbar with Smart Auto-Hide) */}
       <header className={`fixed top-0 inset-x-0 z-50 w-full liquid-glass-nav border-b border-white/10 transition-transform duration-300 ease-in-out ${
