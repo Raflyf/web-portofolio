@@ -699,3 +699,19 @@ Released 2026-09-02.
    - Tabel RAG kini 100% murni memuat fakta dan memori pengetahuan jangka panjang yang tersimpan di tabel `ai_memories` Supabase (1.697+ entri pengetahuan aktual hasil scraping berita, literatur akademik, dan fakta model AI).
 2. **Penambahan Fitur Pencarian Cerdas (*RAG Fact Search*):**
    - Menyematkan input pencarian real-time pada header panel RAG Knowledge, memungkinkan admin memfilter dan mencari basis pengetahuan tersimpan berdasarkan kata kunci secara instan.
+
+### v10.598.0 — Continuous Full-Page Interactive Scroll Background Canvas
+
+Released 2026-09-02.
+1. **Arsitektur Ambient Canvas Menyeluruh (`InteractiveScrollBackground.jsx`):**
+   - Menggantikan elemen glow latar belakang statis di hero atas dengan kanvas interaktif layar penuh berposisi `fixed inset-0` yang beroperasi secara kontinu dari awal (Hero) hingga akhir halaman (Kontak & Footer).
+   - Mengimplementasikan perjalanan warna kromatik multi-fase berbasis progress scroll:
+     - *Hero*: Electric Cyan & Deep Indigo
+     - *Tentang & Profil*: Sapphire Blue & Soft Teal
+     - *Keahlian (Bento)*: Neon Violet & Electric Cyan
+     - *Proyek & Riset*: Emerald Green & Algorithmic Cyan
+     - *Sertifikasi & Riwayat*: Galactic Violet & Amber Gold
+     - *Terminal AI & Kontak*: Cyber Emerald & Matrix Teal
+2. **Interaktivitas Fisika Partikel & Kecepatan Scroll:**
+   - Menyematkan jaring konstelasi saraf interaktif (*neural mesh*) dengan 65 simpul partikel yang merespons kursor mouse/touch secara magnetik serta mengalami *kinetic velocity warp* saat pengguna melakukan scroll.
+   - Menjamin efisiensi baterai dan GPU: otomatis jeda saat tab disembunyikan (`document.hidden`) dan patuh pada preferensi *prefers-reduced-motion*.
