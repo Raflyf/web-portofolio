@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { telemetry } from '../lib/telemetry';
 import InteractiveScrollBackground from '../components/ui/interactive-scroll-background';
 import HorizonHero from '../components/ui/horizon-hero';
