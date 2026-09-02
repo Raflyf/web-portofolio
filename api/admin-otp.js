@@ -326,29 +326,6 @@ async function clearSessionToken(supabaseUrl, headers) {
   } catch (_) {}
 }
 
-async function storeSessionToken(supabaseUrl, headers, token) {
-  // Persist the admin session token so /api/dashboard-data can validate it.
-  // Must run with service_role (writes are not allowed for anon).
-  try {
-    const res = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-      method: 'POST',
-      headers: {
-        ...headers,
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify({
-        id: 'master_auth',
-        session_token: token,
-        session_expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString()
-      })
-    });
-    return res.ok;
-  } catch (_) {
-    return false;
-  }
-}
-
 async function storeSessionToken(supabaseUrl, headers, sessionToken) {
   try {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
