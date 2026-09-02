@@ -715,3 +715,11 @@ Released 2026-09-02.
 2. **Interaktivitas Fisika Partikel & Kecepatan Scroll:**
    - Menyematkan jaring konstelasi saraf interaktif (*neural mesh*) dengan 65 simpul partikel yang merespons kursor mouse/touch secara magnetik serta mengalami *kinetic velocity warp* saat pengguna melakukan scroll.
    - Menjamin efisiensi baterai dan GPU: otomatis jeda saat tab disembunyikan (`document.hidden`) dan patuh pada preferensi *prefers-reduced-motion*.
+
+### v10.599.0 — Offline-First Telemetry Background Auto-Flush to Supabase
+
+Released 2026-09-03.
+1. **Sinkronisasi Otomatis Event Offline Lokal (`telemetry.js`):**
+   - Mengimplementasikan fungsi `flushUnsyncedEvents()` pada engine telemetri.
+   - Jika pengunjung berinteraksi saat koneksi internet terputus sesaat, event disimpan secara aman di *buffer* lokal. Begitu koneksi internet pulih (`window.addEventListener('online')`) atau saat sesi baru diinisialisasi, sistem secara otomatis mengunggah kumpulan event tersebut ke Supabase Cloud via batch REST POST.
+   - Setelah sukses terunggah ke database awan, event lokal ditandai dengan flag `synced: true`, menjamin *zero data loss* sekaligus mencegah terjadinya duplikasi data.
