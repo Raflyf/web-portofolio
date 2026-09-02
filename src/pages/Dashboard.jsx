@@ -821,20 +821,29 @@ export default function Dashboard() {
     const set = new Set(kpiFilteredEvents.map(e => e.session_id).filter(Boolean));
     return set.size;
   }, [kpiFilteredEvents]);
-  const totalClicks = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'link_click' || e.event_type === 'click' || e.event_type === 'cert_filter' || e.event_type === 'project_click').length, [kpiFilteredEvents]);
+  const totalClicks = useMemo(() => kpiFilteredEvents.filter(e => e.event_type !== 'page_view').length, [kpiFilteredEvents]);
   const contactSubmissions = useMemo(() => kpiFilteredEvents.filter(e => e.event_type === 'contact_submit' || e.event_target?.toLowerCase().includes('contact') || e.event_target?.toLowerCase().includes('whatsapp')).length, [kpiFilteredEvents]);
   const interactivityRatio = useMemo(() => {
     if (totalViews === 0) return '0%';
-    const ratio = Math.min(((totalClicks + contactSubmissions) / totalViews) * 100, 100);
+    const ratio = Math.min((totalClicks / totalViews) * 100, 100);
     return `${ratio.toFixed(1)}%`;
-  }, [totalViews, totalClicks, contactSubmissions]);
+  }, [totalViews, totalClicks]);
 
   // Chart 1: Traffic Velocity Line Chart
   const chartFilteredEvents = useMemo(() => filterByRange(events, chartRange), [events, chartRange]);
   const lineChartData = useMemo(() => {
     let daysCount = 7;
     if (chartRange === '14d') daysCount = 14;
-    if (chartRange === '30d') daysCount = 30;
+    else if (chartRange === '30d') daysCount = 30;
+    else if (chartRange === 'all') {
+      if (events.length > 0) {
+        const oldestTs = Math.min(...events.map(e => new Date(e.created_at || 0).getTime()).filter(t => !isNaN(t) && t > 0));
+        const diffDays = Math.ceil((Date.now() - oldestTs) / 86400000);
+        daysCount = Math.max(30, Math.min(diffDays + 1, 90));
+      } else {
+        daysCount = 30;
+      }
+    }
 
     const labels = [];
     const viewsPerDay = new Array(daysCount).fill(0);
@@ -1581,7 +1590,8 @@ export default function Dashboard() {
                 {[
                   { id: '7d', label: '7 Hari' },
                   { id: '14d', label: '14 Hari' },
-                  { id: '30d', label: '30 Hari' }
+                  { id: '30d', label: '30 Hari' },
+                  { id: 'all', label: 'Semua' }
                 ].map(tab => (
                   <button
                     key={tab.id}
