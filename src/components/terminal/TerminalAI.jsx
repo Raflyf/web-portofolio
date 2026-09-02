@@ -102,6 +102,55 @@ function saveAIMemory(factText, sessionId) {
   } catch (_) {}
 }
 
+const CustomSelectEffort = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+  
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const options = [
+    { value: 'auto', label: 'Auto (Balanced)' },
+    { value: 'thinking', label: 'Thinking CoT (Deep)' },
+    { value: 'high', label: 'High (Research)' },
+    { value: 'medium', label: 'Medium (Standard)' },
+    { value: 'low', label: 'Low (Fast)' }
+  ];
+  
+  const selected = options.find(o => o.value === value) || options[0];
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 bg-transparent text-cyan-400 font-bold text-[10px] sm:text-xs outline-none cursor-pointer uppercase transition-colors hover:text-cyan-300"
+      >
+        {selected.label}
+        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-48 bg-slate-900 border border-white/10 rounded-lg shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+          {options.map(opt => (
+            <div 
+              key={opt.value}
+              onClick={() => { onChange(opt.value); setIsOpen(false); }}
+              className={`px-3 py-2 text-xs cursor-pointer transition-colors ${value === opt.value ? 'bg-cyan-500/20 text-cyan-400 font-bold' : 'text-zinc-300 hover:bg-white/10'}`}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function TerminalAI({ onClose }) {
   const { 
     isTerminalPopupOpen, setIsTerminalPopupOpen,
@@ -240,6 +289,11 @@ export default function TerminalAI({ onClose }) {
       }
       // Clean memory tags
       finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
+
+      // RAG Auto-Injection for Dashboard Logging (only queries > 10 chars, not slash commands)
+      if (userQuery.length >= 10 && !userQuery.startsWith('/')) {
+        saveAIMemory(`Visitor Query: ${userQuery}`, telemetry.sessionId || 'unknown');
+      }
 
       setMessages(prev => [...prev, { role: 'ai', content: finalResponse, time: getCurrentTime() }]);
 
@@ -433,20 +487,9 @@ export default function TerminalAI({ onClose }) {
 
             <div className="hidden sm:block h-4 w-[1px] bg-white/20 mx-1"></div>
 
-            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0 cursor-pointer group" title="Pilih Reasoning Effort & Thinking Mode">
-              Effort:
-              <select 
-                value={effort}
-                onChange={(e) => setEffort(e.target.value)}
-                className="bg-transparent text-cyan-400 font-bold text-[10px] sm:text-xs outline-none cursor-pointer appearance-none pr-4 relative z-10 uppercase transition-colors group-hover:text-cyan-300"
-                style={{ backgroundImage: `url('data:image/svg+xml;utf8,<svg fill="none" stroke="%2322d3ee" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"></polyline></svg>')`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right center', backgroundSize: '10px' }}
-              >
-                <option value="auto" className="bg-slate-900 text-zinc-300">Auto (Balanced)</option>
-                <option value="thinking" className="bg-slate-900 text-zinc-300">Thinking CoT (Deep)</option>
-                <option value="high" className="bg-slate-900 text-zinc-300">High (Research)</option>
-                <option value="medium" className="bg-slate-900 text-zinc-300">Medium (Standard)</option>
-                <option value="low" className="bg-slate-900 text-zinc-300">Low (Fast)</option>
-              </select>
+            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 shrink-0 group" title="Pilih Reasoning Effort & Thinking Mode">
+              <span className="text-zinc-400">Effort:</span>
+              <CustomSelectEffort value={effort} onChange={(val) => setEffort(val)} />
             </div>
           </div>
         </div>
