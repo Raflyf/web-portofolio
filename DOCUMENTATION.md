@@ -633,8 +633,23 @@ Released 2026-09-02.
    - **Ambient Ground Atmosphere**: Menambahkan layer latar belakang dinamis di `Home.jsx` yang bergeser secara parallax dan beradaptasi warnanya mengikuti posisi scroll pembaca tanpa mengubah struktur tata letak elemen apa pun.
 3. **Penerapan Scroll Motion di Dashboard Admin (`Dashboard.jsx`)**:
    - **Top Sticky Progress Line**: Menambahkan bilah progres scroll linear presisi tinggi tepat di bawah header observabilitas admin untuk navigasi log data yang panjang.
-   - **Ambient Lighting Parallax**: Menambahkan aksen ambient glow di latar belakang dashboard yang merespons pergerakan scroll.
-   - **Quick Jump Floating Button**: Tombol kembali ke atas yang terhubung langsung ke mesin smooth scroll Lenis untuk efisiensi audit data.
+### v10.591.0 — Terminal AI Runtime Fix & Anti-AI Punctuation Sanitization
 
+Released 2026-09-02.
+1. **Pemulihan Fatal Crash Terminal (ReferenceError: remarkGfm is not defined):**
+   - Mengembalikan import `remark-gfm` yang terhapus pada `TerminalAI.jsx`, mencegah unmount fatal pada React tree saat merender respons markdown.
+   - Membungkus seluruh sinkronisasi `localStorage` di `TerminalContext.jsx` dengan blok `try ... catch` untuk ketahanan terhadap pembatasan kuota penyimpanan browser.
+   - Sanitasi otomatis model terpilih pada local storage dari kueri bahasa alami (misal: "model apa kamu").
+2. **Eliminasi Klise Tanda Baca AI (Anti-Em-Dash & Non-Breaking Hyphens):**
+   - Menambahkan aturan ketat pada System Prompt backend (`api/chat.js`) yang melarang penggunaan em-dash (`—`) atau en-dash (`–`) tanpa spasi antar kata.
+   - Mengimplementasikan filter pembersih regex otomatis di backend dan frontend untuk menormalisasi non-breaking hyphen (`U+2011`), narrow space (`U+202F`), dan em-dash artifisial menjadi tanda baca manusiawi (koma, tanda kurung, dan strip standar).
 
+### v10.592.0 — Mobile Navbar High-Contrast Solid Glass & Backdrop Dimmer
 
+Released 2026-09-02.
+1. **Peningkatan Keterbacaan Menu Mobile (`App.jsx`):**
+   - Mengganti permukaan semi-transparan `liquid-glass-strong` pada mobile menu dengan panel **95% High-Opacity Glass Surface** (`bg-white/95` di mode terang dan `dark:bg-zinc-900/95` di mode gelap) yang dipadukan dengan `backdrop-blur-2xl`.
+   - Menambahkan **Backdrop Dimmer Overlay** (`fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md`) di belakang menu mobile untuk menggelapkan konten Hero, meniadakan overlap teks, dan memungkinkan fitur *tap-to-close*.
+2. **Penyelarasan Kontras Tema Terang & Gelap:**
+   - Menyempurnakan warna teks menu menjadi `text-zinc-800` (mode terang) dan `text-zinc-100` (mode gelap) dengan target sentuh tinggi (`py-3`) dan indikator arah panah `→`.
+   - Mengoptimalkan kontras logo RF dan nama brand di header bar atas agar selalu terbaca jelas di seluruh mode tampilan.
