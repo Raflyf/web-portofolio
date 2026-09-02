@@ -496,7 +496,7 @@ export default function Dashboard() {
               const fetchBatch = async (table) => {
                 let all = [];
                 let offset = 0;
-                const batchSize = 2500;
+                const batchSize = 1000;
                 while (true) {
                   const res = await fetch(`${cfg.url}/rest/v1/${table}?select=*&order=created_at.desc&offset=${offset}&limit=${batchSize}`, {
                     headers: {
@@ -512,7 +512,7 @@ export default function Dashboard() {
                   if (!Array.isArray(data) || data.length === 0) break;
                   all = all.concat(data);
                   if (data.length < batchSize) break;
-                  offset += batchSize;
+                  offset += data.length;
                 }
                 return all;
               };
@@ -582,13 +582,13 @@ export default function Dashboard() {
         if (Array.isArray(loadedEvents) && loadedEvents.length > 0) {
           setEvents(loadedEvents);
           try {
-            localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(loadedEvents.slice(0, 3000)));
+            localStorage.setItem(CACHE_EVENTS_KEY, JSON.stringify(loadedEvents.slice(0, 10000)));
           } catch (_) {}
         }
         if (Array.isArray(loadedMemories) && loadedMemories.length > 0) {
           setMemories(loadedMemories);
           try {
-            localStorage.setItem(CACHE_MEMORIES_KEY, JSON.stringify(loadedMemories.slice(0, 2000)));
+            localStorage.setItem(CACHE_MEMORIES_KEY, JSON.stringify(loadedMemories.slice(0, 10000)));
           } catch (_) {}
         }
         setIsLoading(false);

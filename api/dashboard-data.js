@@ -94,7 +94,7 @@ export default async function handler(req, res) {
     async function fetchAllRows(endpoint) {
       let all = [];
       let offset = 0;
-      const batchSize = 2500;
+      const batchSize = 1000;
       while (true) {
         try {
           const res = await fetch(`${endpoint}&offset=${offset}&limit=${batchSize}`, {
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
           if (!Array.isArray(rows) || rows.length === 0) break;
           all = all.concat(rows);
           if (rows.length < batchSize) break;
-          offset += batchSize;
+          offset += rows.length;
         } catch (_) {
           break;
         }
