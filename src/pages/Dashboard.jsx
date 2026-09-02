@@ -396,6 +396,7 @@ export default function Dashboard() {
   const [gridRange, setGridRange] = useState('all');
   const [aiModelsRange, setAiModelsRange] = useState('all');
   const [ragMemoriesRange, setRagMemoriesRange] = useState('all');
+  const [ragSearchTerm, setRagSearchTerm] = useState('');
   const [tableRange, setTableRange] = useState('all');
 
   // Activity Table State
@@ -1216,49 +1217,33 @@ export default function Dashboard() {
     };
   }, [events, aiModelsRange]);
 
-  // AI Memories Computed (Unified: Dedicated ai_memories + Extracted AI Context from Telemetry Events)
+  // Dedicated Continuous RAG Knowledge (Murni dari tabel Supabase ai_memories: kumpulan pengetahuan, scraping, dan fakta tersimpan)
   const allDerivedMemories = useMemo(() => {
-    const list = [...(Array.isArray(memories) ? memories : [])];
-    const existingTexts = new Set(list.map(m => (m.fact_text || '').toLowerCase().trim()));
-
-    // Ekstrak interaksi kueri AI dari telemetri Supabase sebagai memori kontekstual aktif
-    if (Array.isArray(events)) {
-      events.forEach(e => {
-        const type = (e.event_type || '').toLowerCase();
-        const target = (e.event_target || '').trim();
-        const label = (e.event_label || '').trim();
-
-        if (type === 'ai_chat' || type === 'ai_query' || type === 'ai_query_resolved' || (type === 'terminal_cmd' && (target.startsWith('ai:') || target.startsWith('chat:') || target.startsWith('ask:')))) {
-          let factText = '';
-          if (label && !label.startsWith('[') && label.length > 5) {
-            factText = label;
-          } else if (label.includes('->') || label.includes('effort:')) {
-            factText = `Interaksi Percakapan AI ${label}`;
-          } else if (target && target !== 'auto' && target.length > 3) {
-            factText = `Kueri Pengguna: ${target}`;
-          } else {
-            factText = `Sesi Tanya Jawab Portofolio AI (${e.device_type || 'desktop'})`;
-          }
-
-          if (factText && !existingTexts.has(factText.toLowerCase().trim())) {
-            existingTexts.add(factText.toLowerCase().trim());
-            list.push({
-              id: 'mem_ev_' + (e.id || Math.random().toString(36).substring(2, 9)),
-              created_at: e.created_at,
-              fact_text: factText,
-              session_id: e.session_id || 'sess_cloud',
-              type: 'RAG Knowledge'
-            });
-          }
-        }
-      });
+    if (!Array.isArray(memories)) return [];
+    
+    // Deduplikasi dan urutkan berdasarkan waktu fakta pengetahuan tersimpan di Supabase ai_memories
+    const seen = new Set();
+    const cleanList = [];
+    for (const m of memories) {
+      const text = (m.fact_text || m.memory_text || m.content || '').trim();
+      if (!text) continue;
+      const lower = text.toLowerCase();
+      if (seen.has(lower)) continue;
+      seen.add(lower);
+      cleanList.push(m);
     }
+    return cleanList.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }, [memories]);
 
-    // Urutkan berdasarkan waktu terbaru
-    return list.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-  }, [memories, events]);
+  const filteredMemories = useMemo(() => {
+    let list = filterByRange(allDerivedMemories, ragMemoriesRange);
+    if (ragSearchTerm.trim()) {
+      const term = ragSearchTerm.toLowerCase();
+      list = list.filter(m => (m.fact_text || m.memory_text || m.content || '').toLowerCase().includes(term));
+    }
+    return list;
+  }, [allDerivedMemories, ragMemoriesRange, ragSearchTerm]);
 
-  const filteredMemories = useMemo(() => filterByRange(allDerivedMemories, ragMemoriesRange), [allDerivedMemories, ragMemoriesRange]);
   const memoryTotalPages = Math.ceil(filteredMemories.length / memoryPageSize) || 1;
   const currentMemories = useMemo(() => {
     const start = (memoryCurrentPage - 1) * memoryPageSize;
@@ -1970,8 +1955,19 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Cari fakta pengetahuan RAG..."
+                  value={ragSearchTerm}
+                  onChange={(e) => { setRagSearchTerm(e.target.value); setMemoryCurrentPage(1); }}
+                  className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 w-full sm:w-56"
+                />
+              </div>
+
+              <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shrink-0">
                 {filteredMemories.length} Fakta Aktif
               </span>
 
@@ -1983,7 +1979,7 @@ export default function Dashboard() {
                 ].map(tab => (
                   <button
                     key={tab.id}
-                    onClick={() => setRagMemoriesRange(tab.id)}
+                    onClick={() => { setRagMemoriesRange(tab.id); setMemoryCurrentPage(1); }}
                     className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer ${ragMemoriesRange === tab.id ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-300 dark:border-emerald-500/30' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}`}
                   >
                     {tab.label}
