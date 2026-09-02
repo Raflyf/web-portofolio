@@ -735,3 +735,13 @@ Released 2026-09-03.
 3. **Elevasi Top-Layer Indikator Scroll Progress (`scroll-storyline.jsx` & `Dashboard.jsx`):**
    - Mengangkat z-index progress bar garis scroll ke `z-[60]` (di atas seluruh elemen navbar `z-50`).
    - Garis progress scroll kini senantiasa terlihat jelas di tepi paling atas layar tanpa terpotong atau terhalang oleh badan navbar.
+
+### v10.601.0 — Elimination of Hero Solid Background Cut-off & Global Canvas Fusion
+
+Released 2026-09-03.
+1. **Eliminasi Potongan Batas Latar Belakang Hero (`horizon-hero.jsx`):**
+   - Menghapus kelas solid `bg-background dark:bg-zinc-950` dari kontainer `HorizonHero` dan menggantinya dengan `bg-transparent`.
+   - Sebelumnya, batas ketinggian `min-h-[105vh]` pada Hero memotong layar secara horizontal dengan kotak hitam pekat, sehingga tampak seperti background terpotong saat memasuki bagian *Tentang / Profil*.
+   - Kini seluruh pendaran nebula kanvas dan konstelasi partikel mengalir mulus tanpa batas patahan dari puncak Hero hingga ke section paling bawah.
+2. **Elevasi Canvas ke Tingkat Root Halaman (`Home.jsx`):**
+   - Menggeser posisi `<InteractiveScrollBackground />` ke luar kontainer `<main>` sehingga meliputi seluruh kanvas viewport secara utuh hingga ujung footer.
