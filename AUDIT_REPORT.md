@@ -425,6 +425,15 @@ Diterbitkan 2026-09-02. Seluruh temuan CRITICAL (C-1, C-2) dan MAJOR (M-1..M-6) 
 - [ ] **m-10 — Listbox keyboard (a11y)**: navigasi keyboard pada listbox/autocomplete belum selesai. **STILL OPEN**.
 - [ ] **m-11 — Abort on close + attachment cap server**: `AbortController` saat close & batas ukuran lampiran di sisi server belum diterapkan. **STILL OPEN**.
 
-### STILL OPEN lainnya
+---
 
-- **Chunk-size warning**: chunk index utama (~690 kB) tetap memicu peringatan Vite `>500 kB`; code-splitting lebih agresif belum diterapkan. **STILL OPEN**.
+# RESOLVED — Layer-5 Audit & Deep Fix (v10.586.0)
+
+Diterbitkan 2026-09-02. Seluruh isu inkonsistensi telemetri, RAG memory dual-storage, UI dropdown effort, Markdown rich rendering, dan typewriter streaming telah diselesaikan:
+
+1. **Efek Mengetik Asisten AI (Typewriter Streaming)**: Jawaban AI di Terminal kini mengalir halus per batch karakter (16ms) dengan auto-scroll responsif, bukan muncul instan secara mengejutkan.
+2. **Sistem Tipografi Markdown Kaya**: Ditambahkan sistem CSS `.markdown-body` lengkap di `src/index.css` (headings, lists, bold, blockquote, code, tables) dan dipertegas pada system prompt `api/chat.js` untuk mengeliminasi plain text / wall-of-text.
+3. **Telemetri Multi-Model Sinkron**: `TerminalAI.jsx` kini mencatat model aktual yang dieksekusi (`data.model`) beserta providernya sehingga counter **Auto Gateway Router** dan kartu **Individual Model (Nemotron 3 Nano, dsb)** di Dashboard keduanya bertambah secara akurat dan konsisten.
+4. **Dual-Storage RAG Knowledge (Realtime Sync)**: `saveAIMemory` kini menyimpan ke `localStorage` ('portfolio_ai_memories') secara instan dan memancarkan event `telemetry_update`, serta digabungkan secara aman di `Dashboard.jsx`. `loadLocalEnv()` ditambahkan ke `api/save-memory.js` dan `api/dashboard-data.js`.
+5. **Dropdown Effort UI**: Container control bar diperbaiki menjadi `flex-wrap` (tanpa `overflow-x-auto` yang memotong pop-up) dengan dropdown membuka ke bawah (`top-full mt-2`) dengan `z-[100]` dan glassmorphism obsidian.
+

@@ -593,3 +593,13 @@ Released 2026-09-02. The layer-3 audit closed 2 critical (C-1, C-2), 6 major (M-
    - Device-split percentages guarded against NaN (empty dashboard shows 0%).
    - Dead `verify_pin` path removed.
 4. **STILL OPEN:** m-6 (timing comparison), m-8 (DNS-rebinding SSRF), m-10 (keyboard listbox), m-11 (abort on close + server attachment cap), and the Vite chunk-size warning.
+
+### v10.586.0 — Layer-5 Audit & Fix (Typewriter Streaming, Dual-Storage RAG & Multi-Model Telemetry)
+
+Released 2026-09-02.
+1. **Typewriter Streaming Effect:** Added high-speed character streaming (16ms interval, auto-scroll) for AI assistant responses in Terminal AI.
+2. **Rich Markdown Typography:** Comprehensive `.markdown-body` CSS added to `src/index.css` and system prompt updated in `api/chat.js` for structured formatting (bold, headings, bullet lists, code blocks, tables).
+3. **Synchronous Multi-Model Telemetry:** `TerminalAI.jsx` logs actual resolved model name (`data.model`) and route label, enabling both Auto Router counter and individual model execution cards to increment in sync on Dashboard.
+4. **Dual-Storage RAG Knowledge:** Implemented instant local storage caching for `ai_memories` with `telemetry_update` event dispatch and real-time merging in `Dashboard.jsx`. Added `loadLocalEnv()` to `api/save-memory.js` and `api/dashboard-data.js`.
+5. **Effort Dropdown UI:** Fixed header container clipping by replacing `overflow-x-auto` with `flex-wrap` and setting dropdown pop-up to `top-full mt-2` with `z-[100]`.
+
