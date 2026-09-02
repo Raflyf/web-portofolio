@@ -208,10 +208,17 @@ export default function TerminalAI({ onClose } = {}) {
     getCurrentTime, initialMsg
   } = useTerminal();
   
+  const VALID_MODELS = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision'];
+
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedModel, setSelectedModel] = useState(() => {
     try {
-      return localStorage.getItem('ai_selected_model') || 'auto';
+      const saved = localStorage.getItem('ai_selected_model');
+      if (saved && VALID_MODELS.includes(saved)) {
+        return saved;
+      }
+      localStorage.setItem('ai_selected_model', 'auto');
+      return 'auto';
     } catch {
       return 'auto';
     }
@@ -296,28 +303,24 @@ export default function TerminalAI({ onClose } = {}) {
        return;
     }
 
-    if (cmdNormalized === 'model' || cmdNormalized.startsWith('model ')) {
-      const chosen = cmdNormalized.split(' ')[1] || '';
-      
-      const validModels = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision'];
-      
-      // Jika kata setelah "model" adalah nama model yang valid, ubah model.
-      // Jika kosong (hanya mengetik "model" saja), setel ke "auto".
-      if (chosen === '' || validModels.includes(chosen)) {
-        const finalModel = chosen === '' ? 'auto' : chosen;
-        localStorage.setItem('ai_selected_model', finalModel);
-        setSelectedModel(finalModel);
-        telemetry.logEvent('model_select', finalModel, `Pilihan Model: ${finalModel}`);
+    // Command ganti model HANYA dieksekusi jika:
+    // 1. Pengguna mengetik persis 'model' (reset ke auto)
+    // 2. ATAU pengguna mengetik persis 2 token: 'model <valid_model>' (misal: 'model nano', 'model deepseek')
+    // Jika kalimat mengandung lebih dari 2 kata (contoh: "model apa kamu", "model apa yang dipakai"), itu pertanyaan chat biasa!
+    const cmdTokens = cmdNormalized.trim().split(/\s+/);
+    if (cmdTokens[0] === 'model' && (cmdTokens.length === 1 || (cmdTokens.length === 2 && VALID_MODELS.includes(cmdTokens[1])))) {
+      const chosen = cmdTokens[1] || 'auto';
+      const finalModel = VALID_MODELS.includes(chosen) ? chosen : 'auto';
+      localStorage.setItem('ai_selected_model', finalModel);
+      setSelectedModel(finalModel);
+      telemetry.logEvent('model_select', finalModel, `Pilihan Model: ${finalModel}`);
 
-        setMessages(prev => [
-          ...prev, 
-          { role: 'user', content: userQuery, time: getCurrentTime() },
-          { role: 'system', content: `[AI Model Manager] Model aktif berhasil diubah ke: ${finalModel.toUpperCase()}`, time: getCurrentTime() }
-        ]);
-        return;
-      }
-      
-      // Jika kata setelah "model" bukan nama model (contoh: "model apa kamu"), biarkan proses chat berlanjut.
+      setMessages(prev => [
+        ...prev, 
+        { role: 'user', content: userQuery, time: getCurrentTime() },
+        { role: 'system', content: `[AI Model Manager] Model aktif berhasil diubah ke: ${finalModel.toUpperCase()}`, time: getCurrentTime() }
+      ]);
+      return;
     }
 
     setMessages(prev => [...prev, { role: 'user', content: userQuery, time: getCurrentTime() }]);
@@ -329,7 +332,8 @@ export default function TerminalAI({ onClose } = {}) {
       const payloadAttachments = Array.isArray(attachments) 
         ? attachments.map(({ _bytes, ...att }) => att) 
         : [];
-      const currentChosenModel = selectedModel || localStorage.getItem('ai_selected_model') || 'auto';
+      const rawChosen = selectedModel || localStorage.getItem('ai_selected_model') || 'auto';
+      const currentChosenModel = VALID_MODELS.includes(rawChosen) ? rawChosen : 'auto';
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
