@@ -1067,6 +1067,16 @@ Released 2026-09-03.
 1. **Pemulihan Label Header Model Dinamis (`TerminalAI.jsx`):**
    - Mengembalikan label header bubble pesan AI agar menampilkan nama model dan provider aktif secara dinamis sesuai yang sebenarnya digunakan (misal `Auto Router -> NEMOTRON-3-NANO:30B (Ollama Cloud SOTA Engine)`), menjaga transparansi engine aktif bagi pengguna.
 
+### v10.632.0 — Ban & Elimination of Self-Validation and Defensive Meta-Disclaimers
+
+Released 2026-09-03.
+1. **Pembaruan Instruksi Sistem Anti-Validasi Diri (`api/chat.js`):**
+   - Melarang keras model mengeluarkan kalimat validasi defensif, pembelaan diri, atau disclaimer status AI pada semua percakapan (seperti *"Jadi, secara singkat, saya bukan model dengan nama brand tertentu..."*, *"Sebagai model bahasa..."*, *"Perlu diingat bahwa saya hanyalah asisten..."*).
+   - Menginstruksikan model untuk menjawab langsung secara percaya diri, lugas, dan profesional tanpa perlu menjelaskan apa yang bukan dirinya.
+2. **Filter Regex Pembersihan Kalimat Validasi Diri di Backend & Frontend:**
+   - Menyuntikkan pembersih pola regex di `sendSuccess` ([`api/chat.js`](file:///d:/code/project/portofolio%20landing%20page/api/chat.js)) dan `normalizeStructuredMarkdown` ([`src/components/terminal/TerminalAI.jsx`](file:///d:/code/project/portofolio%20landing%20page/src/components/terminal/TerminalAI.jsx)) untuk secara deterministik memangkas seluruh kalimat defensif/disclaimer brand yang tidak sengaja tergenerasi model di semua sesi obrolan.
+
+
 
 
 
