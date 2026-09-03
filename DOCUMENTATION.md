@@ -1168,6 +1168,18 @@ Released 2026-09-03.
    - Mengintegrasikan aturan mutlak *Anti-Outdated Knowledge* dan *Larangan Asal Menyangkal Rilis* langsung ke `buildSystemPrompt` pada terminal assistant.
    - Asisten dilarang mengandalkan batas cut-off pelatihan model lama dan diwajibkan 100% memprioritaskan bukti fakta hasil penelusuran internet live yang disuntikkan secara dinamis.
 
+### v10.640.0 — Frontier 2026 AI Scraping Pipeline & Outdated Model Purge
+
+Released 2026-09-03.
+1. **Peningkatan Pipeline Multi-Query Frontier AI (`api/chat.js`):**
+   - Menambahkan kueri pencarian terarah konkuren untuk keluarga frontier terkini: Google Gemini 3.8 (Flash & Cyber), Anthropic Claude 5.1 (Fable 5.1, Mythos 5.1, Opus 5), dan OpenAI GPT-5.6 (Sol, Terra, Astra).
+   - Memperluas kuota pengambilan *searchQueries* dari 3 menjadi 5 kueri paralel sehingga seluruh ekosistem model mutakhir terjaring dalam satu siklus pencarian real-time.
+2. **Larangan Model Lawas di Panduan Sintesis:**
+   - Menambahkan instruksi veto pada *Panduan Sintesis & Grounding Faktual*: mewajibkan model hanya menggunakan model-model mutakhir era 2026 dari bukti berita pencarian dan melarang keras menyebut model generasi lama (Claude 3.7, Gemini 2.5, o3 lama, Llama 3.3) seolah-olah itu model terdepan saat ini.
+3. **Penyelarasan Format Em-Dash dan Delimiter List di Sisi Klien (`TerminalAI.jsx`):**
+   - Menyelaraskan sanitasi em-dash pada komponen frontend terminal agar tanda pisah definisi (`**Label** — Deskripsi`) tetap menggunakan titik dua (`: `) dan tanda pisah umum menjadi strip spasi (` - `), bukan koma.
+   - Memperbaiki parsing penutup list dan penyeimbang format bold yang tidak tertutup.
+
 
 
 
