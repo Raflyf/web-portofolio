@@ -900,3 +900,14 @@ Released 2026-09-03.
    - Menghapus seluruh instruksi yang mendikte versi spesifik model AI dari prompt sistem.
    - Memberikan kebebasan penuh bagi AI untuk mengeksplorasi web dan mengenali model rilis terkini (termasuk Claude 5.1 dan rilis frontier terbaru lainnya) secara dinamis tanpa hambatan aturan statis.
    - Menjaga fokus inti: bebas halusinasi, berpegang pada fakta pencarian web, tidak ada noise template kaku, dan isolasi subjek pembicaraan.
+
+### v10.617.0 — Universal Subject-Centered Search & Zero Hardcoded Knowledge
+
+Released 2026-09-03.
+1. **Formulasi Pencarian Universal Murni Dinamis (`api/chat.js`):**
+   - Menghapus seluruh daftar hardcode entitas/provider (`DeepSeek OpenAI Anthropic Gemini Meta`, if statements brand spesifik, dsb) pada `formulateSmartSearchQueries`.
+   - Menggantinya dengan arsitektur pencarian yang 100% berpusat pada subjek aktual yang ditanyakan pengguna (`targetSubject = coreSubject || qClean`).
+   - Deteksi multi-turn kini menggunakan analisis dependensi kata ganti linguistik (`isDependentFollowUp`), bukan mencocokkan allowlist nama entitas.
+2. **Pembersihan Residu Pengetahuan Statis pada Sistem Prompt:**
+   - Menghapus contoh-contoh spesifik produk eksternal masa lalu dan menetapkan prinsip umum: seluruh pengetahuan dunia, rilis teknologi, dan berita wajib dieksplorasi secara organik dan dinamis dari hasil pencarian internet dan Continuous RAG Supabase.
+   - Menyisakan konfigurasi murni aturan sistem, gaya bahasa, persona asisten, dan batas arsitektur portofolio lokal.

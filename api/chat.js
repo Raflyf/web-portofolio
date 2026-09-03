@@ -114,25 +114,24 @@ ${effortDirective}
    - DILARANG menghasilkan dinding teks masif (*wall of text*).
    - Untuk perbandingan atau data terukur: Gunakan tabel Markdown yang bersih.
 
-- **ANTI-NOISE & ISOLASI TOPIK PERCAKAPAN**:
-  - Jawab HANYA apa yang ditanyakan secara padat dan langsung ke inti topik.
-  - DILARANG mencampurkan informasi dari topik percakapan sebelumnya jika pengguna beralih subjek (contoh: DILARANG mengulang atau membawa-bawa informasi Google/Gemini ketika pengguna beralih bertanya tentang Anthropic/Claude, kecuali pengguna secara eksplisit meminta komparasi/perbandingan).
-  - DILARANG menambahkan informasi sampingan berlebihan yang tidak ditanyakan (seperti spekulasi tak berdasar, rincian enterprise acak, atau penawaran bantuan berulang).
-- **GROUNDING DINAMIS BERBASIS WEB TERKINI (ZERO-HALLUCINATION)**:
-  - Rujuk informasi model AI, teknologi, dan rilis terkini secara dinamis berdasarkan data web dan laporan resmi yang ditemukan di internet.
-  - Dilarang mengarang klaim tanpa dasar fakta pencarian; sajikan perkembangan apa adanya secara objektif, aktual, dan akurat sesuai temuan web.
-- **AKURASI JADWAL & STATUS PRODUK RESMI**:
-  - Jika publisher/developer resmi hanya mengumumkan jendela rilis umum (misal: "Fall 2025" atau "Tahun 2026"), DILARANG MENGARANG tanggal/bulan spesifik fiktif (seperti "19 November 2026").
-  - DILARANG mengarang platform tayang fiktif (seperti trailer resmi tayang di Netflix jika itu hanya kanal YouTube/website resmi).
-- **AKURASI TEKNOLOGI PORTOFOLIO RAFLY FIRMANSYAH**:
-  - Proyek **web-portofolio** saat ini dibangun menggunakan **React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions (Node.js ESM), dan Supabase PostgreSQL**.
-  - DILARANG MENGKLAIM portofolio ini menggunakan Vanilla JS (versi lama sudah diganti total).
-  - DILARANG MENGARANG adanya backend Flask pada portofolio (Flask HANYA ada di laser_pointer_PPT dan FotoKitaBlur). Backend portofolio murni Vercel Serverless Node.js.
-  - DILARANG KERAS mengarang alat CLI fiktif (seperti "portfolio-cli", "portfolio build", dsb).
-  - DILARANG MENGARANG proses build SIMD/NumPy atau benchmark skor Lighthouse fiktif untuk portofolio.
-  - Sajikan jawaban secara padat, lugas, teknis berbasis fakta nyata, dan hindari penjelasan bertele-tele (noise).
-- DILARANG MEMBUAT URL PALSU / FIKTIF. DILARANG MENYEBUTKAN LINK REDIRECT GOOGLE NEWS.
-- HANYA sertakan tautan resmi portofolio jika pengguna secara eksplisit menanyakan 5 repositori GitHub Rafly atau sertifikasi resmi.
+[PRINSIP GROUNDING FAKTUAL, DINAMIS & ANTI-HALUSINASI]:
+- **Eksplorasi Dinamis Berbasis Fakta Web Terkini**:
+  - Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib diperoleh secara 100% dinamis dari data web dan memori RAG aktual.
+  - Biarkan AI mengeksplorasi dan menyajikan temuan web secara organik dan objektif tanpa dibatasi asumsi atau teks statis masa lalu.
+- **Kejujuran Mutlak & Anti-Halusinasi**:
+  - Sajikan fakta sesuai data resmi yang ditemukan. Dilarang keras mengarang tanggal, angka, nama produk, atau fitur fiktif yang tidak didukung bukti nyata dari sumber terpercaya.
+  - Jika suatu rilis atau spesifikasi belum diumumkan secara resmi, akui secara lugas dan terbuka apa adanya.
+- **Anti-Noise & Isolasi Topik Percakapan**:
+  - Jawab langsung ke inti pertanyaan secara padat, mengalir natural, dan bebas dari basa-basi birokratis.
+  - DILARANG mencampurkan informasi produk atau topik dari percakapan sebelumnya ketika pengguna beralih menanyakan subjek baru, kecuali pengguna secara eksplisit meminta perbandingan antar-keduanya.
+  - DILARANG menambahkan materi sampingan berlebihan atau spekulasi yang tidak ditanyakan.
+
+[BATASAN TEKNOLOGI PORTOFOLIO RAFLY FIRMANSYAH]:
+- Proyek **web-portofolio** dibangun menggunakan **React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions (Node.js ESM), dan Supabase PostgreSQL**.
+- DILARANG mengklaim portofolio ini menggunakan Vanilla JS (arsitektur telah dimodernisasi total ke React).
+- Backend portofolio murni Vercel Serverless Node.js (bukan Flask).
+- DILARANG mengarang alat CLI fiktif (seperti "portfolio-cli", "portfolio build", dsb).
+- DILARANG membuat URL palsu / fiktif. DILARANG menyebutkan link redirect Google News. HANYA berikan link resmi portofolio jika pengguna menanyakan 5 repositori GitHub Rafly atau sertifikasi.
 
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
 - **OpenPlagiarismChecker**:
@@ -262,47 +261,23 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push(qClean);
   }
 
-  // 2. Automated Global Freshness & Recency Query Generation
-  if (coreSubject.length >= 3) {
-    queries.push(`${coreSubject} latest official news update 2025 2026`);
-    if (/\b(game|gta|playstation|xbox|nintendo|film|movie|anime|trailer|rilis|release)\b/i.test(qNorm)) {
-      queries.push(`${coreSubject} release date trailer gameplay official news`);
+  // 2. Dynamic Query Generation (Pure Subject-Centered, Zero Hardcoded Brand/Entity List)
+  const targetSubject = coreSubject || qClean;
+  if (targetSubject.length >= 2) {
+    queries.push(`${targetSubject} latest official news update`);
+    queries.push(`${targetSubject} rilis pembaruan resmi terkini`);
+
+    // Dynamic intent modifiers based on user intent keywords
+    if (/\b(benchmark|perbandingan|bandingkan|leaderboard|skor|score|ranking|peringkat|vs|versus)\b/i.test(qNorm)) {
+      queries.push(`${targetSubject} benchmark leaderboard evaluation results`);
+    } else if (/\b(rilis|release|kapan|jadwal|schedule|tanggal|trailer|launch)\b/i.test(qNorm)) {
+      queries.push(`${targetSubject} official release date announcement`);
     }
   }
 
-  // 2b. Specific Tech / AI Industry Intent Detection: Add global search queries
-  if (/\b(model ai|rilis ai|perilisan ai|llm|deepseek|openai|chatgpt|claude|gemini|llama|mistral|nemotron|ai terbaru)\b/i.test(qNorm)) {
-    queries.push('latest AI model release 2026 DeepSeek OpenAI Anthropic Gemini Meta');
-    queries.push('rilis model AI terbaru 2026');
-  }
-
-  // 2c. Benchmark / Perbandingan AI Model Intent: Fetch real leaderboard & eval news
-  const isBenchmarkQuery = /\b(benchmark|perbandingan|bandingkan|leaderboard|arena ai|lmsys|skor|score|ranking|peringkat|evaluasi model|vs|versus|terbaik|terkuat)\b/i.test(qNorm);
-  if (isBenchmarkQuery) {
-    queries.push('AI model benchmark leaderboard 2026 latest results');
-    queries.push('LMSYS Chatbot Arena leaderboard 2026');
-  }
-
-  // 2d. Dynamic Provider-Specific Search Queries (No hardcoded versions)
-  if (/\bclaude\b/i.test(qNorm)) {
-    queries.push('Anthropic Claude AI latest model release benchmark');
-  }
-  if (/\bdeepseek\b/i.test(qNorm)) {
-    queries.push('DeepSeek AI latest model release benchmark');
-  }
-  if (/\bopenai|chatgpt|gpt\b/i.test(qNorm)) {
-    queries.push('OpenAI ChatGPT GPT latest model release benchmark');
-  }
-  if (/\bgemini\b/i.test(qNorm)) {
-    queries.push('Google Gemini AI latest model release benchmark');
-  }
-  if (/\bllama\b/i.test(qNorm)) {
-    queries.push('Meta Llama AI latest model release benchmark');
-  }
-
-  // 3. Multi-Turn Conversational Awareness (Only combine if current query is a dependent follow-up like "kalo harganya", "fiturnya apa")
-  const isIndependentEntity = /\b(claude|gemini|openai|chatgpt|gpt|deepseek|llama|mistral|nemotron|qwen|grok|apple|iphone|samsung|xiaomi|google|microsoft|meta|nvidia)\b/i.test(coreSubject || qClean);
-  if (!isIndependentEntity && Array.isArray(history) && history.length > 0) {
+  // 3. Dynamic Multi-Turn Context Awareness (Only combine if query is an anaphoric/dependent follow-up)
+  const isDependentFollowUp = /^(harganya|fiturnya|speknya|spesifikasinya|jadwalnya|tanggalnya|rilisnya|fitur|spek|harga|biaya|kapan|dimana|siapa|kenapa|mengapa|bagaimana|gimana)$/i.test(coreSubject) || (coreSubject.length > 0 && coreSubject.length < 3);
+  if (isDependentFollowUp && Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
     for (const pastQ of pastUserTurns.slice(0, 2)) {
       const pastSubject = stripFillers(pastQ);
