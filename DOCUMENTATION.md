@@ -1299,3 +1299,22 @@ Menanamkan metodologi riset live yang terbukti akurat (multi-query lintas entita
 4. **Verifikasi:**
    - `node --check` lolos; intent detection teruji terhadap frasa nyata ("apa saja model terbaru yang rilis baru-baru ini dari semua model dan provider", "model ai terbaik saat ini", "gadget yang baru diluncurkan", "rilis game terbaru").
    - Uji live: 8 kueri seed per-produsen mengembalikan HTTP 200 dengan 61–78 item berita per kueri (Google News), memastikan bukti lanskap selalu tersedia.
+
+### v10.644.0 — Landscape Scan Performance Optimization & Anti-Echo Flood Fixes
+
+Released 2026-09-03.
+
+Menindaklanjuti laporan produksi: kueri lanskap (mis. "model ai terbaik saat ini") menjadi lambat dan kadang HTTP 504 karena terlalu banyak fetch paralel, dan kueri berita tunggal (mis. "apa hp terbaru dari xiaomi") menghasilkan respons berisi judul mentah yang di-echo puluhan kali.
+
+1. **Optimasi Performa Landscape Scan (`searchWebContext`):**
+   - Memindahkan deteksi intent (news overview, landscape, AI-model landscape) KE ATAS, sebelum generic fan-out kueri, sehingga jalur lanskap tidak lagi memicu generic fan-out mahal.
+   - Jalur AI-model landscape kini hanya menjalankan 5 fetch terkonsolidasi (3 Google News global dengan query OR per grup produsen + 1 Google News Indonesia + 1 Hacker News Algolia), turun dari ~20-30 fetch paralel. Terverifikasi 769ms untuk seluruh 5 fetch, semua HTTP 200 dengan 69–79 item.
+   - Jalur lanskap non-AI dan news-overview memakai fan-out terkonsolidasi + jendela bulan berjalan; fetch breaking `when:7d/30d` dinonaktifkan saat landscape untuk menghindari duplikasi.
+   - Fetch GitHub/HuggingFace/Hacker-News-teknologi dan Wikipedia dilewati untuk kueri lanskap yang butuh kecepatan (bukti berita sudah menjadi sumber utama).
+2. **Anti-Echo Flood pada Ingesti Bukti:**
+   - Menambahkan dedupe berbasis judul ternormalisasi (`titleDedupeKey`) pada pemrosesan RSS: Google News ID/Global/Bing sering memuat cerita sama dengan judul nyaris identik dan timestamp berbeda; dedupe teks-penuh sebelumnya gagal menangkapnya sehingga 100+ judul kembar masuk ke prompt dan model meng-echo berulang kali. Kini cerita kembar lintas feed terkolaps menjadi satu entri bukti.
+3. **Anti-Echo Guard Deterministik pada Respons:**
+   - Menambahkan guard pada `sendSuccess`: kolapskan baris-baris yang nyaris identik (berurutan atau tersebar) menjadi satu kemunculan paling informatif. Terverifikasi memangkas 9 baris duplikat Xiaomi menjadi 4 baris unik.
+   - Menambahkan arahan sintesis yang melarang model mengutip judul artikel mentah berulang-ulang dan mencantumkan judul nyaris identik sebagai entri terpisah; model wajib memparafrasa isi berita.
+4. **Verifikasi:**
+   - `node --check` lolos; uji latensi 5 kueri terkonsolidasi = 769ms; echo-guard teruji memangkas duplikat.
