@@ -1028,6 +1028,21 @@ Released 2026-09-03.
 3. **Penyelarasan Prompt Layout:**
    - Menambahkan instruksi tata letak Markdown eksplisit pada `buildSystemPrompt` untuk melarang penggabungan baris tabel atau numbered list secara horizontal.
 
+### v10.628.0 — Spacious Terminal Canvas & Multi-Pipe Orphan Table Splitter
+
+Released 2026-09-03.
+1. **Pelebaran Ruang Canvas Chat Terminal (`TerminalAI.jsx`):**
+   - Merampingkan tinggi vertikal komponen pembungkus: Terminal App Header (`py-1.5`), Control Bar (`py-1.5`, tombol compact), dan Shortcut Bar (`py-1`, micro chips).
+   - Mengurangi tinggi footer input bar (`py-2 sm:py-2.5`, padding container `p-2.5`), menghemat total lebih dari 120px ruang vertikal.
+   - Meningkatkan tinggi pop-up terminal ke `92vh-94vh` dan memangkas padding overlay layar menjadi `p-2 sm:p-4`, menghasilkan kanvas pembacaan pesan yang jauh lebih lega, luas, dan nyaman.
+2. **Mesin Rekonstruksi Baris Orphan & Tab-Separated Table:**
+   - Mendeteksi teks tabel yang dipisahkan oleh karakter tab (`\t`) dan otomatis mengonversinya menjadi baris tabel GFM lengkap dengan auto-generated divider (`|---|---|`).
+   - Mendeteksi baris sel data orphan horizontal yang memiliki banyak pipe (`| Framework web | Flask | Machine Learning | ...`) dan memotongnya ke kelipatan kolom (2 atau 3 kolom) secara vertikal.
+3. **Penyelarasan Gaya Bahasa & Penjelasan Mudah Dipahami:**
+   - Mengalibrasi `buildSystemPrompt` pada `api/chat.js` agar menyajikan penjelasan dengan bahasa komunikatif, lugas, dan menyertakan analogi sederhana tanpa jargon akademis kaku.
+   - Menginstruksikan model untuk memprioritaskan format daftar butir poin tebal (`- **Istilah**: Penjelasan`) dibanding tabel mentah.
+
+
 
 
 

@@ -87,11 +87,13 @@ ${effortDirective}
    - DILARANG menggunakan karakter em-dash (—) yang menempel tanpa spasi.
    - DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK di akhir jawaban. Langsung akhiri jawaban secara natural dan elegan.
 
-3. Format Markdown Rapi, Nyaman Dibaca & Terstruktur:
-   - Gunakan teks tebal untuk istilah penting, paragraf ringkas (1-3 kalimat), dan struktur butir poin yang tertata.
+3. Gaya Penjelasan Jelas, Mudah Dipahami & Berstruktur Bersih:
+   - Gunakan gaya bahasa yang jelas, komunikatif, dan mudah dipahami oleh siapa saja (hindari jargon akademis yang berbelit-belit).
+   - Jelaskan konsep teknis dengan analogi atau fungsi praktisnya secara sederhana (misal: N-Gram untuk mencocokkan kata per kata, SBERT untuk memahami makna konteks).
+   - UTAMAKAN format daftar butir (- **Istilah**: Penjelasan ringkas) dibanding tabel. Format butir poin jauh lebih nyaman dan enak dibaca di semua ukuran layar.
    - Heading (###): WAJIB berdiri sendiri di baris baru dan diawali baris kosong. DILARANG memberi strip/bullet sebelum heading (misal "- ###" atau "• ###").
    - List nomor (1., 2.) dan butir poin (- ): WAJIB ditulis per baris tersendiri, DILARANG menggabungkan nomor berurutan ke dalam satu kalimat horizontal.
-   - Tabel Markdown: Setiap baris (header, divider baris, dan setiap baris data) WAJIB berada di baris baru tersendiri. DILARANG KERAS menggabungkan baris tabel secara horizontal.
+   - Jika terpaksa membuat tabel: WAJIB menyertakan Header, Divider, dan memisahkan setiap baris dengan baris baru. DILARANG KERAS menggabungkan baris tabel secara horizontal.
 
 [PRINSIP GROUNDING FAKTUAL & ANTI-NOISE]:
 - Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib bersumber dari data terverifikasi.
@@ -1147,10 +1149,12 @@ async function saveServerMemory(factText, sessionId = null) {
  * menghitung kolom header, dan memecah sel-sel data ke baris-baris GFM yang valid.
  */
 function repairMarkdownTables(content) {
-  if (!content || !content.includes('|')) return content;
-  const tableRegex = /(\|[^\n|]+(?:\|[^\n|]+)+\|?)\s*\n*\s*(\|[-: ]+(?:\|[-: ]+)+\|?)\s*([^\n#]+)/g;
+  if (!content) return content;
+  let out = content;
 
-  return content.replace(tableRegex, (match, headerRaw, dividerRaw, dataRaw) => {
+  // 1. Rekonstruksi tabel standar yang baris datanya menyatu setelah divider
+  const tableRegex = /(\|[^\n|]+(?:\|[^\n|]+)+\|?)\s*\n*\s*(\|[-: ]+(?:\|[-: ]+)+\|?)\s*([^\n#]+)/g;
+  out = out.replace(tableRegex, (match, headerRaw, dividerRaw, dataRaw) => {
     const headerCols = headerRaw.split('|').map(s => s.trim()).filter(Boolean);
     const numCols = headerCols.length;
     if (numCols === 0) return match;
@@ -1171,6 +1175,51 @@ function repairMarkdownTables(content) {
 
     return `\n\n${standardHeader}\n${standardDivider}\n${rowLines.join('\n')}\n\n`;
   });
+
+  // 2. Rekonstruksi baris data orphan yang menggunakan format tab atau sel horizontal tanpa divider
+  const lines = out.split('\n');
+  const outLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // A. Ubah baris bertab (tab-separated) menjadi baris tabel GFM resmi
+    if (line.includes('\t')) {
+      const tabParts = line.split('\t').map(s => s.trim()).filter(Boolean);
+      if (tabParts.length >= 2) {
+        const isHeader = /komponen|teknologi|aspek|keterbatasan|fitur|layer|kategori/i.test(tabParts[0] + ' ' + tabParts[1]);
+        outLines.push('| ' + tabParts.join(' | ') + ' |');
+        if (isHeader) {
+          outLines.push('| ' + tabParts.map(() => '---').join(' | ') + ' |');
+        }
+        continue;
+      }
+    }
+
+    // B. Deteksi baris yang diawali '|' dan memiliki banyak pipe (>= 4 sel terpisah)
+    if (line.startsWith('|') && (line.match(/\|/g) || []).length >= 4) {
+      const cells = line.split('|').map(s => s.trim()).filter(Boolean);
+      const prevLine = (outLines[outLines.length - 1] || '').trim();
+      const prevPrevLine = (outLines[outLines.length - 2] || '').trim();
+
+      let numCols = 2; // Default 2 kolom
+      if (cells.length % 3 === 0 && (cells.length % 2 !== 0 || /solusi|potensial|penjelasan|deskripsi/i.test(prevLine + ' ' + prevPrevLine))) {
+        numCols = 3;
+      } else if (cells.length % 2 === 0) {
+        numCols = 2;
+      }
+
+      for (let c = 0; c < cells.length; c += numCols) {
+        const rowChunk = cells.slice(c, c + numCols);
+        while (rowChunk.length < numCols) rowChunk.push('-');
+        outLines.push('| ' + rowChunk.join(' | ') + ' |');
+      }
+    } else {
+      outLines.push(lines[i]);
+    }
+  }
+
+  return outLines.join('\n');
 }
 
 /**
