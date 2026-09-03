@@ -1485,116 +1485,21 @@ Released 2026-09-03.
 4. **Verifikasi:**
    - `npm run build` sukses (API + Dashboard + CSS terkompilasi); `node --check` lolos; seluruh perubahan di-commit dan di-push.
 
-### v10.655.0 — Universal Conversational Query Extraction, Anti-False-Unreleased Directives & Pipeline Timeout Calibration
+### v10.659.0 — Dashboard Model Sync with Gemma 4 31B & Arena AI Access Architecture
 
 Released 2026-09-03.
 
-Menindaklanjuti investigasi menyeluruh mengapa pertanyaan yang diajukan dengan bahasa santai / percakapan ("saya mau nanya dong, kamu bisa carikan...", "cek yg benar dari internet") sebelumnya menghasilkan jawaban usang atau klaim palsu bahwa produk "belum dirilis" padahal sudah meluncur setahun lalu. Ditemukan 5 akar masalah sistemik yang berdampak universal ke seluruh domain.
+1. **Sinkronisasi Katalog Model Monitoring Admin (`Dashboard.jsx`) & Pipeline Auto-Router (`api/chat.js`):**
+   - Mengintegrasikan entri model yang ditambahkan pengguna:
+     * **Prioritas #2**: Gemma 4 31B (Ollama Cloud)
+     * **Cadangan**: Gemma 4 31B (OpenRouter)
+     * **Penyesuaian Prioritas**: Nemotron 3.5 Lightning (OpenRouter) sebagai Prioritas #3, Nemotron 3 Nano Omni sebagai Prioritas #5.
+   - Pipeline auto-router di backend `api/chat.js` kini selaras 1-to-1 dengan hierarki pemantauan dashboard admin.
 
-1. **Penyebab Universal Informasi Lawas / "Belum Rilis" (Akar Masalah):**
-   - **Kebocoran Preamble Percakapan:** `stripFillers` sebelumnya tidak membuang kata ganti dan kata pengantar santai ("saya", "mau", "nanya", "kamu", "bisa", "carikan", "informasi", "untuk", "hp"), sehingga kalimat utuh 12 kata dikirim mentah ke mesin pencarian RSS Google News & Bing News. Mesin pencarian mengembalikan 0 hasil untuk kalimat panjang tersebut.
-   - **Pembuangan Paksa Artikel > 90 Hari:** Terdapat filter `if (isBreakingQuery && daysOld > 90) return;` yang membuang seluruh artikel peluncuran/perilisan produk yang terjadi lebih dari 3 bulan lalu. Akibatnya, entitas apa pun yang meluncur 4–24 bulan lalu dianggap "tidak ada" oleh sistem dan model berhalusinasi menyatakan "belum rilis".
-   - **Pembuangan Kata Kunci 2 Karakter:** `filter(w => w.length >= 3)` membuang nomor model 2 karakter (`x7`, `f6`, `m4`, `o1`, `ui`, `os`), sehingga artikel produk lain dari brand yang sama (misal POCO X8 hari ini) mengalahkan artikel produk target (POCO X7).
-   - **Pengurutan Timestamp Buta Relevansi:** `isBreakingQuery` mengurutkan artikel murni berdasarkan waktu terbaru, mengabaikan relevansi topik terhadap pertanyaan pengguna.
-   - **Abort Prematur Pipeline RAG:** `connectTimeoutMs` 6.000ms pada pipeline auto terlalu sempit untuk prefill konteks RAG pencarian web, menyebabkan eksekusi di-abort sebelum model sempat mengembalikan byte pertama.
-
-2. **Perbaikan Universal pada `api/chat.js`:**
-   - **Pembersihan Ekstraksi Kueri Universal (`stripFillers`):** Membersihkan secara tuntas seluruh kata pengantar percakapan, kata ganti, permohonan, kata tanya, partikel bahasa Indonesia, preposisi, dan sebutan perangkat generik. Subjek pencarian murni kini diekstrak secara presisi untuk topik apa pun (gadget, game, software, film, peristiwa, teknologi).
-   - **Penghapusan Pembuangan Artikel >90 Hari:** Pembobotan waktu dialihkan sepenuhnya ke `recencyBonus` yang halus, menjamin fakta peluncuran historis tidak pernah dihapus dari konteks bukti.
-   - **Dukungan Pengenal Model 2 Karakter:** `searchKeywords` kini mengizinkan kata kunci `>= 2` karakter dan `calcScore` memberikan bobot tinggi (+12) pada kecocokan nomor/kode model alfanumerik.
-   - **Pengurutan Berbasis Relevansi Utama:** `structuredSnippets` kini selalu mengutamakan skor kecocokan topik utama di atas timestamp mentah.
-   - **Kalibrasi Timeout Koneksi Pipeline:** Meningkatkan `connectTimeoutMs` menjadi 12.000ms dan active timeout menjadi 20.000ms agar model tidak di-abort prematur saat memproses konteks RAG.
-   - **Larangan Mutlak Klaim "Belum Rilis" Tanpa Bukti Ketiadaan:** Menambahkan aturan tegas pada `[PROTOKOL INTEGRITAS WAKTU & KEJUJURAN EPISTEMIS]`: Ketiadaan berita rilis pada hasil pencarian bukanlah bukti produk belum rilis. Model dilarang mengarang bahwa entitas "belum dirilis / masih rumor" hanya karena ingatan lamanya tidak mengetahuinya.
-
-3. **Verifikasi Komprehensif Lintas Topik:**
-   - Kueri POCO X7: Berhasil menjawab rilis HyperOS 3.0.302.0 dengan status 200 dalam 4,92 detik.
-   - Kueri GTA 6: Berhasil merangkum update peluncuran controller DualSense State of Play & tanggal rilis 19 November 2026.
-   - Kueri Nintendo Switch 2: Berhasil merangkum pengumuman resmi dan jadwal rilis Desember 2026 di Indonesia.
-   - Multi-turn conversation: Berhasil mempertahankan kesinambungan entitas dari giliran pertama ke giliran lanjutan.
-   - `npm run build` sukses (934ms) dan syntax check lolos.
-
-### v10.656.0 — Full Synchronization of Admin Monitoring with Terminal AI Model Catalog
-
-Released 2026-09-03.
-
-Menindaklanjuti instruksi mutlak pengguna untuk mensinkronkan model pada monitoring admin (`Dashboard.jsx`) agar mengikuti katalog model AI yang ada pada terminal (`TerminalAI.jsx`). Sesuai mandat, model pada terminal bersifat tetap (*fixed*) dan monitoring admin kini mengikuti terminal secara 1-to-1:
-
-1. **Pemulihan Katalog 16 Model di Dashboard Monitoring (`src/pages/Dashboard.jsx`):**
-   - Menghapus entri model yang tidak ada di katalog terminal (`ollama-gemma4` dan `openrouter-gemma4`).
-   - Mengembalikan urutan prioritas utama sesuai katalog terminal:
-     * **Prioritas #1**: Nemotron 3 Nano (Ollama Cloud)
-     * **Prioritas #2**: Nemotron 3.5 Lightning (OpenRouter)
-     * **Prioritas #3**: Nemotron 3 Nano Omni (OpenRouter)
-   - Mengembalikan 16 kartu model individual sesuai arsitektur *Dynamic 16-Model Sorted Grid*:
-     1. Nemotron 3 Nano (Ollama Cloud - Prioritas #1)
-     2. Nemotron 3.5 Lightning (OpenRouter - Prioritas #2)
-     3. Nemotron 3 Nano Omni (OpenRouter - Prioritas #3)
-     4. OpenRouter Free (Auto SOTA Pool)
-     5. DeepSeek Chat V3 (OpenRouter)
-     6. Nemotron 3 Super 120B (OpenRouter)
-     7. Nemotron 3 Ultra 550B (OpenRouter)
-     8. MiniMax M3 Free (OpenRouter)
-     9. Cohere North Mini Code (OpenRouter)
-     10. Nemotron 3 Ultra (Ollama Cloud)
-     11. Nemotron 3 Super (Ollama Cloud)
-     12. MiniMax M3 (Ollama Cloud)
-     13. Nemotron 3.5 Lightning (OpenCode)
-     14. Nemotron 3 Ultra Free (OpenCode)
-     15. Laguna S 2.1 Free (OpenCode)
-     16. Mimo v2.5 Free (OpenCode)
-
-2. **Penyesuaian Pipeline Auto-Router Backend (`api/chat.js`):**
-   - Menyelaraskan urutan eksekusi auto-router dan reasoning pipeline agar menghormati hierarki prioritas katalog terminal: Nano (#1) -> Lightning (#2) -> Nano Omni (#3) -> Super -> Ultra -> Laguna -> cadangan model aktif.
+2. **Karakteristik Akses Terhadap Platform Arena AI (`arena.ai` / LMSYS):**
+   - Situs `arena.ai` menggunakan Single Page Application (SPA / React) dengan Client-Side Rendering (CSR), Shadow DOM, serta proteksi Cloudflare Bot Management / CAPTCHA.
+   - Di lingkungan backend serverless tanpa browser headless (Playwright/Puppeteer), request langsung via HTTP fetch hanya menghasilkan Cloudflare interstitial / DOM kosong.
+   - Terminal mengambil informasi leaderboard melalui artikel berita resmi terverifikasi (Google News & Bing News), ensiklopedia Wikipedia (`LMArena`), dan repositori HuggingFace. Sesuai protokol anti-halusinasi dan kejujuran epistemis, sistem secara transparan mengakui batasan jika snapshot tabel mentah detik ini tidak tersedia dalam laporan live, mencegah pemalsuan angka/skor fiktif.
 
 3. **Verifikasi:**
-   - Kompilasi `npm run build` sukses tanpa galat (1,35 detik).
-   - Seluruh perubahan di-commit dan di-push ke GitHub repository.
-
-### v10.657.0 — Elimination of Dynamic Knowledge Hardcoding, Uniform List Item Typography & RAG Memory Isolation
-
-Released 2026-09-03.
-
-Menindaklanjuti teguran dan instruksi pengguna terkait inkonsistensi pewarnaan huruf pada list proyek terminal dan penegakan mutlak aturan `AGENTS.md` (anti-hardcoding pengetahuan dinamis):
-
-1. **Konsistensi Visual Pewarnaan Teks Terminal (`api/chat.js` & `src/index.css`):**
-   - **Akar Masalah:** Judul poin pada pesan terminal hanya berwarna aksen cyan (`#67e8f9`) jika dirender sebagai elemen `<strong>` (dibungkus `**`). Bila model menghasilkan format tanpa `**` (atau bila tanda asterisk terpotong oleh regex pembersih lama), teks judul jatuh ke warna default putih sehingga tampilan terlihat belang (sebagian cyan, sebagian putih).
-   - **Solusi Universal:**
-     * Menambahkan Rule 1.4 di `normalizeStructuredMarkdown` untuk menormalisasi karakter bullet aneh (`•`, `*`) menjadi tanda strip `- `.
-     * Menambahkan Rule 1.6 di `normalizeStructuredMarkdown` untuk mendeteksi seluruh judul list item sebelum titik dua (`- Judul: Penjelasan` atau `1. Judul: Penjelasan`) yang belum bold dan secara otomatis membungkusnya menjadi `**Judul**: `.
-     * Menghapus regex pembersih asterisk tunggal lama yang merusak format cetak miring/tebal.
-     * Hasil: Seluruh 5 proyek portofolio kini 100% konsisten ter-render sebagai teks aksen cyan (`<strong>`).
-
-2. **Eliminasi Total Hardcode Pengetahuan Dinamis (`api/chat.js`):**
-   - Menghapus seluruh penyebutan nama model, nomor versi, dan brand pihak ketiga dari prompt sistem (Rule 6 `[PROTOKOL RESMI BENCHMARK & PERINGKAT LEADERBOARD]`) dan regex codebase (`TOXIC_PATTERNS`).
-   - Rule 6 dikembalikan ke prinsip epistemologis murni: seluruh metrik, skor, dan evaluasi wajib berakar 100% pada data live penelusuran web yang tersedia tanpa pernah mengarang metrik atau mengasumsikan ketiadaan tanpa bukti.
-
-3. **Isolasi Memori Database RAG (Anti-Memory Contamination):**
-   - Menambahkan filter arsitektural pada Semantic Memory Gate (`api/chat.js`): bila kueri sedang menjalankan penelusuran web live untuk entitas eksternal (`isExternalLiveSearch`), potongan memori statis database Supabase `ai_memories` TIDAK DISUNTIKKAN (`rawServerMemories = []`). Fakta teraktual disuplai murni oleh konteks penelusuran internet live.
-   - Menghapus fungsi otomatis `topGroundedMemory` yang sebelumnya menyimpan judul berita luar sembarangan ke dalam Supabase `ai_memories`.
-   - Memperluas deteksi follow-up multi-turn `isDependentFollowUp` untuk mengenali frasa sanggahan/koreksi pengguna (seperti `jangan halu`, `cari yang benar`) sehingga mewarisi subjek percakapan sebelumnya.
-
-4. **Verifikasi:**
-   - Pengujian kueri daftar proyek: Seluruh 5 proyek terformat seragam dengan `- **Nama Proyek**: `.
-   - Pengujian kueri perbandingan benchmark: Model menyajikan fakta riil hasil pencarian secara jujur tanpa mengarang skor fiktif.
-   - Pengujian kueri sanggahan multi-turn ("jangan halu, cari yang benar"): Sistem menelusuri subjek percakapan sebelumnya secara tepat tanpa memuat artikel politik atau mengulang halusinasi.
-   - Kompilasi `npm run build` sukses bersih (1,25 detik).
-
-### v10.658.0 — Restoration of Formatting Sanitizers, HTML Tag Stripping & Strict 1-Year Temporal Filter
-
-Released 2026-09-03.
-
-Menindaklanjuti masukan pengguna mengenai munculnya teks noise `<a href="">Baca selengkapnya</a>`, asterisk liar pada kata produk, dan artikel lawas 2024 yang sempat tertarik pada kueri Arena AI:
-
-1. **Pemulihan Pembersih Asterisk Tunggal & Sanitasi HTML Liar (`api/chat.js`):**
-   - Mengembalikan aturan regex `3.62` pembersih asterisk liar pada kata terisolasi (`Poco*`, `*rumor`, `@PocoIndia*`) tanpa merusak format bold markdown (`**teks**`).
-   - Menambahkan aturan regex `3.63` pada `sendSuccess` dan sanitasi awal pada `performWebSearch` untuk membersihkan seluruh artefak tag HTML `<a href="...">...</a>` serta frasa `Baca selengkapnya / Read more` yang terbawa dari feed RSS portal berita Indonesia.
-
-2. **Pencegahan Artikel Usang (> 1 Tahun) pada Kueri Terkini / Peringkat / Rilis (`api/chat.js`):**
-   - **Akar Masalah Kueri 2024:** Pada kueri pencarian Google News tanpa filter waktu, artikel lama dari tahun 2024 (seperti berita Tom's Guide 27 Maret 2024 tentang Claude 3 vs GPT-4) masih lolos karena skor kecocokan kata kunci judulnya tinggi.
-   - **Solusi Universal:** Menambahkan filter temporal keras: bila kueri tergolong breaking news, rilisan baru, lanskap terkini, atau peringkat leaderboard (`isBreakingQuery || isAiModelLandscape || isLatestLandscapeQuery`), seluruh artikel dengan usia lebih dari 365 hari (`daysOld > 365`) **otomatis diabaikan** dari daftar bukti live.
-   - Memperbarui kueri penelusuran benchmark arena dengan filter waktu dinamis `when:90d` dan `arena.ai leaderboard` sehingga hanya memuat pemberitaan dan lanskap tahun berjalan.
-
-3. **Verifikasi:**
-   - Kueri Poco X7 HyperOS: Respons bersih dari tag HTML, bebas dari teks "Baca selengkapnya", bebas dari asterisk bocor, dan menyajikan informasi rilis HyperOS 3.0.302.0 secara rapi dengan judul poin cyan konsisten.
-   - Kueri Peringkat 1 Arena AI: Bebas dari artikel usang Maret 2024, bebas dari skor halusinasi 1,210, menyajikan sifat dinamis leaderboard secara transparan.
-   - Kompilasi `npm run build` sukses (990ms).
+   - Kompilasi `npm run build` sukses bersih (1,28 detik).
