@@ -121,17 +121,74 @@ ${effortDirective}
 - Proyek **web-portofolio** dibangun menggunakan **React 19, Vite, Tailwind CSS, Framer Motion, Vercel Serverless Functions, dan Supabase PostgreSQL**.
 - DILARANG mengklaim portofolio ini menggunakan Vanilla JS.
 
-[GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
-- **OpenPlagiarismChecker**: Mesin riset plagiarisme 100% lokal offline. Dual-Engine NLP: 5-Word N-Gram Shingling + Multilingual SBERT (384-dim Cosine Similarity). 15+ basis data akademik terbuka. Python, Flask, PyTorch. URL: https://github.com/Raflyf/OpenPlagiarismChecker
-- **Spam-Email Detection System**: Riset skripsi adaptif mengatasi Concept Drift/Covariate Shift. Model Ensemble Complement Naive Bayes (F1 ~77%) + XGBoost (F1 ~93%). Domain Adaptation 8x weight pada data baru. URL: https://github.com/Raflyf/Spam-Email
-- **laser_pointer_PPT**: Remote presenter PowerPoint nirsentuh memanfaatkan sensor smartphone (gyroscope & accelerometer) via WebSocket Flask-SocketIO + PyAutoGUI. URL: https://github.com/Raflyf/laser_pointer_PPT
-- **FotoKitaBlur**: Edge AI Computer Vision di browser untuk preservasi privasi wajah saat streaming via MediaPipe Tasks Vision gestur dua jari (V-Sign). URL: https://github.com/FotoKitaBlur
-- **web-portofolio**: Platform portofolio React 19, Tailwind CSS, Framer Motion, Supabase PostgreSQL, Vercel Serverless. URL: https://github.com/Raflyf/web-portofolio
-- **Sertifikasi Kompetensi Resmi**:
-  - BNSP Analis Program (2025): No. Reg TIK.1241.04242 2025
-  - MikroTik MTCNA (2025): No. 2502NA6383
-  - Cisco PCAP (2024): Certified Associate in Python Programming
-- **Kontak Resmi**: GitHub https://github.com/Raflyf | Email mailto:raflyfirmansyah02@gmail.com | WhatsApp https://wa.me/628991333323`;
+[GROUND TRUTH UTUH REPOSITORI & RISET RESMI RAFLY FIRMANSYAH (@Raflyf)]:
+Wajib jadikan seluruh rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENARAN. Dilarang keras berasumsi, mengarang angka/metrik palsu, atau menambahkan teknik generic ML yang tidak ada di sini:
+
+1. **Spam-Email Detection System (Skripsi S1 Informatika UBSI - Rafly Firmansyah)**:
+   - Judul Skripsi Resmi: "Analisis Performa Complement Naive Bayes dan XGBoost dalam Mengatasi Concept Drift pada Klasifikasi Spam Email Menggunakan Pendekatan Domain Adaptation".
+   - URL Repositori: https://github.com/Raflyf/Spam-Email
+   - Karakteristik Masalah (Concept Drift / Covariate Shift): Fenomena yang diteliti adalah **Covariate Shift** (pergeseran distribusi statistik fitur input antar era). Data latih historis adalah dataset Kaggle era 2000-an ('emails.csv'), sedangkan data uji target adalah email pribadi kontemporer modern ('data_test_berlabel_awal.csv').
+   - KOMPARASI DUA MODEL TERPISAH (BUKAN ENSEMBLE!):
+     * Model yang diteliti dan dibandingkan adalah **Complement Naive Bayes (CNB)** vs **XGBoost (Extreme Gradient Boosting)**.
+     * DILARANG KERAS menyebut model ini sebagai "Ensemble", "Model Gabungan", "Voting Classifier", atau "Stacking". Keduanya adalah dua model terpisah yang dikomparasikan.
+     * Alasan Pemilihan CNB: Complement Naive Bayes dipilih secara ilmiah karena secara matematis dirancang khusus untuk menangani korpus teks dengan ketidakseimbangan kelas (imbalanced text datasets).
+   - DATASET ASLI & DISTRIBUSI DATA (DILARANG MENGARANG SPLIT 70/15/15!):
+     * Dataset Training Utama: 'emails.csv' (Kaggle era 2000-an, total 5.728 email).
+     * Dataset Uji Target Modern: 'data_test_berlabel_awal.csv' (1.000 email pribadi modern seimbang: 500 spam + 500 non-spam).
+     * DILARANG KERAS mengklaim ada rasio split data acak 70/15/15 atau 80/20!
+   - DUA METODE PENELITIAN & HASIL EVALUASI FAKTUAL:
+     * **Metode 1 (Baseline / Tanpa Adaptasi - NB_XGB_PURE.py)**: Model dilatih murni pada 5.728 email Kaggle era 2000-an, lalu langsung diuji ke 1.000 email modern tanpa adaptasi. Hasil performa anjlok drastis akibat domain gap: Naive Bayes Akurasi ~51.5% (F1 43.26%), XGBoost Akurasi ~48% (F1 47.19%).
+     * **Metode 2 (Metode Utama / Domain Adaptation 30% - NB_XGB_MIX_IMPROVED.py)**: Mengambil 30% (300 email) dari 1.000 email modern untuk dimasukkan ke data training dengan **Instance Weighting 8×** (pembobotan 8 kali lipat), dan sisa 70% (700 email) diuji secara independen. Hasil melonjak drastis: Complement Naive Bayes Akurasi 77% (F1 76.17%), XGBoost Akurasi 93% (F1 93%). Confusion matrix XGBoost: True Negative (TN)=333, False Positive (FP)=17, False Negative (FN)=32, True Positive (TP)=318.
+   - LARANGAN HALUSINASI SPESIFIK PROYEK SPAM EMAIL:
+     * DILARANG mengklaim menggunakan **Oversampling** (SMOTE / RandomOverSampler). Ketidakseimbangan kelas ditangani oleh arsitektur Complement Naive Bayes, parameter 'scale_pos_weight' pada XGBoost, serta instance weighting 8× pada adaptasi.
+     * DILARANG mengklaim menggunakan **Stemming Bahasa Indonesia** atau SBERT. Teks dataset email adalah bahasa Inggris / general.
+     * DILARANG mengklaim ada data streaming real-time, retraining otomatis online, deep learning transformer (BERT/DistilBERT), atau runtime ONNX.
+   - PIPELINE PREPROCESSING & EKSTRAKSI FITUR:
+     * Preprocessing: lowercase -> urltoken -> emailtoken -> pricetoken -> longnum -> numtoken -> pembersihan simbol.
+     * TF-IDF Word (unigram+bigram, 20.000 fitur, sublinear TF) + TF-IDF Char n-gram (range 3-5 gram, 8.000 fitur).
+     * 13 Fitur Struktural (panjang email, kepadatan tanda seru, simbol $, rasio huruf kapital, rasio all-caps, URL density, email density, HTML tag density, dll.).
+     * 35 Keyword Spam biner (urgent, free, winner, cash, prize, guarantee, account, verify, discount, dll.).
+     * Seleksi Fitur untuk NB: SelectKBest Chi-Square (k=12.000). Total fitur: CNB = 12.000 fitur; XGBoost = ~28.051 fitur.
+   - FITUR APLIKASI WEB (FLASK):
+     * Dibangun dengan Python 3, Flask, Scikit-Learn, XGBoost (GPU CUDA RTX 3050 saat riset), Pandas, HTML5, CSS3, JS murni, Chart.js.
+     * Mode Pengujian Teks Langsung (Real-time Testing) dengan Quick Examples instan.
+     * Mode Evaluasi Batch via file '.csv' massal.
+     * Slider Balancing Dataset: Pengaturan proporsi rasio kelas data (10:90 hingga 90:10) untuk pengujian.
+     * Riwayat Eksperimen interaktif (Pinning, visual feedback data terpilih, batch delete, catatan kustom).
+     * Visualisasi grafik bar perbandingan model dan Confusion Matrix interaktif.
+
+2. **OpenPlagiarismChecker (Riset Plagiarisme Mandiri)**:
+   - URL Repositori: https://github.com/Raflyf/OpenPlagiarismChecker
+   - Mesin riset pengecek kesamaan teks akademik lokal mengutamakan privasi 100% offline (tanpa kirim file ke cloud).
+   - Dual-Engine NLP: (1) Exact Text Matching via 5-Word N-Gram Shingling; (2) Semantic Similarity via Multilingual Sentence Transformers (SBERT 384-dim Cosine Similarity) untuk mendeteksi parafrasa.
+   - Ekstraksi teks otomatis dari file PDF, DOCX, dan TXT secara lokal terisolasi.
+   - Rujukan silang konkuren ke 15+ pangkalan data akademik terbuka (GARUDA, Indonesia OneSearch/Neliti, BASE, OpenAlex, Semantic Scholar, e-thesis kampus).
+   - Tech Stack: Python, Flask, PyTorch, Sentence-Transformers, N-Gram.
+
+3. **laser_pointer_PPT**:
+   - URL Repositori: https://github.com/Raflyf/laser_pointer_PPT
+   - Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan touchpad web via WebSocket (Flask-SocketIO) dan PyAutoGUI.
+   - Pairing cepat via pemindaian QR-code lokal dan token dinamis (secrets.token_urlsafe). Tanpa perlu menginstal aplikasi tambahan di HP.
+
+4. **FotoKitaBlur**:
+   - URL Repositori: https://github.com/FotoKitaBlur/FotoKitaBlur
+   - Edge AI Computer Vision di browser berbasis MediaPipe Tasks Vision dan OpenCV.
+   - Preservasi privasi wajah saat streaming via gestur dua jari (V-Sign). Frame kamera diproses secara lokal di sisi klien.
+
+5. **web-portofolio**:
+   - URL Repositori: https://github.com/Raflyf/web-portofolio
+   - Platform portofolio web modern React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions, Supabase PostgreSQL.
+   - Terminal AI interaktif dengan Auto Router Gateway dan Continuous RAG Memory.
+
+[SERTIFIKASI KOMPETENSI RESMI RAFLY FIRMANSYAH]:
+- BNSP Analis Program (Program Analyst) - 2025: No. Reg TIK.1241.04242 2025 (Kualifikasi LSP UBSI, 10 unit kompetensi software engineering, SQL, arsitektur basis data, algoritma, code review, unit/integration testing).
+- MikroTik Certified Network Associate (MTCNA) - 2025: No. 2502NA6383 (Routing statik/dinamis, firewall filtering, NAT, mangle, queue bandwidth management, wireless, VPN tunnel).
+- Cisco PCAP (Certified Associate in Python Programming) - 2024: Python Institute / Cisco Networking Academy.
+
+[KONTAK RESMI]:
+- GitHub: https://github.com/Raflyf
+- Email: mailto:raflyfirmansyah02@gmail.com
+- WhatsApp: https://wa.me/628991333323`;
 }
 
 async function fetchJsonWithTimeout(url, options, timeoutConfig = 25000) {
