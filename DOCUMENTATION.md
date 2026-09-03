@@ -1503,3 +1503,29 @@ Released 2026-09-03.
 
 3. **Verifikasi:**
    - Kompilasi `npm run build` sukses bersih (1,28 detik).
+
+### v10.660.0 — Universal Autonomous Web & Deep-Scraping Engine Integration
+
+Released 2026-09-03.
+
+Menindaklanjuti instruksi mutlak pengguna: *"jangan arena AI saja, tapi mengakses semua web, seperti cara kerja kamu yg bisa akses apa saja, nah integrasikan metode itu kedalam AI agent terminal saya"*:
+
+1. **Universal Autonomous Webpage Scraper & Target Domain Resolver (`api/chat.js`):**
+   - Mengintegrasikan mesin web scraping otonom yang bekerja mirip dengan kapabilitas agen modern (`read_url_content` / Crawl4AI):
+     * **Deteksi Tautan Eksplisit:** Mendeteksi setiap format URL publik (`http://` atau `https://`).
+     * **Deteksi Bare Domain Mandiri:** Mendeteksi penulisan domain tanpa awalan protokol (misal `arena.ai`, `gsmarena.com`, `kompas.com`, `github.com/...`, `wikipedia.org/...`) dan secara otonom menyusun tautan valid.
+     * **Platform Intent Routing:** Otomatis memetakan kueri mengenai Arena AI / LMSYS Chatbot Arena langsung ke target live `https://arena.ai/leaderboard`.
+   - **Dual-Stage Scraper Pipeline:**
+     * **Tahap 1 (Direct Fit-Markdown Scraper):** Fetch langsung menggunakan browser user-agent modern + mesin ekstraksi Crawl4AI Fit-Markdown lokal untuk membuang CSS/JS/navigasi dan menyaring konten semantik murni.
+     * **Tahap 2 (Universal LLM Reader Fallback):** Fallback otomatis ke Jina Reader `https://r.jina.ai/${url}` untuk merender situs yang menggunakan JavaScript Client-Side Rendering (SPA / React / Vue / Angular).
+     * **Specialized Next.js RSC Parser (`arena.ai`):** Mengunduh dan mem-parse payload Next.js streamed RSC (`self.__next_f.push`) dari `arena.ai/leaderboard` secara langsung tanpa browser headless, mengekstrak data ranking resmi, nama model, organisasi, dan skor Elo secara instan (< 4 detik).
+
+2. **Visibilitas Tool Transparan di Terminal Pengunjung:**
+   - Setiap kali halaman web di-scrape secara langsung, sistem mencatat tool aktif ke `agentToolsUsed` sebagai `Live Webpage Reader (<hostname>)` (contoh: `Live Webpage Reader (arena.ai)`, `Live Webpage Reader (en.wikipedia.org)`).
+   - Pengunjung terminal dapat melihat secara transparan bahwa AI benar-benar membaca isi halaman web yang bersangkutan.
+
+3. **Verifikasi:**
+   - Kueri `peringkat 1 model ai di arena ai itu apa`: Berhasil men-scrape langsung dari `arena.ai`, melaporkan secara akurat model peringkat #1 live: `claude-fable-5` (Anthropic) dengan skor Elo 1507.
+   - Kueri URL umum `https://en.wikipedia.org/wiki/LMArena`: Berhasil membaca artikel lengkap dan merangkum sejarah, pendanaan, serta fitur secara komprehensif.
+   - Normalisasi format nomor dan list item diterapkan secara seragam (seluruh judul poin dalam format bold cyan `<strong>`).
+   - Kompilasi `npm run build` sukses bersih (1,39 detik).
