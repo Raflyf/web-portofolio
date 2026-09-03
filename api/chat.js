@@ -2842,11 +2842,20 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
             return Promise.reject(new Error('provider-empty'));
           }).catch(() => Promise.reject(new Error('provider-failed')))
         );
-        const win = await Promise.race([
-          Promise.any(racePromises),
-          new Promise(resolve => setTimeout(() => resolve('timeout'), raceTimeoutMs + 500))
+        // FIX "All promises were rejected": bila SEMUA step menolak lebih cepat dari timer
+        // (mis. kena 404/429 seketika), Promise.any me-reject SEBELUM timer sempat resolve,
+        // dan rejection itu bocor keluar -> error 500. Solusi: tangkap rejection-nya menjadi
+        // nilai 'all-failed' (bukan melempar), lalu lanjut ke sisa pipeline.
+        const raceOutcome = await Promise.race([
+          Promise.any(racePromises).then(
+            (v) => ({ ok: true, value: v }),
+            () => ({ ok: false, reason: 'all-failed' })
+          ),
+          new Promise(resolve => setTimeout(() => resolve({ ok: false, reason: 'timeout' }), raceTimeoutMs + 500))
         ]);
-        if (win !== 'timeout' && win && win.ok) return win.value;
+        if (raceOutcome && raceOutcome.ok && raceOutcome.value && raceOutcome.value.ok) {
+          return raceOutcome.value.value;
+        }
 
         // === Susuri SELURUH sisa pipeline (index 4 dst) secara serial ===
         for (let i = 4; i < pipeline.length; i++) {

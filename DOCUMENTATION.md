@@ -1428,3 +1428,17 @@ Released 2026-09-03.
    - Sanitizer per-baris: bold seimbang (`**teks**`) dipertahankan; asterisk tunggal tak berpasangan dihapus; penutup-bold yatim tanpa pembuka dibersihkan; baris yang masih ganjil dibersihkan total menjadi teks polos.
 4. **Verifikasi:**
    - `node --check` lolos; sanitizer teruji terhadap 7 pola sampel; seluruh perubahan di-commit dan di-push.
+
+### v10.651.0 — Parallel Race Error Fix & Themed Bold Color
+
+Released 2026-09-03.
+
+1. **Fix Kritis: "Serverless Gateway Exception: All promises were rejected":**
+   - Pada parallel race mode auto, bila SEMUA provider di race menolak lebih cepat dari timer (mis. kena 404/429 seketika), `Promise.any` me-reject SEBELUM timer sempat resolve, dan rejection itu bocor keluar menjadi error 500.
+   - Kini rejection `Promise.any` ditangkap menjadi nilai `all-failed` (bukan dilempar), lalu pipeline lanjut menelusuri sisa model — tidak lagi gagal total.
+2. **Warna Bold Markdown Selaras Tema (Bukan Putih Polos):**
+   - Dark mode: bold diubah dari `#ffffff` (putih polos menyilaukan) menjadi cyan lembut `#67e8f9` (cyan-300), senada aksen link/code terminal.
+   - Light mode: bold diubah dari hitam pekat menjadi cyan tua `#0e7490` / `rgb(14 116 144)`, selaras warna link.
+   - Heading & elemen lain tidak diubah; seluruh override light-mode (termasuk dalam liquid-glass) disesuaikan agar strong selalu memakai warna tema.
+3. **Verifikasi:**
+   - `npm run build` sukses (CSS ter-generate tanpa error); `node --check` lolos; seluruh perubahan di-commit dan di-push.
