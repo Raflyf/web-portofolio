@@ -973,6 +973,16 @@ Released 2026-09-03.
    - Menambahkan larangan eksplisit pada *system prompt* agar model tidak mengulang aturan sistem atau memverbalisasi batasan di jawaban akhir.
    - Mengalibrasi `connectTimeout` ke 15 detik agar model prioritas utama (`nemotron-3-nano:30b`) tidak ter-abort prematur saat ada pencarian berita web aktif.
 
+### v10.623.0 — Zero-Hallucination Deterministic Identity Grounding
+
+Released 2026-09-03.
+1. **Pemberantasan Klaim Palsu Pihak Ketiga pada Kueri Identitas (`api/chat.js`):**
+   - Menghapus contoh teks memori pada system prompt yang sebelumnya memuat nama model eksternal (seperti Gemini Flash) yang secara keliru ditiru dan diklaim oleh model kecil.
+   - Mengimplementasikan *Deterministic Identity Grounding* pada `sendSuccess`: saat pengguna menanyakan identitas atau model (`model apa kamu`, `kamu model apa`, `kamu siapa`), sistem secara deterministik dan faktual menyebutkan identitas resmi asisten portofolio Rafly Firmansyah (@Raflyf) beserta nama model riil yang sedang aktif mengeksekusi jawaban (`nemotron-3-nano:30b` via Ollama Cloud SOTA Engine).
+2. **Normalisasi Gaya Bahasa & Anti-Klaim Aneh:**
+   - Menghilangkan gaya bahasa aneh yang menjiplak frasa memori mentah, menggantikannya dengan struktur kalimat bahasa Indonesia yang profesional, ramah, dan bebas overclaim.
+
+
 
 
 
