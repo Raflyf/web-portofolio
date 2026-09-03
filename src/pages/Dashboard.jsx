@@ -1221,7 +1221,6 @@ export default function Dashboard() {
   const aiModelsStats = useMemo(() => {
     const aiFilteredEvents = filterByRange(events, aiModelsRange);
     let totalAIQueries = 0;
-    let autoRouterCount = 0;
     const modelCounts = {};
     const modelLastUsed = {};
 
@@ -1246,15 +1245,6 @@ export default function Dashboard() {
 
       if (isAIEvent) {
         totalAIQueries++;
-        const isAutoRouted = target.startsWith('auto') || 
-                             label.includes('auto') || 
-                             label.includes('[auto') || 
-                             label.includes('smart cascade') ||
-                             target === 'auto' ||
-                             type === 'ai_chat' ||
-                             type === 'ai_query' ||
-                             type === 'ai_query_resolved';
-        if (isAutoRouted) autoRouterCount++;
 
         let matched = false;
         for (const m of INDIVIDUAL_MODELS) {
@@ -1282,6 +1272,9 @@ export default function Dashboard() {
       if (b.lastUsedAt !== a.lastUsedAt) return b.lastUsedAt - a.lastUsedAt;
       return b.count - a.count;
     });
+
+    // autoRouterCount = jumlah total seluruh eksekusi model (sinkron dengan jumlah semua card)
+    const autoRouterCount = Object.values(modelCounts).reduce((sum, c) => sum + c, 0);
 
     return {
       totalAIQueries,
