@@ -1258,3 +1258,22 @@ Released 2026-09-03.
    - Menambahkan label tool baru `Hacker News Global` pada `agentToolsUsed` sehingga badge transparansi sumber muncul di UI terminal.
 5. **Sinkronisasi UI Terminal:**
    - Memperbarui placeholder input terminal menjadi contoh universal yang mendorong pertanyaan fakta terkini ("berita terbaru apa hari ini").
+
+### v10.642.0 — Strict Current-Landscape Enumeration, Anti-Fabricated Report-Date Guard & Response Audit
+
+Released 2026-09-03.
+
+Menindaklanjuti pengujian nyata yang masih menampilkan model lawas (Claude 3.7 Sonnet, o3, Gemini 2.5, DeepSeek-R1, Llama 3.3 70B) sebagai pelengkap daftar "terkini" meskipun blok bukti live tersedia, serta kalimat atribusi tanggal karangan ("Semua informasi ini didasarkan pada laporan terbaru yang tersedia pada 2 September 2026").
+
+1. **Enumerasi Ketat Landskap Terkini (System Prompt):**
+   - Menambahkan aturan `[ENUMERASI KETAT LANDSKAP TERKINI]` pada `[PROTOKOL INTEGRITAS WAKTU & KEJUJURAN EPISTEMIS (ANTI-INFORMASI LAWAS)]`: untuk pertanyaan kondisi terbaik/terbaru/terkini, state-of-the-art, peringkat, atau perbandingan masa kini, daftar entitas "terkini" WAJIB disusun HANYA dari entitas yang eksplisit muncul pada blok bukti live.
+   - DILARANG menambah entitas apa pun dari ingatan (versi lama maupun model lain) sebagai pelengkap daftar, pembanding, pelengkap kalimat, atau konteks "terkini"; frasa seperti "selain model di atas, terdapat juga ..." dilarang untuk entitas yang tidak ada di bukti.
+   - Entitas lawas hanya sah disebut untuk konteks sejarah yang diminta eksplisit, dan wajib diberi label waktu historis jelas (bukan sebagai kondisi terkini).
+2. **Larangan Klaim Tanggal Palsu (System Prompt):**
+   - Menambahkan aturan `[LARANGAN KLAIM TANGGAL PALSU]`: melarang keras menulis atribusi buatan seperti "Semua informasi ini didasarkan pada laporan terbaru yang tersedia pada [tanggal]" atau melabeli seluruh jawaban dengan tanggal publikasi yang tidak eksplisit tercantum pada bukti live.
+   - Tanpa tanggal pada bukti, model wajib menulis "berdasarkan hasil penelusuran web real-time saat ini" tanpa menyebut tanggal fiktif.
+3. **Deterministic Anti-Fabricated Report-Date Guard (Post-Processing):**
+   - Menambahkan guard deterministik pada `sendSuccess`: mendeteksi dan mentransformasi kalimat atribusi tanggal global yang dikarang model (Bahasa Indonesia & Inggris, pola bulan+hari penuh) menjadi frasa netral "Berdasarkan hasil penelusuran web real-time saat ini", berjalan sebagai lapisan terakhir kebenaran bahkan bila model gagal mematuhi aturan prompt.
+   - Transformasi hanya menyentuh kalimat dengan format tanggal penuh (hari-bulan-tahun) sehingga tidak merusak kalimat lain.
+4. **Verifikasi:**
+   - `node --check` lolos; guard regex teruji mencocokkan sampel keluaran nyata ("...didasarkan pada laporan terbaru yang tersedia pada 2 September 2026") dan menggantinya menjadi frasa netral.

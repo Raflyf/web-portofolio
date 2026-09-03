@@ -144,7 +144,9 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 [PROTOKOL INTEGRITAS WAKTU & KEJUJURAN EPISTEMIS (ANTI-INFORMASI LAWAS)]:
 1. Setiap jawaban yang memuat status "terbaru", "saat ini", "tahun ini", jadwal rilis, harga, peringkat, atau kondisi terkini WAJIB menyandang penanda waktu sumbernya (misal "dilaporkan [tanggal]", "per [bulan/tahun]"). DILARANG menyajikan fakta tanpa penanda waktu sebagai kebenaran absolut hari ini.
 2. Jika topik menuntut fakta cepat-berubah (rilis produk, versi perangkat lunak, model AI, berita, harga, peringkat) dan tidak tersedia blok bukti live hasil pencarian web, nyatakan keterbatasan verifikasi secara jujur dan hangat: sampaikan hanya pengetahuan yang Anda yakini terverifikasi dengan penanda jelas bahwa itu bukan status live terkini, lalu arahkan ke sumber resmi untuk kepastian mutakhir. DILARANG mengarang status "terbaru" dari ingatan lama, menebak tanggal rilis, atau menyangkal eksistensi rilis hanya karena di luar pengetahuan model.
-3. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
+3. [ENUMERASI KETAT LANDSKAP TERKINI]: Saat pengguna menanyakan kondisi terbaik/terbaru/terkini, state-of-the-art, peringkat, atau perbandingan kondisi masa kini (contoh: "model AI terbaik saat ini", "versi terbaru X", "ranking produk Y"), daftar entitas "terkini" WAJIB disusun HANYA dari entitas yang eksplisit tercantum pada blok bukti live hasil pencarian yang disuntikkan. DILARANG KERAS menambahkan entitas apa pun dari ingatan (versi lama maupun model lain) sebagai pelengkap, pembanding, pelengkap daftar, atau konteks "terkini". Entitas di luar bukti HANYA boleh disebut bila pengguna secara eksplisit menanyakan sejarah/riwayat versi, dan wajib diberi label waktu historis yang jelas (misal "generasi sebelumnya", "rilis tahun ..."). Jika blok bukti tidak menyebut peringkat juara, JANGAN mengarang peringkat dari ingatan; cukup laporkan model yang terbukti muncul dalam pemberitaan.
+4. [LARANGAN KLAIM TANGGAL PALSU]: DILARANG KERAS menulis kalimat atribusi buatan seperti "Semua informasi ini didasarkan pada laporan terbaru yang tersedia pada [tanggal]", "berdasarkan laporan terbaru [tanggal]", "menurut rilis [tanggal]", atau melabeli seluruh jawaban dengan tanggal publikasi tertentu yang TIDAK eksplisit tercantum pada bukti live. Tanggal hanya boleh dikutip bila benar-benar muncul pada bukti (misal pubDate artikel). Tanpa tanggal pada bukti, cukup tulis "berdasarkan hasil penelusuran web real-time saat ini" tanpa menyebut tanggal fiktif.
+5. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -1049,6 +1051,8 @@ ${uniqueSnippets.join('\n')}
 
 [PANDUAN SINTESIS & GROUNDING FAKTUAL UNIVERSAL]:
 - PRIORITASKAN 100% FAKTA RESMI & TERKINI DARI BUKTI HASIL PENCARIAN DI ATAS. Bukti ini adalah satu-satunya representasi kondisi dunia nyata saat ini yang Anda miliki.
+- [ENUMERASI KETAT]: Untuk pertanyaan lanskap terkini (terbaik/terbaru/terkini/saat ini/ranking/state-of-the-art/perbandingan model terkini), daftar entitas yang Anda sajikan sebagai "terkini" HANYA boleh berisi entitas yang muncul eksplisit pada blok bukti di atas. DILARANG KERAS menambah versi/model/entitas lain dari ingatan sebagai pelengkap daftar, pembanding, atau konteks. Jangan menulis "selain model di atas, terdapat juga ..." untuk entitas yang tidak ada di bukti. Bila entitas lawas ingin disebut, itu hanya sah untuk konteks sejarah yang diminta eksplisit, dan wajib diberi label waktu historis (bukan sebagai kondisi terkini).
+- [LARANGAN TANGGAL PALSU]: Dilarang menulis "Semua informasi ini didasarkan pada laporan terbaru [tanggal]" atau atribusi tanggal lain yang tidak muncul pada bukti di atas. Bila bukti tidak memuat tanggal, tulis "berdasarkan hasil penelusuran web real-time saat ini".
 - LARANGAN HARDCODE DARI INGATAN: DILARANG KERAS menyajikan nama model, versi software, tanggal rilis, peringkat, atau status teknologi dari ingatan lama seolah-olah kondisi terkini, KECUALI tercantum eksplisit pada bukti live di atas. Setiap entitas baru hanya boleh disebut bila didukung bukti.
 - PENANDA WAKTU (RECENCY LABELING): Untuk klaim sensitif waktu (rilis terbaru, versi, harga, peringkat, berita, kondisi saat ini), sebutkan penanda waktu sumbernya (misal "dilaporkan [tanggal]", "per [bulan/tahun]"). DILARANG menyajikan artikel atau rilis berumur lebih dari satu tahun sebagai kondisi "saat ini".
 - GAYA PENYAMPAIAN MANUSIAWI, RAMAH, DAN MUDAH DIMENGERTI:
@@ -2007,6 +2011,27 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
 
       // Auto-Format Markdown Structure & Table Reconstruction (CommonMark GFM)
       cleaned = normalizeStructuredMarkdown(cleaned);
+
+      // DETERMINISTIC ANTI-FABRICATED REPORT-DATE GUARD (AGENTS.md 10a/10b):
+      // Menghapus/mentransformasi kalimat atribusi tanggal global yang dikarang model
+      // (contoh: "Semua informasi ini didasarkan pada laporan terbaru yang tersedia pada
+      // 2 September 2026.") menjadi frasa netral berbasis penelusuran web real-time,
+      // karena tanggal semacam itu tidak pernah berasal dari bukti live yang disuntikkan.
+      // Kalimat tanpa format tanggal penuh (dd bulan yyyy) TIDAK disentuh demi presisi bedah.
+      if (needsLiveFacts) {
+        cleaned = cleaned.replace(/(?:^|[.!?]\s+)(?:Semua\s+informasi\s+ini\s+didasarkan\s+pada\s+laporan|Semua\s+informasi\s+di\s+atas\s+didasarkan\s+pada\s+laporan|Berdasarkan\s+laporan|Didasarkan\s+pada\s+laporan|Menurut\s+laporan|Dilaporkan\s+pada)\s+(?:terbaru\s+)?(?:yang\s+)?(?:tersedia\s+)?(?:pada\s+|per\s+|tanggal\s+)?\d{1,2}\s+(?:Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}[^.!?\n]*[.!?]/gi, (m) => {
+          const lead = m.charAt(0);
+          const prefix = (lead === '.' || lead === '!' || lead === '?') ? lead : '';
+          return prefix ? `${prefix} Berdasarkan hasil penelusuran web real-time saat ini.` : 'Berdasarkan hasil penelusuran web real-time saat ini.';
+        });
+        cleaned = cleaned.replace(/(?:^|[.!?]\s+)(?:All\s+information\s+is\s+based\s+on|Based\s+on)\s+(?:the\s+)?(?:latest\s+)?reports?\s+(?:available\s+)?(?:as\s+of|on)\s+(?:[A-Za-z]+\s+\d{1,2},?\s+)?\d{4}[^.!?\n]*[.!?]/gi, (m) => {
+          const lead = m.charAt(0);
+          const prefix = (lead === '.' || lead === '!' || lead === '?') ? lead : '';
+          return prefix ? `${prefix} Based on real-time web search results.` : 'Based on real-time web search results.';
+        });
+        // Rapikan spasi ganda / baris kosong berlebih pasca pemotongan kalimat
+        cleaned = cleaned.replace(/[^\S\r\n]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+      }
 
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = 'Maaf, saya tidak dapat menyusun jawaban saat ini.';
