@@ -1453,6 +1453,9 @@ async function saveServerMemory(factText, sessionId = null) {
   const trimmedFact = String(factText).trim();
   if (trimmedFact.length < 5 || trimmedFact.length > 1000) return;
   if (/\b(ignore|override|disregard|abaikan)\b/i.test(trimmedFact)) return;
+  // Tolak placeholder kosong yang disalin model mentah dari instruksi (mis. "Fakta ringkas
+  // terkonfirmasi" tanpa isi) agar tidak membanjiri tabel dengan entri tak bermakna.
+  if (/^(?:fakta\s+ringkas\s+terkonfirmasi|fakta\s+terkonfirmasi|ringkas\s+terkonfirmasi|save\s*memory\s*[:)]?)\s*[:\-]?\s*$/i.test(trimmedFact)) return;
   try {
     await fetchWithHardTimeout(`${supabaseUrl}/rest/v1/ai_memories`, {
       method: 'POST',
@@ -1584,6 +1587,39 @@ function normalizeStructuredMarkdown(str) {
 
   // 6. Pisahkan numbered list (1. **Label**: atau 1. Kata) yang menempel di tengah kalimat atau setelah titik
   out = out.replace(/([.:?!])\s+(\d+\.\s+(?:\*\*|[A-Za-z]))/g, '$1\n\n$2');
+
+  // 6.5 Rekonstruksi nomor item yang terpisah dari isinya oleh baris kosong:
+  //     Model sering menghasilkan "1.\n\nNama Item ...." (nomor di baris sendiri, isi di
+  //     paragraf berikutnya). Tanpa penanganan, markdown merender "1." sebagai paragraf
+  //     terpisah sehingga list terlihat ngaco. Gabungkan menjadi "1. Nama Item ...".
+  //     Diproses per blok agar tidak merusak list yang sudah benar ("N. **Teks**" atau "N. Teks").
+  {
+    const numLines = out.split('\n');
+    const merged = [];
+    for (let i = 0; i < numLines.length; i++) {
+      const line = numLines[i];
+      // Baris berisi HANYA "N." (nomor yatim, tanpa isi) — cek isi baris berikutnya
+      const orphanMatch = line.match(/^\s*(\d{1,2})\.\s*$/);
+      if (orphanMatch) {
+        // Baris berikutnya (setelah 0+ baris kosong) berisi konten item
+        let j = i + 1;
+        while (j < numLines.length && numLines[j].trim() === '') j++;
+        const nextContent = j < numLines.length ? numLines[j].trim() : '';
+        const isNextOrphan = /^\s*\d{1,2}\.\s*$/.test(nextContent);
+        const isNextListLike = /^\s*\d{1,2}\.\s+\S|^\s*[-*•]\s+\S|^#{1,6}\s/.test(nextContent);
+        if (nextContent && !isNextOrphan && !isNextListLike && !/^\s*$/.test(nextContent)) {
+          merged.push(`${orphanMatch[1]}. ${nextContent}`);
+          i = j; // lewati baris konten yang sudah digabung
+          continue;
+        }
+        // Tak ada konten lanjutan yang layak — pertahankan baris apa adanya
+        merged.push(line);
+        continue;
+      }
+      merged.push(line);
+    }
+    out = merged.join('\n');
+  }
 
   // 7. Pisahkan bullet list (- **Label**: atau - Kata) yang menempel di tengah kalimat
   out = out.replace(/([.:?!]|\b)\s+[-*•]\s+(\*\*[^*]+\*\*:?)/g, '$1\n- $2');
@@ -1886,6 +1922,40 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       for (const m of saveMemoryMatches) {
         if (m[1] && m[1].trim()) {
           saveServerMemory(m[1].trim(), sessionId || null).catch(() => {});
+        }
+      }
+
+      // 0.2. DETERMINISTIC GROUNDED MEMORY CAPTURE (tanpa bergantung tag model):
+      // Model jarang mematuhi instruksi [SAVE_MEMORY], sehingga ai_memories (dashboard
+      // monitoring) tidak pernah bertambah. Solusi: bila jawaban berhasil disusun dari bukti
+      // live yang valid (bukan identitas/sapaan/error), simpan SATU ringkasan fakta dari
+      // judul berita teratas yang relevan sebagai memori terverifikasi. Tidak memakai awalan
+      // "Kueri Pengunjung:" (klien mengecualikannya dari tampilan RAG). Dedupe per topik per
+      // menit agar tidak spam.
+      const topGroundedMemory = (() => {
+        if (isSkipSearch || isIdentityQuery || isCasualGreeting || isTimeQuery) return null;
+        if (!Array.isArray(webMemories) || webMemories.length === 0) return null;
+        if (typeof query !== 'string' || query.trim().length < 5) return null;
+        // Ambil judul bukti paling relevan (hindari baris label/teknis)
+        const candidate = webMemories.find((s) => {
+          const t = String(s || '');
+          return t.length > 20 && !t.startsWith('[Wikipedia]') && !t.startsWith('[GitHub') && !t.startsWith('[Scraped');
+        });
+        if (!candidate) return null;
+        const cleanTitle = String(candidate).replace(/\[Global Live Web\/News[^\]]*\]\s*/g, '').trim();
+        if (cleanTitle.length < 20 || cleanTitle.length > 240) return null;
+        // Ringkas jadi kalimat fakta
+        return `Fakta live (${new Date().toISOString().slice(0, 10)}): ${cleanTitle}`;
+      })();
+      if (topGroundedMemory) {
+        const nowMin = Math.floor(Date.now() / 60000);
+        if (!globalThis.__lastGroundedMemory || globalThis.__lastGroundedMemory.min !== nowMin) {
+          globalThis.__lastGroundedMemory = { min: nowMin, keys: new Set() };
+        }
+        const topicKey = String(query || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 60);
+        if (!globalThis.__lastGroundedMemory.keys.has(topicKey)) {
+          globalThis.__lastGroundedMemory.keys.add(topicKey);
+          saveServerMemory(topGroundedMemory, sessionId || null).catch(() => {});
         }
       }
       const textWithoutTags = cleaned.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();

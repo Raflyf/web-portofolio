@@ -1456,3 +1456,31 @@ Menindaklanjuti laporan jawaban tidak konsisten pada pertanyaan "info terbaru pe
    - Prompt `[PROTOKOL ANTI-HALUSINASI]` butir 3 diperkuat: DILARANG mengklaim "belum ada", "belum dirilis", "tidak ada pengumuman resmi", atau "masih rumor" BILA blok bukti live justru memuat liputan produk/rilis tsb. Bila bukti ada, wajib menyajikan fakta ber-tanggal; klaim ketiadaan absolut hanya boleh bila bukti live benar-benar kosong.
 3. **Verifikasi:**
    - Feed & query teruji mengembalikan data terbaru; `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.653.0 — Markdown Orphan-Number Reconstruction (Fix Broken Numbered Lists)
+
+Released 2026-09-03.
+
+1. **Masalah:** Daftar proyek pada jawaban AI tampil berantakan — nomor item ("1.", "2.", dst) terpisah dari isinya, dirender sebagai paragraf terpisah sehingga penomoran terlihat ngaco.
+2. **Akar Masalah:** Model menghasilkan pola "N." di baris sendiri, diikuti baris kosong, lalu konten item di paragraf berikutnya. Normalizer markdown hanya menangani pola "N. konten" di baris yang sama, sehingga nomor orphan tidak pernah digabung ke kontennya.
+3. **Perbaikan:** Menambahkan rekonstruksi nomor orphan (rule 6.5) pada `normalizeStructuredMarkdown`: baris berisi hanya "N." akan digabung dengan konten item pada paragraf berikutnya menjadi item "N. konten" yang valid. Aman terhadap: list yang sudah benar, bullet list, heading, tabel.
+4. **Verifikasi:**
+   - Uji pola nyata "1.\\n\\nSpam-Email..." -> menjadi list rapi 1-5.
+   - Regression: list benar, bullet, heading+paragraf, tabel, orphan tunggal semuanya lolos.
+   - `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.654.0 — Deterministic RAG Memory Capture + Dashboard Model Sync
+
+Released 2026-09-03.
+
+1. **RAG Memory Tidak Bertambah di Dashboard (Akar Masalah):**
+   - Penelusuran langsung ke Supabase `ai_memories`: tabel berfungsi (ada entri), tapi entri terakhir berhenti pada 05:18 UTC (12:18 WIB) meski banyak percakapan setelahnya.
+   - Penyebab: penyimpanan memori 100% bergantung pada model yang SECARA SUKARELA mengeluarkan tag `[SAVE_MEMORY: ...]` di akhir jawaban. Setelah prompt diperketat / pipeline model diubah, model berhenti mematuhinya -> tidak ada memori baru.
+2. **Perbaikan: Deterministic Grounded Memory Capture:**
+   - `sendSuccess` kini otomatis menyimpan SATU fakta ringkas dari judul bukti live teratas yang relevan (bukan bergantung tag model), dengan dedupe per topik per menit agar tidak spam. Tidak memakai awalan "Kueri Pengunjung:" (yang dikecualikan dari tampilan RAG).
+   - Filter placeholder kosong ditambahkan ke `saveServerMemory` (mis. "Fakta ringkas terkonfirmasi" yang disalin model mentah) agar tidak membanjiri tabel.
+3. **Sync Model Dashboard dengan Terminal:**
+   - Menambahkan kartu model Gemma 4 31B (Ollama Cloud, prioritas #2 sesuai pipeline) dan Gemma 4 31B (OpenRouter cadangan) pada daftar model dashboard, lengkap dengan matcher yang mencocokkan nama model aktual (`gemma4`, `gemma-4`, `31b`).
+   - Memperbarui label prioritas: Lightning OpenRouter #3, Nano-Omni #5 — selaras urutan pipeline terminal yang baru.
+4. **Verifikasi:**
+   - `npm run build` sukses (API + Dashboard + CSS terkompilasi); `node --check` lolos; seluruh perubahan di-commit dan di-push.
