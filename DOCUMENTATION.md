@@ -1016,6 +1016,19 @@ Released 2026-09-03.
    - Menambahkan state `commandHistory` (tersimpan di `localStorage`) dan handler navigasi keyboard ala Bash / PowerShell pada input terminal.
    - Menekan tombol **ArrowUp** otomatis memunculkan perintah atau pertanyaan pengguna sebelumnya. Menekan **ArrowDown** menavigasi maju atau mengembalikan ke draf ketikan awal.
 
+### v10.627.0 — Dynamic Table Reconstruction & Full Markdown Structure Normalization
+
+Released 2026-09-03.
+1. **Dynamic Markdown Table Reconstruction Engine (`api/chat.js` & `TerminalAI.jsx`):**
+   - Mengimplementasikan `repairMarkdownTables`: mendeteksi tabel markdown yang sel datanya digabung dalam satu baris datar oleh model AI kecil, menghitung jumlah kolom header, dan secara otomatis memecah sel-sel data ke baris-baris GFM yang valid lengkap dengan header dan divider standar.
+2. **Pembersihan Artefak & Separasi Heading Otomatis (`normalizeStructuredMarkdown`):**
+   - Menghilangkan artefak strip/bullet berulang (`- - ###`, `• • `) yang merusak tampilan judul dan memicu bullet list ganda.
+   - Memperbaiki regex heading agar karakter pagar (`#`) tidak terpecah menjadi `#\n\n#`.
+   - Memastikan butir poin (`- **...**:`), nomor langkah (`1.`, `2.`), dan kalimat penutup selalu berdiri di baris baru tersendiri, mencegah teks menempel tanpa pemisah baris.
+3. **Penyelarasan Prompt Layout:**
+   - Menambahkan instruksi tata letak Markdown eksplisit pada `buildSystemPrompt` untuk melarang penggabungan baris tabel atau numbered list secara horizontal.
+
+
 
 
 
