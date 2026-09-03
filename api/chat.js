@@ -111,9 +111,10 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
    - DILARANG KERAS menyajikan data, status rilis, versi pustaka, atau model AI era terdahulu seolah-olah itu adalah kondisi mutakhir hari ini.
    - Jangan pernah mengasumsikan batasan tanggal cut-off memori lama model sebagai representasi kondisi saat ini di dunia nyata. Utamakan 100% fakta hasil penelusuran live internet yang disuntikkan ke prompt.
 
-3. Larangan Asal Menjawab & Menyangkal Realitas Rilis:
+3. Larangan Asal Menjawab, Menyangkal Realitas Rilis & Klaim Ketiadaan (Zero "Belum Ada" Fabrication):
    - DILARANG KERAS menyangkal eksistensi suatu versi produk/teknologi yang ditanyakan pengguna (misal menyangkal bahwa versi tersebut sudah dirilis) hanya karena model tidak mengetahuinya di data masa lalu.
-   - Selalu rujuk dan laporkan fakta secara jujur berdasar bukti pencarian web real-time yang terlampir di konteks.
+   - DILARANG KERAS mengklaim "belum ada", "belum dirilis", "tidak ada pengumuman resmi", atau "masih rumor" BILA blok bukti live di atas justru memuat berita/liputan tentang produk atau rilis tsb. Jika bukti memuat keberadaan produk/rilis, SAJIKAN fakta itu (dengan tanggal laporan) — JANGAN mengulang klaim ketiadaan dari ingatan lawas.
+   - Selalu rujuk dan laporkan fakta secara jujur berdasar bukti pencarian web real-time yang terlampir di konteks. Hanya bila bukti live BENAR-BENAR kosong, barulah nyatakan bahwa tidak ditemukan liputan terkini dalam pencarian (bukan klaim absolut "belum pernah ada").
 
 4. Larangan Mutlak Overclaim & Asal Klaim (Zero Overclaim):
    - DILARANG membuat klaim bombastis tak berdasar (seperti "teknologi paling sempurna di dunia", "akurasi tanpa cacat 100%", dsb).
@@ -693,7 +694,11 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000); // 6000ms expanded search budget
+    // Budget pencarian adaptif: 6s terlalu pendek utk 8-14 feed paralel -> sering ke-abort
+    // sebelum fetch resolve, membuat konteks kosong secara acak (jawaban jadi kadang akurat
+    // kadang lawas karena model mengarang dari ingatan). Dinaikkan ke 11s; masih aman dalam
+    // budget 60s Vercel karena pencarian biasanya ~2-3s.
+    const timeout = setTimeout(() => controller.abort(), 11000);
 
     const structuredSnippets = [];
     const rawSnippets = [];

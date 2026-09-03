@@ -1442,3 +1442,17 @@ Released 2026-09-03.
    - Heading & elemen lain tidak diubah; seluruh override light-mode (termasuk dalam liquid-glass) disesuaikan agar strong selalu memakai warna tema.
 3. **Verifikasi:**
    - `npm run build` sukses (CSS ter-generate tanpa error); `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.652.0 — Grounding Consistency Fix (POCO/HyperOS Case): Longer Search Budget & Zero "Belum Ada" Claims
+
+Released 2026-09-03.
+
+Menindaklanjuti laporan jawaban tidak konsisten pada pertanyaan "info terbaru perilisan HyperOS untuk POCO X7" — kadang akurat, kadang menyebut perangkat "belum rilis" padahal sudah rilis ~1 tahun. Penelusuran menemukan 2 akar masalah.
+
+1. **Timeout Pencarian Terlalu Pendek & Non-Deterministik (6s):**
+   - `setTimeout(abort, 6000)` membatalkan seluruh fetch bila melewati 6 detik. Feed butuh ~2-3s, tapi pada beban 8-14 fetch paralel + parsing, sering ke-abort lebih dulu sehingga konteks bukti kosong secara ACAK — model lalu mengarang dari ingatan lawas. Inilah penyebab "kadang akurat, kadang lawas".
+   - Budget dinaikkan menjadi 11 detik; masih aman dalam budget 60s Vercel. Verifikasi langsung: feed Google News untuk query POCO X7/HyperOS mengembalikan berita terbaru 2026 (HyperOS 4, Android 17, POCO X7 HyperOS 3.0.302.0 India).
+2. **Model Mengklaim "Belum Ada / Belum Rilis" Bertentangan dengan Bukti:**
+   - Prompt `[PROTOKOL ANTI-HALUSINASI]` butir 3 diperkuat: DILARANG mengklaim "belum ada", "belum dirilis", "tidak ada pengumuman resmi", atau "masih rumor" BILA blok bukti live justru memuat liputan produk/rilis tsb. Bila bukti ada, wajib menyajikan fakta ber-tanggal; klaim ketiadaan absolut hanya boleh bila bukti live benar-benar kosong.
+3. **Verifikasi:**
+   - Feed & query teruji mengembalikan data terbaru; `node --check` lolos; seluruh perubahan di-commit dan di-push.
