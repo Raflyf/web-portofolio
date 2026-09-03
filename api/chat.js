@@ -644,6 +644,40 @@ function isSafePublicUrl(urlString) {
  */
 async function scrapeDirectWebpageContent(url) {
   if (!url || typeof url !== 'string' || !isSafePublicUrl(url)) return '';
+
+  // Specialized High-Fidelity Scraper: LMSYS Chatbot Arena / arena.ai Leaderboard
+  if (/arena\.ai|lmarena\.ai/i.test(url)) {
+    try {
+      const res = await fetchJsonWithTimeout('https://arena.ai/leaderboard', {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+        }
+      }, 5000);
+      if (res.ok && res.text) {
+        const html = res.text;
+        const idx = html.indexOf('leaderboardSlug');
+        if (idx !== -1) {
+          const slice = html.slice(idx, idx + 18000);
+          const unescaped = slice.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          const entryRegex = /\{"rank":(\d+)[^{}]*?"modelDisplayName":"([^"]+)"[^{}]*?"rating":([\d.]+)[^{}]*?"modelOrganization":"([^"]+)"/g;
+          let m;
+          const items = [];
+          while ((m = entryRegex.exec(unescaped)) !== null && items.length < 12) {
+            items.push({
+              rank: parseInt(m[1], 10),
+              name: m[2],
+              rating: Math.round(parseFloat(m[3])),
+              org: m[4]
+            });
+          }
+          if (items.length > 0) {
+            return `Official Live Rankings on Arena AI (Text Overall Leaderboard):\n` +
+              items.map(it => `- Rank #${it.rank}: ${it.name} (${it.org}) — Arena Elo: ${it.rating}`).join('\n');
+          }
+        }
+      }
+    } catch (_) {}
+  }
   
   // 1. Primary: Direct Fetch + Local Crawl4AI Fit-Markdown Engine
   try {
@@ -652,7 +686,7 @@ async function scrapeDirectWebpageContent(url) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Crawl4AI-Firecrawl-HybridEngine/2026',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7'
       }
-    }, 2800);
+    }, 3800);
 
     if (res.ok && res.text && res.text.length > 50) {
       const parsed = extractFitMarkdownContent(res.text, url);
@@ -667,7 +701,7 @@ async function scrapeDirectWebpageContent(url) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/plain'
       }
-    }, 3200);
+    }, 4500);
 
     if (jinaRes.ok && jinaRes.text && jinaRes.text.length > 50) {
       return jinaRes.text.slice(0, 6000).trim();
@@ -731,20 +765,44 @@ async function searchWebContext(query, history = []) {
       .trim()
       .slice(0, 120);
 
-    // 1. Direct Web Link Scraper: If user provides an explicit URL in the query
-    const urlMatches = query.match(/https?:\/\/[^\s"'<>]+/gi) || [];
-    if (urlMatches.length > 0) {
-      const urlPromises = urlMatches.slice(0, 2).map(async (url) => {
+    // 1. Universal Autonomous Webpage Scraper & Target Domain Resolver:
+    // Mendeteksi tautan eksplisit, domain mandiri, atau intensi situs target (termasuk arena.ai)
+    const targetUrls = new Set();
+
+    // 1a. Explicit URLs (e.g. "https://..." atau "http://...")
+    const explicitUrls = query.match(/https?:\/\/[^\s"'<>]+/gi) || [];
+    for (const u of explicitUrls) targetUrls.add(u);
+
+    // 1b. Autonomous Bare Domain Discovery (e.g. "arena.ai", "gsmarena.com", "kompas.com", "github.com/...")
+    const bareDomainMatches = query.match(/\b([a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ai|com|org|io|net|id|co|dev|app|gov|edu)(?:\/[^\s"'<>]*)?)\b/gi) || [];
+    for (const d of bareDomainMatches) {
+      if (!Array.from(targetUrls).some(u => u.includes(d))) {
+        targetUrls.add(`https://${d}`);
+      }
+    }
+
+    // 1c. Platform Intent Routing for major benchmarks (Arena AI / LMSYS Chatbot Arena)
+    if (/\b(arena\s*ai|chatbot\s*arena|lmsys|arena\.ai)\b/i.test(query)) {
+      targetUrls.add('https://arena.ai/leaderboard');
+    }
+
+    // Eksekusi deep-scraping halaman target secara paralel (hingga 3 URL teratas)
+    const scrapeQueue = Array.from(targetUrls).slice(0, 3);
+    if (scrapeQueue.length > 0) {
+      const urlPromises = scrapeQueue.map(async (url) => {
         const pageText = await scrapeDirectWebpageContent(url);
-        if (pageText && pageText.length > 50) {
+        if (pageText && pageText.length > 40) {
+          let host = url;
+          try { host = new URL(url).hostname; } catch (_) {}
           structuredSnippets.push({
-            text: `[Live Webpage Content (${url})]:\n${pageText}`,
-            timestamp: Date.now() + 1000000000 // Highest priority
+            text: `[Live Webpage Scraper (${host})]:\n${pageText}`,
+            timestamp: Date.now() + 1000000000, // Prioritas absolut di atas cuplikan berita
+            score: 100
           });
-          rawSnippets.push(`[Scraped URL]: ${url}`);
+          rawSnippets.push(`[Scraped Webpage]: ${host}`);
           agentToolsUsed.push({
             tool: 'web_scraper',
-            label: 'Live Webpage Reader',
+            label: `Live Webpage Reader (${host})`,
             url: url
           });
         }
@@ -1564,8 +1622,26 @@ function normalizeStructuredMarkdown(str) {
 
   // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" atau "ringan. 2.\n**Inference**:")
   out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '$1\n\n$2. $3');
+
+  // 1.2 Bersihkan bullet/asterisk liar yang menempel setelah nomor urut (misal: "1. - *Pilih..." -> "1. Pilih...")
+  out = out.replace(/(\d+\.)\s*[-*•\s]+\*?/g, '$1 ');
+
+  // 1.3 Pisahkan nomor urut yang tergabung inline (misal: "...kedua model. 3. Identitas...") menjadi baris baru
+  out = out.replace(/([.!?])\s+(\d+\.\s+[A-Za-z*])/g, '$1\n\n$2');
+
+  // 1.4 Normalisasi bullet character aneh ('•', '*') ke standard '-'
+  out = out.replace(/^[•*]\s+/gm, '- ');
+
   // 1.5 Format bullet items starting with bold label: e.g. "**Kemampuan Multimodal**: ..." -> "- **Kemampuan Multimodal**: ..."
   out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•])(\*\*[^*:\n]+\*\*)\s*(?:[:–—,]|: )?\s*([A-Za-z])/g, '\n- $1: $2');
+
+  // 1.6 Normalisasi konsistensi label judul list item (Anti-Pewarnaan Huruf Tidak Konsisten):
+  // Menjamin seluruh judul poin sebelum tanda titik dua (- Judul: Penjelasan, • Judul: Penjelasan, atau 1. Judul: Penjelasan)
+  // selalu dibungkus dengan **Judul**: secara seragam agar ter-render konsisten sebagai teks aksen cyan (<strong>)
+  out = out.replace(/(?:^|\n)\s*([•\-\*]|\d+\.)\s*(?!\*\*|#)\*?([\w][\w\s/&._\-]{1,50}?)\*?:\s+([^\n]+)/g, (match, bullet, title, desc) => {
+    const cleanBullet = (bullet === '•' || bullet === '*') ? '-' : bullet;
+    return `\n${cleanBullet} **${title.trim()}**: ${desc.trim()}`;
+  });
 
   // 2. Konversi judul bagian mandiri (akhiran titik dua tanpa isi kalimat) menjadi Heading Markdown (### Judul)
   // Mencegah judul bagian (seperti Komponen Utama:, Alur Kerja:, Keunggulan:, Manfaat:) berubah menjadi butir poin (- )
