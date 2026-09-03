@@ -633,7 +633,7 @@ html.lenis, html.lenis body {
 }
 
 .markdown-body strong {
-  color: #fff;
+  color: #67e8f9;
 }
 
 .markdown-body hr {
@@ -802,9 +802,11 @@ html.lenis, html.lenis body {
 :root:not(.dark) .markdown-body h2,
 :root:not(.dark) .markdown-body h3,
 :root:not(.dark) .markdown-body h4,
-:root:not(.dark) .markdown-body strong,
 :root:not(.dark) .markdown-body th {
   color: rgb(24 24 27);
+}
+:root:not(.dark) .markdown-body strong {
+  color: rgb(14 116 144);
 }
 
 :root:not(.dark) .markdown-body a {
@@ -834,21 +836,23 @@ html.lenis, html.lenis body {
 :root:not(.dark) .liquid-glass-inset .markdown-body h2,
 :root:not(.dark) .liquid-glass-inset .markdown-body h3,
 :root:not(.dark) .liquid-glass-inset .markdown-body h4,
-:root:not(.dark) .liquid-glass-inset .markdown-body strong,
 :root:not(.dark) .liquid-glass-inset .markdown-body th,
 :root:not(.dark) .liquid-glass .markdown-body h1,
 :root:not(.dark) .liquid-glass .markdown-body h2,
 :root:not(.dark) .liquid-glass .markdown-body h3,
 :root:not(.dark) .liquid-glass .markdown-body h4,
-:root:not(.dark) .liquid-glass .markdown-body strong,
 :root:not(.dark) .liquid-glass .markdown-body th,
 :root:not(.dark) .liquid-glass-strong .markdown-body h1,
 :root:not(.dark) .liquid-glass-strong .markdown-body h2,
 :root:not(.dark) .liquid-glass-strong .markdown-body h3,
 :root:not(.dark) .liquid-glass-strong .markdown-body h4,
-:root:not(.dark) .liquid-glass-strong .markdown-body strong,
 :root:not(.dark) .liquid-glass-strong .markdown-body th {
   color: rgb(24 24 27);
+}
+:root:not(.dark) .liquid-glass-inset .markdown-body strong,
+:root:not(.dark) .liquid-glass .markdown-body strong,
+:root:not(.dark) .liquid-glass-strong .markdown-body strong {
+  color: rgb(14 116 144);
 }
 
 :root:not(.dark) .liquid-glass-inset .markdown-body a,
@@ -885,7 +889,7 @@ html.lenis, html.lenis body {
 }
 .markdown-body strong {
   font-weight: 600;
-  color: #ffffff;
+  color: #67e8f9;
 }
 .markdown-body em {
   font-style: italic;
@@ -994,13 +998,15 @@ html.lenis, html.lenis body {
 :root:not(.dark) .markdown-body em {
   color: #18181b;
 }
-:root:not(.dark) .markdown-body strong,
 :root:not(.dark) .markdown-body h1,
 :root:not(.dark) .markdown-body h2,
 :root:not(.dark) .markdown-body h3,
 :root:not(.dark) .markdown-body h4,
 :root:not(.dark) .markdown-body th {
   color: #09090b;
+}
+:root:not(.dark) .markdown-body strong {
+  color: #0e7490;
 }
 :root:not(.dark) .markdown-body code {
   color: #18181b;
