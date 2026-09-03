@@ -120,7 +120,7 @@ ${effortDirective}
 - **Kontak Resmi**: GitHub https://github.com/Raflyf | Email mailto:raflyfirmansyah02@gmail.com | WhatsApp https://wa.me/628991333323`;
 }
 
-async function fetchJsonWithTimeout(url, options, timeoutMs = 10000) {
+async function fetchJsonWithTimeout(url, options, timeoutMs = 25000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(new Error(`Timeout of ${timeoutMs}ms exceeded`)), timeoutMs);
   try {
@@ -542,7 +542,7 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2200); // 2200ms ultra-fast search budget
+    const timeout = setTimeout(() => controller.abort(), 6000); // 6000ms expanded search budget
 
     const structuredSnippets = [];
     const rawSnippets = [];
@@ -1628,7 +1628,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
 
     const isSpecificManual = !!(model && model !== 'auto' && model !== 'default' && model !== 'cascade');
 
-    async function callOpenRouter(mName, tOut = 45000) {
+    async function callOpenRouter(mName, tOut = 55000) {
       if (OPENROUTER_KEYS.length === 0) return null;
       const stepDeadline = Date.now() + tOut;
       const now = Date.now();
@@ -1642,7 +1642,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 18000 : 9000);
+        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 25000);
 
         try {
           const isReasoningModel = mName.toLowerCase().includes('reasoning') || mName.toLowerCase().includes('r1') || mName.toLowerCase().includes('thinking') || mName.toLowerCase().includes('qwq');
@@ -1701,7 +1701,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 45000) {
+    async function callOpenCode(mName, tOut = 55000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
       const stepDeadline = Date.now() + tOut;
@@ -1713,7 +1713,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 18000 : 9000);
+        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 25000);
 
         try {
           const isLightning = cleanModelName.toLowerCase().includes('lightning');
@@ -1760,7 +1760,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 45000) {
+    async function callNvidiaNim(mName, tOut = 55000) {
       if (NVIDIA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^nvidia\//i, '');
       const stepDeadline = Date.now() + tOut;
@@ -1801,7 +1801,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       return null;
     }
 
-    async function callOllama(mName, tOut = 45000) {
+    async function callOllama(mName, tOut = 55000) {
       if (OLLAMA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^ollama\//i, '').replace(/:free$/i, '');
       const stepDeadline = Date.now() + tOut;
@@ -1848,7 +1848,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       return null;
     }
 
-    async function callMiniMax(tOut = 12000) {
+    async function callMiniMax(tOut = 25000) {
       if (MINIMAX_KEYS.length === 0) return null;
       for (const mmKey of MINIMAX_KEYS) {
         try {
@@ -1905,18 +1905,18 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       if (hasImages || (model && model.toLowerCase().includes('vision')) || queryIntent.category === 'vision') {
         return [
           // Tier 1: Mimo v2.5 from OpenCode (SOTA Multimodal Vision)
-          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 40000 },
+          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 55000 },
           // Tier 2: Nemotron Nano Omni from OpenRouter (Multimodal Omni Reasoning)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 40000 },
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 55000 },
           // Tier 3: Ollama Nano Multimodal
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 40000 }
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 }
         ];
       }
 
       // 1. REASONING CHAT PIPELINE (Prioritas: Ollama Nano -> Nemotron Lightning -> Multimodal Omni -> Laguna Terbaru)
       const isReasoningQuery = queryIntent.category === 'deep_reasoning' || queryIntent.effort === 'thinking' || (effectiveEffort === 'high' && queryIntent.category === 'project_architecture') || (model && (model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni')));
       if (isReasoningQuery && (!model || model === 'auto' || model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni'))) {
-        const reasoningStepTimeout = 12000;
+        const reasoningStepTimeout = 30000;
         return [
           // 1st: Ollama Cloud Nano (Prioritas Utama)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: reasoningStepTimeout },
@@ -1942,89 +1942,89 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
         // === OLLAMA CLOUD GROUP ===
         if (t === 'nemotron-3-nano' || t.startsWith('ollama-nano') || t.includes('nano')) {
           return [
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
-            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 }
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 55000 },
+            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 55000 }
           ];
         }
         if (t === 'ollama-nemotron-ultra') {
           return [
-            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 }
+            { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 55000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 55000 }
           ];
         }
         if (t === 'ollama-nemotron-super') {
           return [
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 }
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 55000 }
           ];
         }
 
         // === OPENCODE ZEN GROUP ===
         if (t === 'opencode-lightning') {
           return [
-            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
+            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 }
           ];
         }
         if (t === 'opencode-ultra') {
           return [
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 }
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 55000 }
           ];
         }
         if (t === 'opencode-laguna' || t.includes('laguna')) {
           return [
-            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 }
+            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 55000 }
           ];
         }
         if (t === 'mimo' || t.includes('mimo') || t.includes('vision')) {
           return [
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
+            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 }
           ];
         }
 
         if (t === 'openrouter-free') {
           return [
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 }
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 55000 }
           ];
         }
         if (t.includes('light') || t.includes('lightning')) {
           return [
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
-            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 55000 },
+            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 }
           ];
         }
         if (t.includes('super')) {
           return [
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 }
           ];
         }
         if (t.includes('ultra')) {
           return [
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 55000 },
+            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 55000 },
+            { provider: 'ollama', model: 'nemotron-3-super', timeout: 55000 }
           ];
         }
         if (t.includes('antigravity') || t.includes('codex') || t.includes('coding')) {
           return [
-            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 }
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 55000 },
+            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 55000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 55000 }
           ];
         }
       }
@@ -2038,23 +2038,23 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       // *Seluruh model lawas/usang/402 telah dieliminasi.
       return [
         // === 1. PRIORITAS UTAMA: OLLAMA NANO ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
 
         // === 2. NEMOTRON SERI LIGHTNING ===
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 7000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 6000 },
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 22000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 22000 },
 
         // === 3. MULTIMODAL: NEMOTRON NANO OMNI & MIMO ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 7000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 6000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 22000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 22000 },
 
         // === 4. MODEL RILISAN TERBARU & RESPON KILAT (SUB-2 DETIK) ===
-        { provider: 'ollama', model: 'gemma4:31b', timeout: 7000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 6000 },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 6000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 6000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 7000 },
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 7000 }
+        { provider: 'ollama', model: 'gemma4:31b', timeout: 20000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 20000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 20000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 20000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 20000 },
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 20000 }
       ];
     }
 
@@ -2085,10 +2085,10 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
 
       for (const step of pipeline) {
         const elapsed = Date.now() - requestStartTime;
-        const remainingMs = 28000 - elapsed; // Safe budget matching vercel.json function maxDuration
+        const remainingMs = 58000 - elapsed; // Safe budget matching vercel.json function maxDuration 60s
         if (remainingMs <= 1500) break;
 
-        const stepTimeout = Math.min(step.timeout || 6500, Math.max(2500, remainingMs - 500));
+        const stepTimeout = Math.min(step.timeout || 25000, Math.max(3000, remainingMs - 500));
         try {
           const result = await executeStep(step, stepTimeout);
           if (result) return result; // Succeeded! Returns immediately with 1x token consumption!

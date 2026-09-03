@@ -110,7 +110,7 @@ function saveAIMemory(factText, sessionId) {
   // 2. Asynchronously sync to serverless endpoint
   try {
     const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 4000);
+    setTimeout(() => ctrl.abort(), 10000);
     fetch('/api/save-memory', {
       method: 'POST',
       keepalive: true,
