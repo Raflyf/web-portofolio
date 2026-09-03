@@ -571,9 +571,10 @@ export default function TerminalAI({ onClose } = {}) {
       finalResponse = finalResponse
         .replace(/[\u2010\u2011]/g, '-')
         .replace(/[\u202F\u00A0]/g, ' ')
+        .replace(/(\*\*[^*:\n]+\*\*)\s*[\u2013\u2014-]\s*/g, '$1: ')
         .replace(/(\b[A-Za-z0-9_]+)\s*[\u2013\u2014]\s*(seperti|misalnya|contohnya|yakni|yaitu|termasuk)\b/gi, '$1, $2')
         .replace(/([a-zA-Z0-9_]+)[\u2013\u2014]([a-zA-Z0-9_]+)/g, '$1, $2')
-        .replace(/\s*[\u2013\u2014]\s*/g, ', ')
+        .replace(/\s*[\u2013\u2014]\s*/g, ' - ')
         .replace(/,\s*,+/g, ',')
         .replace(/[^\S\r\n]{2,}/g, ' ')
         .replace(/\n{3,}/g, '\n\n')

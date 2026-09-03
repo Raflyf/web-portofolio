@@ -358,9 +358,10 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push(`${targetSubject} rilis pembaruan resmi terkini`);
 
     // Expand search terms for AI & LLM model comparisons to fetch contemporary live rankings
-    if (/\b(model|llm|ai|gpt|claude|gemini|deepseek|terbaik|best)\b/i.test(targetSubject)) {
-      queries.push(`${targetSubject} best LLM models benchmark ranking`);
-      queries.push(`best AI models ranking benchmark latest`);
+    if (/\b(model|llm|ai|gpt|claude|gemini|deepseek|terbaik|best)\b/i.test(targetSubject) || /\b(ai|llm|model)\b/i.test(qNorm)) {
+      queries.unshift(`Claude 5.1 OR Claude Fable 5.1 OR Claude Opus 5`);
+      queries.unshift(`GPT-5.6 Sol OR OpenAI Astra OR GPT-5.6`);
+      queries.unshift(`Gemini 3.8 Flash OR Gemini 3.8 Cyber`);
     }
 
     // Dynamic intent modifiers based on user intent keywords
@@ -680,7 +681,7 @@ async function searchWebContext(query, history = []) {
 
   const qLower = query.toLowerCase().trim();
   const rawQueries = formulateSmartSearchQueries(query, history);
-  const searchQueries = rawQueries.length > 0 ? rawQueries.slice(0, 3) : [query.trim().slice(0, 80)];
+  const searchQueries = rawQueries.length > 0 ? rawQueries.slice(0, 5) : [query.trim().slice(0, 80)];
 
   try {
     const controller = new AbortController();
@@ -695,6 +696,13 @@ async function searchWebContext(query, history = []) {
       if (!str) return '';
       const entityMap = { '&quot;': '"', '&#39;': "'", '&amp;': '&', '&lt;': '<', '&gt;': '>', '&nbsp;': ' ' };
       return str.replace(/<[^>]+>/g, '').replace(/&(?:quot|#39|amp|lt|gt|nbsp);/g, m => entityMap[m] || m).trim();
+    };
+
+    // Helper to filter out clickbait / junk SEO articles
+    const isJunkArticle = (str) => {
+      if (!str || typeof str !== 'string') return true;
+      const lower = str.toLowerCase();
+      return /\b(zodiak|ramalan|togel|slot gacor|judi|casino|harga emas|bursa efek|crypto pump)\b/i.test(lower);
     };
 
     // 1. Direct Web Link Scraper: If user provides an explicit URL in the query
@@ -719,7 +727,7 @@ async function searchWebContext(query, history = []) {
     }
 
     // 2. High-Precision Parallel Live Feeds (Google News Global & Indonesia + Bing News)
-    const isBreakingQuery = /\b(terbaru|terkini|hari ini|kemarin|bulan ini|minggu ini|latest|today|breaking|update|baru|sekarang|now)\b/i.test(query);
+    const isBreakingQuery = /\b(terbaru|terkini|hari ini|kemarin|bulan ini|minggu ini|latest|today|breaking|update|baru|sekarang|now|saat ini|terbaik|ranking|peringkat|benchmark|rilis)\b/i.test(query);
     const searchFetches = searchQueries.flatMap(targetQ => {
       const fetches = [
         // Google News Indonesia (All-time topical news & articles)
@@ -740,11 +748,11 @@ async function searchWebContext(query, history = []) {
       ];
       if (isBreakingQuery) {
         fetches.push(
-          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:7d')}&hl=id&gl=ID&ceid=ID:id`, {
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:7d')}&hl=en-US&gl=US&ceid=US:en`, {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
             signal: controller.signal
           }),
-          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:7d')}&hl=en-US&gl=US&ceid=US:en`, {
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=en-US&gl=US&ceid=US:en`, {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
             signal: controller.signal
           })
@@ -844,8 +852,8 @@ async function searchWebContext(query, history = []) {
                 if (snip && !isJunkArticle(snip)) {
                   structuredSnippets.push({
                     text: `[Referensi Ensiklopedia Resmi (${h.title})]: ${snip}`,
-                    timestamp: Date.now() + 1000000,
-                    score: 9
+                    timestamp: Date.now() - (86400000 * 14),
+                    score: 6
                   });
                   rawSnippets.push(`[Wikipedia]: ${h.title}`);
                   agentToolsUsed.push({
@@ -934,10 +942,16 @@ async function searchWebContext(query, history = []) {
                 if (!isNaN(parsedDate)) {
                   ts = parsedDate;
                   const daysOld = (Date.now() - parsedDate) / (1000 * 60 * 60 * 24);
-                  if (daysOld <= 7) recencyBonus = 10;
-                  else if (daysOld <= 30) recencyBonus = 7;
-                  else if (daysOld <= 90) recencyBonus = 4;
-                  else if (daysOld <= 365) recencyBonus = 2;
+                  if (daysOld <= 7) recencyBonus = 35;
+                  else if (daysOld <= 30) recencyBonus = 25;
+                  else if (daysOld <= 90) recencyBonus = 12;
+                  else if (daysOld > 180) recencyBonus = -25;
+                  else if (daysOld > 365) recencyBonus = -50;
+
+                  // Filter out outdated articles (> 90 days) if the user is asking for current / latest facts
+                  if (isBreakingQuery && daysOld > 90) {
+                    return;
+                  }
                 }
               }
               const relScore = calcScore(title + ' ' + desc) + recencyBonus;
@@ -959,14 +973,19 @@ async function searchWebContext(query, history = []) {
         tool: 'google_search',
         label: 'Google Search & Berita Global',
         sourcesCount: newsItemsCount,
-        sources: rawSnippets.filter(r => !r.startsWith('[Wikipedia]') && !r.startsWith('[GitHub')).slice(0, 3)
+        sources: rawSnippets.filter(r => !r.startsWith('[Wikipedia]') && !r.startsWith('[GitHub')).slice(0, 4)
       });
     }
 
-    // Sort all snippets by relevance score first (including recency bonus), then newest timestamp
-    structuredSnippets.sort((a, b) => ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp));
+    // Sort all snippets: For breaking/latest queries, strictly sort newest publication timestamp first
+    structuredSnippets.sort((a, b) => {
+      if (isBreakingQuery) {
+        return (b.timestamp - a.timestamp) || ((b.score || 0) - (a.score || 0));
+      }
+      return ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp);
+    });
 
-    // Deduplicate snippets (top 5 highest scoring snippets for fast, high-density grounding)
+    // Deduplicate snippets (top 7 highest scoring / newest snippets for fast, high-density grounding)
     const seen = new Set();
     const uniqueSnippets = [];
     for (const item of structuredSnippets) {
@@ -974,7 +993,7 @@ async function searchWebContext(query, history = []) {
         seen.add(item.text);
         uniqueSnippets.push(item.text);
       }
-      if (uniqueSnippets.length >= 5) break;
+      if (uniqueSnippets.length >= 7) break;
     }
 
     let formattedPrompt = '';
@@ -984,6 +1003,9 @@ ${uniqueSnippets.join('\n')}
 
 [PANDUAN SINTESIS & GROUNDING FAKTUAL]:
 - PRIORITASKAN FAKTA RESMI & TERKINI DARI BUKTI HASIL PENCARIAN DI ATAS.
+- KETENTUAN KHUSUS PERBANDINGAN MODEL AI / LLM TERBAIK SAAT INI:
+  * Rujuk dan sajikan HANYA model-model mutakhir era 2026 yang tertera pada bukti berita di atas (seperti Gemini 3.8 Flash / Gemini 3.8 Cyber, Claude 5.1 / Claude Fable 5.1 / Claude Opus 5, GPT-5.6 Sol / Astra).
+  * DILARANG KERAS menyajikan model-model lawas (seperti Claude 3.7, Gemini 2.5, o3 lama, Llama 3.3) seolah-olah itu model terdepan saat ini.
 - GAYA PENYAMPAIAN MANUSIAWI, RAMAH, DAN MUDAH DIMENGERTI:
   * Jawablah secara hangat, bersahabat, dan menyenangkan untuk dibaca tanpa kalimat template robotik.
   * Sampaikan inti jawaban secara langsung tanpa berbelit-belit.
@@ -1830,9 +1852,10 @@ export default async function handler(req, res) {
       }
 
       // 3.7. Clean duplicate bullet dashes & normalize bold markdown
-      cleaned = cleaned.replace(/([:?!])\s+[-*•]\s+/g, '$1\n\n- ');
-      cleaned = cleaned.replace(/(^|\n)\s*[-*•]\s*\*([^*:\n]+)\*\*/g, '$1- **$2**');
-      cleaned = cleaned.replace(/(^|\n)\s*[-*•]\s*\*\*([^*:\n]+)\*(?!\*)/g, '$1- **$2**');
+      cleaned = cleaned.replace(/([.:?!])\s*[-*•]\s*\*/g, '$1\n\n- **');
+      cleaned = cleaned.replace(/([.:?!])\s*[-*•]\s+/g, '$1\n\n- ');
+      cleaned = cleaned.replace(/(?:^|\n|\.\s+)\s*[-*•]\s*\*([^*:\n]+)\*\*/g, '\n- **$1**');
+      cleaned = cleaned.replace(/(?:^|\n|\.\s+)\s*[-*•]\s*\*\*([^*:\n]+)\*(?!\*)/g, '\n- **$1**');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*[\-\*•\s]*/gm, '$1**');
       cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\[([^\]\n]+)\](?:\*\*|:|\*\*:)?\s*/gm, '$1**$2**: ');
@@ -1843,6 +1866,13 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/([^\n])\s{2,}([^\n])/g, '$1 $2');
       cleaned = cleaned.replace(/([^\n])\s+((?:Semoga|Jika ada|Ada topik|Kalau ada|Silakan)\s+[^\n]+)$/i, '$1\n\n$2');
       cleaned = cleaned.replace(/\n\s*-\s*-\s*(?:\n|$)/g, '\n\n');
+      cleaned = cleaned.replace(/\s*-\s*-\s*$/g, '');
+
+      // Balance unclosed bold tags (e.g. "**Gemini 3.8 Flash...")
+      const boldTagCount = (cleaned.match(/\*\*/g) || []).length;
+      if (boldTagCount % 2 !== 0) {
+        cleaned = cleaned.replace(/\*\*([^*\n]+)(?=[,\.\n]|$)/m, '**$1**');
+      }
 
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
       cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
