@@ -73,9 +73,11 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 [IDENTITAS & PERAN ASISTEN]:
 - Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.
 - Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "kamu model apa", "siapa Anda", "model apa ini", dsb):
-  1. Jawablah secara DINAMIS, ALAMI, CERDAS, dan BERVARIASI menggunakan gaya bahasa Anda sendiri (DILARANG mengulang template statis yang kaku atau sama persis setiap kali).
-  2. Inti yang tetap disampaikan: Anda adalah AI Assistant & Developer Agent terintegrasi di portofolio digital Rafly Firmansyah, didukung teknologi Large Language Model (LLM) modern berkecepatan tinggi dengan retrieval terpadu.
-  3. Kerahasiaan Nama Teknis: DILARANG menyebutkan merek dagang teknis internal model mentah (seperti Nemotron, Ollama, OpenRouter, GPT, Gemini, Claude, Llama, Qwen). Cukup perkenalkan diri Anda sebagai AI Assistant & Developer Agent resmi portofolio Rafly.
+  1. Jawablah secara DINAMIS, PERCAYA DIRI, ALAMI, dan BERVARIASI menggunakan gaya bahasa Anda sendiri (DILARANG mengulang template statis yang kaku atau sama persis setiap kali).
+  2. Inti yang disampaikan: Anda adalah AI Assistant & Developer Agent terintegrasi di portofolio digital Rafly Firmansyah, didukung teknologi Large Language Model (LLM) modern berkecepatan tinggi dengan retrieval terpadu.
+  3. LARANGAN KERAS KALIMAT VALIDASI & DEFENSIVE DISCLAIMER:
+     - DILARANG KERAS mengatakan kalimat seperti: "Jadi, secara singkat, saya bukan model dengan nama brand tertentu...", "Saya bukan model dengan merek...", "Saya tidak berafiliasi dengan...", atau kalimat validasi peran berulang ("saya adalah asisten cerdas yang bekerja untuk membantu kamu dalam menjelajahi...").
+     - Jawablah secara langsung, percaya diri, tanpa validasi defensif, dan tanpa menjelaskan apa yang BUKAN diri Anda.
   4. Sampaikan peran Anda secara antusias dan natural: mendampingi pengunjung membedah proyek rekayasa software, eksplorasi riset machine learning (misalnya OpenPlagiarismChecker atau Spam Detection), verifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta evaluasi arsitektur sistem.
 
 ${languageDirective}
@@ -100,6 +102,10 @@ ${effortDirective}
    - Heading (###): WAJIB berdiri sendiri di baris baru dan diawali baris kosong. DILARANG memberi strip/bullet sebelum heading (misal "- ###" atau "• ###").
    - List nomor (1., 2.) dan butir poin (- ): WAJIB ditulis per baris tersendiri, DILARANG menggabungkan nomor berurutan ke dalam satu kalimat horizontal.
    - Jika terpaksa membuat tabel: WAJIB menyertakan Header, Divider, dan memisahkan setiap baris dengan baris baru. DILARANG KERAS menggabungkan baris tabel secara horizontal.
+
+4. Larangan Mutlak Kalimat Validasi Diri & Meta-Disclaimer (Berlaku untuk SEMUA Percakapan):
+   - DILARANG KERAS menyisipkan kalimat validasi status diri, disclaimer defensif, atau meta-talk pada topik apa pun (contoh: "Saya bukan model dengan nama brand tertentu...", "Sebagai model bahasa/AI...", "Perlu dicatat bahwa saya hanyalah...", "Saya hadir di sini untuk membantu Anda...").
+   - Jangan pernah menjelaskan aturan, batasan, atau disclaimer diri Anda kepada pengguna. Jawablah langsung ke inti materi secara percaya diri, lugas, dan profesional.
 
 [PRINSIP GROUNDING FAKTUAL & ANTI-NOISE]:
 - Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib bersumber dari data terverifikasi.
@@ -1274,6 +1280,13 @@ function normalizeStructuredMarkdown(str) {
   out = out.replace(/\s*\(@?Raflyf\)/gi, '');
   out = out.replace(/\s*@Raflyf\b/gi, '');
 
+  // 11c. Eliminasi Kalimat Validasi Diri & Defensive Meta-Talk
+  out = out.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+(?:bukan|tidak\s+memiliki|tidak\s+berafiliasi)\s+(?:model\s+dengan\s+)?(?:nama\s+)?(?:brand|merek|perusahaan)\s+tertentu[^.!?\n]*[.!?]/gi, '');
+  out = out.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+adalah\s+asisten\s+cerdas\s+yang\s+bekerja\s+untuk\s+membantu\s+(?:kamu|anda)\s+dalam\s+menjelajahi[^.!?\n]*[.!?]/gi, '');
+  out = out.replace(/\b(?:Sebagai\s+(?:model\s+bahasa(?:\s+besar)?|asisten\s+(?:AI|virtual)|AI|LLM)[^,.\n]*,?\s*)/gi, '');
+  out = out.replace(/\b(?:Perlu\s+(?:diingat|dicatat|diketahui)\s+bahwa\s+(?:saya\s+adalah|ini\s+adalah|saya\s+hanyalah)[^.!?\n]*[.!?])/gi, '');
+  out = out.replace(/\b(?:saya\s+hanya\s+(?:sebuah|merupakan)\s+(?:model\s+bahasa|program|AI|asisten)[^.!?\n]*[.!?])/gi, '');
+
   // 12. Normalisasi newline ganda berlebih
   out = out.replace(/\n{3,}/g, '\n\n').trim();
 
@@ -1584,6 +1597,13 @@ export default async function handler(req, res) {
       // 3.65b. Sanitasi Handle Username: Hapus (@Raflyf) atau @Raflyf sesuai instruksi pengguna
       cleaned = cleaned.replace(/\s*\(@?Raflyf\)/gi, '');
       cleaned = cleaned.replace(/\s*@Raflyf\b/gi, '');
+
+      // 3.65c. Eliminasi Kalimat Validasi Diri & Defensive Meta-Talk (Berlaku untuk SEMUA Percakapan)
+      cleaned = cleaned.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+(?:bukan|tidak\s+memiliki|tidak\s+berafiliasi)\s+(?:model\s+dengan\s+)?(?:nama\s+)?(?:brand|merek|perusahaan)\s+tertentu[^.!?\n]*[.!?]/gi, '');
+      cleaned = cleaned.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+adalah\s+asisten\s+cerdas\s+yang\s+bekerja\s+untuk\s+membantu\s+(?:kamu|anda)\s+dalam\s+menjelajahi[^.!?\n]*[.!?]/gi, '');
+      cleaned = cleaned.replace(/\b(?:Sebagai\s+(?:model\s+bahasa(?:\s+besar)?|asisten\s+(?:AI|virtual)|AI|LLM)[^,.\n]*,?\s*)/gi, '');
+      cleaned = cleaned.replace(/\b(?:Perlu\s+(?:diingat|dicatat|diketahui)\s+bahwa\s+(?:saya\s+adalah|ini\s+adalah|saya\s+hanyalah)[^.!?\n]*[.!?])/gi, '');
+      cleaned = cleaned.replace(/\b(?:saya\s+hanya\s+(?:sebuah|merupakan)\s+(?:model\s+bahasa|program|AI|asisten)[^.!?\n]*[.!?])/gi, '');
 
       // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
       if (isTimeQuery) {
