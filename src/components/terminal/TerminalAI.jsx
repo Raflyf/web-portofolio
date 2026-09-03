@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles } from 'lucide-react';
+import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles, Globe, BookOpen, ShieldCheck, Code, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
 import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
@@ -609,6 +609,8 @@ export default function TerminalAI({ onClose } = {}) {
         modelName: headerModelName,
         providerName: `(${providerName})`,
         effort: effort,
+        steps: Array.isArray(data?.steps) ? data.steps : [],
+        sources: Array.isArray(data?.webMemories) ? data.webMemories : [],
         time: getCurrentTime(),
         isTyping: true
       };
@@ -948,6 +950,34 @@ export default function TerminalAI({ onClose } = {}) {
                   </div>
                 </div>
                 
+                {msg.steps && msg.steps.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2 px-0.5">
+                    {msg.steps.map((step, sIdx) => {
+                      const isSearch = step.tool === 'google_search' || step.tool === 'web_search';
+                      const isWiki = step.tool === 'wikipedia_lookup' || step.tool === 'encyclopedia_lookup';
+                      const isRag = step.tool === 'portfolio_rag';
+                      const isGithub = step.tool === 'github_inspector';
+                      const isScraper = step.tool === 'web_scraper';
+
+                      return (
+                        <span 
+                          key={sIdx} 
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium tracking-tight bg-white/5 border border-white/10 text-zinc-300 shadow-2xs hover:border-white/20 transition-colors"
+                          title={Array.isArray(step.sources) ? step.sources.join(', ') : (step.topic || step.query || step.label)}
+                        >
+                          {isSearch && <Globe className="w-2.5 h-2.5 text-sky-400" />}
+                          {isWiki && <BookOpen className="w-2.5 h-2.5 text-amber-400" />}
+                          {isRag && <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />}
+                          {isGithub && <Code className="w-2.5 h-2.5 text-purple-400" />}
+                          {isScraper && <ExternalLink className="w-2.5 h-2.5 text-cyan-400" />}
+                          <span>{step.label || (isSearch ? 'Google Search & Live Web' : isWiki ? 'Wikipedia Verified' : isRag ? 'Verified Ground Truth' : isGithub ? 'GitHub Live Repo' : 'Web Reader')}</span>
+                          {step.sourcesCount ? <span className="text-zinc-500 text-[9px] font-mono">({step.sourcesCount})</span> : null}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                
                 <div className="w-full liquid-glass rounded-2xl rounded-tl-sm px-4 py-4 sm:px-6 text-zinc-200">
                   <div className="markdown-body max-w-none leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -971,8 +1001,8 @@ export default function TerminalAI({ onClose } = {}) {
                       <Radio className="w-3 h-3 text-amber-400 animate-pulse" />
                     </div>
                     <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
-                      <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[10px] uppercase tracking-wider font-mono">API Request</span>
-                      <span className="animate-pulse">Menghubungkan ke API Gateway & mencari data...</span>
+                      <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[10px] uppercase tracking-wider font-mono">Agentic Search</span>
+                      <span className="animate-pulse">Menghubungkan ke live internet & memvalidasi fakta...</span>
                     </div>
                   </>
                 ) : (
