@@ -1395,17 +1395,18 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?<=[a-zA-Z0-9])\*(?!\*)/g, '');
       cleaned = cleaned.replace(/(?<!\*)\*(?=[a-zA-Z0-9])/g, '');
 
-      // 3.65. Deterministic Identity Grounding: Cegah klaim pihak ketiga dan hilangkan dump nama model teknis
+      // 3.65. Deterministic Identity Grounding: Sebut model aktif riil dan cegah klaim pihak ketiga (Gemini, Claude, GPT, dll)
       if (isIdentityQuery) {
-        const isHallucinatedModelList = /(?:glm|llama\s*3|mistral\s*7b|gemini\s*1\.5|model[- ]model ini tersedia|z\.ai|zhipu)/i.test(cleaned) || cleaned.includes('MODEL APA KAMU') || cleaned.length < 25;
-        if (isHallucinatedModelList) {
-          cleaned = `Saya adalah AI Assistant & Developer Agent resmi di website portofolio Rafly Firmansyah (@Raflyf).\n\nSaya siap membantu Anda mengeksplorasi riset skripsi & machine learning Rafly (mitigasi Concept Drift pada deteksi spam & N-Gram SBERT plagiarisme), membedah arsitektur kode 5 repositori GitHub, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), atau berdiskusi seputar rekayasa sistem.\n\nAda topik atau proyek yang ingin Anda tanyakan?`;
-        } else {
-          cleaned = cleaned.replace(/\s*(?:aku|saya)\s+bukan\s+[^.\n]*(?:glm|gpt|claude|ox alpha|gemini|model lain)[^.\n]*[—\-,.]?\s*/gi, ' ');
-          cleaned = cleaned.replace(/(?:model yang saya gunakan merupakan|saya adalah model)[^.\n]*(?:glm|gpt|claude|ox alpha|gemini)[^.\n]*[.]?/gi, 'Saya adalah AI Assistant & Developer Agent yang terintegrasi di website portofolio resmi Rafly Firmansyah.');
-          cleaned = cleaned.replace(/(?:ditenagai oleh model|dijalankan oleh model|menggunakan model)\s+[*_]*[a-zA-Z0-9\-\:\/]+[*_]*/gi, 'siap membantu Anda');
-          cleaned = cleaned.replace(/\s{2,}/g, ' ').trim();
-        }
+        const activeModelDisplay = (modelName || targetModel || 'Nemotron-3-Nano')
+          .replace(/^nvidia\//i, '')
+          .replace(/^ollama\//i, '')
+          .replace(/^opencode\//i, '')
+          .replace(/:free$/i, '');
+        const activeProviderDisplay = providerName || 'Auto Router AI Gateway';
+
+        cleaned = sessionLanguage === 'en'
+          ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website (@Raflyf).\n\nCurrently, I am running on the **${activeModelDisplay}** model via ${activeProviderDisplay}. I am here to help you explore Rafly's machine learning research, examine software engineering repositories, verify competency certifications (BNSP, MikroTik, Cisco), or discuss AI technology.\n\nIs there a specific project or topic you would like to explore?`
+          : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah** (@Raflyf).\n\nSaat ini saya beroperasi menggunakan model **${activeModelDisplay}** melalui ${activeProviderDisplay}. Saya bertugas membantu Anda mengeksplorasi riset machine learning dan rekayasa software Rafly, membedah repositori GitHub, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), atau berdiskusi seputar teknologi dan AI.\n\nAda proyek atau topik teknis yang ingin Anda diskusikan?`;
       }
 
       // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
@@ -1551,7 +1552,7 @@ KAPAN ANDA WAJIB MENYIMPAN FAKTA BARU:
 CARA MENULISKAN TAG PENYIMPANAN:
 Tuliskan tag persis di baris paling bawah respons Anda:
 \`[SAVE_MEMORY: Tuliskan fakta ringkas 1-2 kalimat yang padat, jelas, dan tanpa spekulasi di sini]\`
-(Contoh: [SAVE_MEMORY: Gemini 3.8 Flash adalah model AI terbaru dari Google Gemini yang dirilis pada September 2026, berfokus pada efisiensi tugas coding dan agentic tasks.])
+(Contoh: [SAVE_MEMORY: DeepSeek V4 adalah model AI multimodal 305B parameter berlisensi open-source MIT yang dirilis untuk tugas vision dan inferensi efisien.])
 ATURAN INTEGRITAS:
 - DILARANG menyimpan klaim hoaks, rumor tanpa konfirmasi, opini subjektif, atau informasi tidak pantas.
 Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang tersimpan di database:`;
