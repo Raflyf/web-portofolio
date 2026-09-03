@@ -2136,6 +2136,34 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         cleaned = cleaned.replace(/[^\S\r\n]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
       }
 
+      // DETERMINISTIC FINAL ASTERISK SANITIZER:
+      // Model kecil kadang meninggalkan bold TIDAK seimbang sehingga `**`/`*` mentah bocor.
+      // Strategi per baris: (a) hitung asterisk; (b) GENAP -> biarkan (dianggap seimbang);
+      // (c) GANJIL -> buang asterisk tunggal yang tak berpasangan; bila masih ganjil,
+      // buang SEMUA asterisk baris itu (lebih baik teks polos daripada simbol bocor).
+      cleaned = cleaned.split('\n').map((lineRaw) => {
+        let line = lineRaw;
+        // 0) Penutup-bold yatim di akhir label, mis. "Biaya (Cost-Effectiveness)**: - teks".
+        //    Cek "pembuka sejati" = `**` yang diikuti HURUF (bukan asterisk/spasi/tanda baca).
+        //    Bila tidak ada pembuka sejati dan ada `**` menjelang colon/dash/akhir, buang semua `**`.
+        const hasRealOpener = /\*\*[A-Za-z0-9\u00C0-\u024F]/.test(line);
+        const hasOrphanClose = /\)\*\*\s*[:,\-–—\s]/.test(line) || /\*\*\s*[:,\-–—\s]/.test(line);
+        if (!hasRealOpener && hasOrphanClose) {
+          line = line.replace(/\*\*/g, '');
+        }
+        const astCount = (line.match(/\*/g) || []).length;
+        if (astCount % 2 === 0) return line;
+        // 1) Hapus asterisk tunggal (bukan bagian **) di ujung kata / menjelang spasi-akhir
+        let l = line.replace(/(?<=\w)\*(?!\*)/g, '').replace(/\*(?!\*)(?=\s|$)/g, '');
+        // 2) Penutup `**` tanpa pembuka di baris yang sama (jika masih tersisa)
+        const hasOpener = /\*\*[^*]/.test(l);
+        if (!hasOpener) l = l.replace(/\*\*/g, '');
+        // 3) Jika masih ganjil, bersihkan total
+        const left = (l.match(/\*/g) || []).length;
+        if (left % 2 !== 0) l = l.replace(/\*/g, '');
+        return l;
+      }).join('\n');
+
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = 'Maaf, saya tidak dapat menyusun jawaban saat ini.';
       }
@@ -2783,15 +2811,28 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       const remainingMs = 58000 - elapsedBase;
       if (remainingMs <= 1500) return null;
 
-      // ===== MODE AUTO — race paralel 3 step teratas, lalu susuri SELURUH sisa pipeline =====
+      // ===== MODE AUTO =====
       // Penting: urutan prioritas pengguna bisa panjang (11+ langkah). Executor lama hanya
       // mencoba 3 (race) + 2 (tail) = 5 langkah, sehingga step 6+ TIDAK PERNAH dicoba.
-      // Kini: race 3 teratas (paralel, first-success) -> lalu seluruh sisa pipeline ditelusuri
-      // serial dengan timeout ketat per step sampai ada yang sukses atau waktu hampir habis.
+      // Kini: step #1 (Nemotron Nano, prioritas utama user) DICOBA EKSLUSIF dulu dengan budget
+      // sendiri — kalau langsung di-race paralel, Gemma4 yang kebetulan lebih cepat sering menang
+      // dan Nano nyaris tak pernah terpakai meski prioritas #1. Setelah #1 gagal, race 3 step
+      // berikutnya, lalu susuri SELURUH sisa pipeline serial dengan timeout ketat.
       // sendSuccess aman dipanggil berkali-kali karena guard `res.headersSent` menulis sekali.
       if (!isSpecificManual) {
-        const raceSteps = pipeline.slice(0, 3);
-        const raceTimeoutMs = Math.max(6000, Math.min(12000, remainingMs - 1500));
+        // === Langkah 0: Prioritas #1 dicoba sendiri (hormati urutan user) ===
+        const firstStep = pipeline[0];
+        if (firstStep) {
+          const firstR = await executeStep(firstStep, {
+            connectTimeoutMs: Math.min(firstStep.timeout || 15000, 6000),
+            activeTimeoutMs: Math.min(firstStep.timeout || 15000, 9000)
+          }).catch(() => null);
+          if (firstR) return firstR;
+        }
+
+        // === Jika #1 gagal: race 3 step berikutnya (2,3,4) paralel ===
+        const raceSteps = pipeline.slice(1, 4);
+        const raceTimeoutMs = Math.max(6000, Math.min(11000, remainingMs - 1500));
         const racePromises = raceSteps.map(step =>
           executeStep(step, {
             connectTimeoutMs: Math.min(step.timeout || 15000, 7000),
@@ -2807,8 +2848,8 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         ]);
         if (win !== 'timeout' && win && win.ok) return win.value;
 
-        // Susuri SELURUH sisa pipeline secara serial, timeout pendek tiap step.
-        for (let i = 3; i < pipeline.length; i++) {
+        // === Susuri SELURUH sisa pipeline (index 4 dst) secara serial ===
+        for (let i = 4; i < pipeline.length; i++) {
           const step = pipeline[i];
           const remaining = 58000 - (Date.now() - requestStartTime);
           if (remaining <= 2500) break; // sisakan waktu untuk menulis respons

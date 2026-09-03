@@ -1413,3 +1413,18 @@ Released 2026-09-03.
    - MiniMax M3 dikeluarkan dari pipeline general chat dan reasoning chat. Model ini tetap tersedia pada pipeline VISION (bersama Nemotron Nano Omni) karena memang unggul untuk input multimodal/gambar.
 4. **Verifikasi:**
    - `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.650.0 — Exclusive First-Model Try & Final Asterisk Sanitizer
+
+Released 2026-09-03.
+
+1. **Prioritas #1 Dieksekusi Eksklusif (Hormati Urutan Pengguna):**
+   - Sebelumnya 3 model teratas di-race paralel, sehingga Gemma4 (yang kebetulan lebih cepat dari Nano) sering menang dan Nemotron Nano — meski prioritas #1 — jarang terpakai.
+   - Kini step #1 (Nemotron Nano Ollama) dicoba SENDIRI lebih dulu dengan budget sendiri; baru setelah gagal, model lain di-race. Urutan prioritas pengguna benar-benar dihormati.
+2. **Verifikasi Live Nemotron Nano Ollama:**
+   - Probe langsung ke endpoint Ollama: `nemotron-3-nano:30b` -> HTTP 200 dalam 1,79 detik (AKTIF). Gemma4 31B 1,39 detik; Nemotron Super 5,03 detik.
+3. **Deterministic Final Asterisk Sanitizer (perbaikan `**` bocor):\*\*
+   - Model kecil kadang meninggalkan bold tidak seimbang sehingga `**`/`*` mentah bocor ke tampilan (contoh: `Gemini 3.8 Flash*`, `**Fine-tuning Model***`, `Cost-Effectiveness)**:`).
+   - Sanitizer per-baris: bold seimbang (`**teks**`) dipertahankan; asterisk tunggal tak berpasangan dihapus; penutup-bold yatim tanpa pembuka dibersihkan; baris yang masih ganjil dibersihkan total menjadi teks polos.
+4. **Verifikasi:**
+   - `node --check` lolos; sanitizer teruji terhadap 7 pola sampel; seluruh perubahan di-commit dan di-push.
