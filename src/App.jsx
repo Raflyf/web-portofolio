@@ -263,7 +263,7 @@ function GlobalScrollProgressBar() {
 
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 h-[3.5px] bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-[100] origin-left shadow-[0_1px_14px_rgba(34,211,238,1),0_0_24px_rgba(99,102,241,0.7)] pointer-events-none"
+      className="fixed top-0 left-0 right-0 h-[3.5px] bg-linear-to-r from-cyan-400 via-indigo-500 to-emerald-400 z-100 origin-left shadow-[0_1px_14px_rgba(34,211,238,1),0_0_24px_rgba(99,102,241,0.7)] pointer-events-none"
       style={{ scaleX }}
     />
   );
