@@ -71,7 +71,7 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 - Waktu di atas adalah Waktu Indonesia Barat (WIB, Asia/Jakarta, UTC+7) yang sudah terkalibrasi secara presisi.
 - Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
 [IDENTITAS & PERAN ASISTEN]:
-- Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio Rafly Firmansyah (@Raflyf).
+- Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.
 - Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "kamu model apa", "siapa Anda", "model apa ini", dsb):
   1. Jawablah secara DINAMIS, ALAMI, CERDAS, dan BERVARIASI menggunakan gaya bahasa Anda sendiri (DILARANG mengulang template statis yang kaku atau sama persis setiap kali).
   2. Inti yang tetap disampaikan: Anda adalah AI Assistant & Developer Agent terintegrasi di portofolio digital Rafly Firmansyah, didukung teknologi Large Language Model (LLM) modern berkecepatan tinggi dengan retrieval terpadu.
@@ -1270,6 +1270,10 @@ function normalizeStructuredMarkdown(str) {
   // 11. Pisahkan paragraf kesimpulan penutup yang menempel setelah titik terakhir list
   out = out.replace(/(\.\s*)(Dengan struktur ini|Kesimpulannya|Secara keseluruhan|Jika ada|Untuk informasi)/gi, '.\n\n$2');
 
+  // 11b. Sanitasi handle username: Hapus (@Raflyf) atau @Raflyf jika muncul
+  out = out.replace(/\s*\(@?Raflyf\)/gi, '');
+  out = out.replace(/\s*@Raflyf\b/gi, '');
+
   // 12. Normalisasi newline ganda berlebih
   out = out.replace(/\n{3,}/g, '\n\n').trim();
 
@@ -1576,6 +1580,10 @@ export default async function handler(req, res) {
         if (/ollama|openrouter|nvidia/i.test(matched)) return 'Cloud Neural Gateway';
         return 'AI Engine';
       });
+
+      // 3.65b. Sanitasi Handle Username: Hapus (@Raflyf) atau @Raflyf sesuai instruksi pengguna
+      cleaned = cleaned.replace(/\s*\(@?Raflyf\)/gi, '');
+      cleaned = cleaned.replace(/\s*@Raflyf\b/gi, '');
 
       // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
       if (isTimeQuery) {

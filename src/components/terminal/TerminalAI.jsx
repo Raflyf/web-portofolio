@@ -321,6 +321,10 @@ function normalizeStructuredMarkdown(str) {
   // 11. Pisahkan paragraf kesimpulan penutup yang menempel setelah titik terakhir list
   out = out.replace(/(\.\s*)(Dengan struktur ini|Kesimpulannya|Secara keseluruhan|Jika ada|Untuk informasi)/gi, '.\n\n$2');
 
+  // 11b. Sanitasi handle username: Hapus (@Raflyf) atau @Raflyf jika muncul
+  out = out.replace(/\s*\(@?Raflyf\)/gi, '');
+  out = out.replace(/\s*@Raflyf\b/gi, '');
+
   // 12. Normalisasi newline ganda berlebih
   out = out.replace(/\n{3,}/g, '\n\n').trim();
 
