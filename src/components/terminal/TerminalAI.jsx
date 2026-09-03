@@ -1149,7 +1149,7 @@ export default function TerminalAI({ onClose } = {}) {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Ketik perintah atau tanya sesuatu... (misal: 'buatkan ringkasan')"
+                placeholder="Ketik perintah atau tanya sesuatu... (misal: 'berita terbaru apa hari ini')"
                 className="w-full liquid-glass-inset border border-indigo-500/30 text-white rounded-xl py-2 sm:py-2.5 pl-8.5 pr-11 sm:pr-12 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-zinc-500 transition-all text-xs sm:text-sm"
                 disabled={isLoading}
               />
