@@ -1578,3 +1578,23 @@ Menindaklanjuti teguran dan instruksi pengguna terkait inkonsistensi pewarnaan h
    - Pengujian kueri perbandingan benchmark: Model menyajikan fakta riil hasil pencarian secara jujur tanpa mengarang skor fiktif.
    - Pengujian kueri sanggahan multi-turn ("jangan halu, cari yang benar"): Sistem menelusuri subjek percakapan sebelumnya secara tepat tanpa memuat artikel politik atau mengulang halusinasi.
    - Kompilasi `npm run build` sukses bersih (1,25 detik).
+
+### v10.658.0 — Restoration of Formatting Sanitizers, HTML Tag Stripping & Strict 1-Year Temporal Filter
+
+Released 2026-09-03.
+
+Menindaklanjuti masukan pengguna mengenai munculnya teks noise `<a href="">Baca selengkapnya</a>`, asterisk liar pada kata produk, dan artikel lawas 2024 yang sempat tertarik pada kueri Arena AI:
+
+1. **Pemulihan Pembersih Asterisk Tunggal & Sanitasi HTML Liar (`api/chat.js`):**
+   - Mengembalikan aturan regex `3.62` pembersih asterisk liar pada kata terisolasi (`Poco*`, `*rumor`, `@PocoIndia*`) tanpa merusak format bold markdown (`**teks**`).
+   - Menambahkan aturan regex `3.63` pada `sendSuccess` dan sanitasi awal pada `performWebSearch` untuk membersihkan seluruh artefak tag HTML `<a href="...">...</a>` serta frasa `Baca selengkapnya / Read more` yang terbawa dari feed RSS portal berita Indonesia.
+
+2. **Pencegahan Artikel Usang (> 1 Tahun) pada Kueri Terkini / Peringkat / Rilis (`api/chat.js`):**
+   - **Akar Masalah Kueri 2024:** Pada kueri pencarian Google News tanpa filter waktu, artikel lama dari tahun 2024 (seperti berita Tom's Guide 27 Maret 2024 tentang Claude 3 vs GPT-4) masih lolos karena skor kecocokan kata kunci judulnya tinggi.
+   - **Solusi Universal:** Menambahkan filter temporal keras: bila kueri tergolong breaking news, rilisan baru, lanskap terkini, atau peringkat leaderboard (`isBreakingQuery || isAiModelLandscape || isLatestLandscapeQuery`), seluruh artikel dengan usia lebih dari 365 hari (`daysOld > 365`) **otomatis diabaikan** dari daftar bukti live.
+   - Memperbarui kueri penelusuran benchmark arena dengan filter waktu dinamis `when:90d` dan `arena.ai leaderboard` sehingga hanya memuat pemberitaan dan lanskap tahun berjalan.
+
+3. **Verifikasi:**
+   - Kueri Poco X7 HyperOS: Respons bersih dari tag HTML, bebas dari teks "Baca selengkapnya", bebas dari asterisk bocor, dan menyajikan informasi rilis HyperOS 3.0.302.0 secara rapi dengan judul poin cyan konsisten.
+   - Kueri Peringkat 1 Arena AI: Bebas dari artikel usang Maret 2024, bebas dari skor halusinasi 1,210, menyajikan sifat dinamis leaderboard secara transparan.
+   - Kompilasi `npm run build` sukses (990ms).

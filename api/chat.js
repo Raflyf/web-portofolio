@@ -418,8 +418,9 @@ function formulateSmartSearchQueries(query, history = []) {
 
     // Penanganan khusus benchmark Arena AI (LMSYS Chatbot Arena / arena.ai)
     if (/\b(arena\s*ai|chatbot\s*arena|lmsys|arena\.ai)\b/i.test(qNorm)) {
-      queries.unshift('lmsys chatbot arena leaderboard top models ranking');
-      queries.push('arena.ai leaderboard top models');
+      queries.unshift('chatbot arena leaderboard when:90d');
+      queries.push('arena.ai leaderboard');
+      queries.push('chatbot arena top model');
     }
 
     // Dynamic intent modifiers based on user intent keywords
@@ -1101,7 +1102,8 @@ async function searchWebContext(query, history = []) {
             const descMatch = item.match(/<description>([\s\S]*?)<\/description>/i);
             const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
             const title = cleanStr(titleMatch ? titleMatch[1] : '');
-            const desc = cleanStr(descMatch ? descMatch[1] : '');
+            const rawDesc = descMatch ? descMatch[1] : '';
+            const desc = cleanStr(rawDesc.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\b(?:baca\s+selengkapnya|read\s+more)\b/gi, ''));
             const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
             if (title && !isJunkArticle(title)) {
               // Lewati cerita kembar lintas feed (Google News ID/Global/Bing) yang judulnya nyaris identik
@@ -1115,13 +1117,13 @@ async function searchWebContext(query, history = []) {
                 if (!isNaN(parsedDate)) {
                   ts = parsedDate;
                   const daysOld = (Date.now() - parsedDate) / (1000 * 60 * 60 * 24);
-                  if (daysOld <= 7) recencyBonus = 35;
-                  else if (daysOld <= 30) recencyBonus = 25;
-                  else if (daysOld <= 90) recencyBonus = 12;
-                  else if (daysOld > 180) recencyBonus = -25;
-                  else if (daysOld > 365) recencyBonus = -50;
-
-                  // Recency is factored naturally via recencyBonus without discarding foundational historical launch/release facts
+                  // Untuk kueri breaking / rilisan terbaru / peringkat terkini, buang artikel usang di atas 1 tahun
+                  if ((isBreakingQuery || isAiModelLandscape || isLatestLandscapeQuery) && daysOld > 365) return;
+                  if (daysOld <= 7) recencyBonus = 40;
+                  else if (daysOld <= 30) recencyBonus = 30;
+                  else if (daysOld <= 90) recencyBonus = 15;
+                  else if (daysOld > 180) recencyBonus = -35;
+                  else if (daysOld > 365) recencyBonus = -100;
                 }
               }
               const relScore = calcScore(title + ' ' + desc) + recencyBonus;
@@ -2057,6 +2059,14 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
       cleaned = cleaned.replace(/(?<!\*)\s*\*(?!\*)\s*-\s*/g, ' - ');
 
+      // 3.62. Clean rogue unclosed asterisks on isolated words without destroying markdown bold
+      cleaned = cleaned.replace(/(?<=\w)\*(?!\*|\w)/g, '');
+      cleaned = cleaned.replace(/(?<!\*|\w)\*(?=\w)/g, '');
+
+      // 3.63. Clean rogue HTML tags and RSS link artifacts
+      cleaned = cleaned.replace(/<a\s+[^>]*>.*?<\/a>/gi, '');
+      cleaned = cleaned.replace(/<[^>]+>/g, '');
+      cleaned = cleaned.replace(/\s*Baca selengkapnya\b/gi, '');
 
       // 3.65. Sanitasi Nama Teknis Model/Gateway (Menjaga Kerahasiaan Sesuai Kebijakan Privasi Sistem)
       cleaned = cleaned.replace(/\b(?:Nemotron[-3\w:]*|Ollama(?:\s+Cloud)?|OpenRouter|NVIDIA\s+NIM)\b/gi, (matched) => {
