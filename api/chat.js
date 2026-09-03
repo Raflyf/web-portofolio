@@ -87,8 +87,11 @@ ${effortDirective}
    - DILARANG menggunakan karakter em-dash (—) yang menempel tanpa spasi.
    - DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK di akhir jawaban. Langsung akhiri jawaban secara natural dan elegan.
 
-3. Format Markdown Rapi & Nyaman Dibaca:
-   - Gunakan teks tebal untuk istilah penting, paragraf ringkas (1-3 kalimat), dan struktur butir poin yang tertata. DILARANG menghasilkan dinding teks masif.
+3. Format Markdown Rapi, Nyaman Dibaca & Terstruktur:
+   - Gunakan teks tebal untuk istilah penting, paragraf ringkas (1-3 kalimat), dan struktur butir poin yang tertata.
+   - Heading (###): WAJIB berdiri sendiri di baris baru dan diawali baris kosong. DILARANG memberi strip/bullet sebelum heading (misal "- ###" atau "• ###").
+   - List nomor (1., 2.) dan butir poin (- ): WAJIB ditulis per baris tersendiri, DILARANG menggabungkan nomor berurutan ke dalam satu kalimat horizontal.
+   - Tabel Markdown: Setiap baris (header, divider baris, dan setiap baris data) WAJIB berada di baris baru tersendiri. DILARANG KERAS menggabungkan baris tabel secara horizontal.
 
 [PRINSIP GROUNDING FAKTUAL & ANTI-NOISE]:
 - Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib bersumber dari data terverifikasi.
@@ -1139,6 +1142,86 @@ async function saveServerMemory(factText, sessionId = null) {
 }
 
 /**
+ * Rekonstruksi & Perbaikan Tabel Markdown:
+ * Mengidentifikasi tabel yang baris datanya menyatu dalam satu baris horizontal,
+ * menghitung kolom header, dan memecah sel-sel data ke baris-baris GFM yang valid.
+ */
+function repairMarkdownTables(content) {
+  if (!content || !content.includes('|')) return content;
+  const tableRegex = /(\|[^\n|]+(?:\|[^\n|]+)+\|?)\s*\n*\s*(\|[-: ]+(?:\|[-: ]+)+\|?)\s*([^\n#]+)/g;
+
+  return content.replace(tableRegex, (match, headerRaw, dividerRaw, dataRaw) => {
+    const headerCols = headerRaw.split('|').map(s => s.trim()).filter(Boolean);
+    const numCols = headerCols.length;
+    if (numCols === 0) return match;
+
+    const dividerCols = dividerRaw.split('|').map(s => s.trim()).filter(Boolean);
+    const standardDivider = '| ' + headerCols.map((_, idx) => dividerCols[idx] || '-----------').join(' | ') + ' |';
+    const standardHeader = '| ' + headerCols.join(' | ') + ' |';
+
+    const rawCells = dataRaw.split('|').map(s => s.trim()).filter(s => s.length > 0);
+    const rowLines = [];
+    for (let i = 0; i < rawCells.length; i += numCols) {
+      const chunk = rawCells.slice(i, i + numCols);
+      if (chunk.length > 0) {
+        while (chunk.length < numCols) chunk.push('-');
+        rowLines.push('| ' + chunk.join(' | ') + ' |');
+      }
+    }
+
+    return `\n\n${standardHeader}\n${standardDivider}\n${rowLines.join('\n')}\n\n`;
+  });
+}
+
+/**
+ * Normalizer Struktur Markdown:
+ * Membersihkan artefak strip sebelum heading/nomor, menyusun numbered list,
+ * dan merekonstruksi tabel menjadi format CommonMark yang rapi.
+ */
+function normalizeStructuredMarkdown(str) {
+  if (!str) return str;
+  let out = str;
+
+  // 1. Bersihkan strip/bullet aneh sebelum heading (misal: '- - ###' atau '• • ###')
+  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(#{1,6}\s+)/g, '\n\n$1');
+  out = out.replace(/([^#\n\r])\s*(#{1,6}\s+)/g, '$1\n\n$2');
+
+  // 3. Pisahkan heading yang menempel langsung dengan bullet list atau nomor
+  out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+\*\*|\d+\.\s+\*\*)/g, '$1\n\n$2');
+  out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n\n$2');
+
+  // 4. Bersihkan strip/bullet aneh sebelum angka list (misal: '- - 3. ' atau '• • 3. ')
+  out = out.replace(/(?:^|\n|[^\n])\s*[-–—•\s]{2,}\s*(\d+\.\s+[A-Za-z])/g, '\n\n$1');
+
+  // 5. Pisahkan bullet list (- **Label**:) yang menempel di tengah kalimat atau setelah titik
+  out = out.replace(/([.:?!]|\b)\s+[-*•]\s+(\*\*[^*]+\*\*:?)/g, '$1\n- $2');
+
+  // 6. Pisahkan numbered list (1. **Label**:) yang menempel di tengah kalimat
+  out = out.replace(/([.:?!])\s+(\d+\.\s+\*\*[^*]+\*\*:?)/g, '$1\n$2');
+  out = out.replace(/([.:?!])\s+(\d+\.\s+[A-Za-z])/g, '$1\n$2');
+
+  // 7. Perbaiki bullet point yang menempel di akhir kalimat (misal: 'skor. - Alur kerja')
+  out = out.replace(/([.:?!])\s+[-*•]\s+([A-Za-z0-9])/g, '$1\n\n- $2');
+
+  // 8. Bersihkan artefak strip ganda '- - ' sebelum kata biasa di akhir kalimat
+  out = out.replace(/\s*[-–—•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');
+
+  // 9. Pastikan baris fitur berformat nama: keterangan memiliki bullet point
+  out = out.replace(/\n([A-Z][a-zA-Z0-9 -]+(?:\([^)]*\))?\s*[:–—])/g, '\n- $1');
+
+  // 10. Rekonstruksi & Rapikan Tabel Markdown
+  out = repairMarkdownTables(out);
+
+  // 11. Pisahkan paragraf kesimpulan penutup yang menempel setelah titik terakhir list
+  out = out.replace(/(\.\s*)(Dengan struktur ini|Kesimpulannya|Secara keseluruhan|Jika ada|Untuk informasi)/gi, '.\n\n$2');
+
+  // 12. Normalisasi newline ganda berlebih
+  out = out.replace(/\n{3,}/g, '\n\n').trim();
+
+  return out;
+}
+
+/**
  * Intelligent Unified AI Key Resolver
  * Automatically classifies tokens from a single AI_KEYS variable or legacy per-provider env vars.
  */
@@ -1545,12 +1628,8 @@ export default async function handler(req, res) {
         .replace(/\n{3,}/g, '\n\n')
         .trim();
 
-      // Auto-Format Markdown Structure (Restorasi baris baru untuk Tabel dan List GFM)
-      cleaned = cleaned.replace(/([.:?!])\s+([-*•]\s+\*\*)/g, '$1\n$2');
-      cleaned = cleaned.replace(/([.:?!])\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n$2');
-      cleaned = cleaned.replace(/([^\n])\s+(\|[ \t]*[A-Za-z0-9_ -]+[ \t]*\|)/g, '$1\n\n$2');
-      cleaned = cleaned.replace(/(\|[ \t]*)\s+(\|[ \t]*[A-Za-z0-9_-])/g, '$1\n$2');
-      cleaned = cleaned.trim();
+      // Auto-Format Markdown Structure & Table Reconstruction (CommonMark GFM)
+      cleaned = normalizeStructuredMarkdown(cleaned);
 
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = 'Maaf, saya tidak dapat menyusun jawaban saat ini.';
