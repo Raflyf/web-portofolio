@@ -1076,6 +1076,18 @@ Released 2026-09-03.
 2. **Filter Regex Pembersihan Kalimat Validasi Diri di Backend & Frontend:**
    - Menyuntikkan pembersih pola regex di `sendSuccess` ([`api/chat.js`](file:///d:/code/project/portofolio%20landing%20page/api/chat.js)) dan `normalizeStructuredMarkdown` ([`src/components/terminal/TerminalAI.jsx`](file:///d:/code/project/portofolio%20landing%20page/src/components/terminal/TerminalAI.jsx)) untuk secara deterministik memangkas seluruh kalimat defensif/disclaimer brand yang tidak sengaja tergenerasi model di semua sesi obrolan.
 
+### v10.633.0 — Balanced Typography & Section Heading Normalizer (Anti-Bullet Overload)
+
+Released 2026-09-03.
+1. **Pencegahan Bullet-Point Overload & Kalibrasi Prompt Tipografi (`api/chat.js`):**
+   - Menghapus instruksi agresif yang sebelumnya memaksa model memprioritaskan daftar butir poin di atas segalanya.
+   - Mengalibrasi panduan tipografi agar membagi topik pembahasan menggunakan Heading markdown resmi (`### Judul Bagian`) dan memadukannya dengan paragraf narasi pengantar yang mengalir alami, serta melarang keras mengubah seluruh isi pesan menjadi rentetan butir poin berulang tanpa jeda.
+2. **Transformasi Judul Bagian Mandiri & Penyatuan Numbered List (`api/chat.js` & `TerminalAI.jsx`):**
+   - Mengonversi label judul bagian mandiri yang berakhiran titik dua (seperti `Komponen Utama:`, `Alur Kerja:`, `Keunggulan:`, `Manfaat:`) menjadi Heading markdown `### Judul Bagian` alih-alih dipaksa menjadi butir strip `- Judul:`.
+   - Memperbaiki pemisahan angka langkah kerja berurutan (alur kerja `1. `, `2. `, `3. `) agar tersambung utuh dengan kalimatnya tanpa angka orphan di ujung kalimat atau tersisip bullet liar di depannya.
+   - Mengeliminasi bug regex `[^\n]` yang sebelumnya memotong satu huruf di ujung baris sebelum spasi/newline.
+
+
 
 
 

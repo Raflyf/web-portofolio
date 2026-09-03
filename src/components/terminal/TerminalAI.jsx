@@ -288,51 +288,63 @@ function normalizeStructuredMarkdown(str) {
   if (!str) return str;
   let out = str;
 
-  // 1. Bersihkan strip/bullet aneh sebelum heading (misal: '- - ###' atau '• • ###')
+  // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" -> "ringan.\n\n2. Inference:")
+  out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z])/g, '$1\n\n$2. $3');
+  out = out.replace(/(?:^|\n)\s*(\d+)\.\s*\n+\s*([A-Za-z])/g, '\n$1. $2');
+
+  // 2. Konversi judul bagian mandiri (akhiran titik dua tanpa isi kalimat) menjadi Heading Markdown (### Judul)
+  // Mencegah judul bagian (seperti Komponen Utama:, Alur Kerja:, Keunggulan:, Manfaat:) berubah menjadi butir poin (- )
+  out = out.replace(/(?:^|\n)\s*(?:[-*•]\s*)?([A-Z][a-zA-Z0-9\s/&-]{2,35}):\s*(?=\n|$)/g, (match, title) => {
+    const cleanTitle = title.trim();
+    return `\n\n### ${cleanTitle}\n\n`;
+  });
+
+  // 3. Bersihkan strip/bullet aneh sebelum heading (misal: '- - ###' atau '• • ###')
   out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(#{1,6}\s+)/g, '\n\n$1');
   out = out.replace(/([^#\n\r])\s*(#{1,6}\s+)/g, '$1\n\n$2');
 
-  // 3. Pisahkan heading yang menempel langsung dengan bullet list atau nomor
+  // 4. Pisahkan heading yang menempel langsung dengan bullet list atau nomor
   out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+\*\*|\d+\.\s+\*\*)/g, '$1\n\n$2');
   out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n\n$2');
 
-  // 4. Bersihkan strip/bullet aneh sebelum angka list (misal: '- - 3. ' atau '• • 3. ')
-  out = out.replace(/(?:^|\n|[^\n])\s*[-–—•\s]{2,}\s*(\d+\.\s+[A-Za-z])/g, '\n\n$1');
+  // 5. Bersihkan strip/bullet aneh sebelum angka list (tanpa memotong huruf kata sebelumnya)
+  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(\d+\.\s+[A-Za-z])/g, '\n\n$1');
 
-  // 5. Pisahkan bullet list (- **Label**:) yang menempel di tengah kalimat atau setelah titik
+  // 6. Pisahkan numbered list (1. **Label**: atau 1. Kata) yang menempel di tengah kalimat
+  out = out.replace(/([.:?!])\s+(\d+\.\s+\*\*[^*]+\*\*:?)/g, '$1\n\n$2');
+  out = out.replace(/([.:?!])\s+(\d+\.\s+[A-Za-z])/g, '$1\n\n$2');
+
+  // 7. Pisahkan bullet list (- **Label**: atau - Kata) yang menempel di tengah kalimat
   out = out.replace(/([.:?!]|\b)\s+[-*•]\s+(\*\*[^*]+\*\*:?)/g, '$1\n- $2');
-
-  // 6. Pisahkan numbered list (1. **Label**:) yang menempel di tengah kalimat
-  out = out.replace(/([.:?!])\s+(\d+\.\s+\*\*[^*]+\*\*:?)/g, '$1\n$2');
-  out = out.replace(/([.:?!])\s+(\d+\.\s+[A-Za-z])/g, '$1\n$2');
-
-  // 7. Perbaiki bullet point yang menempel di akhir kalimat (misal: 'skor. - Alur kerja')
   out = out.replace(/([.:?!])\s+[-*•]\s+([A-Za-z0-9])/g, '$1\n\n- $2');
 
-  // 8. Bersihkan artefak strip ganda '- - ' sebelum kata biasa di akhir kalimat
-  out = out.replace(/\s*[-–—•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');
+  // 8. Bersihkan artefak strip ganda sebelum kata biasa
+  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');
 
-  // 9. Pastikan baris fitur berformat nama: keterangan memiliki bullet point
-  out = out.replace(/\n([A-Z][a-zA-Z0-9 -]+(?:\([^)]*\))?\s*[:–—])/g, '\n- $1');
+  // 9. Format sub-item fitur (key: value) yang memiliki kalimat penjelas (BUKAN heading dan BUKAN nomor)
+  out = out.replace(/\n(?![#\d\s\-*•])([A-Z][a-zA-Z0-9 -]+(?:\([^)]*\))?:\s+[^\n]+)/g, '\n- $1');
 
-  // 10. Rekonstruksi & Rapikan Tabel Markdown
+  // 10. Hapus bullet yang tidak sengaja tertempel di depan numbered list
+  out = out.replace(/\n\s*[-*•]\s*(\d+\.\s+)/g, '\n$1');
+
+  // 11. Rekonstruksi & Rapikan Tabel Markdown
   out = repairMarkdownTables(out);
 
-  // 11. Pisahkan paragraf kesimpulan penutup yang menempel setelah titik terakhir list
+  // 12. Pisahkan paragraf kesimpulan penutup yang menempel setelah titik terakhir list
   out = out.replace(/(\.\s*)(Dengan struktur ini|Kesimpulannya|Secara keseluruhan|Jika ada|Untuk informasi)/gi, '.\n\n$2');
 
-  // 11b. Sanitasi handle username: Hapus (@Raflyf) atau @Raflyf jika muncul
+  // 13. Sanitasi handle username: Hapus (@Raflyf) atau @Raflyf jika muncul
   out = out.replace(/\s*\(@?Raflyf\)/gi, '');
   out = out.replace(/\s*@Raflyf\b/gi, '');
 
-  // 11c. Eliminasi Kalimat Validasi Diri & Defensive Meta-Talk (Berlaku untuk SEMUA Percakapan)
+  // 14. Eliminasi Kalimat Validasi Diri & Defensive Meta-Talk (Berlaku untuk SEMUA Percakapan)
   out = out.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+(?:bukan|tidak\s+memiliki|tidak\s+berafiliasi)\s+(?:model\s+dengan\s+)?(?:nama\s+)?(?:brand|merek|perusahaan)\s+tertentu[^.!?\n]*[.!?]/gi, '');
   out = out.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+adalah\s+asisten\s+cerdas\s+yang\s+bekerja\s+untuk\s+membantu\s+(?:kamu|anda)\s+dalam\s+menjelajahi[^.!?\n]*[.!?]/gi, '');
   out = out.replace(/\b(?:Sebagai\s+(?:model\s+bahasa(?:\s+besar)?|asisten\s+(?:AI|virtual)|AI|LLM)[^,.\n]*,?\s*)/gi, '');
   out = out.replace(/\b(?:Perlu\s+(?:diingat|dicatat|diketahui)\s+bahwa\s+(?:saya\s+adalah|ini\s+adalah|saya\s+hanyalah)[^.!?\n]*[.!?])/gi, '');
   out = out.replace(/\b(?:saya\s+hanya\s+(?:sebuah|merupakan)\s+(?:model\s+bahasa|program|AI|asisten)[^.!?\n]*[.!?])/gi, '');
 
-  // 12. Normalisasi newline ganda berlebih
+  // 15. Normalisasi newline ganda berlebih
   out = out.replace(/\n{3,}/g, '\n\n').trim();
 
   return out;
