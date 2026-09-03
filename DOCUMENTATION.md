@@ -953,5 +953,16 @@ Released 2026-09-03.
    - `fetchServerMemories`: Timeout pengambilan memori server dinaikkan menjadi 5.000ms.
    - `TerminalAI.jsx`: Timeout background sync memori Supabase diperluas dari 4.000ms menjadi 10.000ms.
 
+### v10.621.0 — Dual-Phase Adaptive Timeout & Instant Failover on Inactive/Limit
+
+Released 2026-09-03.
+1. **Arsitektur Dual-Phase Adaptive Timeout (`fetchJsonWithTimeout`):**
+   - **Phase 1: Fast Initial Liveness Detection (Connect Timeout 6.5s):** Jika server offline, hang, endpoint mati, atau tidak mengembalikan header respons awal dalam 6.5 detik, request segera di-abort dan alur dialihkan seketika ke model berikutnya dalam cascade tanpa menunggu sia-sia.
+   - **Phase 2: Uncapped Active Thinking (Active Timeout hingga 55s):** Begitu status `200 OK` diterima dari provider, connect timeout dibatalkan seketika dan batas waktu berpikir model diperluas penuh hingga sisa anggaran waktu runtime serverless (55–58 detik). Model yang aktif merespons dibiarkan memproses instruksi atau penalaran panjang sampai tuntas tanpa dipotong timeout pendek.
+2. **Instant Failover pada Limit Kuota & Error Provider:**
+   - Deteksi langsung status `402` (Payment/Quota Required), `429` (Rate Limited), `404` (Model Not Found), dan `5xx` (Server Error).
+   - Seluruh caller wrapper (`callOpenRouter`, `callOpenCode`, `callOllama`, `callNvidiaNim`, `callMiniMax`) kini memicu `break` instan ketika mendeteksi kode error tersebut pada mode auto-cascade, mengeliminasi delay retry yang tidak berguna dan langsung meloncat ke model berikutnya di hierarki.
+
+
 
 
