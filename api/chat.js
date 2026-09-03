@@ -2602,10 +2602,9 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: reasoningStepTimeout },
           { provider: 'ollama', model: 'nemotron-3-super', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: reasoningStepTimeout },
-          // 5th: Cadangan aktif lain (OpenCode free + MiniMax direct + OpenRouter)
+          // 5th: Cadangan aktif lain (OpenCode free + OpenRouter)
           { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: reasoningStepTimeout },
           { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: reasoningStepTimeout },
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'openrouter/free', timeout: reasoningStepTimeout }
@@ -2717,41 +2716,41 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       //   - MiniMax Direct (1 key): MiniMax-M3 OK.
       //   - TIDAK merespons/tidak ada free: nvidia/nemotron-3-nano-30b-a3b:free (404),
       //     ollama nemotron-3-ultra & minimax-m3 (timeout), opencode x-preview-f-free (unsupported).
-      // Prioritas (per permintaan user): Ollama Nano -> Ollama Gemma4 -> Ollama Super ->
-      // lalu OpenRouter Lightning -> OpenCode Lightning/Laguna -> OpenRouter Super/Nano-Omni/Ultra
-      // -> MiniMax M3 -> OpenRouter Laguna/MiniMax/Free.
+      // Prioritas PERMINTAAN PENGGUNA:
+      // 1 Nemotron Nano (Ollama) | 2 Gemma 4 (Ollama) | 3 Lightning (OpenRouter) |
+      // 4 Lightning (OpenCode) | 5 Nano-Omni (OpenRouter) | 6 Super (Ollama) |
+      // 7 Super (OpenRouter) | 8 Ultra (Ollama) | 9 Ultra (OpenRouter) |
+      // 10 Laguna (OpenRouter) | 11 Laguna (OpenCode) | lalu model aktif lain.
+      // MiniMax dikeluarkan dari general chat (khusus multimodal/vision).
+      // Catatan probe: ultra-ollama (nemotron-3-ultra) sempat timeout; tetap dicoba sesuai
+      // urutan permintaan — bila gagal executor otomatis melompat ke step berikutnya.
       return [
-        // === 1. PRIORITAS UTAMA: OLLAMA NANO (pilihan utama user) ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
-
-        // === 2. OLLAMA GEMMA 4 31B ===
-        { provider: 'ollama', model: 'gemma4:31b', timeout: 18000 },
-
-        // === 3. OLLAMA NEMOTRON 3 SUPER ===
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 18000 },
-
-        // === 4. NEMOTRON SERI LIGHTNING (OpenRouter) ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 18000 },
-
-        // === 5. NEMOTRON LIGHTNING (OpenCode free-tier) & LAGUNA (OpenCode) ===
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 16000 },
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 16000 },
-
-        // === 6. GEMMA 4 31B (OpenRouter free - cadangan) ===
-        { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 16000 },
-
-        // === 7. FLAGSHIP NEMOTRON: SUPER -> NANO-OMNI -> ULTRA (OpenRouter free) ===
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 16000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 16000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
-
-        // === 8. MINIMAX M3 DIRECT (terverifikasi OK) ===
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
-
-        // === 9. MODEL AKTIF LAINNYA: LAGUNA -> MINIMAX M3 -> OPENROUTER FREE ===
+        // 1. Nemotron Nano (Ollama Cloud)
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 15000 },
+        // 2. Gemma 4 31B (Ollama Cloud)
+        { provider: 'ollama', model: 'gemma4:31b', timeout: 15000 },
+        // 3. Nemotron 3.5 Lightning (OpenRouter)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 15000 },
+        // 4. Nemotron 3.5 Lightning (OpenCode)
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 15000 },
+        // 5. Nemotron Nano Omni (OpenRouter)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 15000 },
+        // 6. Nemotron 3 Super (Ollama Cloud)
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 15000 },
+        // 7. Nemotron 3 Super (OpenRouter)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 15000 },
+        // 8. Nemotron 3 Ultra (Ollama Cloud)
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 15000 },
+        // 9. Nemotron 3 Ultra (OpenRouter)
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 15000 },
+        // 10. Laguna (OpenRouter)
         { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 15000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 15000 },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 15000 }
+        // 11. Laguna (OpenCode)
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 15000 },
+        // 12. Cadangan model aktif lain
+        { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 14000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 14000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 14000 }
       ];
     }
 
@@ -2784,21 +2783,18 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       const remainingMs = 58000 - elapsedBase;
       if (remainingMs <= 1500) return null;
 
-      // ===== PARALLEL RACE untuk MODE AUTO (percepatan drastis) =====
-      // Serial execution sebelumnya membuat request menunggu provider pertama (Ollama nano 30B)
-      // sampai timeout 6-12s, lalu provider kedua, dst — kueri basic pun bisa makan 15-30s+
-      // sebelum ada yang sukses -> keluhan "berpikir terlalu lama" / timeout.
-      // Mode auto kini menjalankan 3 step teratas SECARA PARALEL; yang pertama sukses menang.
-      // sendSuccess aman dipanggil paralel karena guard `res.headersSent` hanya menulis satu respons.
+      // ===== MODE AUTO — race paralel 3 step teratas, lalu susuri SELURUH sisa pipeline =====
+      // Penting: urutan prioritas pengguna bisa panjang (11+ langkah). Executor lama hanya
+      // mencoba 3 (race) + 2 (tail) = 5 langkah, sehingga step 6+ TIDAK PERNAH dicoba.
+      // Kini: race 3 teratas (paralel, first-success) -> lalu seluruh sisa pipeline ditelusuri
+      // serial dengan timeout ketat per step sampai ada yang sukses atau waktu hampir habis.
+      // sendSuccess aman dipanggil berkali-kali karena guard `res.headersSent` menulis sekali.
       if (!isSpecificManual) {
         const raceSteps = pipeline.slice(0, 3);
-        const raceTimeoutMs = Math.max(6000, Math.min(14000, remainingMs - 1500));
-        // TRUE first-success race: setiap step membungkus keberhasilan jadi resolve,
-        // kegagalan/null jadi reject, sehingga Promise.any langsung menang saat step
-        // TERCEPAT sukses — tidak menunggu step terlambat (allSettled) yang bikin lambat.
+        const raceTimeoutMs = Math.max(6000, Math.min(12000, remainingMs - 1500));
         const racePromises = raceSteps.map(step =>
           executeStep(step, {
-            connectTimeoutMs: Math.min(step.timeout || 15000, 8000),
+            connectTimeoutMs: Math.min(step.timeout || 15000, 7000),
             activeTimeoutMs: raceTimeoutMs
           }).then(result => {
             if (result) return { ok: true, value: result };
@@ -2810,21 +2806,23 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
           new Promise(resolve => setTimeout(() => resolve('timeout'), raceTimeoutMs + 500))
         ]);
         if (win !== 'timeout' && win && win.ok) return win.value;
-        // Jika race 3 pertama gagal/timeout, lanjut ke sisa pipeline serial singkat (max 2 step)
-        const tail = pipeline.slice(3, 5);
-        for (const step of tail) {
+
+        // Susuri SELURUH sisa pipeline secara serial, timeout pendek tiap step.
+        for (let i = 3; i < pipeline.length; i++) {
+          const step = pipeline[i];
           const remaining = 58000 - (Date.now() - requestStartTime);
-          if (remaining <= 2000) break;
+          if (remaining <= 2500) break; // sisakan waktu untuk menulis respons
+          const stepBudget = Math.min(step.timeout || 15000, Math.max(5000, remaining - 2000));
           const r = await executeStep(step, {
             connectTimeoutMs: Math.min(step.timeout || 15000, 6000),
-            activeTimeoutMs: Math.min(8000, remaining - 1000)
+            activeTimeoutMs: stepBudget
           }).catch(() => null);
           if (r) return r;
         }
         return null;
       }
 
-      // ===== Mode manual spesifik: serial (perlu hormati urutan pilihan user) =====
+      // ===== Mode manual spesifik: serial (hormati urutan pilihan user) =====
       for (const step of pipeline) {
         const remaining = 58000 - (Date.now() - requestStartTime);
         if (remaining <= 1500) break;

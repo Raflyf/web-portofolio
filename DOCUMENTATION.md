@@ -1399,3 +1399,17 @@ Koreksi atas audit v10.647.0 yang salah membaca env var (memakai `OPENCODE_API_K
    - `x-preview-f-free` dan entri model OpenCode yang tak didukung dibuang seluruhnya.
 5. **Verifikasi:**
    - `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.649.0 — User-Specified Model Priority Order + Full Pipeline Traversal & Multimodal-Only MiniMax
+
+Released 2026-09-03.
+
+1. **Urutan Prioritas Sesuai Permintaan Pengguna (General Chat):**
+   - 1 Nemotron Nano (Ollama) | 2 Gemma 4 (Ollama) | 3 Lightning (OpenRouter) | 4 Lightning (OpenCode) | 5 Nano-Omni (OpenRouter) | 6 Super (Ollama) | 7 Super (OpenRouter) | 8 Ultra (Ollama) | 9 Ultra (OpenRouter) | 10 Laguna (OpenRouter) | 11 Laguna (OpenCode) | 12+ cadangan model aktif (Gemma4-OR, Mimo-OpenCode, OpenRouter-free).
+2. **Executor Menelusuri SELURUH Pipeline (Fix Bug Penting):**
+   - Sebelumnya mode auto hanya mencoba 3 step (race) + 2 step (tail) = 5 langkah; step ke-6 dst TIDAK PERNAH dieksekusi, sehingga urutan prioritas panjang (Ultra/Laguna di posisi 8-11) tidak berfungsi.
+   - Kini setelah race 3 teratas gagal, executor menyusuri SELURUH sisa pipeline secara serial dengan timeout ketat per step hingga ada yang sukses atau sisa waktu hampir habis.
+3. **MiniMax Dikhususkan untuk Multimodal/Vision:**
+   - MiniMax M3 dikeluarkan dari pipeline general chat dan reasoning chat. Model ini tetap tersedia pada pipeline VISION (bersama Nemotron Nano Omni) karena memang unggul untuk input multimodal/gambar.
+4. **Verifikasi:**
+   - `node --check` lolos; seluruh perubahan di-commit dan di-push.
