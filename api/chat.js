@@ -766,7 +766,10 @@ async function searchWebContext(query, history = []) {
       /\b(?:terbaik\s+saat\s+ini|terbaik\s+sekarang|best\s+(?:right\s+)?now|best\s+current|top\s+terbaru|paling\s+baru|terkini\s+saat\s+ini)\b/i.test(query);
     const isAiModelLandscape = isLatestLandscapeQuery &&
       /\b(?:model\s+(?:terbaru|baru|terkini|ai|llm)|ai\s+model|\bai\b|\bllm\b|gpt|claude|gemini|deepseek|grok|llama|mistral|foundation\s+model|large\s+language\s+model)\b/i.test(query);
-    if (isLatestLandscapeQuery) maxItemsPerFeed = 10;
+    // Batasi volume parsing: feed umum ambil 6 item; lanskap ambil 8 (bukan 10) agar
+    // total bukti mentah yang di-parse tetap ringan (8 feed x 8 = 64 -> dipangkas dedupe).
+    if (isLatestLandscapeQuery) maxItemsPerFeed = 8;
+    else maxItemsPerFeed = 6;
 
     const gnFetch = (q) => fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
@@ -912,11 +915,23 @@ async function searchWebContext(query, history = []) {
     };
 
     const results = await Promise.allSettled(searchFetches);
-    clearTimeout(timeout);
 
-    for (const res of results) {
+    // PERF-CRITICAL: body RSS/JSON dibaca SECARA PARALEL, bukan serial.
+    // Sebelumnya `await res.value.text()` di dalam loop for membuat body ratusan KB
+    // (14+ feed) di-download satu per satu -> 10-20 detik tambahan -> HTTP 504.
+    // PENTING: clearTimeout DITAHAN sampai seluruh body terbaca agar fase unduh body
+    // tetap berada dalam pagar waktu pencarian (tidak menggantung tanpa batas).
+    const textResults = await Promise.all(results.map(async (res) => {
       if (res.status === 'fulfilled' && res.value && res.value.ok) {
         const textData = await res.value.text().catch(() => '');
+        return { ok: true, textData };
+      }
+      return { ok: false, textData: '' };
+    }));
+    clearTimeout(timeout);
+
+    for (const { ok, textData } of textResults) {
+      if (ok && textData) {
         if (textData.startsWith('{') || textData.startsWith('[')) {
           try {
             const parsed = JSON.parse(textData);
@@ -1265,6 +1280,14 @@ const rateLimitedKeyCache = new Map();
 
 const RATE_LIMIT_TABLE = 'rate_limits';
 
+// Helper fetch ringkas dengan hard timeout (anti-hang pada cold start / Supabase lambat).
+function fetchWithHardTimeout(url, options, ms = 3000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
 async function persistRateLimit(clientIp, count, windowStartIso) {
   // Best-effort persisted counter; never blocks the request when Supabase is down.
   // NOT a hard guarantee under multi-instance concurrency: the read-modify-write
@@ -1275,7 +1298,7 @@ async function persistRateLimit(clientIp, count, windowStartIso) {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   if (!supabaseUrl || !serviceRoleKey) return;
   try {
-    await fetch(`${supabaseUrl}/rest/v1/${RATE_LIMIT_TABLE}`, {
+    await fetchWithHardTimeout(`${supabaseUrl}/rest/v1/${RATE_LIMIT_TABLE}`, {
       method: 'POST',
       headers: {
         apikey: serviceRoleKey,
@@ -1288,7 +1311,7 @@ async function persistRateLimit(clientIp, count, windowStartIso) {
         window_start: windowStartIso,
         request_count: count
       })
-    });
+    }, 3000);
   } catch (_) { /* non-fatal */ }
 }
 
@@ -1302,9 +1325,10 @@ async function isRateLimited(clientIp) {
   if (supabaseUrl && serviceRoleKey) {
     try {
       const windowStartIso = new Date(now - (now % RATE_LIMIT_WINDOW_MS)).toISOString();
-      const res = await fetch(
+      const res = await fetchWithHardTimeout(
         `${supabaseUrl}/rest/v1/${RATE_LIMIT_TABLE}?client_ip=eq.${encodeURIComponent(clientIp)}&window_start=eq.${encodeURIComponent(windowStartIso)}&select=request_count`,
-        { headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, Accept: 'application/json' } }
+        { headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, Accept: 'application/json' } },
+        3500
       );
       if (res.ok) {
         const rows = await res.json();
@@ -1355,9 +1379,10 @@ async function fetchServerMemories(limit = 15) {
   const supabaseKey = getSupabaseKey();
   if (!supabaseUrl || !supabaseKey) return [];
   try {
-    const res = await fetch(
+    const res = await fetchWithHardTimeout(
       `${supabaseUrl}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=${limit}`,
-      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, Accept: 'application/json' } }
+      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, Accept: 'application/json' } },
+      3000
     );
     if (!res.ok) return [];
     const rows = await res.json();
@@ -1424,7 +1449,7 @@ async function saveServerMemory(factText, sessionId = null) {
   if (trimmedFact.length < 5 || trimmedFact.length > 1000) return;
   if (/\b(ignore|override|disregard|abaikan)\b/i.test(trimmedFact)) return;
   try {
-    await fetch(`${supabaseUrl}/rest/v1/ai_memories`, {
+    await fetchWithHardTimeout(`${supabaseUrl}/rest/v1/ai_memories`, {
       method: 'POST',
       headers: {
         apikey: supabaseKey,
@@ -1437,7 +1462,7 @@ async function saveServerMemory(factText, sessionId = null) {
         session_id: sessionId || null,
         created_at: new Date().toISOString()
       })
-    });
+    }, 3000);
   } catch (_) {}
 }
 
@@ -2731,12 +2756,14 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         const remainingMs = 58000 - elapsed; // Safe budget matching vercel.json function maxDuration 60s
         if (remainingMs <= 1500) break;
 
-        // Dual-Phase Adaptive Timeout:
-        // 1. Connect Timeout (7500ms): Waktu optimal untuk inisiasi gateway & model handshake; jika gateway lambat/antre, cepat failover ke fallback berikutnya.
-        // 2. Active Thinking Timeout: Untuk mode auto, batasi max 20-22s per step agar kegagalan 1 gateway segera failover ke gateway berikutnya dalam sisa budget 58s.
-        const connectTimeout = Math.min(step.timeout || 15000, 15000);
-        const maxStepActive = isSpecificManual ? (remainingMs - 1000) : Math.min(30000, remainingMs - 1000);
-        const activeTimeout = Math.max(8000, maxStepActive);
+        // Dual-Phase Adaptive Timeout (PERF-FIX untuk HTTP 504):
+        // 1. Connect Timeout (8s): jika gateway lambat/antre, cepat failover ke fallback berikutnya.
+        // 2. Active Thinking Timeout: Untuk mode auto (query cepat/standar), batasi max 12s per step —
+        //    sebelumnya 30s membuat provider pertama yang padat membakar separuh budget 60s dan
+        //    step-step serial berikutnya kehabisan waktu -> 504. Kini kegagalan cepat dialihkan.
+        const connectTimeout = Math.min(step.timeout || 15000, 8000);
+        const maxStepActive = isSpecificManual ? (remainingMs - 1000) : Math.min(12000, remainingMs - 1000);
+        const activeTimeout = Math.max(6000, maxStepActive);
 
         try {
           const result = await executeStep(step, {
