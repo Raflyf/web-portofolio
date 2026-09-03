@@ -96,27 +96,9 @@ const INDIVIDUAL_MODELS = [
     matcher: (s) => (s.includes('ollama') && (s.includes('nano') || s.includes('30b') || s.includes('nemotron'))) || s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || /\bnano\b/.test(s)
   },
   {
-    id: 'ollama-gemma4',
-    name: 'Gemma 4 31B (Ollama Cloud)',
-    desc: 'Prioritas #2 - Model Google Gemma 4 31B dense, respons kilat',
-    provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    matcher: (s) => (s.includes('ollama') && s.includes('gemma')) || s.includes('gemma4') || s.includes('gemma-4') || s.includes('31b')
-  },
-  {
-    id: 'openrouter-gemma4',
-    name: 'Gemma 4 31B (OpenRouter)',
-    desc: 'Cadangan Gemma 4 31B via OpenRouter free',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    matcher: (s) => s.includes('openrouter') && s.includes('gemma')
-  },
-  {
     id: 'openrouter-nemotron-lightning',
     name: 'Nemotron 3.5 Lightning (OpenRouter)',
-    desc: 'Prioritas #3 - Model berkecepatan tinggi OpenRouter Cloud',
+    desc: 'Prioritas #2 - Model berkecepatan tinggi OpenRouter Cloud',
     provider: 'OPENROUTER',
     badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
@@ -125,7 +107,7 @@ const INDIVIDUAL_MODELS = [
   {
     id: 'openrouter-nemotron-nano-omni',
     name: 'Nemotron 3 Nano Omni (OpenRouter)',
-    desc: 'Prioritas #5 - Model multimodal & penalaran CoT 30B',
+    desc: 'Prioritas #3 - Model multimodal & penalaran CoT 30B',
     provider: 'OPENROUTER',
     badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
     iconColor: 'text-cyan-600 dark:text-cyan-400',

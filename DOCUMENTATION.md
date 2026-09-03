@@ -1512,3 +1512,40 @@ Menindaklanjuti investigasi menyeluruh mengapa pertanyaan yang diajukan dengan b
    - Kueri Nintendo Switch 2: Berhasil merangkum pengumuman resmi dan jadwal rilis Desember 2026 di Indonesia.
    - Multi-turn conversation: Berhasil mempertahankan kesinambungan entitas dari giliran pertama ke giliran lanjutan.
    - `npm run build` sukses (934ms) dan syntax check lolos.
+
+### v10.656.0 — Full Synchronization of Admin Monitoring with Terminal AI Model Catalog
+
+Released 2026-09-03.
+
+Menindaklanjuti instruksi mutlak pengguna untuk mensinkronkan model pada monitoring admin (`Dashboard.jsx`) agar mengikuti katalog model AI yang ada pada terminal (`TerminalAI.jsx`). Sesuai mandat, model pada terminal bersifat tetap (*fixed*) dan monitoring admin kini mengikuti terminal secara 1-to-1:
+
+1. **Pemulihan Katalog 16 Model di Dashboard Monitoring (`src/pages/Dashboard.jsx`):**
+   - Menghapus entri model yang tidak ada di katalog terminal (`ollama-gemma4` dan `openrouter-gemma4`).
+   - Mengembalikan urutan prioritas utama sesuai katalog terminal:
+     * **Prioritas #1**: Nemotron 3 Nano (Ollama Cloud)
+     * **Prioritas #2**: Nemotron 3.5 Lightning (OpenRouter)
+     * **Prioritas #3**: Nemotron 3 Nano Omni (OpenRouter)
+   - Mengembalikan 16 kartu model individual sesuai arsitektur *Dynamic 16-Model Sorted Grid*:
+     1. Nemotron 3 Nano (Ollama Cloud - Prioritas #1)
+     2. Nemotron 3.5 Lightning (OpenRouter - Prioritas #2)
+     3. Nemotron 3 Nano Omni (OpenRouter - Prioritas #3)
+     4. OpenRouter Free (Auto SOTA Pool)
+     5. DeepSeek Chat V3 (OpenRouter)
+     6. Nemotron 3 Super 120B (OpenRouter)
+     7. Nemotron 3 Ultra 550B (OpenRouter)
+     8. MiniMax M3 Free (OpenRouter)
+     9. Cohere North Mini Code (OpenRouter)
+     10. Nemotron 3 Ultra (Ollama Cloud)
+     11. Nemotron 3 Super (Ollama Cloud)
+     12. MiniMax M3 (Ollama Cloud)
+     13. Nemotron 3.5 Lightning (OpenCode)
+     14. Nemotron 3 Ultra Free (OpenCode)
+     15. Laguna S 2.1 Free (OpenCode)
+     16. Mimo v2.5 Free (OpenCode)
+
+2. **Penyesuaian Pipeline Auto-Router Backend (`api/chat.js`):**
+   - Menyelaraskan urutan eksekusi auto-router dan reasoning pipeline agar menghormati hierarki prioritas katalog terminal: Nano (#1) -> Lightning (#2) -> Nano Omni (#3) -> Super -> Ultra -> Laguna -> cadangan model aktif.
+
+3. **Verifikasi:**
+   - Kompilasi `npm run build` sukses tanpa galat (1,35 detik).
+   - Seluruh perubahan di-commit dan di-push ke GitHub repository.
