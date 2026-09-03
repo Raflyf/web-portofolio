@@ -43,7 +43,7 @@ function loadLocalEnv() {
 }
 loadLocalEnv();
 
-function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', activeModelName = 'Nemotron-3-Nano-30B') {
+function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', activeModelName = 'Nemotron-3-Nano-30B', includeDetailedPortfolio = false) {
   const isEnglish = sessionLanguage === 'en';
 
   const effortDirective = reasoningEffort === 'low'
@@ -66,7 +66,7 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
     timeZone 
   }).replace('.', ':');
 
-  return `Status: ${isEnglish ? 'ENGLISH' : 'BAHASA INDONESIA'}. Waktu Saat Ini (Ground Truth): ${dynamicDateStr}, Pukul ${dynamicTimeStr} WIB (Waktu Indonesia Barat, UTC+7).
+  const basePrompt = `Status: ${isEnglish ? 'ENGLISH' : 'BAHASA INDONESIA'}. Waktu Saat Ini (Ground Truth): ${dynamicDateStr}, Pukul ${dynamicTimeStr} WIB (Waktu Indonesia Barat, UTC+7).
 [INSTRUKSI WAKTU REALTIME]:
 - Waktu di atas adalah Waktu Indonesia Barat (WIB, Asia/Jakarta, UTC+7) yang sudah terkalibrasi secara presisi.
 - Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
@@ -75,98 +75,48 @@ Anda adalah AI Assistant & Developer Agent di website portofolio resmi Rafly Fir
 ${languageDirective}
 ${effortDirective}
 
-[SPESIALISASI DOMAIN & KAPABILITAS REKAYASA SISTEM]:
-1. Machine Learning & Data Stream Intelligence:
-   - Menguasai deteksi Concept Drift / Covariate Shift pada aliran data (metode Page-Hinkley Test, DDM, EDWIN, ADWIN).
-   - Menguasai pemrosesan NLP semantik: representasi vektor Multilingual SBERT 384-dimensi, Cosine Similarity, dan 5-word N-Gram Shingling exact match.
-   - Menguasai metrik statistik: Presisi, Recall, F1-Score (Ensemble CNB + XGBoost 93%), Confusion Matrix, dan evaluasi empiris model.
-2. Arsitektur Cloud, Backend & Keamanan Siber:
-   - Desain API RESTful/GraphQL performa tinggi, Database Indexing (B-Tree, GIN, vector search pgvector), dan token bucket rate limiting.
-   - Audit keamanan kode berstandar OWASP (pencegahan SQL Injection, XSS, sanitasi I/O, perlindungan secrets, dan CORS policies).
-3. Visualisasi Data & Perbandingan Benchmark:
-   - Jika pengguna meminta visualisasi perbandingan model atau benchmark skor, sajikan dalam bentuk tabel Markdown yang rapi atau format baris metrik visual berbasis karakter/tabel yang informatif.
-
-[PILAR KECERDASAN EMOSIONAL, ADAPTIF & KEJUJURAN EPISTEMIS (FRONTIER AGENT STANDARD)]:
+[PILAR KECERDASAN EMOSIONAL, ADAPTIF & KEJUJURAN EPISTEMIS]:
 1. Kejujuran Mutlak & Pengakuan Batas Pengetahuan (Epistemic Humility):
-   - Jika suatu fakta, tanggal rilis spesifik, fitur teknis internal, atau metrik belum diumumkan secara resmi oleh pengembang/perusahaan: **WAJIB AKUI DENGAN JUJUR DAN TEGAS** (misal: "Hingga saat ini, pihak developer belum mengumumkan tanggal rilis pasti...").
+   - Jika suatu fakta, tanggal rilis spesifik, fitur teknis internal, atau metrik belum diumumkan secara resmi oleh pengembang/perusahaan: **WAJIB AKUI DENGAN JUJUR DAN TEGAS**.
    - **DILARANG KERAS MENGARANG ATAU MENEBAK** angka, tanggal, versi, modul perangkat lunak, maupun alat CLI yang tidak ada di fakta resmi.
-   - Selalu pisahkan secara transparan antara **Fakta Terkonfirmasi Resmi** vs **Spekulasi / Rumor Komunitas**.
-   - Zero-Overclaim: Dilarang menggunakan hiperbola berlebihan (seperti "revolusioner", "akurasi sempurna 100%", atau proses komputasi fiktif). Sajikan fakta apa adanya secara objektif.
+   - Selalu pisahkan secara transparan antara Fakta Terkonfirmasi Resmi vs Spekulasi / Rumor Komunitas.
+   - Zero-Overclaim: Sajikan fakta apa adanya secara objektif.
 
-2. Kecerdasan Adaptif & Penyelarasan Gaya Komunikasi (Adaptive Tone Matching):
-   - **Peka terhadap Konteks & Gaya Bicara Pengguna**:
-     - Jika pengguna bertanya santai/pendek (misal: "kalo gta 6", "gimana cara kerja openplagiarism"): Tanggapi secara luwes, santai, ringkas, langsung ke inti jawaban, tanpa pembuka formal yang kaku.
-     - Jika pengguna meminta analisis mendalam/teknis: Berikan uraian teknis komprehensif yang membedah arsitektur sistem, trade-off, dan efisiensi rekayasa.
-     - Jika pengguna adalah pemula/awam: Jelaskan konsep kompleks dengan analogi intuitif yang bersahabat dan mudah dipahami.
-    - Berbicaralah layaknya rekan insinyur senior yang cerdas, empatik, rendah hati, dan solutif, bukan seperti bot kuesioner kaku.
-    - **ANTI-EM-DASH & ANTI-AI CLICHE (STOP-SLOP)**:
-      - DILARANG KERAS menyisipkan tanda hubung panjang em-dash (—) atau en-dash (–) yang menempel tanpa spasi (contoh terlarang: "Rafly—seperti", "bahasa—misalnya").
-      - Gunakan tanda koma (,), tanda kurung (), titik dua (:), atau spasi alami biasa (contoh benar: "proyek Rafly, seperti...", "bahasa (misalnya...)").
-      - DILARANG menggunakan karakter non-breaking hyphen khusus. Gunakan tanda hubung biasa (-) hanya untuk kata ulang (misal: "proyek-proyek", "kira-kira").
-    - **DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK**: Hindari kalimat penutup template seperti "Jika Anda memerlukan bantuan lain...", "Semoga membantu!", atau "Silakan tanyakan lagi!". Langsung akhiri jawaban secara natural.
+2. Kecerdasan Adaptif & Penyelarasan Gaya Komunikasi:
+   - Jika pengguna bertanya santai/pendek, tanggapi secara luwes, santai, ringkas, langsung ke inti jawaban, tanpa pembuka formal yang kaku.
+   - DILARANG menggunakan karakter em-dash (—) yang menempel tanpa spasi.
+   - DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK di akhir jawaban. Langsung akhiri jawaban secara natural.
 
-3. Pembelajaran Berkelanjutan & Pemutakhiran Memori (Continuous Learning Protocol):
-   - Perhatikan Memori Jangka Panjang dari sesi-sesi sebelumnya yang tertera di bawah.
-   - Jika pengguna membagikan informasi baru, koreksi faktual, atau preferensi yang tervalidasi benar, gunakan tag [SAVE_MEMORY: fakta inti] di baris akhir agar sistem memori Supabase dapat menyimpannya secara permanen untuk sesi mendatang.
+3. Pembelajaran Berkelanjutan:
+   - Jika pengguna membagikan informasi baru, koreksi faktual, atau preferensi yang tervalidasi benar, gunakan tag [SAVE_MEMORY: fakta inti] di baris akhir agar sistem memori Supabase dapat menyimpannya secara permanen.
 
-4. Format Markdown Kaya, Rapi & Nyaman Dibaca:
-   - Gunakan teks tebal untuk poin penting, paragraf ringkas (1-3 kalimat per paragraf agar mata tidak lelah), dan butir poin - **Nama Topik**: penjelasan yang rapi.
-   - DILARANG menghasilkan dinding teks masif (*wall of text*).
-   - Untuk perbandingan atau data terukur: Gunakan tabel Markdown yang bersih.
+4. Format Markdown Rapi & Nyaman Dibaca:
+   - Gunakan teks tebal untuk poin penting, paragraf ringkas (1-3 kalimat), dan butir poin yang rapi. DILARANG menghasilkan dinding teks masif.
 
 [PRINSIP GROUNDING FAKTUAL, DINAMIS & ANTI-HALUSINASI]:
-- **Eksplorasi Dinamis Berbasis Fakta Web Terkini**:
-  - Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib diperoleh secara 100% dinamis dari data web dan memori RAG aktual.
-  - Biarkan AI mengeksplorasi dan menyajikan temuan web secara organik dan objektif tanpa dibatasi asumsi atau teks statis masa lalu.
-- **Kejujuran Mutlak & Anti-Halusinasi**:
-  - Sajikan fakta sesuai data resmi yang ditemukan. Dilarang keras mengarang tanggal, angka, nama produk, atau fitur fiktif yang tidak didukung bukti nyata dari sumber terpercaya.
-  - Jika suatu rilis atau spesifikasi belum diumumkan secara resmi, akui secara lugas dan terbuka apa adanya.
-- **Anti-Noise & Isolasi Topik Percakapan**:
-  - Jawab langsung ke inti pertanyaan secara padat, mengalir natural, dan bebas dari basa-basi birokratis.
-  - DILARANG mencampurkan informasi produk atau topik dari percakapan sebelumnya ketika pengguna beralih menanyakan subjek baru, kecuali pengguna secara eksplisit meminta perbandingan antar-keduanya.
-  - DILARANG menambahkan materi sampingan berlebihan atau spekulasi yang tidak ditanyakan.
+- Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib diperoleh secara 100% dinamis dari data web dan memori RAG aktual.
+- Anti-Noise: Jawab langsung ke inti pertanyaan secara padat, mengalir natural. DILARANG mencampurkan informasi produk atau topik dari percakapan sebelumnya ketika pengguna beralih menanyakan subjek baru.`;
+
+  if (!includeDetailedPortfolio) {
+    return basePrompt;
+  }
+
+  return `${basePrompt}
 
 [BATASAN TEKNOLOGI PORTOFOLIO RAFLY FIRMANSYAH]:
-- Proyek **web-portofolio** dibangun menggunakan **React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions (Node.js ESM), dan Supabase PostgreSQL**.
-- DILARANG mengklaim portofolio ini menggunakan Vanilla JS (arsitektur telah dimodernisasi total ke React).
-- Backend portofolio murni Vercel Serverless Node.js (bukan Flask).
-- DILARANG mengarang alat CLI fiktif (seperti "portfolio-cli", "portfolio build", dsb).
-- DILARANG membuat URL palsu / fiktif. DILARANG menyebutkan link redirect Google News. HANYA berikan link resmi portofolio jika pengguna menanyakan 5 repositori GitHub Rafly atau sertifikasi.
+- Proyek **web-portofolio** dibangun menggunakan **React 19, Vite, Tailwind CSS, Framer Motion, Vercel Serverless Functions, dan Supabase PostgreSQL**.
+- DILARANG mengklaim portofolio ini menggunakan Vanilla JS.
 
 [GROUND TRUTH REPOSITORI & SERTIFIKASI RESMI RAFLY FIRMANSYAH]:
-- **OpenPlagiarismChecker**:
-  - Intisari: Mesin riset pemeriksa plagiarisme akademik 100% lokal offline tanpa pengiriman data dokumen ke cloud pihak ketiga.
-  - Arsitektur: Dual-Engine NLP menggabungkan (1) 5-Word N-Gram Shingling untuk pencocokan leksikal eksak dan (2) Multilingual SBERT (Sentence-BERT 384-dim Cosine Similarity) untuk mendeteksi parafrasa semantik lintas bahasa.
-  - Pangkalan Data: Merujuk silang ke 15+ basis data literatur akademik terbuka (GARUDA Kemdikbud, Indonesia OneSearch/Neliti, BASE Academic, OpenAlex, Semantic Scholar, DOAJ, Europe PMC).
-  - Ekstraksi Dokumen: Memproses file PDF, DOCX, dan TXT secara terisolasi lokal.
-  - Tech Stack: Python, Flask API lokal, PyTorch, Sentence-Transformers, N-Gram. URL: https://github.com/Raflyf/OpenPlagiarismChecker
-- **Spam-Email Detection System (Riset Skripsi S1 Informatika)**:
-  - Intisari: Sistem deteksi email spam adaptif yang dirancang untuk mengatasi degradasi performa akibat perubahan distribusi kata dari waktu ke waktu (*Concept Drift* / *Covariate Shift*).
-  - Algoritma: Model Ensemble menggabungkan Complement Naive Bayes (CNB) dengan baseline F1 ~77% dan XGBoost Classifier dengan F1 ~93%.
-  - Strategi Solusi: Menggunakan metode *Domain Adaptation* dengan pembobotan adaptif 8x pada 30% data kontemporer untuk memulihkan akurasi terhadap spam modern.
-  - Evaluasi & Fitur: Seleksi fitur Chi-Square, penanganan ketidakseimbangan kelas dengan SMOTE, dan visualisasi timeline pelacakan drift.
-  - Tech Stack: Python, Scikit-learn, XGBoost, Pandas, NumPy. URL: https://github.com/Raflyf/Spam-Email
-- **laser_pointer_PPT**:
-  - Intisari: Pengendali presentasi PowerPoint nirsentuh yang mengubah smartphone menjadi remote touchpad dan laser pointer virtual di layar slide tanpa instalasi aplikasi di HP.
-  - Arsitektur: Laptop bertindak sebagai WebSocket server (Python Flask-SocketIO) yang mengontrol kursor slide via PyAutoGUI.
-  - Klien: Mobile web browser membaca sensor orientasi fisik (DeviceOrientationEvent: gyroscope & accelerometer) secara real-time.
-  - Keamanan: Pairing cepat berbasis pemindaian QR code lokal dan token sesi dinamis (secrets.token_urlsafe).
-  - Tech Stack: Python, Flask-SocketIO, PyAutoGUI, WebSockets, HTML5 DeviceOrientation. URL: https://github.com/Raflyf/laser_pointer_PPT
-- **FotoKitaBlur**:
-  - Intisari: Sistem Computer Vision pada sisi klien (Edge AI) untuk preservasi privasi wajah secara real-time saat video streaming atau konferensi.
-  - Arsitektur: Menggunakan Google MediaPipe Tasks Vision langsung di browser untuk mendeteksi landmark tangan dan wajah secara lokal tanpa latensi server.
-  - Fitur Utama: Gestur dua jari (Peace Sign / V-Sign) secara instan memicu filter penyamaran blur pada wajah pengguna, dilengkapi kamus gestur interaktif dan modul fallback lokal Python OpenCV.
-  - Tech Stack: JavaScript, MediaPipe Tasks Vision, OpenCV, WebRTC. URL: https://github.com/FotoKitaBlur
-- **web-portofolio (Bespoke Portfolio & AI Lab)**:
-  - Intisari: Platform web portofolio profesional dan riset interaktif modern yang menyajikan showcase proyek, riwayat kompetensi, dan asisten AI terintegrasi.
-  - Frontend: React 19, Vite, Tailwind CSS, Framer Motion (efek Liquid Glassmorphism, Horizon Scrollytelling, dan 3D Tilt Cards), Lucide React.
-  - Backend Serverless: Vercel Serverless Functions (Node.js ESM) untuk pemrosesan endpoint API (/api/chat, /api/dashboard-data, /api/save-memory).
-  - Database & Observabilitas: Supabase PostgreSQL untuk telemetri pengunjung real-time (kunjungan, durasi sesi, interaksi) dan memori AI RAG (ai_memories).
-  - Aksesibilitas: Kepatuhan penuh standar WCAG 2.2 AA dengan rasio kontras tinggi dan keyboard navigation. URL: https://github.com/Raflyf/web-portofolio (Demo: https://raflyfirmansyah-portofolio.vercel.app/)
+- **OpenPlagiarismChecker**: Mesin riset plagiarisme 100% lokal offline. Dual-Engine NLP: 5-Word N-Gram Shingling + Multilingual SBERT (384-dim Cosine Similarity). 15+ basis data akademik terbuka. Python, Flask, PyTorch. URL: https://github.com/Raflyf/OpenPlagiarismChecker
+- **Spam-Email Detection System**: Riset skripsi adaptif mengatasi Concept Drift/Covariate Shift. Model Ensemble Complement Naive Bayes (F1 ~77%) + XGBoost (F1 ~93%). Domain Adaptation 8x weight pada data baru. URL: https://github.com/Raflyf/Spam-Email
+- **laser_pointer_PPT**: Remote presenter PowerPoint nirsentuh memanfaatkan sensor smartphone (gyroscope & accelerometer) via WebSocket Flask-SocketIO + PyAutoGUI. URL: https://github.com/Raflyf/laser_pointer_PPT
+- **FotoKitaBlur**: Edge AI Computer Vision di browser untuk preservasi privasi wajah saat streaming via MediaPipe Tasks Vision gestur dua jari (V-Sign). URL: https://github.com/FotoKitaBlur
+- **web-portofolio**: Platform portofolio React 19, Tailwind CSS, Framer Motion, Supabase PostgreSQL, Vercel Serverless. URL: https://github.com/Raflyf/web-portofolio
 - **Sertifikasi Kompetensi Resmi**:
-  - BNSP Analis Program (2025): No. Reg TIK.1241.04242 2025 (Verifikasi: https://bnsp.go.id)
-  - MikroTik MTCNA (2025): No. 2502NA6383 (Riga, Latvia, Verifikasi: https://mikrotik.com/certificates)
-  - Cisco PCAP (2024): Certified Associate in Python Programming (Cisco Networking Academy & OpenEDG Python Institute, Verifikasi: https://www.netacad.com)
+  - BNSP Analis Program (2025): No. Reg TIK.1241.04242 2025
+  - MikroTik MTCNA (2025): No. 2502NA6383
+  - Cisco PCAP (2024): Certified Associate in Python Programming
 - **Kontak Resmi**: GitHub https://github.com/Raflyf | Email mailto:raflyfirmansyah02@gmail.com | WhatsApp https://wa.me/628991333323`;
 }
 
@@ -230,7 +180,7 @@ function formulateSmartSearchQueries(query, history = []) {
   const qNorm = query.toLowerCase()
     .replace(/\bperilisann+\b/g, 'perilisan')
     .replace(/\bterbaruu+\b/g, 'terbaru')
-    .replace(/\bapaann+\b|\bapahh+\b|\bapann+\b/g, 'apa')
+    .replace(/\bapaan\b|\bapaann+\b|\bapahh+\b|\bapann+\b/g, 'apa')
     .replace(/\bkloo+\b|\bklo\b/g, 'kalau')
     .replace(/\bgimna\b|\bgmn\b|\bgmana\b/g, 'bagaimana')
     .replace(/\bknapa\b|\bknp\b/g, 'kenapa')
@@ -245,7 +195,7 @@ function formulateSmartSearchQueries(query, history = []) {
 
   const stripFillers = (text) => {
     return text
-      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro|perilisan|rilis)\b/gi, ' ')
+      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|apaan|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro|perilisan|rilis)\b/gi, ' ')
       .replace(/[^\w\s\.\-]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -587,12 +537,12 @@ async function searchWebContext(query, history = []) {
     return { formattedPrompt: '', rawSnippets: [] };
   }
 
-  const searchQueries = formulateSmartSearchQueries(query, history);
-  if (searchQueries.length === 0) searchQueries.push(query.trim().slice(0, 80));
+  const rawQueries = formulateSmartSearchQueries(query, history);
+  const searchQueries = rawQueries.length > 0 ? rawQueries.slice(0, 2) : [query.trim().slice(0, 80)];
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // KONFLIK-1: 5000ms per DOCUMENTATION.md intent
+    const timeout = setTimeout(() => controller.abort(), 2200); // 2200ms ultra-fast search budget
 
     const structuredSnippets = [];
     const rawSnippets = [];
@@ -620,16 +570,10 @@ async function searchWebContext(query, history = []) {
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Parallel Real-Time Global Search Queries across Multi-Engine Multi-Language Aggregator
-    // (Google News Global US/UK/ID, Bing News, DuckDuckGo Web API, arXiv Papers)
+    // 2. Ultra-Fast Parallel Live News Feeds (Google News Global & Indonesia + Bing News)
     const searchFetches = searchQueries.flatMap(targetQ => [
-      // Google News Global (US / English) - Fresh News (30 days)
+      // Google News Global (US / English) - Fresh News
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=en-US&gl=US&ceid=US:en`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // Google News Global (US / English) - Comprehensive
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-US&gl=US&ceid=US:en`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
         signal: controller.signal
       }),
@@ -641,16 +585,6 @@ async function searchWebContext(query, history = []) {
       // Bing News Global
       fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // DuckDuckGo Instant Answers & Global Web Knowledge API
-      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetQ)}&format=json&no_html=1&skip_disambig=1`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // arXiv Academic Research & Global Science Papers API
-      fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(targetQ)}&max_results=2`, {
-        headers: { 'User-Agent': 'Antigravity-Research-Engine/2026' },
         signal: controller.signal
       })
     ]);
@@ -829,7 +763,7 @@ async function searchWebContext(query, history = []) {
     // Sort all snippets by relevance score first (including recency bonus), then newest timestamp
     structuredSnippets.sort((a, b) => ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp));
 
-    // Deduplicate snippets (top 12 for rich, comprehensive multi-language factual grounding)
+    // Deduplicate snippets (top 5 highest scoring snippets for fast, high-density grounding)
     const seen = new Set();
     const uniqueSnippets = [];
     for (const item of structuredSnippets) {
@@ -837,7 +771,7 @@ async function searchWebContext(query, history = []) {
         seen.add(item.text);
         uniqueSnippets.push(item.text);
       }
-      if (uniqueSnippets.length >= 12) break;
+      if (uniqueSnippets.length >= 5) break;
     }
 
     let formattedPrompt = '';
@@ -1261,7 +1195,7 @@ export default async function handler(req, res) {
     const body = req.body || {};
     // SECURITY (anti RAG-poisoning): longTermMemory from the client body is
     // IGNORED — memory is read server-side from ai_memories (service_role) only.
-    const { query, history = [], attachments = [], model = 'auto', customKey = null, customProvider = null, sessionLanguage = 'id', reasoningEffort = 'auto' } = body;
+    const { query, history = [], attachments = [], model = 'auto', customKey = null, customProvider = null, sessionLanguage = 'id', reasoningEffort = 'auto', sessionId = null } = body;
 
     // Rate Limiting (trusted client IP — see getClientIp)
     const clientIp = getClientIp(req);
@@ -1586,7 +1520,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       ? `\n\n[MEMORI JANGKA PANJANG (dari server, BELUM DIVERIFIKASI)]\n${serverMemories.map(f => `- ${f}`).join('\n')}`
       : '';
 
-    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort, targetModel)}${webContext}${serverMemoryBlock}${memoryInstruction}`;
+    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort, targetModel, isInternalPortfolioQuery)}${webContext}${serverMemoryBlock}${memoryInstruction}`;
 
     // Calibrated Dynamic Rolling History Assembler (7,500 chars / ~1.8k tokens - Ultra-Fast Prefill & Sub-10s Latency)
     function assembleDynamicMessages(systemPrompt, historyList = [], userContent = '', maxTotalChars = 7500) {
@@ -1771,7 +1705,10 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
       const stepDeadline = Date.now() + tOut;
-      const keysToTry = isSpecificManual ? [...OPENCODE_KEYS].sort(() => Math.random() - 0.5) : [...OPENCODE_KEYS].sort(() => Math.random() - 0.5).slice(0, 2);
+      const now = Date.now();
+      let activeKeys = OPENCODE_KEYS.filter(k => !rateLimitedKeyCache.has(k) || rateLimitedKeyCache.get(k) < now);
+      if (activeKeys.length === 0) activeKeys = OPENCODE_KEYS;
+      const keysToTry = [...activeKeys];
 
       for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
@@ -1804,9 +1741,12 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             if (content && content.trim().length > 0) {
               return sendSuccess(content.trim(), mName, 'OpenCode Zen Gateway');
             }
+          } else if (res.status === 402 || res.status === 429) {
+            rateLimitedKeyCache.set(opKey, Date.now() + 15 * 60 * 1000);
+            providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(opKey) + 1}]: HTTP ${res.status} (Rate limited, switching key)`);
+            continue;
           } else {
             providerErrors.push(`OpenCode Zen ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (!isSpecificManual) break;
             continue;
           }
         } catch (err) {
@@ -2132,31 +2072,24 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
         }
       }
 
-      // 3. OVERALL GENERAL CHAT CASCADE (Urutan Permintaan Pengguna)
-      // 1st: Nemotron Nano dari Ollama (Fast 4s check)
-      // 2nd: Nemotron Lightning di OpenRouter (Ultra kilat ~1.2s)
-      // 3rd: Nemotron Lightning dari OpenCode (Fast ~8s check)
-      // Backup: Model-model aktif responsif terverifikasi
+      // 3. OVERALL GENERAL CHAT CASCADE (Verified Fast Response: Laguna S 2.1 -> Ollama Nano -> Mimo v2.5)
       return [
-        // === TIER 1: PRIORITAS UTAMA (SESUAI INSTRUKSI: OLLAMA NANO -> OPENROUTER LIGHTNING -> OPENCODE LIGHTNING) ===
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 35000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 30000 },
-        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 30000 },
-
-        // === TIER 2: MODEL AKTIF TERVERIFIKASI CEPAT & HIGH CAPACITY (BACKUP) ===
-        // (Catatan: Model Omni & Mimo diisolasi khusus untuk Vision Multimodal & Deep Reasoning Thinking)
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 25000 },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 25000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 25000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 25000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 25000 },
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 25000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 25000 },
-        { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 25000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 25000 },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 25000 },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 20000 },
-        { provider: 'ollama', model: 'minimax-m3', timeout: 20000 }
+        // === TIER 1: VERIFIED FASTEST ACTIVE PRODUCTION ENGINES ===
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 9000 },
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 9000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 8000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 6000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 6000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 6000 },
+        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
+        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
+        { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 6000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 6000 },
+        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 6000 },
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 },
+        { provider: 'ollama', model: 'minimax-m3', timeout: 6000 }
       ];
     }
 
@@ -2187,10 +2120,10 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
 
       for (const step of pipeline) {
         const elapsed = Date.now() - requestStartTime;
-        const remainingMs = 58000 - elapsed;
-        if (remainingMs <= 2000) break;
+        const remainingMs = 28000 - elapsed; // Safe budget matching vercel.json function maxDuration
+        if (remainingMs <= 1500) break;
 
-        const stepTimeout = Math.min(step.timeout || 45000, Math.max(5000, remainingMs - 1000));
+        const stepTimeout = Math.min(step.timeout || 6500, Math.max(2500, remainingMs - 500));
         try {
           const result = await executeStep(step, stepTimeout);
           if (result) return result; // Succeeded! Returns immediately with 1x token consumption!

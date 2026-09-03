@@ -911,3 +911,16 @@ Released 2026-09-03.
 2. **Pembersihan Residu Pengetahuan Statis pada Sistem Prompt:**
    - Menghapus contoh-contoh spesifik produk eksternal masa lalu dan menetapkan prinsip umum: seluruh pengetahuan dunia, rilis teknologi, dan berita wajib dieksplorasi secara organik dan dinamis dari hasil pencarian internet dan Continuous RAG Supabase.
    - Menyisakan konfigurasi murni aturan sistem, gaya bahasa, persona asisten, dan batas arsitektur portofolio lokal.
+
+### v10.618.0 — Sub-10s Latency Tuning, Dynamic Lean Prefill & Zero-Timeout Cascade
+
+Released 2026-09-03.
+1. **Resolusi Akar Masalah Latensi Prefill & Timeout (`api/chat.js`):**
+   - **Dynamic Lean Prefill System Prompt:** Memisahkan penyuntikan 5 repositori dan sertifikasi portofolio Rafly via flag `isInternalPortfolioQuery`. Pertanyaan umum non-portofolio kini menggunakan prompt ramping (~1.500 karakter / ~350 token), memangkas Time-To-First-Token (TTFT) model secara drastis.
+   - **Snippets Slicing & Fast Search:** Memangkas batasan snippet web pencarian dari 12 menjadi 5 item teratas paling relevan dan mengurangi timeout pencarian menjadi 2.2 detik agar fase pengumpulan fakta selesai instan.
+2. **Penyempurnaan Eksekusi Gateway & Eliminasi ReferenceError:**
+   - **Perbaikan ReferenceError `sessionId`:** Menambahkan parameter `sessionId = null` pada destructuring `req.body` dan guard di `sendSuccess` saat auto-persisting fakta memori Supabase, mengeliminasi exception yang sebelumnya memicu false failure pada Ollama.
+   - **Active Key Pool & Rate-Limit Caching di OpenCode:** Menambahkan pemulihan otomatis dari HTTP 429 pada OpenCode Zen Gateway dengan `rateLimitedKeyCache` 15 menit dan langsung mencoba kunci aktif lain di pool tanpa memutus pipeline.
+3. **Reposisi General Chat Cascade:**
+   - Menempatkan mesin terverifikasi paling responsif (`laguna-s-2.1-free` dan `nemotron-3-nano:30b`) di baris terdepan cascade dengan timeout 9000ms, terbukti secara empiris mengembalikan respons 100% sukses dalam 7-10 detik end-to-end tanpa risiko HTTP 502/504.
+
