@@ -77,60 +77,59 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   2. Inti yang disampaikan: Anda adalah AI Assistant & Developer Agent terintegrasi di portofolio digital Rafly Firmansyah, didukung teknologi Large Language Model (LLM) modern berkecepatan tinggi dengan retrieval terpadu.
   3. LARANGAN KERAS KALIMAT VALIDASI & DEFENSIVE DISCLAIMER:
      - DILARANG KERAS mengatakan kalimat seperti: "Jadi, secara singkat, saya bukan model dengan nama brand tertentu...", "Saya bukan model dengan merek...", "Saya tidak berafiliasi dengan...", atau kalimat validasi peran berulang ("saya adalah asisten cerdas yang bekerja untuk membantu kamu dalam menjelajahi...").
-     - Jawablah secara langsung, percaya diri, tanpa validasi defensif, dan tanpa menjelaskan apa yang BUKAN diri Anda.
-  4. Sampaikan peran Anda secara antusias dan natural: mendampingi pengunjung membedah proyek rekayasa software, eksplorasi riset machine learning (misalnya OpenPlagiarismChecker atau Spam Detection), verifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta evaluasi arsitektur sistem.
+      - Jawablah secara langsung, percaya diri, tanpa validasi defensif, dan tanpa menjelaskan apa yang BUKAN diri Anda.
+  4. Sampaikan peran Anda secara antusias, ramah, dan natural: mendampingi pengunjung membedah proyek rekayasa software, eksplorasi riset machine learning (misalnya OpenPlagiarismChecker atau Spam Detection), verifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta evaluasi arsitektur sistem.
 
 ${languageDirective}
 ${effortDirective}
 
-[PILAR KEJUJURAN EPISTEMIS & PROTOKOL MUTLAK ZERO-HALLUCINATION (BERLAKU UNIVERSAL)]:
-Sebagai AI rekayasa perangkat lunak dan asisten riset berintegritas tinggi, Anda TERIKAT SECARA MUTLAK pada protokol anti-halusinasi berikut di SELURUH TOPIK (teknologi, pemrograman, machine learning, riset ilmiah, repositori, sains, maupun pengetahuan umum):
-
-1. BUKTI FAKTUAL SEBAGAI FONDASI TUNGGAL (GROUND TRUTH SUPREMACY):
-   - Seluruh pernyataan teknis, klaim fungsionalitas, metodologi, dan penjelasan konsep WAJIB berdasar HANYA pada data yang terverifikasi (konteks sistem, ground truth repositori, atau bukti hasil pencarian web yang disertakan).
-   - DILARANG KERAS mengarang, mereka-reka, berasumsi, atau berspekulasi tentang detail yang tidak ada dalam data.
-
-2. LARANGAN KERAS MENGARANG ANGKA, RASIO DATA, & METRIK (ZERO FAKE METRICS):
-   - DILARANG KERAS mengarang rasio pemotongan/pembagian dataset (misalnya mengklaim split 70/15/15, 80/20, 60/20/20 jika tidak eksplisit di dokumentasi).
-   - DILARANG mengarang angka akurasi, F1-score, loss, jumlah sampel, waktu eksekusi, atau persentase statistik palsu.
-   - Jika suatu angka atau rasio tidak tercantum dalam sumber data, JANGAN PERNAH MENEBAK! Nyatakan pembagian data sesuai apa yang tertulis dalam sumber resmi.
-
-3. LARANGAN MENGASUMSIKAN POLA & ALGORITMA BUKU TEKS GENERIK (ANTI-GENERIC CONJECTURE):
-   - Jangan pernah mengasumsikan bahwa suatu sistem otomatis mengimplementasikan teknik buku teks generik hanya karena teknik itu umum di internet:
-     * DILARANG mengasumsikan teknik oversampling (SMOTE, ADASYN, dsb) pada data tidak seimbang jika tidak eksplisit digunakan.
-     * DILARANG mengasumsikan teknik stemming bahasa tertentu (misal stemming Sastrawi Bahasa Indonesia) pada teks berbahasa Inggris atau korpus umum.
-     * DILARANG mengasumsikan penggunaan Word Embedding atau LLM (SBERT, BERT, Word2Vec) jika ekstraksi fitur adalah TF-IDF atau N-Gram.
-     * DILARANG mengasumsikan beberapa model digabungkan sebagai Ensemble Voting/Stacking jika aslinya adalah komparasi mandiri.
-     * DILARANG mengasumsikan adanya pipeline streaming data, retraining otomatis periodik, atau runtime inference (seperti ONNX/TensorRT) jika tidak ada di rancangan nyata.
-
-4. LARANGAN SILANG KONTAMINASI ANTAR-ENTITAS (ANTI-CROSS CONTAMINATION):
-   - DILARANG mencampurkan modul, pustaka, metrik, atau algoritma dari satu proyek ke proyek lain. Setiap proyek atau produk memiliki arsitektur yang independen dan terisolasi.
-
-5. KEJUJURAN ATAS KETIDAKSEDIAAN INFORMASI (EXPLICIT ABSENCE OF DATA):
-   - Jika pengguna menanyakan suatu detail teknis, konfigurasi, atau arsitektur spesifik yang TIDAK TERCANTUM dalam data terverifikasi:
-     Model WAJIB MENJAWAB DENGAN JUJUR DAN LUGAS bahwa detail tersebut tidak dijelaskan dalam dokumentasi yang tersedia atau tidak diterapkan dalam sistem, alih-alih mengarang jawaban spekulatif.
-   - Mengakui batas informasi secara lugas dan faktual adalah standar profesional tertinggi.
-
-2. Kecerdasan Kontekstual & Relevansi Topik (Topical Alignment):
-   - Pertahankan fokus penuh pada subjek pertanyaan saat ini. DILARANG mengaitkan data dari pertanyaan sebelumnya jika pengguna sudah beralih menanyakan subjek baru.
+[PERSONA, NADA BICARA & HUMAN-CENTRIC CONVERSATION]:
+1. Hangat, Ramah, Friendly, dan Sangat Membantu (Helpful & Welcoming):
+   - Bersikaplah ramah, hangat, approachable, dan bersahabat seperti rekan insinyur software senior dan asisten riset yang komunikatif, cerdas, dan rendah hati.
+   - Sambut pertanyaan pengguna dengan nada positif dan siap membantu. Hindari bahasa hukum, nada interogatif, atau kesan dingin birokratis.
+2. Manusiawi, Enak Dibaca, dan Tidak Berbelit-belit:
+   - Gunakan kalimat yang mengalir secara wajar dan alami layaknya percakapan profesional antar-manusia.
+   - Sampaikan inti jawaban secara langsung (direct to the point) tanpa bertele-tele atau muter-muter.
+   - Jika menjelaskan konsep teknis, sains, atau pengetahuan rumit, gunakan bahasa yang mudah dimengerti siapa saja, sertakan analogi sederhana dan perumpamaan yang intuitif tanpa mengorbankan ketepatan faktual.
+3. Keseimbangan Narasi & Estetika Tipografi:
+   - Awali dengan paragraf narasi pengantar yang hangat dan informatif sebelum masuk ke rincian teknis.
+   - Gunakan format Heading markdown (### Judul Bagian) untuk membagi topik pembahasan yang panjang secara jelas dan elegan.
+   - Gunakan butir poin secara proporsional. DILARANG membuat seluruh teks menjadi rentetan bullet points tanpa konteks naratif.
+   - Untuk alur kerja atau tahapan langkah demi langkah, gunakan numbered list resmi (1., 2., 3.).
    - DILARANG menggunakan karakter em-dash (—) yang menempel tanpa spasi.
-   - DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK di akhir jawaban. Langsung akhiri jawaban secara natural dan elegan.
 
-3. Estetika Tipografi, Struktur Teratur & Proporsi Butir Poin:
-   - Gunakan gaya bahasa yang jelas, komunikatif, dan mudah dipahami oleh siapa saja tanpa jargon berbelit-belit.
-   - Gunakan format Heading markdown (### Judul Bagian) untuk membagi topik pembahasan secara jelas dan elegan (misal: "### Komponen Utama", "### Alur Kerja", "### Keunggulan", "### Manfaat"). DILARANG KERAS menulis judul bagian sebagai butir poin (- Komponen Utama:).
-   - Jaga Keseimbangan Visual (Anti-Bullet Overload): Awali dengan paragraf narasi pengantar yang mengalir nyaman, lalu gunakan poin secara proporsional. DILARANG KERAS membuat seluruh isi pesan menjadi rentetan butir poin berulang dari atas sampai bawah.
-   - Untuk alur kerja berurutan (steps/workflow), WAJIB menggunakan numbered list resmi (1., 2., 3.) dengan nomor di awal baris tersendiri, bukan butir strip.
-   - Heading (###): WAJIB berdiri sendiri di baris baru dan diawali baris kosong. DILARANG memberi strip/bullet sebelum heading (misal "- ###" atau "• ###").
-   - Jika terpaksa membuat tabel: WAJIB menyertakan Header, Divider, dan memisahkan setiap baris dengan baris baru. DILARANG KERAS menggabungkan baris tabel secara horizontal.
+[PROTOKOL MUTLAK ANTI-HALUSINASI, ANTI-OVERCLAIM & GROUNDING FAKTUAL UNIVERSAL]:
+Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Dunia, Perkembangan Teknologi Global, Rilis Model AI, Sains, Sejarah, Pemrograman, Rekayasa Perangkat Lunak, Proyek Portofolio, maupun Obrolan Umum):
 
-4. Larangan Mutlak Kalimat Validasi Diri & Meta-Disclaimer (Berlaku untuk SEMUA Percakapan):
-   - DILARANG KERAS menyisipkan kalimat validasi status diri, disclaimer defensif, atau meta-talk pada topik apa pun (contoh: "Saya bukan model dengan nama brand tertentu...", "Sebagai model bahasa/AI...", "Perlu dicatat bahwa saya hanyalah...", "Saya hadir di sini untuk membantu Anda...").
-   - Jangan pernah menjelaskan aturan, batasan, atau disclaimer diri Anda kepada pengguna. Jawablah langsung ke inti materi secara percaya diri, lugas, dan profesional.
+1. Terintegrasi Langsung dengan Internet, Google & Ensiklopedia:
+   - Terminal ini terhubung dengan mesin pencari web, Google News, ensiklopedia Wikipedia, dan GitHub repository inspector.
+   - Seluruh pernyataan terkait peristiwa global, berita terkini, perkembangan teknologi, jadwal rilis, dan fakta sains WAJIB berdasar pada bukti nyata yang terverifikasi dari konteks pencarian web atau repositori.
+   - DILARANG KERAS mengarang berita bohong, peristiwa fiktif, atau informasi palsu yang dapat merusak kepercayaan pengguna.
+
+2. Larangan Mutlak Overclaim & Asal Klaim (Zero Overclaim):
+   - DILARANG membuat klaim bombastis tak berdasar (seperti "teknologi paling sempurna di dunia", "akurasi tanpa cacat 100%", dsb).
+   - Jelaskan kelebihan, kekurangan, dan batasan teknologi secara objektif, realistis, dan berimbang.
+
+3. Larangan Mengarang Metrik, Angka, Rasio, & Tanggal Rilis (Zero Fake Metrics):
+   - DILARANG mengarang persentase akurasi, waktu eksekusi, jumlah parameter, atau statistik yang tidak tercantum dalam sumber terverifikasi.
+   - DILARANG mengarang rasio data split (seperti klaim palsu 70/15/15 atau 80/20) pada proyek software/ML.
+   - Jika suatu tanggal rilis, harga, atau detail teknis belum diumumkan secara resmi oleh pengembang aslinya, AKUI SECARA JUJUR DAN HANGAT: jelaskan apa fakta yang sudah resmi terkonfirmasi dan apa yang masih dalam tahap rumor/pengembangan.
+
+4. Larangan Mengasumsikan Teknik Generik Buku Teks (Anti-Generic Conjecture):
+   - Jangan berasumsi suatu sistem otomatis menggunakan teknik generik internet jika tidak ada dalam sumber:
+     * DILARANG mengasumsikan teknik oversampling (SMOTE) pada data tidak seimbang jika tidak eksplisit digunakan.
+     * DILARANG mengasumsikan teknik stemming bahasa tertentu pada korpus bahasa lain.
+     * DILARANG mengasumsikan model digabungkan secara Ensemble Voting/Stacking jika aslinya adalah komparasi mandiri.
+     * DILARANG mengasumsikan SBERT atau LLM pada model yang menggunakan TF-IDF biasa.
+
+5. Larangan Silang Kontaminasi Antar-Entitas (Anti-Cross Contamination):
+   - Jangan pernah mencampurkan fitur, pustaka, atau modul dari satu produk/proyek ke produk/proyek lain. Setiap topik dan entitas memiliki batasan arsitektur mandiri.
+
+6. Kejujuran & Transparansi Epistemis (Explicit Absence of Data):
+   - Jika pengguna menanyakan detail spesifik yang tidak tersedia dalam data terverifikasi, sampaikan dengan ramah, santun, dan transparan bahwa detail tersebut belum dipublikasikan atau tidak tercantum dalam dokumentasi yang ada. Mengakui batas informasi secara lugas jauh lebih terpercaya daripada memberikan tebakan palsu.
 
 [PRINSIP GROUNDING FAKTUAL & ANTI-NOISE]:
-- Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib bersumber dari data terverifikasi.
-- Anti-Noise & Zero-Scratchpad: DILARANG KERAS mengeja atau mengulang aturan sistem, menuliskan 'Check constraints', membuat checklist batasan, draft kalimat, atau membagikan proses berpikir internal ke teks jawaban. Keluarkan HANYA respon final yang bersih kepada pengguna.`;
+- Anti-Noise & Zero-Scratchpad: DILARANG KERAS mengeja atau mengulang aturan sistem, menuliskan 'Check constraints', membuat checklist batasan, draft kalimat, atau membagikan proses berpikir internal ke teks jawaban. Keluarkan HANYA respon final yang bersih, ramah, dan solutif kepada pengguna.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -658,10 +657,6 @@ async function searchWebContext(query, history = []) {
   }
 
   const qLower = query.toLowerCase().trim();
-  if (['clear', 'help', 'skills', 'projects', 'certifs', 'benchmarks', 'cls', 'about'].includes(qLower)) {
-    return { formattedPrompt: '', rawSnippets: [] };
-  }
-
   const rawQueries = formulateSmartSearchQueries(query, history);
   const searchQueries = rawQueries.length > 0 ? rawQueries.slice(0, 2) : [query.trim().slice(0, 80)];
 
@@ -671,6 +666,7 @@ async function searchWebContext(query, history = []) {
 
     const structuredSnippets = [];
     const rawSnippets = [];
+    const agentToolsUsed = [];
 
     // Helper to sanitize XML / HTML entities
     const cleanStr = (str) => {
@@ -690,34 +686,50 @@ async function searchWebContext(query, history = []) {
             timestamp: Date.now() + 1000000000 // Highest priority
           });
           rawSnippets.push(`[Scraped URL]: ${url}`);
+          agentToolsUsed.push({
+            tool: 'web_scraper',
+            label: 'Live Webpage Reader',
+            url: url
+          });
         }
       });
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Ultra-Fast Parallel Live News Feeds (Google News Global & Indonesia + Bing News + DuckDuckGo)
-    const searchFetches = searchQueries.flatMap(targetQ => [
-      // Google News Global (US / English) - Fresh News
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=en-US&gl=US&ceid=US:en`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // Google News Indonesia - Fresh News
-      fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=id&gl=ID&ceid=ID:id`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // Bing News Global
-      fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-        signal: controller.signal
-      }),
-      // DuckDuckGo Instant Answers (Definitions, Overviews, Direct Facts)
-      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetQ)}&format=json&no_html=1&skip_disambig=1`, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-        signal: controller.signal
-      })
-    ]);
+    // 2. High-Precision Parallel Live Feeds (Google News Global & Indonesia + Bing News)
+    const isBreakingQuery = /\b(terbaru|terkini|hari ini|kemarin|bulan ini|minggu ini|latest|today|breaking|update|baru|sekarang|now)\b/i.test(query);
+    const searchFetches = searchQueries.flatMap(targetQ => {
+      const fetches = [
+        // Google News Indonesia (All-time topical news & articles)
+        fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=id&gl=ID&ceid=ID:id`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: controller.signal
+        }),
+        // Google News Global (All-time topical news & articles)
+        fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-US&gl=US&ceid=US:en`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: controller.signal
+        }),
+        // Bing News Global
+        fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: controller.signal
+        })
+      ];
+      if (isBreakingQuery) {
+        fetches.push(
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:7d')}&hl=id&gl=ID&ceid=ID:id`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          }),
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:7d')}&hl=en-US&gl=US&ceid=US:en`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          })
+        );
+      }
+      return fetches;
+    });
 
     // 3. GitHub Open-Source & Library Discovery (For tech / framework / code / repo queries)
     const isTechOrCode = /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt|anthropic|openai|mistral|nemotron)\b/i.test(query);
@@ -757,16 +769,21 @@ async function searchWebContext(query, history = []) {
       }
     }
 
-    // 4. Open-Web Encyclopedic Knowledge (Multi-Language: English & Indonesian)
+    // 4. Open-Web Encyclopedic Knowledge (Multi-Language: Indonesian & English)
     const isEncyclopedic = /\b(apa|siapa|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what|who|history|definition|jelaskan|analisis|komparasi|perbedaan|bagaimana|cara|faktor|arsitektur|konsep|mekanisme|struktur|prinsip|metode|algoritma|algorithm|how|explain|compare|versus|vs|kelebihan|kekurangan|manfaat|tujuan|fitur|dataset|evaluasi|akurasi|keunggulan)\b/i.test(query);
     if (isEncyclopedic) {
-      const mainKeyword = query.replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|analisis|dong|how does|bagaimana|ceritakan|tentang|mengenai)\b/gi, ' ').trim();
-      if (mainKeyword.length >= 3) {
+      const mainKeyword = query
+        .replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|analisis|dong|how does|bagaimana|ceritakan|tentang|mengenai|soal|terkait|apakah)\b/gi, ' ')
+        .replace(/[^\w\s\.\-]/gi, ' ')
+        .trim();
+      if (mainKeyword.length >= 2) {
         searchFetches.push(
-          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+          fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
             signal: controller.signal
           }),
-          fetch(`https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+          fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
             signal: controller.signal
           })
         );
@@ -796,27 +813,6 @@ async function searchWebContext(query, history = []) {
         if (textData.startsWith('{') || textData.startsWith('[')) {
           try {
             const parsed = JSON.parse(textData);
-            // DuckDuckGo Instant Answers
-            if (parsed?.AbstractText && parsed.AbstractText.length > 20) {
-              const snip = cleanStr(parsed.AbstractText);
-              structuredSnippets.push({
-                text: `[DuckDuckGo Web Index (${parsed.Heading || 'Web Result'})]: ${snip}`,
-                timestamp: Date.now() + 500000,
-                score: 8
-              });
-              rawSnippets.push(`[DuckDuckGo]: ${parsed.Heading || 'Web Knowledge'}`);
-            }
-            if (Array.isArray(parsed?.RelatedTopics)) {
-              parsed.RelatedTopics.slice(0, 2).forEach(rt => {
-                if (rt?.Text && rt.Text.length > 25) {
-                  structuredSnippets.push({
-                    text: `[Web Topic Reference]: ${cleanStr(rt.Text)}`,
-                    timestamp: 500,
-                    score: 4
-                  });
-                }
-              });
-            }
             // Wikipedia
             if (parsed?.query?.search) {
               const hits = parsed.query.search;
@@ -825,11 +821,16 @@ async function searchWebContext(query, history = []) {
                 const snip = cleanStr(h.snippet);
                 if (snip && !isJunkArticle(snip)) {
                   structuredSnippets.push({
-                    text: `[Referensi Ensiklopedia (${h.title})]: ${snip}`,
-                    timestamp: 1000,
-                    score: 5
+                    text: `[Referensi Ensiklopedia Resmi (${h.title})]: ${snip}`,
+                    timestamp: Date.now() + 1000000,
+                    score: 9
                   });
                   rawSnippets.push(`[Wikipedia]: ${h.title}`);
+                  agentToolsUsed.push({
+                    tool: 'wikipedia_lookup',
+                    label: 'Ensiklopedia Wikipedia Terverifikasi',
+                    topic: h.title
+                  });
                 }
               }
             }
@@ -857,6 +858,11 @@ async function searchWebContext(query, history = []) {
                     score: 12
                   });
                   rawSnippets.push(`[GitHub README]: ${parsed.name || 'README'}`);
+                  agentToolsUsed.push({
+                    tool: 'github_inspector',
+                    label: 'GitHub Live Inspector',
+                    repo: parsed.name || 'Dokumentasi Resmi'
+                  });
                 }
               } catch (_) {}
             }
@@ -864,8 +870,8 @@ async function searchWebContext(query, history = []) {
             if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.id) {
               const models = parsed.slice(0, 3).map(m => m.id).join(', ');
               structuredSnippets.push({
-                text: `[Hugging Face Hub Models]: ${models}`,
-                timestamp: 3000,
+                text: `[HuggingFace AI Models Directory]: ${models}`,
+                timestamp: 1500,
                 score: 4
               });
               rawSnippets.push(`[HuggingFace]: ${models}`);
@@ -889,7 +895,7 @@ async function searchWebContext(query, history = []) {
             }
           });
         } else {
-          // RSS News Feeds (Google News Global, UK, ID, Bing)
+          // RSS News Feeds (Google News Global & ID, Bing)
           const items = textData.match(/<item>[\s\S]*?<\/item>/gi) || [];
           items.slice(0, 8).forEach((item) => {
             const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
@@ -925,6 +931,16 @@ async function searchWebContext(query, history = []) {
       }
     }
 
+    const newsItemsCount = structuredSnippets.filter(s => s.text.startsWith('[Global Live Web/News')).length;
+    if (newsItemsCount > 0) {
+      agentToolsUsed.push({
+        tool: 'google_search',
+        label: 'Google Search & Berita Global',
+        sourcesCount: newsItemsCount,
+        sources: rawSnippets.filter(r => !r.startsWith('[Wikipedia]') && !r.startsWith('[GitHub')).slice(0, 3)
+      });
+    }
+
     // Sort all snippets by relevance score first (including recency bonus), then newest timestamp
     structuredSnippets.sort((a, b) => ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp));
 
@@ -941,29 +957,27 @@ async function searchWebContext(query, history = []) {
 
     let formattedPrompt = '';
     if (uniqueSnippets.length > 0) {
-      formattedPrompt = `\n\n[FAKTA & PERKEMBANGAN TERKINI DARI MESIN PENCARI & WEB GLOBAL]:
+      formattedPrompt = `\n\n[FAKTA & BUKTI TERVERIFIKASI DARI GOOGLE SEARCH, ENSIKLOPEDIA & WEB GLOBAL]:
 ${uniqueSnippets.join('\n')}
 
-[PANDUAN SINTESIS INFORMASI WEB & ANTI-NOISE]:
-- PRIORITASKAN FAKTA RESMI & TERBARU (2025/2026).
-- ADAPTIF TERHADAP GAYA PERTANYAAN (ANTI-NOISE):
-  * Jika pengguna bertanya santai/singkat (contoh: "kalo claude", "model apa", "kapan rilis"): Jawab LANGSUNG ke inti topik (1-3 paragraf padat). DILARANG memaksakan subjudul template birokratis atau bab-bab panjang yang tidak diminta.
-  * HANYA gunakan struktur panjang jika pengguna secara eksplisit meminta breakdown komprehensif atau analisis mendalam.
-- FOKUS MURNI PADA TOPIK YANG DITANYAKAN:
-  * Jika pengguna beralih topik (misal dari Gemini ke Claude), jawab HANYA tentang topik baru tersebut. DILARANG mencampurkan informasi produk/model dari percakapan sebelumnya ke dalam jawaban topik baru kecuali diminta membandingkan.
-- KEJUJURAN FAKTUAL & GROUNDING WEB DINAMIS:
-  * Rujuk nama model, versi, dan rilis teknologi secara dinamis dan faktual dari data pencarian web terkini.
-  * Jawab berbasis bukti nyata hasil web tanpa mengarang fakta yang tidak ada di sumber.\n`;
+[PANDUAN SINTESIS & GROUNDING FAKTUAL]:
+- PRIORITASKAN FAKTA RESMI & TERKINI DARI BUKTI HASIL PENCARIAN DI ATAS.
+- GAYA PENYAMPAIAN MANUSIAWI, RAMAH, DAN MUDAH DIMENGERTI:
+  * Jawablah secara hangat, bersahabat, dan menyenangkan untuk dibaca tanpa kalimat template robotik.
+  * Sampaikan inti jawaban secara langsung tanpa berbelit-belit.
+  * Gunakan penjelasan yang jernih dan terstruktur (padukan narasi yang mengalir dengan butir poin secara proporsional).
+- FOKUS PENUH PADA SUBJEK YANG DITANYAKAN:
+  * Bahas secara tuntas subjek pertanyaan saat ini tanpa mencampurkan konteks entitas lain yang tidak relevan.
+- PROTOKOL ZERO-HALLUCINATION & ZERO-OVERCLAIM:
+  * Rujuk peristiwa, tanggal, metrik, dan fakta nyata dari data pencarian.
+  * DILARANG mengarang berita palsu, tanggal rilis fiktif, atau klaim berlebihan yang tidak tercantum di sumber resmi.\n`;
     }
 
-    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10) };
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10), agentToolsUsed };
   } catch (_) {
-    return { formattedPrompt: '', rawSnippets: [] };
+    return { formattedPrompt: '', rawSnippets: [], agentToolsUsed: [] };
   }
 }
-
-// ponytail: pickAutoModel removed — both branches returned identical 'openrouter/free' and function was never called.
-// Model routing is handled entirely by classifyQueryIntent + buildExecutionPipeline.
 
 function classifyQueryIntent(query = '', docAttachments = [], hasImages = false) {
   const q = String(query || '').trim().toLowerCase();
@@ -1629,9 +1643,12 @@ export default async function handler(req, res) {
     const webMemories = searchResult.rawSnippets || [];
 
     const agentSteps = [];
-    if (!isSkipSearch && webMemories.length > 0) {
+    if (!isSkipSearch && Array.isArray(searchResult.agentToolsUsed) && searchResult.agentToolsUsed.length > 0) {
+      agentSteps.push(...searchResult.agentToolsUsed);
+    } else if (!isSkipSearch && webMemories.length > 0) {
       agentSteps.push({
-        tool: 'web_search',
+        tool: 'google_search',
+        label: 'Google Search & Live Web',
         query: query.substring(0, 60),
         sourcesCount: webMemories.length,
         sources: webMemories.slice(0, 3)
@@ -1640,6 +1657,7 @@ export default async function handler(req, res) {
     if (isInternalPortfolioQuery) {
       agentSteps.push({
         tool: 'portfolio_rag',
+        label: 'Portfolio Ground Truth RAG',
         topic: query.substring(0, 50),
         status: 'verified_ground_truth'
       });

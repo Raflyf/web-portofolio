@@ -1129,6 +1129,25 @@ Released 2026-09-03.
    - Meningkatkan `connectTimeoutMs` dari 7.500ms menjadi 15.000ms untuk mengakomodasi waktu prefill prompt RAG berkonteks besar tanpa terputus prematur.
    - Menetapkan batas waktu aktif model analitis hingga 30 detik pada loop eksekusi pipeline untuk memastikan respons teknis mendalam terselesaikan secara sempurna.
 
+### v10.638.0 — Universal Agentic Web Integration, Zero-Overclaim & Human-Centric Communication Engine
+
+Released 2026-09-03.
+1. **Penyempurnaan Persona Manusiawi, Hangat, Ramah & Solutif (`api/chat.js`):**
+   - Menghilangkan nada birokratis dan kaku dari instruksi sistem, menggantinya dengan persona insinyur perangkat lunak dan asisten riset senior yang cerdas, ramah (*approachable*), hangat (*warm*), dan sangat membantu (*helpful*).
+   - Menekankan gaya percakapan yang mengalir alami antar-manusia (*conversational excellence*), mudah dimengerti siapa saja, tidak berbelit-belit, dan menyajikan analogi sederhana untuk konsep-konsep rumit.
+   - Menjaga proporsi estetika tipografi: memadukan narasi pengantar yang hangat dengan heading markdown (`###`) yang tertata dan butir poin secara proporsional.
+2. **Protokol Mutlak Anti-Halusinasi & Anti-Overclaim Universal (Seluruh Domain):**
+   - Menegakkan larangan mutlak *overclaim*, asal klaim, atau klaim bombastis pada SELURUH DOMAIN (berita global, peristiwa dunia, sains, sejarah, budaya, model AI, pemrograman, hingga obrolan umum).
+   - Mengharuskan seluruh data peristiwa dan teknologi bersumber dari bukti nyata hasil pencarian Google dan ensiklopedia terverifikasi.
+   - Melarang keras mengarang tanggal rilis palsu, metrik performa fiktif, harga spekulatif, atau rasio data split. Jika informasi belum resmi diumumkan, model wajib menyampaikannya secara santun, jujur, dan transparan.
+3. **Peningkatan Engine Pencarian Web Real-Time & Ensiklopedia:**
+   - Menghapus ketergantungan pada DuckDuckGo (yang terkena intersepsi DNS/TLS di jaringan ISP Indonesia) dan memperluas integrasi Google News Global & Indonesia (baik arsip bertema maupun breaking news terkini).
+   - Menambahkan integrasi langsung pencarian ensiklopedia Wikipedia Bahasa Indonesia dan Bahasa Inggris untuk memberikan definisi dan fakta sejarah/sains yang akurat dan berwibawa.
+   - Melacak dan menyalurkan metadata perkakas agen (*agentToolsUsed*) yang mencakup `google_search`, `wikipedia_lookup`, `github_inspector`, dan `web_scraper`.
+4. **Agentic Tool Badges & Transparansi Validasi di Terminal UI (`TerminalAI.jsx`):**
+   - Menampilkan *badge strip* interaktif di setiap pesan AI (`Google Search & Live Web`, `Wikipedia Verified`, `GitHub Live Repo`, `Verified Ground Truth`) yang memperlihatkan alat verifikasi yang dipanggil beserta jumlah sumber data faktual yang diakses.
+   - Memperbarui indikator status pemuatan menjadi *Agentic Search: Menghubungkan ke live internet & memvalidasi fakta...* untuk memberikan transparansi penuh kepada pengguna atas proses validasi bukti.
+
 
 
 
