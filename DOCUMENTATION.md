@@ -1003,6 +1003,20 @@ Released 2026-09-03.
 3. **Penyelarasan Sistem Prompt (Zero-Hallucination & Strict Topical Focus):**
    - Memperketat pilar kecerdasan agar model hanya menjawab apa yang secara spesifik ditanyakan pengguna, dilarang berspekulasi, dilarang mengaitkan memori lama pada subjek baru, dan dilarang mengulang aturan sistem dalam teks jawaban.
 
+### v10.626.0 — Agile Gateway Failover, Markdown Table Restoration & Terminal Command History
+
+Released 2026-09-03.
+1. **Restorasi Format Markdown & Tabel (`TerminalAI.jsx` & `api/chat.js`):**
+   - Memperbaiki regex sanitasi whitespace yang sebelumnya meratakan baris baru (`\s{2,}`) menjadi spasi tunggal. Kini diganti dengan pembersihan spasi horizontal `[^\S\r\n]{2,}` dan pembatasan baris baru `\n{3,}`.
+   - Menambahkan *auto-format markdown table & bullet list* agar tabel dan list GFM selalu diawali baris baru dan ter-render menjadi tabel HTML yang elegan dan nyaman dibaca.
+2. **Agile Gateway Failover (Anti-Timeout 60 Detik):**
+   - Mengalibrasi `connectTimeout` pada `executePipelineWithPriorityRace` di `api/chat.js` menjadi 7.5 detik (7500ms).
+   - Jika provider utama sedang mengalami antrean atau *cold start*, sistem langsung beralih lincah ke gateway berikutnya tanpa menahan request hingga fungsi Vercel kehabisan waktu (58s budget). Pengguna tidak perlu lagi bertanya 2 kali.
+3. **Fitur Navigasi Riwayat Perintah Keyboard (ArrowUp / ArrowDown di `TerminalAI.jsx`):**
+   - Menambahkan state `commandHistory` (tersimpan di `localStorage`) dan handler navigasi keyboard ala Bash / PowerShell pada input terminal.
+   - Menekan tombol **ArrowUp** otomatis memunculkan perintah atau pertanyaan pengguna sebelumnya. Menekan **ArrowDown** menavigasi maju atau mengembalikan ke draf ketikan awal.
+
+
 
 
 

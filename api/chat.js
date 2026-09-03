@@ -1541,8 +1541,16 @@ export default async function handler(req, res) {
         .replace(/([a-zA-Z0-9_]+)[\u2013\u2014]([a-zA-Z0-9_]+)/g, '$1, $2')
         .replace(/\s*[\u2013\u2014]\s*/g, ', ')
         .replace(/,\s*,+/g, ',')
-        .replace(/\s{2,}/g, ' ')
+        .replace(/[^\S\r\n]{2,}/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
+
+      // Auto-Format Markdown Structure (Restorasi baris baru untuk Tabel dan List GFM)
+      cleaned = cleaned.replace(/([.:?!])\s+([-*•]\s+\*\*)/g, '$1\n$2');
+      cleaned = cleaned.replace(/([.:?!])\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n$2');
+      cleaned = cleaned.replace(/([^\n])\s+(\|[ \t]*[A-Za-z0-9_ -]+[ \t]*\|)/g, '$1\n\n$2');
+      cleaned = cleaned.replace(/(\|[ \t]*)\s+(\|[ \t]*[A-Za-z0-9_-])/g, '$1\n$2');
+      cleaned = cleaned.trim();
 
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = 'Maaf, saya tidak dapat menyusun jawaban saat ini.';
@@ -2165,9 +2173,9 @@ export default async function handler(req, res) {
         if (remainingMs <= 1500) break;
 
         // Dual-Phase Adaptive Timeout:
-        // 1. Connect Timeout (15000ms): Waktu cukup untuk inisiasi model & web grounding; jika server benar-benar down/mati, baru alihkan.
+        // 1. Connect Timeout (7500ms): Waktu optimal untuk inisiasi gateway & model handshake; jika gateway lambat/antre, cepat failover ke fallback berikutnya.
         // 2. Active Thinking Timeout (hingga 55s / remainingMs): Begitu model merespons (200 OK), biarkan model terus berpikir sampai tuntas tanpa terkendala timeout pendek!
-        const connectTimeout = Math.min(step.timeout || 15000, 15000);
+        const connectTimeout = Math.min(step.timeout || 7500, 7500);
         const activeTimeout = Math.max(8000, remainingMs - 1000);
 
         try {
