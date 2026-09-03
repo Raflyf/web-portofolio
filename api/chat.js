@@ -1243,9 +1243,9 @@ function normalizeStructuredMarkdown(str) {
   if (!str) return str;
   let out = str;
 
-  // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" -> "ringan.\n\n2. Inference:")
-  out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z])/g, '$1\n\n$2. $3');
-  out = out.replace(/(?:^|\n)\s*(\d+)\.\s*\n+\s*([A-Za-z])/g, '\n$1. $2');
+  // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" atau "ringan. 2.\n**Inference**:")
+  out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '$1\n\n$2. $3');
+  out = out.replace(/(?:^|\n)\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '\n$1. $2');
 
   // 2. Konversi judul bagian mandiri (akhiran titik dua tanpa isi kalimat) menjadi Heading Markdown (### Judul)
   // Mencegah judul bagian (seperti Komponen Utama:, Alur Kerja:, Keunggulan:, Manfaat:) berubah menjadi butir poin (- )
@@ -1263,11 +1263,10 @@ function normalizeStructuredMarkdown(str) {
   out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n\n$2');
 
   // 5. Bersihkan strip/bullet aneh sebelum angka list (tanpa memotong huruf kata sebelumnya)
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(\d+\.\s+[A-Za-z])/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(\d+\.\s+[A-Za-z*])/g, '\n\n$1');
 
-  // 6. Pisahkan numbered list (1. **Label**: atau 1. Kata) yang menempel di tengah kalimat
-  out = out.replace(/([.:?!])\s+(\d+\.\s+\*\*[^*]+\*\*:?)/g, '$1\n\n$2');
-  out = out.replace(/([.:?!])\s+(\d+\.\s+[A-Za-z])/g, '$1\n\n$2');
+  // 6. Pisahkan numbered list (1. **Label**: atau 1. Kata) yang menempel di tengah kalimat atau setelah titik
+  out = out.replace(/([.:?!])\s+(\d+\.\s+(?:\*\*|[A-Za-z]))/g, '$1\n\n$2');
 
   // 7. Pisahkan bullet list (- **Label**: atau - Kata) yang menempel di tengah kalimat
   out = out.replace(/([.:?!]|\b)\s+[-*•]\s+(\*\*[^*]+\*\*:?)/g, '$1\n- $2');
@@ -1593,7 +1592,7 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?:^|\n)\s*:\s*/g, '\n- ');
       cleaned = cleaned.replace(/:\s*:\s*/g, ': ');
       cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
-      cleaned = cleaned.replace(/\s*\*\s*-\s*/g, ' - ');
+      cleaned = cleaned.replace(/(?<!\*)\s*\*(?!\*)\s*-\s*/g, ' - ');
 
       // 3.62. Clean rogue unclosed asterisks on isolated words (e.g. "Zombie*" or "*Dead Party*")
       cleaned = cleaned.replace(/(?<=[a-zA-Z0-9])\*(?!\*)/g, '');

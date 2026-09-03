@@ -1092,7 +1092,15 @@ Released 2026-09-03.
 Released 2026-09-03.
 1. **Sinkronisasi Total Resolusi Router dengan Jumlah Card Model (`Dashboard.jsx`):**
    - Memperbaiki hitungan `autoRouterCount` pada banner "Total Resolusi Router" yang sebelumnya hanya menghitung event yang terdeteksi melalui Auto Router (via filter `isAutoRouted`), sementara jumlah total dari 16 card individual model lebih besar karena mencakup event pemilihan model manual oleh pengguna.
-   - `autoRouterCount` kini dihitung dari `Object.values(modelCounts).reduce()` sehingga nilainya selalu sinkron 100% dengan jumlah total seluruh card model individual (auto + manual).
+### v10.635.0 — Markdown Bold Asterisk Preservation & Numbered List Split Fix
+
+Released 2026-09-03.
+1. **Perbaikan Destruksi Tanda Bintang Bold Markdown (`api/chat.js`):**
+   - Menemukan akar masalah mengapa simbol `**` muncul sebagai teks mentah: regex pembersih `\s*\*\s*-\s*` sebelumnya memotong tanda bintang kedua pada label bold yang diikuti tanda hubung (`**Nama** - Deskripsi` menjadi `**Nama* - `), lalu regex berikutnya menghapus satu bintang tersisa karena dianggap bintang yatim (`*`). Akibatnya, pasangan penutup `**` hilang total sehingga Markdown parser gagal merendernya menjadi huruf tebal (`<strong>`) dan menampilkannya sebagai teks literal `**`.
+   - Mengalibrasi regex dengan *negative lookaround* `(?<!\*)\s*\*(?!\*)\s*-\s*` sehingga pasangan bintang ganda `**` milik teks tebal tetap 100% utuh dan valid.
+2. **Pemisahan Baris Numbered List Berformat Bold (`api/chat.js` & `TerminalAI.jsx`):**
+   - Memperbaiki `normalizeStructuredMarkdown` agar mengenali angka list yang diikuti tanda bintang/teks tebal (misal `3. **Model-Model Inti`) agar otomatis terpisah ke baris baru dan tidak lagi menempel di ujung kalimat sebelumnya.
+
 
 
 
