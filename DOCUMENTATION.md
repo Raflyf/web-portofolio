@@ -1529,3 +1529,26 @@ Menindaklanjuti instruksi mutlak pengguna: *"jangan arena AI saja, tapi mengakse
    - Kueri URL umum `https://en.wikipedia.org/wiki/LMArena`: Berhasil membaca artikel lengkap dan merangkum sejarah, pendanaan, serta fitur secara komprehensif.
    - Normalisasi format nomor dan list item diterapkan secara seragam (seluruh judul poin dalam format bold cyan `<strong>`).
    - Kompilasi `npm run build` sukses bersih (1,39 detik).
+
+### v10.661.0 — Zero-Hardcode Universal Web Discovery & Boilerplate Elimination
+
+Released 2026-09-03.
+
+Memenuhi kepatuhan mutlak terhadap aturan `AGENTS.md` Bagian 2 (Anti-Asumsi & Validasi Ground Truth), Bagian 3 (Pemotongan Basa-Basi Total), dan Bagian 10c (Larangan Mutlak Hardcoding Pengetahuan Eksternal):
+
+1. **Eliminasi Total Logika Khusus Domain Tertentu (Zero-Hardcode Policy):**
+   - Menghapus seluruh percabangan `if (/arena\.ai|lmarena\.ai/)` dan `targetUrls.add('.../leaderboard')`.
+   - Mengganti dengan **Generic Subpage & React Server Component (RSC) Engine**:
+     * Halaman web modern (Next.js App Router) diparsing secara umum melalui protokol `self.__next_f.push` tanpa memandang nama domain atau vendor.
+     * Jika sebuah beranda (homepage) memuat navigasi ke subhalaman data, spesifikasi, dokumentasi, atau peringkat (`/leaderboard`, `/ranking`, `/specs`, `/docs`, `/benchmark`), sistem secara otonom menelusuri subhalaman tersebut untuk mengambil data mendalam.
+   - **Autonomous Domain Normalizer:**
+     * Menormalisasi sebutan domain dengan spasi (misal `"di arena ai"` -> `"di arena.ai"`, `"buka github com"` -> `"buka github.com"`) hanya bila didahului kata petunjuk lokasi/situs, mencegah kata benda umum (seperti `"model ai"`) salah terdeteksi sebagai nama domain.
+
+2. **Pembersihan Template Boilerplate & Meta-Commentary:**
+   - Menghapus aturan pemaksaan kalimat atribusi template (`"Berdasarkan hasil penelusuran web real-time saat ini."` / `"Informasi ini diambil dari pencarian web..."`).
+   - Menambahkan filter pemotong basa-basi penutup template (`"Semoga penjelasan ini membantu..."`, `"Jika ada pertanyaan lain..."`) agar respons AI langsung padat, lugas, dan to the point sesuai standar Jarvis.
+
+3. **Verifikasi Faktual:**
+   - Kueri peringkat live: Menghasilkan nama model, developer, dan skor numerik resmi tanpa embel-embel kalimat template.
+   - Kueri URL umum dan domain mandiri: Terbuka dan ter-scrape secara otonom tanpa batasan platform.
+   - Kompilasi `npm run build` sukses bersih.

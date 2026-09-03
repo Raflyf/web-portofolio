@@ -146,7 +146,7 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 1. Setiap jawaban yang memuat status "terbaru", "saat ini", "tahun ini", jadwal rilis, harga, peringkat, atau kondisi terkini WAJIB menyandang penanda waktu sumbernya (misal "dilaporkan [tanggal]", "per [bulan/tahun]"). DILARANG menyajikan fakta tanpa penanda waktu sebagai kebenaran absolut hari ini.
 2. Jika topik menuntut fakta cepat-berubah (rilis produk, versi perangkat lunak, model AI, berita, harga, peringkat) dan tidak tersedia blok bukti live hasil pencarian web, nyatakan keterbatasan verifikasi secara jujur dan hangat: sampaikan hanya pengetahuan yang Anda yakini terverifikasi dengan penanda jelas bahwa itu bukan status live terkini, lalu arahkan ke sumber resmi untuk kepastian mutakhir. DILARANG mengarang status "terbaru" dari ingatan lama, menebak tanggal rilis, atau menyangkal eksistensi rilis hanya karena di luar pengetahuan model.
 3. [ENUMERASI KETAT LANDSKAP TERKINI]: Saat pengguna menanyakan kondisi terbaik/terbaru/terkini, state-of-the-art, peringkat, atau perbandingan kondisi masa kini (contoh: "model AI terbaik saat ini", "versi terbaru X", "ranking produk Y"), daftar entitas "terkini" WAJIB disusun HANYA dari entitas yang eksplisit tercantum pada blok bukti live hasil pencarian yang disuntikkan. DILARANG KERAS menambahkan entitas apa pun dari ingatan (versi lama maupun model lain) sebagai pelengkap, pembanding, pelengkap daftar, atau konteks "terkini". Entitas di luar bukti HANYA boleh disebut bila pengguna secara eksplisit menanyakan sejarah/riwayat versi, dan wajib diberi label waktu historis yang jelas (misal "generasi sebelumnya", "rilis tahun ..."). Jika blok bukti tidak menyebut peringkat juara, JANGAN mengarang peringkat dari ingatan; cukup laporkan model yang terbukti muncul dalam pemberitaan.
-4. [LARANGAN KLAIM TANGGAL PALSU]: DILARANG KERAS menulis kalimat atribusi buatan seperti "Semua informasi ini didasarkan pada laporan terbaru yang tersedia pada [tanggal]", "berdasarkan laporan terbaru [tanggal]", "menurut rilis [tanggal]", atau melabeli seluruh jawaban dengan tanggal publikasi tertentu yang TIDAK eksplisit tercantum pada bukti live. Tanggal hanya boleh dikutip bila benar-benar muncul pada bukti (misal pubDate artikel). Tanpa tanggal pada bukti, cukup tulis "berdasarkan hasil penelusuran web real-time saat ini" tanpa menyebut tanggal fiktif.
+4. [LARANGAN BASA-BASI & ZERO BOILERPLATE]: DILARANG KERAS menuliskan kalimat template, pengantar, atau penutup meta seperti "Semua informasi ini didasarkan pada laporan...", "Informasi ini diambil dari pencarian...", "Berdasarkan hasil penelusuran web real-time...", atau "Semoga membantu". Sampaikan jawaban substantif secara langsung, alami, dan to the point tanpa basa-basi meta.
 5. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
 
   if (!includeDetailedPortfolio) {
@@ -645,66 +645,105 @@ function isSafePublicUrl(urlString) {
 async function scrapeDirectWebpageContent(url) {
   if (!url || typeof url !== 'string' || !isSafePublicUrl(url)) return '';
 
-  // Specialized High-Fidelity Scraper: LMSYS Chatbot Arena / arena.ai Leaderboard
-  if (/arena\.ai|lmarena\.ai/i.test(url)) {
-    try {
-      const res = await fetchJsonWithTimeout('https://arena.ai/leaderboard', {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-        }
-      }, 5000);
-      if (res.ok && res.text) {
-        const html = res.text;
-        const idx = html.indexOf('leaderboardSlug');
-        if (idx !== -1) {
-          const slice = html.slice(idx, idx + 18000);
-          const unescaped = slice.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-          const entryRegex = /\{"rank":(\d+)[^{}]*?"modelDisplayName":"([^"]+)"[^{}]*?"rating":([\d.]+)[^{}]*?"modelOrganization":"([^"]+)"/g;
-          let m;
-          const items = [];
-          while ((m = entryRegex.exec(unescaped)) !== null && items.length < 12) {
-            items.push({
-              rank: parseInt(m[1], 10),
-              name: m[2],
-              rating: Math.round(parseFloat(m[3])),
-              org: m[4]
-            });
-          }
-          if (items.length > 0) {
-            return `Official Live Rankings on Arena AI (Text Overall Leaderboard):\n` +
-              items.map(it => `- Rank #${it.rank}: ${it.name} (${it.org}) — Arena Elo: ${it.rating}`).join('\n');
-          }
-        }
-      }
-    } catch (_) {}
-  }
-  
-  // 1. Primary: Direct Fetch + Local Crawl4AI Fit-Markdown Engine
+  // 1. Primary Direct Scraper: Fetch directly with modern browser headers
   try {
     const res = await fetchJsonWithTimeout(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Crawl4AI-Firecrawl-HybridEngine/2026',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7'
       }
-    }, 3800);
+    }, 4500);
 
     if (res.ok && res.text && res.text.length > 50) {
+      // 1a. Generic React Server Component (RSC) / Next.js Streaming State Extractor
+      // Universally parses streamed state in modern Next.js / React App Router websites without a headless browser
+      if (res.text.includes('self.__next_f.push')) {
+        const pushRegex = /self\.__next_f\.push\(\[\d+,\s*"([\s\S]*?)"\]\)/g;
+        let m;
+        let combinedPayload = '';
+        while ((m = pushRegex.exec(res.text)) !== null) {
+          combinedPayload += '\n' + m[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
+        }
+        if (combinedPayload.length > 100) {
+          const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:rating|elo|score)":\s*([\d.]+)[^{}]*?(?:modelOrganization|organization|provider|author)":\s*"([^"]+)"[^{}]*?\}/g;
+          const entries = [];
+          let em;
+          while ((em = entryPattern.exec(combinedPayload)) !== null && entries.length < 15) {
+            entries.push({
+              rank: parseInt(em[1], 10),
+              name: em[2],
+              score: Math.round(parseFloat(em[3])),
+              org: em[4]
+            });
+          }
+          if (entries.length > 0) {
+            return `### Data Terverifikasi dari Halaman:\n` +
+              entries.map(e => `- Rank #${e.rank}: ${e.name} (${e.org}) — Score/Rating: ${e.score}`).join('\n');
+          }
+        }
+      }
+
+      // 1b. Generic Subpage Resolver: Jika halaman depan memuat tautan ke subhalaman data/spesifikasi/ranking/dokumentasi, prioritaskan subhalaman
+      const subMatch = res.text.match(/(?:href=["']|\\"href\\":\\")(\/[a-z0-9_\-\/]*(?:leaderboard|ranking|rankings|specs|spec|docs|documentation|benchmark)\b)/i);
+      if (subMatch && subMatch[1]) {
+        try {
+          const subUrl = new URL(subMatch[1], url).href;
+          const subRes = await fetchJsonWithTimeout(subUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7'
+            }
+          }, 4500);
+          if (subRes.ok && subRes.text) {
+            // Check RSC stream on subpage
+            if (subRes.text.includes('self.__next_f.push')) {
+              const pushRegex = /self\.__next_f\.push\(\[\d+,\s*"([\s\S]*?)"\]\)/g;
+              let sm;
+              let subPayload = '';
+              while ((sm = pushRegex.exec(subRes.text)) !== null) {
+                subPayload += '\n' + sm[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
+              }
+              if (subPayload.length > 100) {
+                const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:rating|elo|score)":\s*([\d.]+)[^{}]*?(?:modelOrganization|organization|provider|author)":\s*"([^"]+)"[^{}]*?\}/g;
+                const entries = [];
+                let em;
+                while ((em = entryPattern.exec(subPayload)) !== null && entries.length < 15) {
+                  entries.push({
+                    rank: parseInt(em[1], 10),
+                    name: em[2],
+                    score: Math.round(parseFloat(em[3])),
+                    org: em[4]
+                  });
+                }
+                if (entries.length > 0) {
+                  return `### Data Terverifikasi dari Halaman:\n` +
+                    entries.map(e => `- Rank #${e.rank}: ${e.name} (${e.org}) — Score/Rating: ${e.score}`).join('\n');
+                }
+              }
+            }
+            const subParsed = extractFitMarkdownContent(subRes.text, subUrl);
+            if (subParsed && subParsed.length > 100) return subParsed;
+          }
+        } catch (_) {}
+      }
+
+      // 1c. Universal HTML Fit-Markdown Extractor (Articles, Blogs, Documentation, Tables)
       const parsed = extractFitMarkdownContent(res.text, url);
-      if (parsed && parsed.length > 80) return parsed;
+      if (parsed && parsed.length > 100) return parsed;
     }
   } catch (_) {}
 
-  // 2. Secondary Fallback: Universal LLM Reader Proxy (Handles anti-bot/JS-rendered sites)
+  // 2. Secondary Fallback: Universal Headless LLM Reader (Executes JS and renders SPAs across the entire web)
   try {
     const jinaRes = await fetchJsonWithTimeout(`https://r.jina.ai/${url}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/plain'
       }
-    }, 4500);
+    }, 4800);
 
     if (jinaRes.ok && jinaRes.text && jinaRes.text.length > 50) {
-      return jinaRes.text.slice(0, 6000).trim();
+      return jinaRes.text.slice(0, 7500).trim();
     }
   } catch (_) {}
 
@@ -766,24 +805,22 @@ async function searchWebContext(query, history = []) {
       .slice(0, 120);
 
     // 1. Universal Autonomous Webpage Scraper & Target Domain Resolver:
-    // Mendeteksi tautan eksplisit, domain mandiri, atau intensi situs target (termasuk arena.ai)
+    // Mendeteksi tautan eksplisit (https://...), bare domain (misal domain.com, sub.domain.org),
+    // serta menormalisasi sebutan nama domain dengan spasi (misal "nama com" -> "nama.com", "arena ai" -> "arena.ai")
     const targetUrls = new Set();
 
     // 1a. Explicit URLs (e.g. "https://..." atau "http://...")
     const explicitUrls = query.match(/https?:\/\/[^\s"'<>]+/gi) || [];
     for (const u of explicitUrls) targetUrls.add(u);
 
-    // 1b. Autonomous Bare Domain Discovery (e.g. "arena.ai", "gsmarena.com", "kompas.com", "github.com/...")
-    const bareDomainMatches = query.match(/\b([a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ai|com|org|io|net|id|co|dev|app|gov|edu)(?:\/[^\s"'<>]*)?)\b/gi) || [];
+    // 1b. Autonomous Bare Domain Discovery: mendeteksi domain apa pun yang disebut di kueri
+    // Menormalisasi sebutan domain dengan spasi hanya bila diawali kata petunjuk lokasi/situs (misal "di arena ai" -> "di arena.ai")
+    const normalizedDomainQuery = query.replace(/\b(di|pada|ke|dari|web|website|situs|portal|buka|cek|akses|halaman|lihat)\s+([a-z0-9-]+)\s+(ai|com|org|io|net|id|co|dev|app|gov|edu)\b/gi, (m, pre, a, b) => `${pre} ${a}.${b}`);
+    const bareDomainMatches = normalizedDomainQuery.match(/\b([a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ai|com|org|io|net|id|co|dev|app|gov|edu)(?:\/[^\s"'<>]*)?)\b/gi) || [];
     for (const d of bareDomainMatches) {
       if (!Array.from(targetUrls).some(u => u.includes(d))) {
         targetUrls.add(`https://${d}`);
       }
-    }
-
-    // 1c. Platform Intent Routing for major benchmarks (Arena AI / LMSYS Chatbot Arena)
-    if (/\b(arena\s*ai|chatbot\s*arena|lmsys|arena\.ai)\b/i.test(query)) {
-      targetUrls.add('https://arena.ai/leaderboard');
     }
 
     // Eksekusi deep-scraping halaman target secara paralel (hingga 3 URL teratas)
@@ -2089,6 +2126,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
 
       // 3.5. Ensure distinct line breaks for inline sub-sections and bullet points
       cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–,]+?)(?:\*+|\*\*|:)?\s*[-–—:]\s*/g, '$1\n\n- **$2**: ');
+      cleaned = cleaned.replace(/\s+[-*•]\s+\*\*([^*:\n]+)\*\*:\s*/g, '\n- **$1**: ');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–—:]\s*/g, '\n- **$1**: ');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\*+([^*:\n]+)\*+\s*[\-–—:]\s*/g, '\n- **$1**: ');
 
@@ -2125,6 +2163,10 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/\b(?:Sebagai\s+(?:model\s+bahasa(?:\s+besar)?|asisten\s+(?:AI|virtual)|AI|LLM)[^,.\n]*,?\s*)/gi, '');
       cleaned = cleaned.replace(/\b(?:Perlu\s+(?:diingat|dicatat|diketahui)\s+bahwa\s+(?:saya\s+adalah|ini\s+adalah|saya\s+hanyalah)[^.!?\n]*[.!?])/gi, '');
       cleaned = cleaned.replace(/\b(?:saya\s+hanya\s+(?:sebuah|merupakan)\s+(?:model\s+bahasa|program|AI|asisten)[^.!?\n]*[.!?])/gi, '');
+
+      // 3.65e. Pemotongan Basa-Basi Template Penutup (AGENTS.md Bagian 3: Pemotongan Basa-Basi Total)
+      cleaned = cleaned.replace(/(?:^|\n+)(?:Semoga\s+(?:penjelasan\s+ini\s+)?(?:ini\s+)?membantu|Hope\s+this\s+helps)[^.\n]*[.!?]?(?:\s*(?:Jika|Bila|Apabila)\s+ada\s+(?:hal|pertanyaan)\s+lain[^.\n]*[.!?]?)?/gi, '').trim();
+      cleaned = cleaned.replace(/(?:^|\n+)(?:Jika|Bila|Apabila)\s+ada\s+(?:hal|pertanyaan|yang\s+ingin\s+ditanyakan)\s+lain[^.\n]*[.!?]?$/gi, '').trim();
 
       // 3.65d. Identity Grounding: Kenalkan identitas resmi secara elegan, bersih, dan konsisten (bebas echo & salah format)
       if (isIdentityQuery) {
@@ -2277,20 +2319,9 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       // 2 September 2026.") menjadi frasa netral berbasis penelusuran web real-time,
       // karena tanggal semacam itu tidak pernah berasal dari bukti live yang disuntikkan.
       // Kalimat tanpa format tanggal penuh (dd bulan yyyy) TIDAK disentuh demi presisi bedah.
-      if (needsLiveFacts) {
-        cleaned = cleaned.replace(/(?:^|[.!?]\s+)(?:Semua\s+informasi\s+ini\s+didasarkan\s+pada\s+laporan|Semua\s+informasi\s+di\s+atas\s+didasarkan\s+pada\s+laporan|Berdasarkan\s+laporan|Didasarkan\s+pada\s+laporan|Menurut\s+laporan|Dilaporkan\s+pada)\s+(?:terbaru\s+)?(?:yang\s+)?(?:tersedia\s+)?(?:pada\s+|per\s+|tanggal\s+)?\d{1,2}\s+(?:Januari|Februari|Maret|April|Mei|Juni|Juli|Agustus|September|Oktober|November|Desember|January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}[^.!?\n]*[.!?]/gi, (m) => {
-          const lead = m.charAt(0);
-          const prefix = (lead === '.' || lead === '!' || lead === '?') ? lead : '';
-          return prefix ? `${prefix} Berdasarkan hasil penelusuran web real-time saat ini.` : 'Berdasarkan hasil penelusuran web real-time saat ini.';
-        });
-        cleaned = cleaned.replace(/(?:^|[.!?]\s+)(?:All\s+information\s+is\s+based\s+on|Based\s+on)\s+(?:the\s+)?(?:latest\s+)?reports?\s+(?:available\s+)?(?:as\s+of|on)\s+(?:[A-Za-z]+\s+\d{1,2},?\s+)?\d{4}[^.!?\n]*[.!?]/gi, (m) => {
-          const lead = m.charAt(0);
-          const prefix = (lead === '.' || lead === '!' || lead === '?') ? lead : '';
-          return prefix ? `${prefix} Based on real-time web search results.` : 'Based on real-time web search results.';
-        });
-        // Rapikan spasi ganda / baris kosong berlebih pasca pemotongan kalimat
-        cleaned = cleaned.replace(/[^\S\r\n]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
-      }
+      // Eliminasi kalimat meta-talk / template boilerplate pengantar dan penutup (AGENTS.md Stop-Slop & Zero-Boilerplate)
+      cleaned = cleaned.replace(/(?:^|[.!?]\s+)(?:Informasi\s+ini\s+diambil\s+dari|Semua\s+informasi\s+(?:ini|di\s+atas)\s+didasarkan\s+pada|Berdasarkan\s+hasil\s+penelusuran\s+web\s+real-time)[^.!?\n]*[.!?]/gi, '').trim();
+      cleaned = cleaned.replace(/[^\S\r\n]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 
       // DETERMINISTIC FINAL ASTERISK SANITIZER:
       // Model kecil kadang meninggalkan bold TIDAK seimbang sehingga `**`/`*` mentah bocor.
