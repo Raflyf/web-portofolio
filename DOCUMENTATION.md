@@ -1164,6 +1164,9 @@ Released 2026-09-03.
    - Memperbaiki penanganan em-dash/en-dash pada baris list dan definisi: mengubah tanda pisah setelah label tebal (`**Label** — Deskripsi`) menjadi titik dua (`: `) dan tanda pisah umum menjadi strip spasi (` - `), mencegah perubahan sembarangan menjadi tanda koma (`, `).
    - Menambahkan normalisasi marker list bold (`- *Label**` dinormalisasi menjadi `- **Label**`) dan penyeimbang otomatis tanda bintang (`**`) untuk mencegah kebocoran format bold ke seluruh paragraf.
    - Menambahkan isolasi tegas anti-kontaminasi entitas agar produk atau rilis teknologi pihak ketiga (seperti Anthropic Claude) tidak pernah diklaim atau dihubungkan sebagai karya Rafly Firmansyah.
+5. **Sinkronisasi Aturan Mutlak ke Asisten Terminal (`api/chat.js`):**
+   - Mengintegrasikan aturan mutlak *Anti-Outdated Knowledge* dan *Larangan Asal Menyangkal Rilis* langsung ke `buildSystemPrompt` pada terminal assistant.
+   - Asisten dilarang mengandalkan batas cut-off pelatihan model lama dan diwajibkan 100% memprioritaskan bukti fakta hasil penelusuran internet live yang disuntikkan secara dinamis.
 
 
 
