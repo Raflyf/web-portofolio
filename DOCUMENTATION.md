@@ -991,6 +991,19 @@ Released 2026-09-03.
 2. **Penyelarasan Instruksi System Prompt:**
    - Menambahkan larangan eksplisit pada prompt sistem agar asisten tidak pernah mengekspos nama teknis model mesin ke pengunjung dalam percakapan umum.
 
+### v10.625.0 — Comprehensive Agentic Tuning: Semantic Relevance Gate & Zero Memory Contamination
+
+Released 2026-09-03.
+1. **Eliminasi Total Pencemaran Memori (`TerminalAI.jsx` & Database Supabase):**
+   - Menghentikan auto-inject kueri pengunjung mentah (`Kueri Pengunjung: ...`) ke dalam tabel `ai_memories`. Seluruh riwayat percakapan kini hanya dicatat pada sistem telemetri analytics.
+   - Melakukan pembersihan menyeluruh (*purge*) pada database Supabase terhadap seluruh baris log kueri dan sampel memori usang.
+2. **Semantic Relevance Gate pada Injeksi Memori RAG (`api/chat.js`):**
+   - Mengimplementasikan `filterRelevantMemories`: memori RAG jangka panjang HANYA disuntikkan jika kata kunci subjek pertanyaan pengguna secara langsung dan spesifik cocok dengan isi memori.
+   - Pada kueri teknis umum (misal: coding JavaScript, Python), kueri identitas, atau sapaan santai, blok memori bernilai kosong (`""`), mencegah model mencampuradukkan fakta luar yang tidak berhubungan.
+3. **Penyelarasan Sistem Prompt (Zero-Hallucination & Strict Topical Focus):**
+   - Memperketat pilar kecerdasan agar model hanya menjawab apa yang secara spesifik ditanyakan pengguna, dilarang berspekulasi, dilarang mengaitkan memori lama pada subjek baru, dan dilarang mengulang aturan sistem dalam teks jawaban.
+
+
 
 
 

@@ -404,10 +404,8 @@ export default function TerminalAI({ onClose } = {}) {
         .replace(/\s{2,}/g, ' ')
         .trim();
 
-      // RAG Auto-Injection for Dashboard Logging (only queries >= 8 chars, not slash commands)
-      if (userQuery.length >= 8 && !userQuery.startsWith('/')) {
-        saveAIMemory(`Kueri Pengunjung: ${userQuery}`, telemetry.sessionId || 'unknown');
-      }
+      // Telemetry Chat Logging (Kueri dicatat ke telemetry event, bukan ke basis data RAG)
+      telemetry.logEvent('ai_query_sent', currentChosenModel, userQuery.slice(0, 100));
 
       // Format model name & provider for message header
       const actualModel = data.model || currentChosenModel || 'nemotron-3-nano:30b';

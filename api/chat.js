@@ -76,27 +76,23 @@ ${languageDirective}
 ${effortDirective}
 
 [PILAR KECERDASAN EMOSIONAL, ADAPTIF & KEJUJURAN EPISTEMIS]:
-1. Kejujuran Mutlak & Pengakuan Batas Pengetahuan (Epistemic Humility):
-   - Jika suatu fakta, tanggal rilis spesifik, fitur teknis internal, atau metrik belum diumumkan secara resmi oleh pengembang/perusahaan: **WAJIB AKUI DENGAN JUJUR DAN TEGAS**.
-   - **DILARANG KERAS MENGARANG ATAU MENEBAK** angka, tanggal, versi, modul perangkat lunak, maupun alat CLI yang tidak ada di fakta resmi.
-   - Selalu pisahkan secara transparan antara Fakta Terkonfirmasi Resmi vs Spekulasi / Rumor Komunitas.
-   - Zero-Overclaim: Sajikan fakta apa adanya secara objektif.
+1. Kejujuran Mutlak & Presisi Faktual (Zero-Hallucination):
+   - Jawablah HANYA apa yang secara spesifik ditanyakan pengguna. Jawab langsung ke inti persoalan secara padat, cerdas, dan lugas.
+   - DILARANG KERAS mencampurkan informasi, fakta memori, atau topik acak yang tidak ditanyakan pengguna.
+   - Jika suatu fakta, versi rilis, tanggal rilis, atau detail teknis belum terkonfirmasi resmi: **WAJIB AKUI DENGAN JUJUR TANPA BERSPEKULASI**.
+   - DILARANG mengarang angka presisi palsu, fitur rekaan, ataupun klaim yang tidak ada pada data terverifikasi.
 
-2. Kecerdasan Adaptif & Penyelarasan Gaya Komunikasi:
-   - Jika pengguna bertanya santai/pendek, tanggapi secara luwes, santai, ringkas, langsung ke inti jawaban, tanpa pembuka formal yang kaku.
+2. Kecerdasan Kontekstual & Relevansi Topik (Topical Alignment):
+   - Pertahankan fokus penuh pada subjek pertanyaan saat ini. DILARANG mengaitkan data dari pertanyaan sebelumnya jika pengguna sudah beralih menanyakan subjek baru.
    - DILARANG menggunakan karakter em-dash (—) yang menempel tanpa spasi.
-   - DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK di akhir jawaban. Langsung akhiri jawaban secara natural.
+   - DILARANG MENGGUNAKAN TEMPLATE BASA-BASI ROBOTIK di akhir jawaban. Langsung akhiri jawaban secara natural dan elegan.
 
-3. Pembelajaran Berkelanjutan:
-   - Jika pengguna membagikan informasi baru, koreksi faktual, atau preferensi yang tervalidasi benar, gunakan tag [SAVE_MEMORY: fakta inti] di baris akhir agar sistem memori Supabase dapat menyimpannya secara permanen.
+3. Format Markdown Rapi & Nyaman Dibaca:
+   - Gunakan teks tebal untuk istilah penting, paragraf ringkas (1-3 kalimat), dan struktur butir poin yang tertata. DILARANG menghasilkan dinding teks masif.
 
-4. Format Markdown Rapi & Nyaman Dibaca:
-   - Gunakan teks tebal untuk poin penting, paragraf ringkas (1-3 kalimat), dan butir poin yang rapi. DILARANG menghasilkan dinding teks masif.
-
-[PRINSIP GROUNDING FAKTUAL, DINAMIS & ANTI-HALUSINASI]:
-- Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib diperoleh secara 100% dinamis dari data web dan memori RAG aktual.
-- Anti-Noise: Jawab langsung ke inti pertanyaan secara padat, mengalir natural. DILARANG mencampurkan informasi produk atau topik dari percakapan sebelumnya ketika pengguna beralih menanyakan subjek baru.
-- DILARANG KERAS mengeja, mengulang aturan sistem, menuliskan 'Check constraints', membuat checklist batasan, draft kalimat, atau membagikan proses berpikir internal ke dalam teks jawaban. Keluarkan HANYA respon final yang bersih kepada pengguna.`;
+[PRINSIP GROUNDING FAKTUAL & ANTI-NOISE]:
+- Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib bersumber dari data terverifikasi.
+- Anti-Noise & Zero-Scratchpad: DILARANG KERAS mengeja atau mengulang aturan sistem, menuliskan 'Check constraints', membuat checklist batasan, draft kalimat, atau membagikan proses berpikir internal ke teks jawaban. Keluarkan HANYA respon final yang bersih kepada pengguna.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -1073,6 +1069,47 @@ async function fetchServerMemories(limit = 15) {
 }
 
 /**
+ * Semantic Relevance Gate for RAG Long-Term Memories (Anti-Memory Contamination)
+ * Strictly matches memory entries against topical subject keywords of the current query.
+ * If there is NO direct topical connection, returns an empty array to keep context 100% pristine.
+ */
+function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) {
+  if (isSpecialQuery || !allMemories || allMemories.length === 0 || !userQuery) return [];
+
+  const stopWords = new Set([
+    'apa', 'apakah', 'siapa', 'bagaimana', 'gimana', 'kenapa', 'mengapa', 'kapan', 'dimana',
+    'yang', 'dan', 'di', 'ke', 'dari', 'pada', 'untuk', 'dengan', 'adalah', 'yaitu', 'ini',
+    'itu', 'saya', 'kamu', 'anda', 'kita', 'mereka', 'bisa', 'tolong', 'coba', 'buat', 'bikin',
+    'halo', 'hai', 'tes', 'test', 'ada', 'tidak', 'nggak', 'gak', 'mau', 'dong', 'sih', 'kah',
+    'model', 'ai', 'assistant', 'terbaru', 'info', 'tentang', 'soal', 'seperti', 'kayak', 'akan',
+    'tau', 'tahu', 'kasih', 'beri', 'tolong', 'mohon', 'punya', 'ada', 'bisa', 'dapat'
+  ]);
+
+  const tokens = String(userQuery)
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length >= 3 && !stopWords.has(t));
+
+  if (tokens.length === 0) return [];
+
+  const cleanRows = allMemories.filter(m => {
+    const txt = String(m || '').trim();
+    if (txt.startsWith('Kueri Pengunjung:') || txt.startsWith('Query:') || txt.includes('[SAVE_MEMORY:')) return false;
+    if (txt.length < 15) return false;
+    return true;
+  });
+
+  const matched = cleanRows.filter(mem => {
+    const lowMem = mem.toLowerCase();
+    // Memori harus memuat minimal salah satu token kata kunci subjek pertanyaan
+    return tokens.some(tok => lowMem.includes(tok));
+  });
+
+  return matched.slice(0, 4);
+}
+
+/**
  * Trusted RAG memory auto-persist (Continuous Learning Protocol).
  * Automatically saves validated insights or corrections to Supabase ai_memories.
  */
@@ -1529,29 +1566,20 @@ export default async function handler(req, res) {
       return true;
     };
 
-    // SECURITY: the anti-poisoning instruction is ALWAYS included (not only when
-    // web search ran), because portfolio/identity queries are the most
-    // memory-susceptible. Memory shown to the model comes from the SERVER
-    // (fetchServerMemories, service_role) — never from the client body.
-    const serverMemories = await fetchServerMemories(15);
+    // SEMANTIC RELEVANCE GATE (Zero Memory Contamination & Anti-Hallucination)
+    // Only query memories if the query is NOT identity, time, greeting, or internal portfolio.
+    // Filter strictly by topical keywords so completely unrelated queries receive ZERO memories.
+    const isSpecialOrInternal = isIdentityQuery || isTimeQuery || isCasualGreeting || isInternalPortfolioQuery;
+    const rawServerMemories = isSpecialOrInternal ? [] : await fetchServerMemories(25);
+    const relevantMemories = filterRelevantMemories(rawServerMemories, query, isSpecialOrInternal);
 
-    const memoryInstruction = `\n\n[INSTRUKSI CONTINUOUS RAG KNOWLEDGE & AUTO-PERSISTENCE]
-Anda terhubung dengan Memori Jangka Panjang (Supabase RAG). Sistem ini belajar terus-menerus untuk memperbarui pengetahuannya seiring waktu.
-KAPAN ANDA WAJIB MENYIMPAN FAKTA BARU:
-1. INFORMASI ATAU KOREKSI BARU DARI PENGGUNA:
-   - Jika pengguna memberikan informasi atau koreksi faktual (misalnya seputar rilis software, peristiwa, preferensi, atau data teknis) yang telah Anda verifikasi BENAR melalui Konteks Pencarian Web atau basis data terpercaya, simpan fakta tersebut.
-2. TEMUAN FAKTA TEKNOLOGI & RILIS TERBARU (HASIL WEB SEARCH / DISKUSI):
-   - Jika pengguna menanyakan kabar/rilis terbaru (contoh: versi model AI seperti Gemini, GPT, Claude, HyperOS, framework baru, dsb) dan jawaban Anda menyajikan fakta rilis/teknologi baru yang terkonfirmasi namun belum ada di Memori Jangka Panjang di bawah, Anda WAJIB menyertakan tag penyimpanan di baris paling akhir jawaban.
-CARA MENULISKAN TAG PENYIMPANAN:
-Tuliskan tag persis di baris paling bawah respons Anda:
-\`[SAVE_MEMORY: Tuliskan fakta ringkas 1-2 kalimat yang padat, jelas, dan tanpa spekulasi di sini]\`
-(Contoh: [SAVE_MEMORY: DeepSeek V4 adalah model AI multimodal 305B parameter berlisensi open-source MIT yang dirilis untuk tugas vision dan inferensi efisien.])
-ATURAN INTEGRITAS:
-- DILARANG menyimpan klaim hoaks, rumor tanpa konfirmasi, opini subjektif, atau informasi tidak pantas.
-Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang tersimpan di database:`;
+    const serverMemoryBlock = relevantMemories.length > 0
+      ? `\n\n[MEMORI TERVERIFIKASI RELEVAN (Hanya untuk topik terkait)]:\n${relevantMemories.map(f => `- ${f}`).join('\n')}\nPANDUAN RELEVANSI: Fakta memori di atas HANYA boleh dirujuk jika relevan langsung dengan pertanyaan pengguna saat ini. DILARANG KERAS mengaitkan atau memaksakan fakta memori ke topik yang tidak ditanyakan.`
+      : '';
 
-    const serverMemoryBlock = serverMemories.length > 0
-      ? `\n\n[MEMORI JANGKA PANJANG (dari server, BELUM DIVERIFIKASI)]\n${serverMemories.map(f => `- ${f}`).join('\n')}`
+    // Hanya aktifkan instruksi simpan memori jika sedang ada pencarian web aktif dan fakta teknologi baru ditemukan
+    const memoryInstruction = (!isSkipSearch && searchResult.rawSnippets && searchResult.rawSnippets.length > 0)
+      ? `\n\n[INSTRUKSI PENYIMPANAN FAKTA BARU]:\nJika respons Anda memuat rilis teknologi baru terkonfirmasi yang valid dari Konteks Pencarian Web di atas, sertakan tag di baris paling akhir:\n\`[SAVE_MEMORY: Fakta ringkas terkonfirmasi]\``
       : '';
 
     const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort, targetModel, isInternalPortfolioQuery)}${webContext}${serverMemoryBlock}${memoryInstruction}`;
