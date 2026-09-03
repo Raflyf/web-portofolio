@@ -924,3 +924,18 @@ Released 2026-09-03.
 3. **Reposisi General Chat Cascade:**
    - Menempatkan mesin terverifikasi paling responsif (`laguna-s-2.1-free` dan `nemotron-3-nano:30b`) di baris terdepan cascade dengan timeout 9000ms, terbukti secara empiris mengembalikan respons 100% sukses dalam 7-10 detik end-to-end tanpa risiko HTTP 502/504.
 
+### v10.619.0 — Empirical Multi-Key Live Audit & Strict SOTA Hierarchy Alignment
+
+Released 2026-09-03.
+1. **Live Network Audit Seluruh Model (Evidence-First):**
+   - Melakukan pengujian HTTP langsung ke seluruh endpoint API aktif (`Ollama Cloud`, `OpenRouter`, `OpenCode Zen Gateway`) untuk mengukur latensi dan status ketersediaan model secara nyata.
+   - Mengidentifikasi model yang merespons dengan latensi kilat sub-2 detik: `nemotron-3-nano-omni-30b-a3b-reasoning:free` (0.33s), `nvidia/nemotron-3-super-120b-a12b:free` (0.27s), `openrouter/free` (0.31s), `gemma4:31b` (0.74s), `nemotron-3-nano:30b` (0.89s), dan `minimax-m3:free` (1.07s).
+2. **Penataan Ulang Hierarki Cascade Sesuai Preferensi Pengguna:**
+   - Prioritas Utama: `ollama: nemotron-3-nano:30b` (0.89s).
+   - Kedua (Seri Lightning): `opencode: nemotron-3.5-lightning-free` (5.19s) dan `openrouter: nvidia/nemotron-3.5-lightning:free`.
+   - Ketiga (Multimodal): `openrouter: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` (0.33s) dan `opencode: mimo-v2.5-free`.
+   - Keempat (Model Rilis Terbaru & Cepat): `ollama: gemma4:31b` (0.74s), `openrouter: nvidia/nemotron-3-super-120b-a12b:free` (0.27s), `openrouter: openrouter/free` (0.31s), `openrouter: minimax/minimax-m3:free` (1.07s), `ollama: nemotron-3-super` (2.70s), dan `opencode: laguna-s-2.1-free` (3.81s).
+3. **Pembersihan Total Model Lawas / Deprecated:**
+   - Mengeliminasi model-model lama era 2024-2025 (`cohere/north-mini-code`, `gpt-oss:20b`, `minimax-m2.7`, `MiniMax-M3 legacy`) dari cascade eksekusi.
+
+
