@@ -1337,3 +1337,21 @@ Menindaklanjuti laporan produksi berulang (HTTP 504) pada kueri berita spesifik 
    - Connect timeout diturunkan ke 8 detik dan active-thinking timeout mode auto dari 30 detik menjadi maksimal 12 detik per step. Provider pertama yang padat/antre kini cepat dialihkan ke fallback, mencegah satu step membakar separuh budget 60 detik dan step berikutnya kehabisan waktu.
 5. **Verifikasi:**
    - `node --check` lolos; pengukuran fase pencarian = ~2.1 detik; seluruh perubahan di-commit dan di-push.
+
+### v10.646.0 — Parallel First-Success Model Race & Reduced Reasoning Latency
+
+Released 2026-09-03.
+
+Menindaklanjuti laporan bahwa asisten masih lama "berpikir" dan sering timeout pada kueri kompleks maupun basic. Setelah fase pencarian sudah ~2,1 detik, bottleneck tersisa adalah fase GENERASI MODEL yang dieksekusi serial.
+
+1. **Parallel First-Success Race (Mode Auto):**
+   - Sebelumnya pipeline mengeksekusi provider SATU PER SATU secara serial; request menunggu provider pertama (Ollama Nano 30B) sampai timeout 6-12 detik sebelum mencoba berikutnya, sehingga kueri basic pun bisa memakan 15-30+ detik bila provider awal padat.
+   - Mode auto kini menjalankan 3 step teratas SECARA PARALEL dan memakai `Promise.any` (true first-success): begitu step tercepat sukses, langsung menang tanpa menunggu step lain. `sendSuccess` aman dipanggil paralel karena guard `res.headersSent` hanya menulis satu respons.
+   - Jika race 3 pertama gagal, lanjut ke 2 step cadangan serial singkat; mode manual spesifik tetap serial menghormati pilihan pengguna.
+2. **Penurunan Reasoning Effort (Latensi Generasi):**
+   - OpenRouter & OpenCode sebelumnya mengirim `reasoning effort: high` untuk semua kueri non-low (termasuk medium/basic) pada model reasoning — memperlambat drastis.
+   - Kini mapping: low/medium/auto-basic -> `low`, high -> `medium`, thinking -> `high`. Kueri sehari-hari tidak lagi memicu penalaran CoT berat.
+3. **Prompt Prefill Lebih Ringkas:**
+   - Panjang deskripsi artikel pada bukti RSS dipotong dari 250 menjadi 150 karakter, memperkecil ukuran system prompt sehingga waktu prefill model turun.
+4. **Verifikasi:**
+   - `node --check` lolos; seluruh perubahan di-commit dan di-push.

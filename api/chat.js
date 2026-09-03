@@ -1068,7 +1068,7 @@ async function searchWebContext(query, history = []) {
               }
               const relScore = calcScore(title + ' ' + desc) + recencyBonus;
               if (searchKeywords.length === 0 || relScore > 0) {
-                const fullText = desc && desc.length > 20 ? `${title} — ${desc.slice(0, 250)}` : title;
+                const fullText = desc && desc.length > 20 ? `${title} — ${desc.slice(0, 150)}` : title;
                 const entry = pubDate ? `[Global Live Web/News (${pubDate})]: ${fullText}` : `[Global Live Web/News]: ${fullText}`;
                 structuredSnippets.push({ text: entry, timestamp: ts, score: relScore });
                 rawSnippets.push(title);
@@ -2315,7 +2315,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
               messages: formattedMessages,
               max_tokens: maxTokensConfig,
               temperature: tempConfig,
-              reasoning: (!isLightning && isReasoningModel) ? { effort: (effectiveEffort === 'low' ? 'medium' : 'high') } : undefined
+              reasoning: (!isLightning && isReasoningModel) ? { effort: (effectiveEffort === 'thinking' ? 'high' : (effectiveEffort === 'high' ? 'medium' : 'low')) } : undefined
             })
           }, { connectTimeoutMs: connectTimeout, activeTimeoutMs: remaining });
 
@@ -2382,7 +2382,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
               messages: openRouterMessages,
               max_tokens: Math.max(maxTokensConfig || 1000, 1500),
               temperature: tempConfig,
-              reasoning_effort: isLightning ? undefined : (effectiveEffort === 'low' ? 'medium' : 'high')
+              reasoning_effort: isLightning ? undefined : (effectiveEffort === 'thinking' ? 'high' : (effectiveEffort === 'high' ? 'medium' : 'low'))
             })
           }, { connectTimeoutMs: connectTimeout, activeTimeoutMs: remaining });
 
@@ -2751,29 +2751,60 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
     async function executePipelineWithPriorityRace(pipeline) {
       if (!pipeline || pipeline.length === 0) return null;
 
-      for (const step of pipeline) {
-        const elapsed = Date.now() - requestStartTime;
-        const remainingMs = 58000 - elapsed; // Safe budget matching vercel.json function maxDuration 60s
-        if (remainingMs <= 1500) break;
+      const elapsedBase = Date.now() - requestStartTime;
+      const remainingMs = 58000 - elapsedBase;
+      if (remainingMs <= 1500) return null;
 
-        // Dual-Phase Adaptive Timeout (PERF-FIX untuk HTTP 504):
-        // 1. Connect Timeout (8s): jika gateway lambat/antre, cepat failover ke fallback berikutnya.
-        // 2. Active Thinking Timeout: Untuk mode auto (query cepat/standar), batasi max 12s per step —
-        //    sebelumnya 30s membuat provider pertama yang padat membakar separuh budget 60s dan
-        //    step-step serial berikutnya kehabisan waktu -> 504. Kini kegagalan cepat dialihkan.
-        const connectTimeout = Math.min(step.timeout || 15000, 8000);
-        const maxStepActive = isSpecificManual ? (remainingMs - 1000) : Math.min(12000, remainingMs - 1000);
-        const activeTimeout = Math.max(6000, maxStepActive);
-
-        try {
-          const result = await executeStep(step, {
-            connectTimeoutMs: connectTimeout,
-            activeTimeoutMs: activeTimeout
-          });
-          if (result) return result; // Succeeded! Returns immediately with 1x token consumption!
-        } catch (_) {}
+      // ===== PARALLEL RACE untuk MODE AUTO (percepatan drastis) =====
+      // Serial execution sebelumnya membuat request menunggu provider pertama (Ollama nano 30B)
+      // sampai timeout 6-12s, lalu provider kedua, dst — kueri basic pun bisa makan 15-30s+
+      // sebelum ada yang sukses -> keluhan "berpikir terlalu lama" / timeout.
+      // Mode auto kini menjalankan 3 step teratas SECARA PARALEL; yang pertama sukses menang.
+      // sendSuccess aman dipanggil paralel karena guard `res.headersSent` hanya menulis satu respons.
+      if (!isSpecificManual) {
+        const raceSteps = pipeline.slice(0, 3);
+        const raceTimeoutMs = Math.max(6000, Math.min(14000, remainingMs - 1500));
+        // TRUE first-success race: setiap step membungkus keberhasilan jadi resolve,
+        // kegagalan/null jadi reject, sehingga Promise.any langsung menang saat step
+        // TERCEPAT sukses — tidak menunggu step terlambat (allSettled) yang bikin lambat.
+        const racePromises = raceSteps.map(step =>
+          executeStep(step, {
+            connectTimeoutMs: Math.min(step.timeout || 15000, 8000),
+            activeTimeoutMs: raceTimeoutMs
+          }).then(result => {
+            if (result) return { ok: true, value: result };
+            return Promise.reject(new Error('provider-empty'));
+          }).catch(() => Promise.reject(new Error('provider-failed')))
+        );
+        const win = await Promise.race([
+          Promise.any(racePromises),
+          new Promise(resolve => setTimeout(() => resolve('timeout'), raceTimeoutMs + 500))
+        ]);
+        if (win !== 'timeout' && win && win.ok) return win.value;
+        // Jika race 3 pertama gagal/timeout, lanjut ke sisa pipeline serial singkat (max 2 step)
+        const tail = pipeline.slice(3, 5);
+        for (const step of tail) {
+          const remaining = 58000 - (Date.now() - requestStartTime);
+          if (remaining <= 2000) break;
+          const r = await executeStep(step, {
+            connectTimeoutMs: Math.min(step.timeout || 15000, 6000),
+            activeTimeoutMs: Math.min(8000, remaining - 1000)
+          }).catch(() => null);
+          if (r) return r;
+        }
+        return null;
       }
 
+      // ===== Mode manual spesifik: serial (perlu hormati urutan pilihan user) =====
+      for (const step of pipeline) {
+        const remaining = 58000 - (Date.now() - requestStartTime);
+        if (remaining <= 1500) break;
+        const r = await executeStep(step, {
+          connectTimeoutMs: Math.min(step.timeout || 15000, 8000),
+          activeTimeoutMs: remaining - 1000
+        }).catch(() => null);
+        if (r) return r;
+      }
       return null;
     }
 
