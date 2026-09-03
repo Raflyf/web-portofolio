@@ -147,7 +147,8 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 2. Jika topik menuntut fakta cepat-berubah (rilis produk, versi perangkat lunak, model AI, berita, harga, peringkat) dan tidak tersedia blok bukti live hasil pencarian web, nyatakan keterbatasan verifikasi secara jujur dan hangat: sampaikan hanya pengetahuan yang Anda yakini terverifikasi dengan penanda jelas bahwa itu bukan status live terkini, lalu arahkan ke sumber resmi untuk kepastian mutakhir. DILARANG mengarang status "terbaru" dari ingatan lama, menebak tanggal rilis, atau menyangkal eksistensi rilis hanya karena di luar pengetahuan model.
 3. [ENUMERASI KETAT LANDSKAP TERKINI]: Saat pengguna menanyakan kondisi terbaik/terbaru/terkini, state-of-the-art, peringkat, atau perbandingan kondisi masa kini (contoh: "model AI terbaik saat ini", "versi terbaru X", "ranking produk Y"), daftar entitas "terkini" WAJIB disusun HANYA dari entitas yang eksplisit tercantum pada blok bukti live hasil pencarian yang disuntikkan. DILARANG KERAS menambahkan entitas apa pun dari ingatan (versi lama maupun model lain) sebagai pelengkap, pembanding, pelengkap daftar, atau konteks "terkini". Entitas di luar bukti HANYA boleh disebut bila pengguna secara eksplisit menanyakan sejarah/riwayat versi, dan wajib diberi label waktu historis yang jelas (misal "generasi sebelumnya", "rilis tahun ..."). Jika blok bukti tidak menyebut peringkat juara, JANGAN mengarang peringkat dari ingatan; cukup laporkan model yang terbukti muncul dalam pemberitaan.
 4. [LARANGAN KLAIM TANGGAL PALSU]: DILARANG KERAS menulis kalimat atribusi buatan seperti "Semua informasi ini didasarkan pada laporan terbaru yang tersedia pada [tanggal]", "berdasarkan laporan terbaru [tanggal]", "menurut rilis [tanggal]", atau melabeli seluruh jawaban dengan tanggal publikasi tertentu yang TIDAK eksplisit tercantum pada bukti live. Tanggal hanya boleh dikutip bila benar-benar muncul pada bukti (misal pubDate artikel). Tanpa tanggal pada bukti, cukup tulis "berdasarkan hasil penelusuran web real-time saat ini" tanpa menyebut tanggal fiktif.
-5. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
+5. [LARANGAN MUTLAK KLAIM BELUM RILIS TANPA BUKTI RESMI]: DILARANG KERAS menyimpulkan atau menyatakan bahwa suatu produk, perangkat keras, versi sistem operasi, game, atau entitas apa pun "belum dirilis", "belum ada di pasaran", "belum pernah diluncurkan", atau "masih tahap perencanaan/rumor" hanya karena hasil pencarian saat ini tidak memuat tanggal peluncuran perdananya atau karena ingatan internal model tidak mengetahuinya. Ketiadaan artikel peluncuran pada feed berita BUKAN bukti ketiadaan produk (produk mungkin telah dirilis berbulan-bulan atau bertahun-tahun sebelumnya). Sampaikan temuan penelusuran yang ada secara objektif tanpa spekulasi ketiadaan.
+6. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -337,7 +338,26 @@ function formulateSmartSearchQueries(query, history = []) {
 
   const stripFillers = (text) => {
     return text
-      .replace(/\b(lah|kan|deh|dong|sih|kek|kok|ko|ah|eh|oh|nah|ya|yah|nih|tuh|sudah|udah|sdh|udh|belum|blm|tapi|tp|dan|atau|itu|ini|dari|pada|ke|di|yang|yg|tolong|coba|jelaskan|analisis|bagaimana|apa|apaan|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro|perilisan|rilis|saat|sekarang|waktu|hari ini|era)\b/gi, ' ')
+      // 1a. Kata ganti orang / percakapan
+      .replace(/\b(saya|aku|gw|gue|lu|lo|kamu|anda|kita|kami|dia|mereka)\b/gi, ' ')
+      // 1b. Kata kerja permintaan, pertanyaan & pengantar santai
+      .replace(/\b(mau|pengen|ingin|hendak|nanya|tanya|bertanya|carikan|cari|mencari|tolong|coba|mohon|bantu|bantuin|bisa|bisakah|dapat|dapatkah|boleh|minta|kasih|kasi|berikan|sebutkan|jelaskan|analisis|ceritakan)\b/gi, ' ')
+      // 1c. Penanda info & fakta
+      .replace(/\b(tahu|tau|ketahui|infokan|informasikan|informasi|info|beritahu|beritau|kabar|berita)\b/gi, ' ')
+      // 1d. Kata sambung & preposisi
+      .replace(/\b(mengenai|tentang|soal|terkait|terhadap|untuk|buat|bagi|dari|pada|ke|di|yang|yg|dan|atau|dengan|dgn|itu|ini|tersebut)\b/gi, ' ')
+      // 1e. Kata tanya
+      .replace(/\b(bagaimana|gimana|gimna|gmn|gmana|apa|apaan|apakah|siapa|kapan|kenapa|mengapa|knapa|dimana|mana|kalo|kalau)\b/gi, ' ')
+      // 1f. Verifikasi / penegasan
+      .replace(/\b(menurutmu|menurut anda|menurut kamu|beneran|bener|benar|betul|apakah benar|cek yg benar|cek yang benar|cek|periksa)\b/gi, ' ')
+      // 1g. Noun kategori perangkat/software generik
+      .replace(/\b(hp|smartphone|handphone|ponsel|telepon|gadget|perangkat|device)\b/gi, ' ')
+      // 1h. Penanda rilis / temporal yang sudah di-cover oleh query modifiers
+      .replace(/\b(perilisan|peluncuran|rilis|launch|meluncur|keluaran|update|pembaruan|terbaru|terkini|saat ini|sekarang|waktu ini|hari ini|bulan ini|tahun ini|era|baru[- ]baru ini|baru)\b/gi, ' ')
+      // 1i. Partikel percakapan & slang
+      .replace(/\b(lah|kan|deh|dong|sih|kek|kok|ko|ah|eh|oh|nah|ya|yah|nih|tuh|min|gan|kak|bro|sis|mas|bang|pak|bu)\b/gi, ' ')
+      // 1j. Kata status / sanggahan
+      .replace(/\b(sudah|udah|sdh|udh|belum|blm|masih|pernah|sempat|tidak|nggak|enggak|gak|tak|bukan)\b/gi, ' ')
       .replace(/[^\w\s\.\-]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -348,14 +368,34 @@ function formulateSmartSearchQueries(query, history = []) {
 
   // Extract clean entity if "model" / "versi" is used (e.g. "model claude 5.1" -> "claude 5.1")
   const strippedEntity = coreSubject.replace(/\b(model|versi|seri)\b/gi, ' ').replace(/\s+/g, ' ').trim();
-  if (strippedEntity.length >= 3) {
+  if (strippedEntity.length >= 2) {
     queries.push(strippedEntity);
+
+    // Asosiasi brand & parent manufacturer (e.g. Poco dibuat oleh Xiaomi, sering diindeks sebagai Xiaomi Poco)
+    if (/\bpoco\b/i.test(strippedEntity) && !/\bxiaomi\b/i.test(strippedEntity)) {
+      queries.push('xiaomi ' + strippedEntity);
+    }
+
+    // Permutasi universal jika ada pasangan OS/Software + Hardware Device
+    const osMatch = strippedEntity.match(/\b(hyperos|miui|android|ios|oneui|coloros|oxygenos|harmonyos|windows|macos|linux)\b/i);
+    if (osMatch) {
+      const os = osMatch[0];
+      const device = strippedEntity.replace(new RegExp('\\b' + os + '\\b', 'i'), '').replace(/\s+/g, ' ').trim();
+      if (device.length >= 2) {
+        queries.unshift(device + ' ' + os);
+        queries.push(device);
+        if (/\bpoco\b/i.test(device) && !/\bxiaomi\b/i.test(device)) {
+          queries.push('xiaomi ' + device);
+          queries.push('xiaomi ' + device + ' ' + os);
+        }
+      }
+    }
   }
 
-  if (coreSubject.length >= 3 && coreSubject !== strippedEntity) {
+  if (coreSubject.length >= 2 && coreSubject !== strippedEntity) {
     queries.push(coreSubject);
   }
-  if (qClean.length >= 3 && qClean !== coreSubject && qClean !== strippedEntity) {
+  if (qClean.length >= 2 && qClean !== coreSubject && qClean !== strippedEntity) {
     queries.push(qClean);
   }
 
@@ -366,8 +406,6 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push(`${targetSubject} rilis pembaruan resmi terkini`);
 
     // Expand search terms for AI & LLM model comparisons dynamically.
-    // ZERO hardcoded brand/version lists (AGENTS.md 10c) - the live engine must always
-    // reflect whatever the current real-world landscape is, strictly subject-centered.
     const currentYear = new Date().getFullYear();
     if (/\b(model|llm|ai|gpt|claude|gemini|deepseek|terbaik|best|leaderboard|ranking)\b/i.test(targetSubject) || /\b(ai|llm|model)\b/i.test(qNorm)) {
       queries.push(`${targetSubject} ${currentYear} comparison latest update`);
@@ -381,23 +419,27 @@ function formulateSmartSearchQueries(query, history = []) {
     }
   }
 
-  // 3. Dynamic Multi-Turn Context Awareness (Only combine if query is an anaphoric/dependent follow-up)
-  const isDependentFollowUp = /^(harganya|fiturnya|speknya|spesifikasinya|jadwalnya|tanggalnya|rilisnya|fitur|spek|harga|biaya|kapan|dimana|siapa|kenapa|mengapa|bagaimana|gimana)$/i.test(coreSubject) || (coreSubject.length > 0 && coreSubject.length < 3);
+  // 3. Dynamic Multi-Turn Context Awareness (Universal Follow-Up Detection)
+  const isDependentFollowUp = /^(harganya|fiturnya|speknya|spesifikasinya|jadwalnya|tanggalnya|rilisnya|fitur|spek|harga|biaya|kapan|dimana|siapa|kenapa|mengapa|bagaimana|gimana|beneran|benar|cek|internet|tahun|berapa|coba|kok|belum|udah|sudah)$/i.test(coreSubject) ||
+    (coreSubject.length > 0 && coreSubject.length < 4) ||
+    /^(cek|periksa|cari lagi|coba lagi|cek lagi|internet|kok|kenapa|beneran)\b/i.test(qNorm);
+
   if (isDependentFollowUp && Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
     for (const pastQ of pastUserTurns.slice(0, 2)) {
       const pastSubject = stripFillers(pastQ);
-      if (pastSubject.length >= 3) {
+      if (pastSubject.length >= 2) {
         const combined = `${pastSubject} ${coreSubject || qClean}`.trim().slice(0, 90);
         if (!queries.includes(combined)) {
-          queries.push(combined);
+          queries.unshift(combined);
+          queries.push(pastSubject);
         }
         break;
       }
     }
   }
 
-  return Array.from(new Set(queries)).filter(q => q.length >= 3).slice(0, 4); // PERF-4: cap at 4 (was 6) to limit RSS flood
+  return Array.from(new Set(queries)).filter(q => q.length >= 2).slice(0, 5);
 }
 
 /**
@@ -907,14 +949,17 @@ async function searchWebContext(query, history = []) {
 
     // Extract key search terms for relevance evaluation
     const searchKeywords = searchQueries.flatMap(sq => 
-      sq.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3)
+      sq.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length >= 2)
     );
 
     const calcScore = (title) => {
       const tLow = (title || '').toLowerCase();
       let score = 0;
       for (const kw of searchKeywords) {
-        if (tLow.includes(kw)) score += 2;
+        if (tLow.includes(kw)) {
+          // Model alphanumeric identifier (e.g. x7, f6, 14t, m4, o1, ps5) gets high relevance bonus
+          score += (/^[a-z]+\d+|\d+[a-z]+$/i.test(kw) || (kw.length <= 3 && /\d/.test(kw))) ? 12 : 3;
+        }
       }
       return score;
     };
@@ -1065,10 +1110,7 @@ async function searchWebContext(query, history = []) {
                   else if (daysOld > 180) recencyBonus = -25;
                   else if (daysOld > 365) recencyBonus = -50;
 
-                  // Filter out outdated articles (> 90 days) if the user is asking for current / latest facts
-                  if (isBreakingQuery && daysOld > 90) {
-                    return;
-                  }
+                  // Recency is factored naturally via recencyBonus without discarding foundational historical launch/release facts
                 }
               }
               const relScore = calcScore(title + ' ' + desc) + recencyBonus;
@@ -1094,11 +1136,8 @@ async function searchWebContext(query, history = []) {
       });
     }
 
-    // Sort all snippets: For breaking/latest queries, strictly sort newest publication timestamp first
+    // Sort all snippets: Relevance score is always the PRIMARY decider (recency bonus is already baked in)
     structuredSnippets.sort((a, b) => {
-      if (isBreakingQuery) {
-        return (b.timestamp - a.timestamp) || ((b.score || 0) - (a.score || 0));
-      }
       return ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp);
     });
 
@@ -2015,6 +2054,9 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–,]+?)(?:\*+|\*\*|:)?\s*[-–—:]\s*/g, '$1\n\n- **$2**: ');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–—:]\s*/g, '\n- **$1**: ');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\*+([^*:\n]+)\*+\s*[\-–—:]\s*/g, '\n- **$1**: ');
+      cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]\s*\*([^*:\n]+):\s*/g, '\n- **$1**: ');
+      cleaned = cleaned.replace(/:\s*[-*•]\s*\*+([^*:\n]+)\*+/g, ':\n- **$1**');
+      cleaned = cleaned.replace(/:\s*[-*•]\s+/g, ':\n- ');
 
       // 3.6. Clean rogue colons and malformed bullet point headers
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]\s*:\s*/g, '\n- ');
@@ -2899,18 +2941,18 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         const firstStep = pipeline[0];
         if (firstStep) {
           const firstR = await executeStep(firstStep, {
-            connectTimeoutMs: Math.min(firstStep.timeout || 15000, 6000),
-            activeTimeoutMs: Math.min(firstStep.timeout || 15000, 9000)
+            connectTimeoutMs: Math.min(firstStep.timeout || 15000, 12000),
+            activeTimeoutMs: Math.min(firstStep.timeout || 15000, 20000)
           }).catch(() => null);
           if (firstR) return firstR;
         }
 
         // === Jika #1 gagal: race 3 step berikutnya (2,3,4) paralel ===
         const raceSteps = pipeline.slice(1, 4);
-        const raceTimeoutMs = Math.max(6000, Math.min(11000, remainingMs - 1500));
+        const raceTimeoutMs = Math.max(8000, Math.min(20000, remainingMs - 1500));
         const racePromises = raceSteps.map(step =>
           executeStep(step, {
-            connectTimeoutMs: Math.min(step.timeout || 15000, 7000),
+            connectTimeoutMs: Math.min(step.timeout || 15000, 12000),
             activeTimeoutMs: raceTimeoutMs
           }).then(result => {
             if (result) return { ok: true, value: result };

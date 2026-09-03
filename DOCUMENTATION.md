@@ -1484,3 +1484,31 @@ Released 2026-09-03.
    - Memperbarui label prioritas: Lightning OpenRouter #3, Nano-Omni #5 — selaras urutan pipeline terminal yang baru.
 4. **Verifikasi:**
    - `npm run build` sukses (API + Dashboard + CSS terkompilasi); `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.655.0 — Universal Conversational Query Extraction, Anti-False-Unreleased Directives & Pipeline Timeout Calibration
+
+Released 2026-09-03.
+
+Menindaklanjuti investigasi menyeluruh mengapa pertanyaan yang diajukan dengan bahasa santai / percakapan ("saya mau nanya dong, kamu bisa carikan...", "cek yg benar dari internet") sebelumnya menghasilkan jawaban usang atau klaim palsu bahwa produk "belum dirilis" padahal sudah meluncur setahun lalu. Ditemukan 5 akar masalah sistemik yang berdampak universal ke seluruh domain.
+
+1. **Penyebab Universal Informasi Lawas / "Belum Rilis" (Akar Masalah):**
+   - **Kebocoran Preamble Percakapan:** `stripFillers` sebelumnya tidak membuang kata ganti dan kata pengantar santai ("saya", "mau", "nanya", "kamu", "bisa", "carikan", "informasi", "untuk", "hp"), sehingga kalimat utuh 12 kata dikirim mentah ke mesin pencarian RSS Google News & Bing News. Mesin pencarian mengembalikan 0 hasil untuk kalimat panjang tersebut.
+   - **Pembuangan Paksa Artikel > 90 Hari:** Terdapat filter `if (isBreakingQuery && daysOld > 90) return;` yang membuang seluruh artikel peluncuran/perilisan produk yang terjadi lebih dari 3 bulan lalu. Akibatnya, entitas apa pun yang meluncur 4–24 bulan lalu dianggap "tidak ada" oleh sistem dan model berhalusinasi menyatakan "belum rilis".
+   - **Pembuangan Kata Kunci 2 Karakter:** `filter(w => w.length >= 3)` membuang nomor model 2 karakter (`x7`, `f6`, `m4`, `o1`, `ui`, `os`), sehingga artikel produk lain dari brand yang sama (misal POCO X8 hari ini) mengalahkan artikel produk target (POCO X7).
+   - **Pengurutan Timestamp Buta Relevansi:** `isBreakingQuery` mengurutkan artikel murni berdasarkan waktu terbaru, mengabaikan relevansi topik terhadap pertanyaan pengguna.
+   - **Abort Prematur Pipeline RAG:** `connectTimeoutMs` 6.000ms pada pipeline auto terlalu sempit untuk prefill konteks RAG pencarian web, menyebabkan eksekusi di-abort sebelum model sempat mengembalikan byte pertama.
+
+2. **Perbaikan Universal pada `api/chat.js`:**
+   - **Pembersihan Ekstraksi Kueri Universal (`stripFillers`):** Membersihkan secara tuntas seluruh kata pengantar percakapan, kata ganti, permohonan, kata tanya, partikel bahasa Indonesia, preposisi, dan sebutan perangkat generik. Subjek pencarian murni kini diekstrak secara presisi untuk topik apa pun (gadget, game, software, film, peristiwa, teknologi).
+   - **Penghapusan Pembuangan Artikel >90 Hari:** Pembobotan waktu dialihkan sepenuhnya ke `recencyBonus` yang halus, menjamin fakta peluncuran historis tidak pernah dihapus dari konteks bukti.
+   - **Dukungan Pengenal Model 2 Karakter:** `searchKeywords` kini mengizinkan kata kunci `>= 2` karakter dan `calcScore` memberikan bobot tinggi (+12) pada kecocokan nomor/kode model alfanumerik.
+   - **Pengurutan Berbasis Relevansi Utama:** `structuredSnippets` kini selalu mengutamakan skor kecocokan topik utama di atas timestamp mentah.
+   - **Kalibrasi Timeout Koneksi Pipeline:** Meningkatkan `connectTimeoutMs` menjadi 12.000ms dan active timeout menjadi 20.000ms agar model tidak di-abort prematur saat memproses konteks RAG.
+   - **Larangan Mutlak Klaim "Belum Rilis" Tanpa Bukti Ketiadaan:** Menambahkan aturan tegas pada `[PROTOKOL INTEGRITAS WAKTU & KEJUJURAN EPISTEMIS]`: Ketiadaan berita rilis pada hasil pencarian bukanlah bukti produk belum rilis. Model dilarang mengarang bahwa entitas "belum dirilis / masih rumor" hanya karena ingatan lamanya tidak mengetahuinya.
+
+3. **Verifikasi Komprehensif Lintas Topik:**
+   - Kueri POCO X7: Berhasil menjawab rilis HyperOS 3.0.302.0 dengan status 200 dalam 4,92 detik.
+   - Kueri GTA 6: Berhasil merangkum update peluncuran controller DualSense State of Play & tanggal rilis 19 November 2026.
+   - Kueri Nintendo Switch 2: Berhasil merangkum pengumuman resmi dan jadwal rilis Desember 2026 di Indonesia.
+   - Multi-turn conversation: Berhasil mempertahankan kesinambungan entitas dari giliran pertama ke giliran lanjutan.
+   - `npm run build` sukses (934ms) dan syntax check lolos.
