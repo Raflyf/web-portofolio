@@ -1376,3 +1376,26 @@ Menata ulang prioritas model sesuai permintaan: Nemotron Nano Ollama → Gemma 4
    - Seluruh pilihan manual kini dirutekan hanya ke provider ber-key dengan nama model terverifikasi (mis. `laguna`/`mimo`/`opencode` → `poolside/laguna-s-2.1:free`; `minimax`/`m3` → `minimax/minimax-m3:free`; `vision` → Nano-Omni).
 6. **Verifikasi:**
    - `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.648.0 — Corrected Provider Key Detection: OpenCode & MiniMax Reinstated with Verified Model Names
+
+Released 2026-09-03.
+
+Koreksi atas audit v10.647.0 yang salah membaca env var (memakai `OPENCODE_API_KEY`/`MINIMAX_API_KEY` padahal key tersimpan di `OPENCODE_KEYS`/`MINIMAX_KEYS`), sehingga OpenCode & MiniMax sempat dianggap "tanpa key" dan dihapus dari pipeline.
+
+1. **Audit Ulang dengan Nama Env Benar:**
+   - OpenCode Zen: 4 key aktif. MiniMax: 1 key aktif. OpenRouter: 5 key. Ollama: 1 key.
+   - Katalog resmi OpenCode diambil dari endpoint `GET https://opencode.ai/zen/v1/models` (66 model terdaftar).
+2. **Probe Live Model OpenCode (4 key):**
+   - Merespons OK (free tier): `nemotron-3.5-lightning-free`, `laguna-s-2.1-free`.
+   - `x-preview-f-free` (dipakai kode lama) SUDAH TIDAK DIDUKUNG -> "Model not supported" pada keempat key.
+   - Model paid (`claude-fable-5-1`, `gemini-3.8-flash`, `gpt-5.6-*`, dll) butuh kartu kredit -> `CreditsError: No payment method`.
+   - `mimo-v2.5-free` -> 429 FreeUsageLimitError; `deepseek-v4-flash-free` -> unavailable; `muse-spark-*` -> 500. Tidak dimasukkan sebagai prioritas.
+3. **Probe Live MiniMax:**
+   - `MiniMax-M3` merespons OK via API langsung (key terautentikasi).
+4. **Pipeline Diperbarui (General / Reasoning):**
+   - General cascade kini: Ollama Nano -> Ollama Gemma4 -> Ollama Super -> OpenRouter Lightning -> OpenCode Lightning/Laguna -> OpenRouter Gemma4 -> OpenRouter Super/Nano-Omni/Ultra -> MiniMax M3 direct -> OpenRouter Laguna/MiniMax/Free.
+   - Reasoning pipeline menambahkan OpenCode free + MiniMax M3 direct di lapisan cadangan.
+   - `x-preview-f-free` dan entri model OpenCode yang tak didukung dibuang seluruhnya.
+5. **Verifikasi:**
+   - `node --check` lolos; seluruh perubahan di-commit dan di-push.

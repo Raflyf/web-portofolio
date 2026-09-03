@@ -2569,8 +2569,9 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
     // Tier 3: OpenCode Zen Direct API (nemotron-lightning -> nemotron-ultra -> x-preview -> mimo)
     // ========================================================================
     function buildExecutionPipeline() {
-      // 0. MULTIMODAL & VISION PIPELINE (hasil probe live: OpenCode tanpa key -> dihapus)
-      // Model vision terverifikasi aktif: Nemotron Nano Omni (OpenRouter) & MiniMax M3 (OpenRouter).
+      // 0. MULTIMODAL & VISION PIPELINE (hasil probe live)
+      // Model vision terverifikasi aktif: Nemotron Nano Omni (OpenRouter), MiniMax M3 (OpenRouter
+      // & direct), dan Ollama Nano (fallback). OpenCode mimo-v2.5-free rawan 429 -> tidak diprioritaskan.
       if (hasImages || (model && model.toLowerCase().includes('vision')) || queryIntent.category === 'vision') {
         return [
           // Tier 1: Nemotron Nano Omni (OpenRouter - Multimodal Omni Reasoning)
@@ -2584,7 +2585,8 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         ];
       }
 
-      // 1. REASONING CHAT PIPELINE (hasil probe live; hanya provider ber-key: Ollama & OpenRouter)
+      // 1. REASONING CHAT PIPELINE (hasil probe live; semua provider ber-key: Ollama, OpenRouter,
+      // OpenCode free-tier, MiniMax direct)
       const isReasoningQuery = queryIntent.category === 'deep_reasoning' || queryIntent.effort === 'thinking' || (effectiveEffort === 'high' && queryIntent.category === 'project_architecture') || (model && (model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni')));
       if (isReasoningQuery && (!model || model === 'auto' || model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni'))) {
         const reasoningStepTimeout = 30000;
@@ -2600,7 +2602,10 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
           { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: reasoningStepTimeout },
           { provider: 'ollama', model: 'nemotron-3-super', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: reasoningStepTimeout },
-          // 5th: Cadangan aktif lain
+          // 5th: Cadangan aktif lain (OpenCode free + MiniMax direct + OpenRouter)
+          { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: reasoningStepTimeout },
+          { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: reasoningStepTimeout },
+          { provider: 'minimax', model: 'MiniMax-M3', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'openrouter/free', timeout: reasoningStepTimeout }
@@ -2706,10 +2711,15 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       //     nemotron-3-nano-omni-...-reasoning:free OK, nemotron-3-super-120b-a12b:free OK,
       //     nemotron-3-ultra-550b-a55b:free OK, poolside/laguna-s-2.1:free OK,
       //     minimax/minimax-m3:free OK, openrouter/free OK
+      //   - OpenCode Zen (4 key, free-tier): nemotron-3.5-lightning-free OK, laguna-s-2.1-free OK,
+      //     mimo-v2.5-free (429/limit), deepseek-v4-flash-free (unavailable), muse-spark (500).
+      //     Model paid butuh kartu (CreditsError), tidak dipakai.
+      //   - MiniMax Direct (1 key): MiniMax-M3 OK.
       //   - TIDAK merespons/tidak ada free: nvidia/nemotron-3-nano-30b-a3b:free (404),
-      //     ollama nemotron-3-ultra & minimax-m3 (timeout)
+      //     ollama nemotron-3-ultra & minimax-m3 (timeout), opencode x-preview-f-free (unsupported).
       // Prioritas (per permintaan user): Ollama Nano -> Ollama Gemma4 -> Ollama Super ->
-      // lalu OpenRouter Lightning -> Super/Nano-Omni/Ultra -> Laguna/MiniMax/Free.
+      // lalu OpenRouter Lightning -> OpenCode Lightning/Laguna -> OpenRouter Super/Nano-Omni/Ultra
+      // -> MiniMax M3 -> OpenRouter Laguna/MiniMax/Free.
       return [
         // === 1. PRIORITAS UTAMA: OLLAMA NANO (pilihan utama user) ===
         { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
@@ -2723,15 +2733,22 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         // === 4. NEMOTRON SERI LIGHTNING (OpenRouter) ===
         { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 18000 },
 
-        // === 5. GEMMA 4 31B (OpenRouter free - cadangan) ===
-        { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 18000 },
+        // === 5. NEMOTRON LIGHTNING (OpenCode free-tier) & LAGUNA (OpenCode) ===
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 16000 },
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 16000 },
 
-        // === 6. FLAGSHIP NEMOTRON: SUPER -> NANO-OMNI -> ULTRA (OpenRouter free) ===
+        // === 6. GEMMA 4 31B (OpenRouter free - cadangan) ===
+        { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 16000 },
+
+        // === 7. FLAGSHIP NEMOTRON: SUPER -> NANO-OMNI -> ULTRA (OpenRouter free) ===
         { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 16000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 16000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 16000 },
 
-        // === 7. MODEL AKTIF LAINNYA: LAGUNA -> MINIMAX M3 -> OPENROUTER FREE ===
+        // === 8. MINIMAX M3 DIRECT (terverifikasi OK) ===
+        { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
+
+        // === 9. MODEL AKTIF LAINNYA: LAGUNA -> MINIMAX M3 -> OPENROUTER FREE ===
         { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: 15000 },
         { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 15000 },
         { provider: 'openrouter', model: 'openrouter/free', timeout: 15000 }
