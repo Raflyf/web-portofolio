@@ -206,10 +206,12 @@ const CustomSelectEffort = ({ value, onChange }) => {
  * menghitung kolom header, dan memecah sel-sel data ke baris-baris GFM yang valid.
  */
 function repairMarkdownTables(content) {
-  if (!content || !content.includes('|')) return content;
-  const tableRegex = /(\|[^\n|]+(?:\|[^\n|]+)+\|?)\s*\n*\s*(\|[-: ]+(?:\|[-: ]+)+\|?)\s*([^\n#]+)/g;
+  if (!content) return content;
+  let out = content;
 
-  return content.replace(tableRegex, (match, headerRaw, dividerRaw, dataRaw) => {
+  // 1. Rekonstruksi tabel standar yang baris datanya menyatu setelah divider
+  const tableRegex = /(\|[^\n|]+(?:\|[^\n|]+)+\|?)\s*\n*\s*(\|[-: ]+(?:\|[-: ]+)+\|?)\s*([^\n#]+)/g;
+  out = out.replace(tableRegex, (match, headerRaw, dividerRaw, dataRaw) => {
     const headerCols = headerRaw.split('|').map(s => s.trim()).filter(Boolean);
     const numCols = headerCols.length;
     if (numCols === 0) return match;
@@ -230,6 +232,51 @@ function repairMarkdownTables(content) {
 
     return `\n\n${standardHeader}\n${standardDivider}\n${rowLines.join('\n')}\n\n`;
   });
+
+  // 2. Rekonstruksi baris data orphan yang menggunakan format tab atau sel horizontal tanpa divider
+  const lines = out.split('\n');
+  const outLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // A. Ubah baris bertab (tab-separated) menjadi baris tabel GFM resmi
+    if (line.includes('\t')) {
+      const tabParts = line.split('\t').map(s => s.trim()).filter(Boolean);
+      if (tabParts.length >= 2) {
+        const isHeader = /komponen|teknologi|aspek|keterbatasan|fitur|layer|kategori/i.test(tabParts[0] + ' ' + tabParts[1]);
+        outLines.push('| ' + tabParts.join(' | ') + ' |');
+        if (isHeader) {
+          outLines.push('| ' + tabParts.map(() => '---').join(' | ') + ' |');
+        }
+        continue;
+      }
+    }
+
+    // B. Deteksi baris yang diawali '|' dan memiliki banyak pipe (>= 4 sel terpisah)
+    if (line.startsWith('|') && (line.match(/\|/g) || []).length >= 4) {
+      const cells = line.split('|').map(s => s.trim()).filter(Boolean);
+      const prevLine = (outLines[outLines.length - 1] || '').trim();
+      const prevPrevLine = (outLines[outLines.length - 2] || '').trim();
+
+      let numCols = 2; // Default 2 kolom
+      if (cells.length % 3 === 0 && (cells.length % 2 !== 0 || /solusi|potensial|penjelasan|deskripsi/i.test(prevLine + ' ' + prevPrevLine))) {
+        numCols = 3;
+      } else if (cells.length % 2 === 0) {
+        numCols = 2;
+      }
+
+      for (let c = 0; c < cells.length; c += numCols) {
+        const rowChunk = cells.slice(c, c + numCols);
+        while (rowChunk.length < numCols) rowChunk.push('-');
+        outLines.push('| ' + rowChunk.join(' | ') + ' |');
+      }
+    } else {
+      outLines.push(lines[i]);
+    }
+  }
+
+  return outLines.join('\n');
 }
 
 /**
@@ -731,7 +778,7 @@ export default function TerminalAI({ onClose } = {}) {
   const terminalContent = (
     <div 
       className={cn(
-        isTerminalPopupOpen ? "fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4 sm:p-8" : "relative w-full"
+        isTerminalPopupOpen ? "fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-2 sm:p-4" : "relative w-full"
       )}
       onClick={(e) => {
         if (isTerminalPopupOpen && e.target === e.currentTarget) {
@@ -741,11 +788,11 @@ export default function TerminalAI({ onClose } = {}) {
     >
       <div className={cn(
         "w-full max-w-5xl mx-auto flex flex-col overflow-hidden liquid-glass-strong font-mono text-sm relative transition-all duration-300",
-        isTerminalPopupOpen ? "h-[85vh] shadow-[0_0_50px_rgba(34,211,238,0.15)] glass-spring-in" : "h-150 sm:h-175"
+        isTerminalPopupOpen ? "h-[94vh] sm:h-[92vh] shadow-[0_0_50px_rgba(34,211,238,0.15)] glass-spring-in" : "h-150 sm:h-175"
       )}>
         
         {/* Terminal App Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-white/10 bg-slate-100 dark:bg-slate-950/80 shrink-0">
+        <div className="flex items-center justify-between px-3.5 py-1.5 border-b border-zinc-200 dark:border-white/10 bg-slate-100 dark:bg-slate-950/80 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-700 dark:text-slate-400 uppercase">
               Terminal Developer Lab & AI Assistant
@@ -765,66 +812,66 @@ export default function TerminalAI({ onClose } = {}) {
         </div>
   
         {/* Control Bar (Riwayat, Baru, Pop-up) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-white/10 liquid-glass-inset gap-3 shrink-0 relative z-20">
-          <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-3.5 py-1.5 border-b border-zinc-200 dark:border-white/10 liquid-glass-inset gap-2 shrink-0 relative z-20">
+          <div className="flex items-center gap-2.5 shrink-0">
             <div className="flex gap-1.5 shrink-0">
-              <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
             </div>
-            <span className="text-zinc-700 dark:text-zinc-400 text-xs sm:text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
+            <span className="text-zinc-700 dark:text-zinc-400 text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap">
               rafly@portfolio-lab:~ (bash / AI Engine)
             </span>
           </div>
           
-          <div className="flex items-center flex-wrap gap-2 sm:gap-3 text-xs text-zinc-700 dark:text-zinc-400 font-medium pb-1 sm:pb-0 w-full sm:w-auto">
-            <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-1.5 hover:text-zinc-900 dark:hover:text-white transition px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0 cursor-pointer">
-              <Clock className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> Riwayat
+          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 text-xs text-zinc-700 dark:text-zinc-400 font-medium w-full sm:w-auto">
+            <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 text-[11px] shrink-0 cursor-pointer">
+              <Clock className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> Riwayat
             </button>
-            <button onClick={handleNewChat} className="flex items-center gap-1.5 hover:text-emerald-950 dark:hover:text-white transition px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 shrink-0 cursor-pointer">
-              <Plus className="w-3.5 h-3.5" /> Baru
+            <button onClick={handleNewChat} className="flex items-center gap-1 hover:text-emerald-950 dark:hover:text-white transition px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 text-[11px] shrink-0 cursor-pointer">
+              <Plus className="w-3 h-3" /> Baru
             </button>
             
-            <div className="hidden sm:block h-4 w-px bg-zinc-300 dark:bg-white/20 mx-1"></div>
+            <div className="hidden sm:block h-3.5 w-px bg-zinc-300 dark:bg-white/20 mx-0.5"></div>
             
-            <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0" title={`Model AI Aktif: ${selectedModel.toUpperCase()}`}>
+            <div className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 shrink-0 text-[11px]" title={`Model AI Aktif: ${selectedModel.toUpperCase()}`}>
               <span className="text-zinc-600 dark:text-zinc-400">Model:</span> 
-              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-400 font-bold px-2 py-0.5 rounded text-[10px] uppercase">
+              <span className="bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-400 font-bold px-1.5 py-0.5 rounded text-[9px] uppercase">
                 {selectedModel === 'auto' ? 'AUTO ROUTER' : selectedModel}
               </span>
             </div>
 
-            <div className="hidden sm:block h-4 w-px bg-zinc-300 dark:bg-white/20 mx-1"></div>
+            <div className="hidden sm:block h-3.5 w-px bg-zinc-300 dark:bg-white/20 mx-0.5"></div>
 
-            <div className="flex items-center gap-1.5 shrink-0" title="Pilih Reasoning Effort & Thinking Mode">
-              <span className="text-zinc-600 dark:text-zinc-400 text-xs hidden xs:inline">Effort:</span>
+            <div className="flex items-center gap-1 shrink-0" title="Pilih Reasoning Effort & Thinking Mode">
+              <span className="text-zinc-600 dark:text-zinc-400 text-[11px] hidden xs:inline">Effort:</span>
               <CustomSelectEffort value={effort} onChange={(val) => setEffort(val)} />
             </div>
           </div>
         </div>
 
       {/* Shortcut Bar */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-200 dark:border-white/5 bg-slate-100/70 dark:bg-slate-900/40 overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
-        <span className="text-[10px] sm:text-xs text-zinc-500 font-medium mr-1">Pintasan:</span>
+      <div className="flex items-center gap-1.5 px-3 py-1 border-b border-zinc-200 dark:border-white/5 bg-slate-100/70 dark:bg-slate-900/40 overflow-x-auto no-scrollbar whitespace-nowrap shrink-0">
+        <span className="text-[10px] text-zinc-500 font-medium mr-1">Pintasan:</span>
         {["skills", "projects", "certifs", "benchmarks", "models", "ai-status", "about", "contact"].map(cmd => (
           <button 
             key={cmd}
             onClick={() => handleShortcutClick(`/${cmd}`)}
-            className="text-[10px] sm:text-xs px-2.5 py-1 rounded-md bg-white dark:bg-white/5 hover:bg-cyan-50 dark:hover:bg-cyan-500/20 text-zinc-700 dark:text-zinc-400 hover:text-cyan-700 dark:hover:text-cyan-300 border border-zinc-200 dark:border-transparent hover:border-cyan-300 dark:hover:border-cyan-500/30 transition-all shrink-0 cursor-pointer shadow-xs"
+            className="text-[10px] px-2 py-0.5 rounded bg-white dark:bg-white/5 hover:bg-cyan-50 dark:hover:bg-cyan-500/20 text-zinc-700 dark:text-zinc-400 hover:text-cyan-700 dark:hover:text-cyan-300 border border-zinc-200 dark:border-transparent hover:border-cyan-300 dark:hover:border-cyan-500/30 transition-all shrink-0 cursor-pointer shadow-2xs"
           >
             {cmd}
           </button>
         ))}
         <button 
           onClick={() => setMessages([{ role: 'system', content: 'Console cleared.', time: getCurrentTime() }])}
-          className="text-[10px] sm:text-xs px-2.5 py-1 rounded-md bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 border border-red-200 dark:border-transparent hover:border-red-300 dark:hover:border-red-500/30 transition-all ml-auto shrink-0 cursor-pointer shadow-xs"
+          className="text-[10px] px-2 py-0.5 rounded bg-red-100 dark:bg-red-500/10 hover:bg-red-200 dark:hover:bg-red-500/20 text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 border border-red-200 dark:border-transparent hover:border-red-300 dark:hover:border-red-500/30 transition-all ml-auto shrink-0 cursor-pointer shadow-2xs"
         >
           clear
         </button>
       </div>
 
       {/* Terminal Body (Messages) */}
-      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-4 sm:p-6 space-y-6 scroll-smooth bg-black/20">
+      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3.5 sm:p-5 space-y-4 scroll-smooth bg-black/20">
         {messages.map((msg, idx) => (
           <div key={idx} className={cn("flex flex-col w-full mb-2", msg.role === 'user' ? "items-end" : "items-start")}>
             
@@ -996,15 +1043,15 @@ export default function TerminalAI({ onClose } = {}) {
     )}
 
       {/* Terminal Input Area */}
-      <div className="p-3 sm:p-4 liquid-glass-inset border-t border-white/10 relative z-10 shrink-0">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+      <div className="p-2 sm:p-2.5 px-3 sm:px-4 liquid-glass-inset border-t border-white/10 relative z-10 shrink-0">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-1.5">
           {/* FIX M4: attachment chips row */}
           {attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {attachments.map((att, idx) => (
                 <span
                   key={`${att.name}-${idx}`}
-                  className="inline-flex items-center gap-1.5 max-w-47.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300"
+                  className="inline-flex items-center gap-1.5 max-w-47.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300"
                 >
                   <span className="truncate">{att.name}</span>
                   <button
@@ -1023,16 +1070,16 @@ export default function TerminalAI({ onClose } = {}) {
             <p className="text-[10px] font-medium text-rose-400" role="alert">{attachError}</p>
           )}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full relative">
-            <span className="hidden sm:block text-cyan-400 font-semibold text-sm whitespace-nowrap pl-2">rafly@Lab:~$</span>
+            <span className="hidden sm:block text-cyan-400 font-semibold text-xs whitespace-nowrap pl-1">rafly@Lab:~$</span>
             <div className="flex-1 relative flex items-center w-full">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute left-3 text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="absolute left-2.5 text-zinc-500 hover:text-zinc-300 transition-colors"
                 aria-label="Lampirkan file"
                 title="Lampirkan file (teks/kode/gambar)"
               >
-                <Paperclip className="w-4 h-4" />
+                <Paperclip className="w-3.5 h-3.5" />
               </button>
               <input
                 ref={fileInputRef}
@@ -1050,7 +1097,7 @@ export default function TerminalAI({ onClose } = {}) {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Ketik perintah atau tanya sesuatu... (misal: 'buatkan ringkasan')"
-                className="w-full liquid-glass-inset border border-indigo-500/30 text-white rounded-xl py-3 sm:py-3.5 pl-10 pr-12 sm:pr-14 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-zinc-500 transition-all text-sm"
+                className="w-full liquid-glass-inset border border-indigo-500/30 text-white rounded-xl py-2 sm:py-2.5 pl-8.5 pr-11 sm:pr-12 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-zinc-500 transition-all text-xs sm:text-sm"
                 disabled={isLoading}
               />
               
@@ -1073,13 +1120,13 @@ export default function TerminalAI({ onClose } = {}) {
               <button
                 type="submit"
                 disabled={(!input.trim() && attachments.length === 0) || isLoading}
-                className="absolute right-2 p-2 sm:p-2.5 bg-linear-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="absolute right-1.5 p-1.5 sm:p-2 bg-linear-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
               >
-                {isLoading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <Send className="w-4 h-4 sm:w-5 sm:h-5" />}
+                {isLoading ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </button>
             </div>
           </div>
-          <p className="text-center text-[9px] sm:text-[10px] text-zinc-500 mt-1">
+          <p className="text-center text-[8.5px] sm:text-[9px] text-zinc-500/80 mt-0.5">
             Catatan: Jawaban dihasilkan otomatis oleh AI Model. Harap verifikasi informasi penting secara mandiri.
           </p>
         </form>
