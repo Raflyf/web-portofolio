@@ -1087,6 +1087,13 @@ Released 2026-09-03.
    - Memperbaiki pemisahan angka langkah kerja berurutan (alur kerja `1. `, `2. `, `3. `) agar tersambung utuh dengan kalimatnya tanpa angka orphan di ujung kalimat atau tersisip bullet liar di depannya.
    - Mengeliminasi bug regex `[^\n]` yang sebelumnya memotong satu huruf di ujung baris sebelum spasi/newline.
 
+### v10.634.0 — Dashboard Auto Router Count Sync Fix
+
+Released 2026-09-03.
+1. **Sinkronisasi Total Resolusi Router dengan Jumlah Card Model (`Dashboard.jsx`):**
+   - Memperbaiki hitungan `autoRouterCount` pada banner "Total Resolusi Router" yang sebelumnya hanya menghitung event yang terdeteksi melalui Auto Router (via filter `isAutoRouted`), sementara jumlah total dari 16 card individual model lebih besar karena mencakup event pemilihan model manual oleh pengguna.
+   - `autoRouterCount` kini dihitung dari `Object.values(modelCounts).reduce()` sehingga nilainya selalu sinkron 100% dengan jumlah total seluruh card model individual (auto + manual).
+
 
 
 
