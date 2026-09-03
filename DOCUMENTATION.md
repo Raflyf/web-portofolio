@@ -1318,3 +1318,22 @@ Menindaklanjuti laporan produksi: kueri lanskap (mis. "model ai terbaik saat ini
    - Menambahkan arahan sintesis yang melarang model mengutip judul artikel mentah berulang-ulang dan mencantumkan judul nyaris identik sebagai entri terpisah; model wajib memparafrasa isi berita.
 4. **Verifikasi:**
    - `node --check` lolos; uji latensi 5 kueri terkonsolidasi = 769ms; echo-guard teruji memangkas duplikat.
+
+### v10.645.0 — 504 Root-Cause Fixes: Parallel Body Reads, Supabase Timeouts & Fast Model Failover
+
+Released 2026-09-03.
+
+Menindaklanjuti laporan produksi berulang (HTTP 504) pada kueri berita spesifik seperti "apa hp terbaru dari xiaomi". Investigasi mengungkap 3 akar penyebab waktu yang menggerus budget 60 detik Vercel hingga habis.
+
+1. **Baca Body RSS/JSON Secara Paralel (`searchWebContext`):**
+   - Sebelumnya seluruh body feed dibaca SERIAL di dalam loop `for` (`await res.value.text()`), sehingga 8-14 feed ratusan KB di-download satu per satu dan bisa memakan 10-20+ detik tambahan.
+   - Kini seluruh body dibaca PARALEL (`Promise.all` atas `res.text()`), dan `clearTimeout` ditahan sampai seluruh body terbaca agar fase unduh tetap dalam pagar waktu pencarian (6 detik) yang meng-abort bila ada feed macet.
+   - Terverifikasi: fase pencarian penuh kueri Xiaomi = 2.067ms download + 2ms parse (total ~2.1 detik), dengan 56 bukti unik.
+2. **Kapasitas Parsing Diturunkan:**
+   - `maxItemsPerFeed` untuk feed umum diturunkan ke 6, untuk lanskap ke 8 (sebelumnya 10), mengurangi volume item mentah yang di-parse tanpa mengorbankan cakupan setelah dedupe judul ternormalisasi.
+3. **Timeout Supabase Anti-Hang (Semua Endpoint):**
+   - Menambahkan helper `fetchWithHardTimeout` (3-3.5 detik) pada seluruh fetch Supabase: `persistRateLimit`, pengecekan `isRateLimited`, pembacaan `fetchServerMemories`, dan `saveServerMemory`. Cold start / Supabase lambat tidak lagi menggantung request tanpa batas.
+4. **Fast Failover Pipeline Model (Mode Auto):**
+   - Connect timeout diturunkan ke 8 detik dan active-thinking timeout mode auto dari 30 detik menjadi maksimal 12 detik per step. Provider pertama yang padat/antre kini cepat dialihkan ke fallback, mencegah satu step membakar separuh budget 60 detik dan step berikutnya kehabisan waktu.
+5. **Verifikasi:**
+   - `node --check` lolos; pengukuran fase pencarian = ~2.1 detik; seluruh perubahan di-commit dan di-push.
