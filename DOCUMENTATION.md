@@ -1054,6 +1054,14 @@ Released 2026-09-03.
    - Mengubah label header bubble pesan AI dari `Auto Router -> NEMOTRON-3-NANO:30B (Ollama Cloud SOTA Engine)` menjadi `Auto Router -> SOTA AI Engine (Cloud Neural Gateway)`.
    - Mencegah kebocoran nama model teknis backend di antarmuka terminal pengunjung sesuai aturan privasi sistem.
 
+### v10.630.0 — Handle Username Omission (@Raflyf Removal)
+
+Released 2026-09-03.
+1. **Pembersihan Handle Username (@Raflyf):**
+   - Menghapus penyebutan handle `(@Raflyf)` dari instruksi prompt identitas sistem di [`api/chat.js`](file:///d:/code/project/portofolio%20landing%20page/api/chat.js). Asisten diinstruksikan untuk hanya menyebut nama "Rafly Firmansyah" secara wajar tanpa embel-embel username/handle.
+   - Menambahkan filter pembersihan ganda di pipeline backend `sendSuccess` dan normalizer frontend `normalizeStructuredMarkdown` di [`src/components/terminal/TerminalAI.jsx`](file:///d:/code/project/portofolio%20landing%20page/src/components/terminal/TerminalAI.jsx) untuk menghapus pola `\s*\(@?Raflyf\)` dan `\s*@Raflyf\b` secara otomatis dari seluruh teks respon.
+
+
 
 
 
