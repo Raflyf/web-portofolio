@@ -957,11 +957,22 @@ Released 2026-09-03.
 
 Released 2026-09-03.
 1. **Arsitektur Dual-Phase Adaptive Timeout (`fetchJsonWithTimeout`):**
-   - **Phase 1: Fast Initial Liveness Detection (Connect Timeout 6.5s):** Jika server offline, hang, endpoint mati, atau tidak mengembalikan header respons awal dalam 6.5 detik, request segera di-abort dan alur dialihkan seketika ke model berikutnya dalam cascade tanpa menunggu sia-sia.
-   - **Phase 2: Uncapped Active Thinking (Active Timeout hingga 55s):** Begitu status `200 OK` diterima dari provider, connect timeout dibatalkan seketika dan batas waktu berpikir model diperluas penuh hingga sisa anggaran waktu runtime serverless (55–58 detik). Model yang aktif merespons dibiarkan memproses instruksi atau penalaran panjang sampai tuntas tanpa dipotong timeout pendek.
+   - **Phase 1: Fast Initial Liveness Detection (Connect Timeout 15s):** Alokasi waktu cukup bagi model dan web search; jika server offline, hang, atau endpoint mati, request segera di-abort dan dialihkan seketika ke model berikutnya.
+   - **Phase 2: Uncapped Active Thinking (Active Timeout hingga 55s):** Begitu status `200 OK` diterima dari provider, connect timeout dibatalkan seketika dan batas waktu berpikir model diperluas penuh hingga sisa anggaran waktu runtime serverless (55–58 detik).
 2. **Instant Failover pada Limit Kuota & Error Provider:**
-   - Deteksi langsung status `402` (Payment/Quota Required), `429` (Rate Limited), `404` (Model Not Found), dan `5xx` (Server Error).
-   - Seluruh caller wrapper (`callOpenRouter`, `callOpenCode`, `callOllama`, `callNvidiaNim`, `callMiniMax`) kini memicu `break` instan ketika mendeteksi kode error tersebut pada mode auto-cascade, mengeliminasi delay retry yang tidak berguna dan langsung meloncat ke model berikutnya di hierarki.
+   - Deteksi langsung status `402` (Payment/Quota Required), `429` (Rate Limited), `404` (Model Not Found), dan `5xx` (Server Error) untuk langsung meloncat ke model berikutnya tanpa retry sia-sia.
+
+### v10.622.0 — Dual-Mode Visual Assistant Indicator & Zero-Noise Scratchpad Sanitization
+
+Released 2026-09-03.
+1. **Dua Mode Keterangan Status Asisten di UI Terminal (`TerminalAI.jsx`):**
+   - **Mode 1 (API Request):** Saat kueri baru dikirimkan pengguna, indikator menampilkan badge `[API REQUEST]` warna amber dengan teks `Menghubungkan ke API Gateway & mencari data...` serta ikon antena berdenyut.
+   - **Mode 2 (Thinking):** Ketika gateway terhubung dan model merespons aktif, indikator beralih mulus ke badge `[THINKING]` warna cyan dengan teks `Model merespons (OK), sedang berpikir & menyusun respons...` serta spinner cyan dinamis.
+2. **Eliminasi Total Noise & Kebocoran Scratchpad (`api/chat.js` & `TerminalAI.jsx`):**
+   - Menerapkan *surgical regex stripper* dua lapis (serverless backend dan client UI) untuk menyaring monolog internal, checklist constraint (`- Check constraints: ...`), struktur respons (`Response structure: ...`), draf, maupun rencana akhir (`Final plan: ...`) yang sempat bocor dari model penalaran.
+   - Menambahkan larangan eksplisit pada *system prompt* agar model tidak mengulang aturan sistem atau memverbalisasi batasan di jawaban akhir.
+   - Mengalibrasi `connectTimeout` ke 15 detik agar model prioritas utama (`nemotron-3-nano:30b`) tidak ter-abort prematur saat ada pencarian berita web aktif.
+
 
 
 
