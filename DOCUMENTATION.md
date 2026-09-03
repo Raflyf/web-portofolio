@@ -1061,6 +1061,13 @@ Released 2026-09-03.
    - Menghapus penyebutan handle `(@Raflyf)` dari instruksi prompt identitas sistem di [`api/chat.js`](file:///d:/code/project/portofolio%20landing%20page/api/chat.js). Asisten diinstruksikan untuk hanya menyebut nama "Rafly Firmansyah" secara wajar tanpa embel-embel username/handle.
    - Menambahkan filter pembersihan ganda di pipeline backend `sendSuccess` dan normalizer frontend `normalizeStructuredMarkdown` di [`src/components/terminal/TerminalAI.jsx`](file:///d:/code/project/portofolio%20landing%20page/src/components/terminal/TerminalAI.jsx) untuk menghapus pola `\s*\(@?Raflyf\)` dan `\s*@Raflyf\b` secara otomatis dari seluruh teks respon.
 
+### v10.631.0 — Restored Dynamic Model Header in Terminal UI
+
+Released 2026-09-03.
+1. **Pemulihan Label Header Model Dinamis (`TerminalAI.jsx`):**
+   - Mengembalikan label header bubble pesan AI agar menampilkan nama model dan provider aktif secara dinamis sesuai yang sebenarnya digunakan (misal `Auto Router -> NEMOTRON-3-NANO:30B (Ollama Cloud SOTA Engine)`), menjaga transparansi engine aktif bagi pengguna.
+
+
 
 
 

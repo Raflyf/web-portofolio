@@ -567,21 +567,19 @@ export default function TerminalAI({ onClose } = {}) {
       // Telemetry Chat Logging (Kueri dicatat ke telemetry event, bukan ke basis data RAG)
       telemetry.logEvent('ai_query_sent', currentChosenModel, userQuery.slice(0, 100));
 
-      // Format model name & provider for message header (Private & Clean)
-      const actualModel = data.model || currentChosenModel || 'sota-engine';
+      // Format model name & provider for message header
+      const actualModel = data.model || currentChosenModel || 'nemotron-3-nano:30b';
+      const providerName = data.provider || (actualModel.includes('nano') ? 'Ollama Cloud SOTA Engine' : 'AI Gateway');
       const isAuto = !currentChosenModel || currentChosenModel === 'auto';
       const headerModelName = isAuto
-        ? 'Auto Router -> SOTA AI Engine'
-        : actualModel.toUpperCase().replace(/^NVIDIA\//i, '');
-      const displayProvider = isAuto
-        ? '(Cloud Neural Gateway)'
-        : (data.provider ? `(${data.provider})` : '(AI Gateway)');
+        ? `Auto Router -> ${actualModel.toUpperCase().replace(/^NVIDIA\//i, '')}`
+        : actualModel.toUpperCase();
 
       // Log accurate multi-model event to telemetry with auto prefix for smart cascade routing
       const targetModel = isAuto ? `auto:${actualModel}` : actualModel;
       const routeLabel = isAuto
-        ? `[Auto Router -> ${actualModel}] [${displayProvider}] effort:${effort}`
-        : `[Direct -> ${actualModel}] [${displayProvider}] effort:${effort}`;
+        ? `[Auto Router -> ${actualModel}] [${providerName}] effort:${effort}`
+        : `[Direct -> ${actualModel}] [${providerName}] effort:${effort}`;
       telemetry.logEvent('ai_chat', targetModel, routeLabel);
 
       // Typewriter Effect Streaming
@@ -591,7 +589,7 @@ export default function TerminalAI({ onClose } = {}) {
         role: 'ai',
         content: '',
         modelName: headerModelName,
-        providerName: displayProvider,
+        providerName: `(${providerName})`,
         effort: effort,
         time: getCurrentTime(),
         isTyping: true
@@ -910,10 +908,10 @@ export default function TerminalAI({ onClose } = {}) {
                     <Cpu className="w-3 h-3 text-cyan-400" />
                   </div>
                   <span className="text-[10px] sm:text-xs font-semibold text-cyan-400">
-                    {msg.modelName || (msg.isStatic ? "System Engine" : "Auto Router -> SOTA AI Engine")}
+                    {msg.modelName || (msg.isStatic ? "System Engine" : "Auto Router -> NEMOTRON 3 NANO")}
                     {!msg.isStatic && <span className="text-zinc-500 mx-1 uppercase">[Effort: {msg.effort || effort}]</span>}
                   </span>
-                  {!msg.isStatic && <span className="hidden lg:inline text-[10px] text-zinc-500">{msg.providerName || "(Cloud Neural Gateway)"}</span>}
+                  {!msg.isStatic && <span className="hidden lg:inline text-[10px] text-zinc-500">{msg.providerName || "(Ollama Cloud SOTA Engine)"}</span>}
                   <span className="text-[10px] sm:text-xs text-zinc-500 font-medium sm:ml-2">{msg.time || getCurrentTime()}</span>
                   
                   <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
