@@ -120,14 +120,46 @@ ${effortDirective}
 - **Kontak Resmi**: GitHub https://github.com/Raflyf | Email mailto:raflyfirmansyah02@gmail.com | WhatsApp https://wa.me/628991333323`;
 }
 
-async function fetchJsonWithTimeout(url, options, timeoutMs = 25000) {
+async function fetchJsonWithTimeout(url, options, timeoutConfig = 25000) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(new Error(`Timeout of ${timeoutMs}ms exceeded`)), timeoutMs);
+  const connectTimeoutMs = typeof timeoutConfig === 'object' 
+    ? (timeoutConfig.connectTimeoutMs || 7000) 
+    : Math.min(typeof timeoutConfig === 'number' ? timeoutConfig : 7000, 7000);
+  const activeTimeoutMs = typeof timeoutConfig === 'object' 
+    ? (timeoutConfig.activeTimeoutMs || 55000) 
+    : 55000;
+
+  // Phase 1: Deteksi Liveness Awal (Jika server offline/hang/tidak merespons awal)
+  let isResponding = false;
+  let activeTimer = null;
+  const connectTimer = setTimeout(() => {
+    if (!isResponding) {
+      controller.abort(new Error(`Initial connection timeout (${connectTimeoutMs}ms): model tidak merespon atau tidak aktif`));
+    }
+  }, connectTimeoutMs);
+
   try {
     const res = await fetch(url, { ...options, signal: controller.signal });
+    isResponding = true;
+    clearTimeout(connectTimer);
+
+    // Jika model terdeteksi error, limit, atau tidak aktif (402, 429, 404, 5xx):
+    // Langsung kembalikan respons gagal seketika agar caller failover ke model berikutnya tanpa menunda
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      let errJson = null;
+      try { errJson = JSON.parse(errText); } catch (_) {}
+      return { ok: false, status: res.status, data: errJson, text: errText };
+    }
+
+    // Phase 2: Model Merespons & Aktif (Biarkan terus berpikir dengan batas waktu penuh hingga 55s)
+    activeTimer = setTimeout(() => {
+      controller.abort(new Error(`Active thinking timeout of ${activeTimeoutMs}ms exceeded`));
+    }, activeTimeoutMs);
+
     const contentType = res.headers.get('content-type') || '';
     
-    // 1. High-Speed SSE Event Stream Reader: Exit immediately upon seeing [DONE] tag
+    // A. High-Speed SSE Event Stream Reader: Stream reader dinamis
     if (contentType.includes('text/event-stream') || contentType.includes('event-stream')) {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -141,27 +173,28 @@ async function fetchJsonWithTimeout(url, options, timeoutMs = 25000) {
           break;
         }
       }
-      clearTimeout(timer);
-      return { ok: res.ok, status: res.status, data: null, text: accumulated };
+      if (activeTimer) clearTimeout(activeTimer);
+      return { ok: true, status: res.status, data: null, text: accumulated };
     }
 
-    // 2. Standard JSON Payload
+    // B. Standard JSON Payload
     if (contentType.includes('application/json')) {
       const json = await res.json();
-      clearTimeout(timer);
-      return { ok: res.ok, status: res.status, data: json, text: '' };
+      if (activeTimer) clearTimeout(activeTimer);
+      return { ok: true, status: res.status, data: json, text: '' };
     }
 
-    // 3. Fallback Raw Text
+    // C. Fallback Raw Text
     const text = await res.text();
-    clearTimeout(timer);
+    if (activeTimer) clearTimeout(activeTimer);
     let json = null;
     try {
       json = JSON.parse(text);
     } catch (_) {}
-    return { ok: res.ok, status: res.status, data: json, text };
+    return { ok: true, status: res.status, data: json, text };
   } catch (err) {
-    clearTimeout(timer);
+    clearTimeout(connectTimer);
+    if (activeTimer) clearTimeout(activeTimer);
     throw err;
   }
 }
@@ -1628,13 +1661,14 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
 
     const isSpecificManual = !!(model && model !== 'auto' && model !== 'default' && model !== 'cascade');
 
-    async function callOpenRouter(mName, tOut = 55000) {
+    async function callOpenRouter(mName, timeoutConfig = 55000) {
       if (OPENROUTER_KEYS.length === 0) return null;
-      const stepDeadline = Date.now() + tOut;
+      const connectTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.connectTimeoutMs || 6500) : 6500;
+      const activeTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.activeTimeoutMs || 55000) : (typeof timeoutConfig === 'number' ? timeoutConfig : 55000);
+      const stepDeadline = Date.now() + activeTimeout;
       const now = Date.now();
-      // Filter out temporarily rate-limited keys and load-balance across active keys
       let activeKeys = OPENROUTER_KEYS.filter(k => !rateLimitedKeyCache.has(k) || rateLimitedKeyCache.get(k) < now);
-      if (activeKeys.length === 0) activeKeys = OPENROUTER_KEYS; // Fallback if all are marked
+      if (activeKeys.length === 0) activeKeys = OPENROUTER_KEYS;
       const keysToTry = isSpecificManual ? [...activeKeys].sort(() => Math.random() - 0.5) : [...activeKeys].sort(() => Math.random() - 0.5).slice(0, 2);
 
       const formattedMessages = openRouterMessages;
@@ -1642,7 +1676,6 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       for (const orKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 25000);
 
         try {
           const isReasoningModel = mName.toLowerCase().includes('reasoning') || mName.toLowerCase().includes('r1') || mName.toLowerCase().includes('thinking') || mName.toLowerCase().includes('qwq');
@@ -1663,12 +1696,12 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
               temperature: tempConfig,
               reasoning: (!isLightning && isReasoningModel) ? { effort: (effectiveEffort === 'low' ? 'medium' : 'high') } : undefined
             })
-          }, perKeyTimeout);
+          }, { connectTimeoutMs: connectTimeout, activeTimeoutMs: remaining });
 
           if (res.ok) {
             if (res.data?.error) {
               providerErrors.push(`OpenRouter ${mName}: ${res.data.error.message || 'Error'}`);
-              if (!isSpecificManual) break; // Model error, advance cascade
+              if (!isSpecificManual) break;
               continue;
             }
             const msg = res.data?.choices?.[0]?.message;
@@ -1681,30 +1714,31 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             }
           } else if (res.status === 402 || res.status === 429) {
             if (res.status === 429) {
-              rateLimitedKeyCache.set(orKey, Date.now() + 15 * 60 * 1000); // Cache 15 menit
+              rateLimitedKeyCache.set(orKey, Date.now() + 15 * 60 * 1000);
             }
-            providerErrors.push(`OpenRouter ${mName} [Key #${OPENROUTER_KEYS.indexOf(orKey) + 1}]: HTTP ${res.status} (Rate limited / Quota exhausted, switching key)`);
+            providerErrors.push(`OpenRouter ${mName} [Key #${OPENROUTER_KEYS.indexOf(orKey) + 1}]: HTTP ${res.status} (Rate limited / Quota exhausted)`);
+            if (!isSpecificManual) break;
             continue;
           } else {
             providerErrors.push(`OpenRouter ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
-            if (!isSpecificManual) break; // Server/model issue, advance cascade
+            if (!isSpecificManual) break;
             continue;
           }
         } catch (err) {
           providerErrors.push(`OpenRouter ${mName} [Key #${OPENROUTER_KEYS.indexOf(orKey) + 1}]: ${err.message}`);
-          if (!isSpecificManual && (err.name === 'AbortError' || err.message.includes('Timeout') || err.message.includes('abort'))) {
-            break; // Timed out on this model, advance immediately to next model in cascade
-          }
+          if (!isSpecificManual) break;
           continue;
         }
       }
       return null;
     }
 
-    async function callOpenCode(mName, tOut = 55000) {
+    async function callOpenCode(mName, timeoutConfig = 55000) {
       if (OPENCODE_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^opencode\//i, '');
-      const stepDeadline = Date.now() + tOut;
+      const connectTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.connectTimeoutMs || 6500) : 6500;
+      const activeTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.activeTimeoutMs || 55000) : (typeof timeoutConfig === 'number' ? timeoutConfig : 55000);
+      const stepDeadline = Date.now() + activeTimeout;
       const now = Date.now();
       let activeKeys = OPENCODE_KEYS.filter(k => !rateLimitedKeyCache.has(k) || rateLimitedKeyCache.get(k) < now);
       if (activeKeys.length === 0) activeKeys = OPENCODE_KEYS;
@@ -1713,7 +1747,6 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
       for (const opKey of keysToTry) {
         const remaining = stepDeadline - Date.now();
         if (remaining < 800) break;
-        const perKeyTimeout = Math.min(remaining, isSpecificManual ? 45000 : 25000);
 
         try {
           const isLightning = cleanModelName.toLowerCase().includes('lightning');
@@ -1730,7 +1763,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
               temperature: tempConfig,
               reasoning_effort: isLightning ? undefined : (effectiveEffort === 'low' ? 'medium' : 'high')
             })
-          }, perKeyTimeout);
+          }, { connectTimeoutMs: connectTimeout, activeTimeoutMs: remaining });
 
           if (res.ok) {
             const msg = res.data?.choices?.[0]?.message;
@@ -1743,27 +1776,29 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             }
           } else if (res.status === 402 || res.status === 429) {
             rateLimitedKeyCache.set(opKey, Date.now() + 15 * 60 * 1000);
-            providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(opKey) + 1}]: HTTP ${res.status} (Rate limited, switching key)`);
+            providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(opKey) + 1}]: HTTP ${res.status} (Rate limited)`);
+            if (!isSpecificManual) break;
             continue;
           } else {
             providerErrors.push(`OpenCode Zen ${mName} HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            if (!isSpecificManual) break;
             continue;
           }
         } catch (err) {
           providerErrors.push(`OpenCode Zen ${mName} [Key #${OPENCODE_KEYS.indexOf(opKey) + 1}]: ${err.message}`);
-          if (!isSpecificManual && (err.name === 'AbortError' || err.message.includes('Timeout') || err.message.includes('abort'))) {
-            break;
-          }
+          if (!isSpecificManual) break;
           continue;
         }
       }
       return null;
     }
 
-    async function callNvidiaNim(mName, tOut = 55000) {
+    async function callNvidiaNim(mName, timeoutConfig = 55000) {
       if (NVIDIA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^nvidia\//i, '');
-      const stepDeadline = Date.now() + tOut;
+      const connectTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.connectTimeoutMs || 6500) : 6500;
+      const activeTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.activeTimeoutMs || 55000) : (typeof timeoutConfig === 'number' ? timeoutConfig : 55000);
+      const stepDeadline = Date.now() + activeTimeout;
 
       for (const nvKey of NVIDIA_KEYS) {
         const remaining = stepDeadline - Date.now();
@@ -1782,7 +1817,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
               max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
-          }, remaining);
+          }, { connectTimeoutMs: connectTimeout, activeTimeoutMs: remaining });
 
           if (res.ok) {
             const content = res.data?.choices?.[0]?.message?.content;
@@ -1791,20 +1826,24 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             }
           } else {
             providerErrors.push(`Nvidia NIM HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            if (!isSpecificManual) break;
             continue;
           }
         } catch (err) {
           providerErrors.push(`Nvidia NIM: ${err.message}`);
+          if (!isSpecificManual) break;
           continue;
         }
       }
       return null;
     }
 
-    async function callOllama(mName, tOut = 55000) {
+    async function callOllama(mName, timeoutConfig = 55000) {
       if (OLLAMA_KEYS.length === 0) return null;
       const cleanModelName = mName.replace(/^ollama\//i, '').replace(/:free$/i, '');
-      const stepDeadline = Date.now() + tOut;
+      const connectTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.connectTimeoutMs || 6500) : 6500;
+      const activeTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.activeTimeoutMs || 55000) : (typeof timeoutConfig === 'number' ? timeoutConfig : 55000);
+      const stepDeadline = Date.now() + activeTimeout;
 
       for (const olKey of OLLAMA_KEYS) {
         const remaining = stepDeadline - Date.now();
@@ -1826,7 +1865,7 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
                 temperature: tempConfig
               }
             })
-          }, remaining);
+          }, { connectTimeoutMs: connectTimeout, activeTimeoutMs: remaining });
 
           if (res.ok) {
             let content = res.data?.message?.content;
@@ -1838,18 +1877,23 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             }
           } else {
             providerErrors.push(`Ollama Cloud HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            if (!isSpecificManual) break;
             continue;
           }
         } catch (err) {
           providerErrors.push(`Ollama Cloud: ${err.message}`);
+          if (!isSpecificManual) break;
           continue;
         }
       }
       return null;
     }
 
-    async function callMiniMax(tOut = 25000) {
+    async function callMiniMax(timeoutConfig = 25000) {
       if (MINIMAX_KEYS.length === 0) return null;
+      const connectTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.connectTimeoutMs || 6500) : 6500;
+      const activeTimeout = typeof timeoutConfig === 'object' ? (timeoutConfig.activeTimeoutMs || 25000) : (typeof timeoutConfig === 'number' ? timeoutConfig : 25000);
+
       for (const mmKey of MINIMAX_KEYS) {
         try {
           const res = await fetchJsonWithTimeout('https://api.minimaxi.chat/v1/text/chatcompletion_v2', {
@@ -1864,11 +1908,12 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
               max_tokens: maxTokensConfig,
               temperature: tempConfig
             })
-          }, tOut);
+          }, { connectTimeoutMs: connectTimeout, activeTimeoutMs: activeTimeout });
 
           if (res.ok) {
             if (res.data?.base_resp?.status_code === 2056) {
               providerErrors.push('MiniMax: Token Plan limit reached');
+              if (!isSpecificManual) break;
               continue;
             }
             const content = res.data?.choices?.[0]?.messages?.[0]?.text || res.data?.choices?.[0]?.message?.content || res.data?.reply;
@@ -1877,10 +1922,12 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             }
           } else {
             providerErrors.push(`MiniMax HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
+            if (!isSpecificManual) break;
             continue;
           }
         } catch (err) {
           providerErrors.push(`MiniMax: ${err.message}`);
+          if (!isSpecificManual) break;
           continue;
         }
       }
@@ -2088,9 +2135,17 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
         const remainingMs = 58000 - elapsed; // Safe budget matching vercel.json function maxDuration 60s
         if (remainingMs <= 1500) break;
 
-        const stepTimeout = Math.min(step.timeout || 25000, Math.max(3000, remainingMs - 500));
+        // Dual-Phase Adaptive Timeout:
+        // 1. Connect Timeout (6500ms): Jika model mati, hang, atau tidak merespons awal, langsung alihkan ke model berikutnya!
+        // 2. Active Thinking Timeout (hingga 55s / remainingMs): Jika model merespons dan aktif, biarkan model terus berpikir sampai tuntas tanpa terkendala timeout!
+        const connectTimeout = Math.min(step.timeout || 6500, 6500);
+        const activeTimeout = Math.max(8000, remainingMs - 1000);
+
         try {
-          const result = await executeStep(step, stepTimeout);
+          const result = await executeStep(step, {
+            connectTimeoutMs: connectTimeout,
+            activeTimeoutMs: activeTimeout
+          });
           if (result) return result; // Succeeded! Returns immediately with 1x token consumption!
         } catch (_) {}
       }
