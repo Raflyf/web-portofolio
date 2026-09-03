@@ -713,6 +713,19 @@ async function searchWebContext(query, history = []) {
       return /\b(zodiak|ramalan|togel|slot gacor|judi|casino|harga emas|bursa efek|crypto pump)\b/i.test(lower);
     };
 
+    // Dedupe kunci judul ternormalisasi: Google News ID/Global/Bing sering memuat cerita
+    // yang SAMA dengan judul hampir identik dan beda timestamp. Dedupe berbasis teks penuh
+    // (yang menyertakan pubDate) GAGAL menangkapnya -> banjir 100+ judul kembar yang membuat
+    // model meng-echo judul mentah berulang-ulang. Kunci ini menormalkan judul (huruf kecil,
+    // tanda baca dihapus) agar cerita kembar lintas feed terkolaps menjadi satu entri bukti.
+    const seenNewsTitles = new Set();
+    const titleDedupeKey = (str) => String(str || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 120);
+
     // 1. Direct Web Link Scraper: If user provides an explicit URL in the query
     const urlMatches = query.match(/https?:\/\/[^\s"'<>]+/gi) || [];
     if (urlMatches.length > 0) {
@@ -736,61 +749,9 @@ async function searchWebContext(query, history = []) {
 
     // 2. High-Precision Parallel Live Feeds (Google News Global & Indonesia + Bing News)
     const isBreakingQuery = /\b(terbaru|terkini|hari ini|kemarin|bulan ini|minggu ini|latest|today|breaking|update|baru|sekarang|now|saat ini|terbaik|ranking|peringkat|benchmark|rilis)\b/i.test(query);
-    const searchFetches = searchQueries.flatMap(targetQ => {
-      const fetches = [
-        // Google News Indonesia (All-time topical news & articles)
-        fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=id&gl=ID&ceid=ID:id`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-          signal: controller.signal
-        }),
-        // Google News Global (All-time topical news & articles)
-        fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ)}&hl=en-US&gl=US&ceid=US:en`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-          signal: controller.signal
-        }),
-        // Bing News Global
-        fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-          signal: controller.signal
-        })
-      ];
-      if (isBreakingQuery) {
-        fetches.push(
-          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:7d')}&hl=en-US&gl=US&ceid=US:en`, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-            signal: controller.signal
-          }),
-          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=en-US&gl=US&ceid=US:en`, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-            signal: controller.signal
-          })
-        );
-      }
-      return fetches;
-    });
 
-    // 2b. Global Top-Headlines overview - generic news requests ("berita terbaru", "kabar",
-    // "news today") get the freshest global + Indonesian headlines even without a named subject.
-    const isNewsOverviewQuery = /^(?:berita|kabar|news|headlines?|info\s+terbaru|what'?s\s+new)\b/i.test(query.trim()) ||
-      /^(?:apa|sebutkan|ceritakan|bagaimana)\s+(?:berita|kabar|perkembangan)\b/i.test(query.trim());
-    if (isNewsOverviewQuery) {
-      searchFetches.push(
-        fetch(`https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-          signal: controller.signal
-        }),
-        fetch(`https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-          signal: controller.signal
-        })
-      );
-    }
-
-    // 2c. UNIVERSAL LANDSCAPE SCAN (semua domain: model AI, gadget, game, software, film, produk, dll.)
-    // Meniru metodologi riset multi-query lintas-entitas yang terbukti akurat: ketika pertanyaan
-    // menanyakan "apa yang baru/terbaru/rilis terbaru" secara umum (bukan subjek tunggal spesifik),
-    // lakukan liputan lebar: feed utama global + jendela bulan berjalan + (khusus domain AI) seed
-    // nama produsen utama. Seed hanya berisi NAMA PERUSAHAAN STABIL tanpa versi apa pun (AGENTS.md 10c).
+    // ===== 2a. DETEKSI INTENT DINI (sebelum fan-out kueri) — biar jalur lanskap TIDAK memicu
+    // generic fan-out mahal yang membuat respons lambat / HTTP 504. =====
     const nowDate = new Date();
     const monthNamesArr = ['January','February','March','April','May','June','July','August','September','October','November','December'];
     const curMonthName = monthNamesArr[nowDate.getMonth()];
@@ -798,54 +759,79 @@ async function searchWebContext(query, history = []) {
     const curYearNum = nowDate.getFullYear();
     let maxItemsPerFeed = 8;
 
+    const isNewsOverviewQuery = /^(?:berita|kabar|news|headlines?|info\s+terbaru|what'?s\s+new)\b/i.test(query.trim()) ||
+      /^(?:apa|sebutkan|ceritakan|bagaimana)\s+(?:berita|kabar|perkembangan)\b/i.test(query.trim());
     const isLatestLandscapeQuery = isNewsOverviewQuery ||
       /(?:semua|all|macam|berbagai|daftar|list|apa saja|what'?s new|berita terbaru|rilis terbaru|terbaru\s+apa|model terbaru|produk terbaru|game terbaru|perangkat terbaru|hp terbaru|versi terbaru|update terbaru|terbaru\s+yang|baru[- ]baru\s+ini|baru\s+dirilis|baru\s+diluncurkan|dirilis\s+baru|just\s+released|recently\s+released|newest)\b/i.test(query) ||
       /\b(?:terbaik\s+saat\s+ini|terbaik\s+sekarang|best\s+(?:right\s+)?now|best\s+current|top\s+terbaru|paling\s+baru|terkini\s+saat\s+ini)\b/i.test(query);
     const isAiModelLandscape = isLatestLandscapeQuery &&
       /\b(?:model\s+(?:terbaru|baru|terkini|ai|llm)|ai\s+model|\bai\b|\bllm\b|gpt|claude|gemini|deepseek|grok|llama|mistral|foundation\s+model|large\s+language\s+model)\b/i.test(query);
-    if (isLatestLandscapeQuery) maxItemsPerFeed = 12;
+    if (isLatestLandscapeQuery) maxItemsPerFeed = 10;
 
+    const gnFetch = (q) => fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      signal: controller.signal
+    });
+    const gnIdFetch = (q) => fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=id&gl=ID&ceid=ID:id`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      signal: controller.signal
+    });
+
+    // ===== 2b. JALUR LANSKAP AI — jalur ramping khusus: tidak melakukan generic fan-out,
+    // cukup 4 kueri Google News terkonsolidasi + 1 Hacker News (total 5 fetch, cepat & ringan).
+    let searchFetches = [];
     if (isAiModelLandscape) {
-      const providerSeedQueries = [
-        `OpenAI new model release ${curMonthName} ${curYearNum}`,
-        `Anthropic Claude new model release ${curMonthName} ${curYearNum}`,
-        `Google Gemini new model release ${curMonthName} ${curYearNum}`,
-        `Meta AI new model release ${curMonthName} ${curYearNum}`,
-        `xAI Grok new model release ${curMonthName} ${curYearNum}`,
-        `DeepSeek new model release ${curMonthName} ${curYearNum}`,
-        `Mistral AI new model release ${curMonthName} ${curYearNum}`,
-        `AI foundation model launch news ${curMonthName} ${curYearNum}`
-      ];
-      for (const seedQ of providerSeedQueries) {
-        searchFetches.push(
-          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(seedQ)}&hl=en-US&gl=US&ceid=US:en`, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
-            signal: controller.signal
-          })
-        );
-      }
-      // Freshness signal ekosistem developer (Hacker News Algolia - newest first)
       searchFetches.push(
-        fetch(`https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent('AI model OR LLM release')}&tags=story&hitsPerPage=10`, {
+        gnFetch(`(OpenAI OR Anthropic OR Claude OR "Google Gemini") new model release ${curMonthName} ${curYearNum}`),
+        gnFetch(`(Meta AI OR xAI OR Grok OR DeepSeek OR Mistral) new model release ${curMonthName} ${curYearNum}`),
+        gnFetch(`AI foundation model OR LLM launch news ${curMonthName} ${curYearNum}`),
+        gnIdFetch(`model AI baru rilis ${curMonthName} ${curYearNum}`),
+        fetch(`https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent('AI model OR LLM release')}&tags=story&hitsPerPage=8`, {
           headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
           signal: controller.signal
         })
       );
-    } else if (isLatestLandscapeQuery) {
-      // Lanskap umum non-AI: jendela bulan berjalan untuk topik apa pun (berita, produk, rilis, dll.)
-      const monthWindowQueries = [`${curMonthName} ${curYearNum}`, `${prevMonthName} ${curYearNum}`];
-      for (const wq of monthWindowQueries) {
-        searchFetches.push(
-          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(wq)}&hl=en-US&gl=US&ceid=US:en`, {
+    } else {
+      // ===== 2c. JALUR NORMAL / LANSKAP NON-AI — generic fan-out per subjek (dibatasi). =====
+      searchFetches = searchQueries.flatMap(targetQ => {
+        const fetches = [
+          gnIdFetch(targetQ),
+          gnFetch(targetQ),
+          fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
             signal: controller.signal
           })
+        ];
+        if (isBreakingQuery && !isLatestLandscapeQuery) {
+          fetches.push(
+            gnFetch(targetQ + ' when:7d'),
+            gnFetch(targetQ + ' when:30d')
+          );
+        }
+        return fetches;
+      });
+      if (isNewsOverviewQuery) {
+        searchFetches.push(
+          fetch(`https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          }),
+          fetch(`https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          })
+        );
+      } else if (isLatestLandscapeQuery) {
+        searchFetches.push(
+          gnFetch(`${curMonthName} ${curYearNum}`),
+          gnFetch(`${prevMonthName} ${curYearNum}`)
         );
       }
     }
 
     // 3. GitHub Open-Source & Library Discovery (For tech / framework / code / repo queries)
-    const isTechOrCode = /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt|anthropic|openai|mistral|nemotron)\b/i.test(query);
+    // Lanskap/overview queries sudah mengumpulkan bukti live lebar — lewati fan-out tambahan agar cepat.
+    const isTechOrCode = !isLatestLandscapeQuery && /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt|anthropic|openai|mistral|nemotron)\b/i.test(query);
     if (isTechOrCode) {
       const techKeyword = searchQueries[0] || query.slice(0, 60);
       searchFetches.push(
@@ -890,7 +876,8 @@ async function searchWebContext(query, history = []) {
     }
 
     // 4. Open-Web Encyclopedic Knowledge (Multi-Language: Indonesian & English)
-    const isEncyclopedic = /\b(apa|siapa|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what|who|history|definition|jelaskan|analisis|komparasi|perbedaan|bagaimana|cara|faktor|arsitektur|konsep|mekanisme|struktur|prinsip|metode|algoritma|algorithm|how|explain|compare|versus|vs|kelebihan|kekurangan|manfaat|tujuan|fitur|dataset|evaluasi|akurasi|keunggulan)\b/i.test(query);
+    // Dilewati untuk kueri lanskap yang butuh kecepatan — bukti berita sudah menjadi sumber utama.
+    const isEncyclopedic = !isLatestLandscapeQuery && /\b(apa|siapa|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what|who|history|definition|jelaskan|analisis|komparasi|perbedaan|bagaimana|cara|faktor|arsitektur|konsep|mekanisme|struktur|prinsip|metode|algoritma|algorithm|how|explain|compare|versus|vs|kelebihan|kekurangan|manfaat|tujuan|fitur|dataset|evaluasi|akurasi|keunggulan)\b/i.test(query);
     if (isEncyclopedic) {
       const mainKeyword = query
         .replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|analisis|dong|how does|bagaimana|ceritakan|tentang|mengenai|soal|terkait|apakah)\b/gi, ' ')
@@ -1041,6 +1028,10 @@ async function searchWebContext(query, history = []) {
             const desc = cleanStr(descMatch ? descMatch[1] : '');
             const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
             if (title && !isJunkArticle(title)) {
+              // Lewati cerita kembar lintas feed (Google News ID/Global/Bing) yang judulnya nyaris identik
+              const dedupeKey = titleDedupeKey(title);
+              if (seenNewsTitles.has(dedupeKey)) return;
+              seenNewsTitles.add(dedupeKey);
               let ts = 0;
               let recencyBonus = 0;
               if (pubDate) {
@@ -1132,7 +1123,8 @@ ${uniqueSnippets.join('\n')}
 - Sajikan sebagai RINGKASAN LANSKAP yang dikelompokkan per entitas/produsen/kategori (bukan daftar linear acak).
 - Untuk setiap entitas, tulis penanda waktu laporan yang TERTERA pada bukti (misal "dilaporkan [tanggal]"). DILARANG menambah entitas tanpa bukti hanya untuk "melengkapi daftar".
 - Pisahkan eksplisit: (a) rilis yang terkonfirmasi liputan, vs (b) kabar/rencana/rumor yang belum resmi dirilis.
-- Nyatakan jujur bahwa daftar mencakup hal yang tertangkap penelusuran real-time dan mungkin tidak lengkap; arahkan ke sumber resmi untuk daftar menyeluruh.`;
+- Nyatakan jujur bahwa daftar mencakup hal yang tertangkap penelusuran real-time dan mungkin tidak lengkap; arahkan ke sumber resmi untuk daftar menyeluruh.
+- DILARANG KERAS mengutip judul artikel mentah secara berulang-ulang atau mencantumkan judul yang nyaris identik lebih dari satu kali sebagai entri terpisah. Sintesiskan isi berita menjadi kalimat ringkas Anda sendiri (parafrasa), sebutkan tanggal laporan bila ada, dan jangan mengulang kalimat yang sama.`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, isLatestLandscapeQuery ? 18 : 10), agentToolsUsed };
@@ -2080,6 +2072,23 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
 
       // Auto-Format Markdown Structure & Table Reconstruction (CommonMark GFM)
       cleaned = normalizeStructuredMarkdown(cleaned);
+
+      // DETERMINISTIC ANTI-ECHO / DEDUPE-LINE GUARD:
+      // Model kecil (mis. Nemotron 3 Nano) kadang meng-echo satu judul/baris bukti berulang-ulang
+      // (contoh: "Xiaomi 18 Fold Rilis 7 September" muncul puluhan kali). Kolapskan baris-baris
+      // yang nyaris identik (berurutan maupun tersebar) menjadi satu kemunculan paling informatif.
+      const echoGuardKeys = [];
+      cleaned = cleaned.split('\n').filter((lineRaw) => {
+        const line = lineRaw.trim();
+        if (!line) return true;
+        // Normalisasi: huruf kecil, strip tanda baca/angka tanggal, untuk membandingkan inti kalimat
+        const norm = line.toLowerCase().replace(/[^a-z0-9\s]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 90);
+        if (norm.length < 25) return true; // baris pendek (heading, list marker) tidak diproses
+        const isRepeated = echoGuardKeys.some(existing => norm.startsWith(existing.slice(0, 60)) || existing.startsWith(norm.slice(0, 60)));
+        if (isRepeated) return false;
+        echoGuardKeys.push(norm);
+        return true;
+      }).join('\n');
 
       // DETERMINISTIC ANTI-FABRICATED REPORT-DATE GUARD (AGENTS.md 10a/10b):
       // Menghapus/mentransformasi kalimat atribusi tanggal global yang dikarang model
