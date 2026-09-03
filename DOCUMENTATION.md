@@ -1148,6 +1148,23 @@ Released 2026-09-03.
    - Menampilkan *badge strip* interaktif di setiap pesan AI (`Google Search & Live Web`, `Wikipedia Verified`, `GitHub Live Repo`, `Verified Ground Truth`) yang memperlihatkan alat verifikasi yang dipanggil beserta jumlah sumber data faktual yang diakses.
    - Memperbarui indikator status pemuatan menjadi *Agentic Search: Menghubungkan ke live internet & memvalidasi fakta...* untuk memberikan transparansi penuh kepada pengguna atas proses validasi bukti.
 
+### v10.639.0 — Elimination of Hardcoded Knowledge, Clean Dynamic Retrieval & Anti-Echo Typography
+
+Released 2026-09-03.
+1. **Penghapusan Total Hardcode Model & Pengetahuan Eksternal (`api/chat.js`):**
+   - Menghapus seluruh blok pengetahuan hardcode model/perusahaan dari system prompt, mengembalikan sistem ke arsitektur 100% *Dynamic Evidence Retrieval* berbasis pencarian live internet faktual tanpa asumsi atau limitasi tanggal cut-off.
+   - Mengalibrasi `stripFillers` dan ekstraksi entitas subjek: partikel percakapan bahasa Indonesia ("lah", "kan", "sudah", "model", dsb) dibersihkan secara presisi sehingga nama entitas murni (misal "claude 5.1", "gemini 3.8", "gpt 5") langsung menjadi kueri prioritas utama pencarian Google News Global.
+2. **Eliminasi Pengulangan Pertanyaan Pengguna (Anti-Echo Filter):**
+   - Menambahkan filter pemotong otomatis `3.4b` pada `sendSuccess`: memangkas teks pembuka atau heading yang sekadar mengulang kueri pengunjung (seperti *"Kamu Model Apa?"*, *"Tentang Claude 5.1:"*, atau *"Model AI Terbaik Saat Ini"*).
+   - Menegakkan larangan anti-echo pada prompt sistem agar model langsung memulai percakapan dengan narasi substantif yang mengalir alami.
+3. **Pemulihan Format Respon Identitas Asisten Resmi:**
+   - Mengembalikan respon identitas resmi yang elegan, profesional, dan berimbang (3 paragraf bersih) saat pengunjung menanyakan identitas asisten (*"kamu model apa"*, *"kamu siapa"*).
+   - Menghilangkan glitch formatting (seluruh paragraf bold, tanda bintang hilang, atau pemotongan butir list).
+4. **Preservasi Estetika Tipografi List & Sanitasi Em-Dash:**
+   - Memperbaiki penanganan em-dash/en-dash pada baris list dan definisi: mengubah tanda pisah setelah label tebal (`**Label** — Deskripsi`) menjadi titik dua (`: `) dan tanda pisah umum menjadi strip spasi (` - `), mencegah perubahan sembarangan menjadi tanda koma (`, `).
+   - Menambahkan normalisasi marker list bold (`- *Label**` dinormalisasi menjadi `- **Label**`) dan penyeimbang otomatis tanda bintang (`**`) untuk mencegah kebocoran format bold ke seluruh paragraf.
+   - Menambahkan isolasi tegas anti-kontaminasi entitas agar produk atau rilis teknologi pihak ketiga (seperti Anthropic Claude) tidak pernah diklaim atau dihubungkan sebagai karya Rafly Firmansyah.
+
 
 
 

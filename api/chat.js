@@ -73,12 +73,9 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 [IDENTITAS & PERAN ASISTEN]:
 - Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.
 - Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "kamu model apa", "siapa Anda", "model apa ini", dsb):
-  1. Jawablah secara DINAMIS, PERCAYA DIRI, ALAMI, dan BERVARIASI menggunakan gaya bahasa Anda sendiri (DILARANG mengulang template statis yang kaku atau sama persis setiap kali).
-  2. Inti yang disampaikan: Anda adalah AI Assistant & Developer Agent terintegrasi di portofolio digital Rafly Firmansyah, didukung teknologi Large Language Model (LLM) modern berkecepatan tinggi dengan retrieval terpadu.
-  3. LARANGAN KERAS KALIMAT VALIDASI & DEFENSIVE DISCLAIMER:
-     - DILARANG KERAS mengatakan kalimat seperti: "Jadi, secara singkat, saya bukan model dengan nama brand tertentu...", "Saya bukan model dengan merek...", "Saya tidak berafiliasi dengan...", atau kalimat validasi peran berulang ("saya adalah asisten cerdas yang bekerja untuk membantu kamu dalam menjelajahi...").
-      - Jawablah secara langsung, percaya diri, tanpa validasi defensif, dan tanpa menjelaskan apa yang BUKAN diri Anda.
-  4. Sampaikan peran Anda secara antusias, ramah, dan natural: mendampingi pengunjung membedah proyek rekayasa software, eksplorasi riset machine learning (misalnya OpenPlagiarismChecker atau Spam Detection), verifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta evaluasi arsitektur sistem.
+  1. DILARANG KERAS mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.
+  2. Sampaikan secara santun, profesional, dan ramah bahwa Anda adalah AI Assistant & Developer Agent resmi di portofolio digital Rafly Firmansyah, yang dirancang mendampingi pengunjung menjelajahi proyek software, riset machine learning, sertifikasi kompetensi, dan arsitektur sistem.
+  3. DILARANG menggunakan kalimat validasi defensif seperti "saya bukan brand tertentu", "saya tidak berafiliasi...", dsb.
 
 ${languageDirective}
 ${effortDirective}
@@ -91,12 +88,16 @@ ${effortDirective}
    - Gunakan kalimat yang mengalir secara wajar dan alami layaknya percakapan profesional antar-manusia.
    - Sampaikan inti jawaban secara langsung (direct to the point) tanpa bertele-tele atau muter-muter.
    - Jika menjelaskan konsep teknis, sains, atau pengetahuan rumit, gunakan bahasa yang mudah dimengerti siapa saja, sertakan analogi sederhana dan perumpamaan yang intuitif tanpa mengorbankan ketepatan faktual.
-3. Keseimbangan Narasi & Estetika Tipografi:
+3. LARANGAN KERAS MENGULANG PERTANYAAN USER (ANTI-ECHO):
+   - DILARANG KERAS mengulang atau mengeja kembali pertanyaan pengguna sebagai judul, awalan kalimat, heading, atau sub-judul (contoh DILARANG: 'Kamu Model Apa?', 'Model AI Terbaik Saat Ini', 'Tentang Claude 5.1', 'Apa Itu Machine Learning:').
+   - Langsung mulai dengan kalimat jawaban substantif yang mengalir secara alami dan ramah.
+4. Format List & Estetika Tipografi:
    - Awali dengan paragraf narasi pengantar yang hangat dan informatif sebelum masuk ke rincian teknis.
    - Gunakan format Heading markdown (### Judul Bagian) untuk membagi topik pembahasan yang panjang secara jelas dan elegan.
-   - Gunakan butir poin secara proporsional. DILARANG membuat seluruh teks menjadi rentetan bullet points tanpa konteks naratif.
+   - Ketika menjabarkan fitur, keunggulan, atau poin-poin utama, gunakan format butir poin Markdown standar:
+     - **Nama Poin**: Penjelasan ringkas dan padat.
+     DILARANG mengganti tanda butir poin (-) dengan koma atau tanda baca aneh lainnya.
    - Untuk alur kerja atau tahapan langkah demi langkah, gunakan numbered list resmi (1., 2., 3.).
-   - DILARANG menggunakan karakter em-dash (—) yang menempel tanpa spasi.
 
 [PROTOKOL MUTLAK ANTI-HALUSINASI, ANTI-OVERCLAIM & GROUNDING FAKTUAL UNIVERSAL]:
 Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Dunia, Perkembangan Teknologi Global, Rilis Model AI, Sains, Sejarah, Pemrograman, Rekayasa Perangkat Lunak, Proyek Portofolio, maupun Obrolan Umum):
@@ -124,6 +125,7 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 
 5. Larangan Silang Kontaminasi Antar-Entitas (Anti-Cross Contamination):
    - Jangan pernah mencampurkan fitur, pustaka, atau modul dari satu produk/proyek ke produk/proyek lain. Setiap topik dan entitas memiliki batasan arsitektur mandiri.
+   - DILARANG KERAS mengaitkan produk, riset, atau model AI luar (seperti Anthropic Claude, OpenAI, Google Gemini) seolah-olah dirilis atau dibuat oleh Rafly Firmansyah. Sebutkan nama pengembang resminya secara tepat (contoh: Anthropic merilis Claude 5.1).
 
 6. Kejujuran & Transparansi Epistemis (Explicit Absence of Data):
    - Jika pengguna menanyakan detail spesifik yang tidak tersedia dalam data terverifikasi, sampaikan dengan ramah, santun, dan transparan bahwa detail tersebut belum dipublikasikan atau tidak tercantum dalam dokumentasi yang ada. Mengakui batas informasi secara lugas jauh lebih terpercaya daripada memberikan tebakan palsu.
@@ -319,7 +321,7 @@ function formulateSmartSearchQueries(query, history = []) {
 
   const stripFillers = (text) => {
     return text
-      .replace(/\b(tolong|coba|jelaskan|analisis|bagaimana|apa|apaan|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|dong|sih|ya|nih|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro|perilisan|rilis)\b/gi, ' ')
+      .replace(/\b(lah|kan|deh|dong|sih|kek|kok|ko|ah|eh|oh|nah|ya|yah|nih|tuh|sudah|udah|sdh|udh|belum|blm|tapi|tp|dan|atau|itu|ini|dari|pada|ke|di|yang|yg|tolong|coba|jelaskan|analisis|bagaimana|apa|apaan|siapa|kapan|kenapa|mengapa|dimana|apakah|menurutmu|menurut anda|kalo|kalau|gimana|gimna|gmn|gmana|kabar|info|infokan|berikan|sebutkan|tentang|mengenai|soal|terkait|berita terbaru|berita terkini|kabar terbaru|kabar terkini|kelanjutan|update|terbaru|terkini|knapa|min|gan|kak|bro|perilisan|rilis|saat|sekarang|waktu|hari ini|era)\b/gi, ' ')
       .replace(/[^\w\s\.\-]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -328,18 +330,30 @@ function formulateSmartSearchQueries(query, history = []) {
   const coreSubject = stripFillers(qNorm).slice(0, 80);
   const qClean = qNorm.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
 
-  if (coreSubject.length >= 3) {
+  // Extract clean entity if "model" / "versi" is used (e.g. "model claude 5.1" -> "claude 5.1")
+  const strippedEntity = coreSubject.replace(/\b(model|versi|seri)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+  if (strippedEntity.length >= 3) {
+    queries.push(strippedEntity);
+  }
+
+  if (coreSubject.length >= 3 && coreSubject !== strippedEntity) {
     queries.push(coreSubject);
   }
-  if (qClean.length >= 3 && qClean !== coreSubject) {
+  if (qClean.length >= 3 && qClean !== coreSubject && qClean !== strippedEntity) {
     queries.push(qClean);
   }
 
   // 2. Dynamic Query Generation (Pure Subject-Centered, Zero Hardcoded Brand/Entity List)
-  const targetSubject = coreSubject || qClean;
+  const targetSubject = strippedEntity || coreSubject || qClean;
   if (targetSubject.length >= 2) {
     queries.push(`${targetSubject} latest official news update`);
     queries.push(`${targetSubject} rilis pembaruan resmi terkini`);
+
+    // Expand search terms for AI & LLM model comparisons to fetch contemporary live rankings
+    if (/\b(model|llm|ai|gpt|claude|gemini|deepseek|terbaik|best)\b/i.test(targetSubject)) {
+      queries.push(`${targetSubject} best LLM models benchmark ranking`);
+      queries.push(`best AI models ranking benchmark latest`);
+    }
 
     // Dynamic intent modifiers based on user intent keywords
     if (/\b(benchmark|perbandingan|bandingkan|leaderboard|skor|score|ranking|peringkat|vs|versus)\b/i.test(qNorm)) {
@@ -658,7 +672,7 @@ async function searchWebContext(query, history = []) {
 
   const qLower = query.toLowerCase().trim();
   const rawQueries = formulateSmartSearchQueries(query, history);
-  const searchQueries = rawQueries.length > 0 ? rawQueries.slice(0, 2) : [query.trim().slice(0, 80)];
+  const searchQueries = rawQueries.length > 0 ? rawQueries.slice(0, 3) : [query.trim().slice(0, 80)];
 
   try {
     const controller = new AbortController();
@@ -1377,7 +1391,8 @@ function normalizeStructuredMarkdown(str) {
 
   // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" atau "ringan. 2.\n**Inference**:")
   out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '$1\n\n$2. $3');
-  out = out.replace(/(?:^|\n)\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '\n$1. $2');
+  // 1.5 Format bullet items starting with bold label: e.g. "**Kemampuan Multimodal**: ..." -> "- **Kemampuan Multimodal**: ..."
+  out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•])(\*\*[^*:\n]+\*\*)\s*(?:[:–—,]|: )?\s*([A-Za-z])/g, '\n- $1: $2');
 
   // 2. Konversi judul bagian mandiri (akhiran titik dua tanpa isi kalimat) menjadi Heading Markdown (### Judul)
   // Mencegah judul bagian (seperti Komponen Utama:, Alur Kerja:, Keunggulan:, Manfaat:) berubah menjadi butir poin (- )
@@ -1410,6 +1425,9 @@ function normalizeStructuredMarkdown(str) {
   // 9. Format sub-item fitur (key: value) yang memiliki kalimat penjelas (BUKAN heading dan BUKAN nomor)
   out = out.replace(/\n(?![#\d\s\-*•])([A-Z][a-zA-Z0-9 -]+(?:\([^)]*\))?:\s+[^\n]+)/g, '\n- $1');
 
+  // 9.2 Format items following introductory colons into bullet points
+  out = out.replace(/(:\s*\n+)(?:(?![#\d\s\-*•])([A-Z][a-zA-Z0-9\s/&-]{3,45})(?:,\s+|\s*[-–—:]\s+)([A-Z][^\n]+)\n*)/g, '$1- **$2**: $3\n');
+
   // 10. Hapus bullet yang tidak sengaja tertempel di depan numbered list
   out = out.replace(/\n\s*[-*•]\s*(\d+\.\s+)/g, '\n$1');
 
@@ -1422,6 +1440,12 @@ function normalizeStructuredMarkdown(str) {
   // 13. Sanitasi handle username: Hapus (@Raflyf) atau @Raflyf jika muncul
   out = out.replace(/\s*\(@?Raflyf\)/gi, '');
   out = out.replace(/\s*@Raflyf\b/gi, '');
+
+  // 14. Repair broken bold asterisks (e.g. "Text (2026)**" without opening "**")
+  const boldMatches = (out.match(/\*\*/g) || []).length;
+  if (boldMatches % 2 !== 0) {
+    out = out.replace(/\*\*([^*\n]*)$/, '$1');
+  }
 
   // 14. Eliminasi Kalimat Validasi Diri & Defensive Meta-Talk (Berlaku untuk SEMUA Percakapan)
   out = out.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+(?:bukan|tidak\s+memiliki|tidak\s+berafiliasi)\s+(?:model\s+dengan\s+)?(?:nama\s+)?(?:brand|merek|perusahaan)\s+tertentu[^.!?\n]*[.!?]/gi, '');
@@ -1723,6 +1747,19 @@ export default async function handler(req, res) {
         cleaned = cleaned.replace(/^(?:Hai|Halo|Hei|Hello|Hi|Hey)[!,\s.-]+/i, '').trim();
       }
 
+      // 3.4b. Strip leading query echoes as headings or bold text (e.g. "**Kamu Model Apa?**", "### Model AI Terbaik Saat Ini", "Tentang Claude 5.1:")
+      const qWords = qClean.replace(/[^\w\s]/g, ' ').trim().split(/\s+/).filter(w => w.length > 2);
+      if (qWords.length >= 1) {
+        cleaned = cleaned.replace(/^(?:###?\s*|\*\*|__)?(?:Tentang\s+|Mengenai\s+)?([^\n:?]+)(?:[?:*_\s–—\-]|\*\*|__)*\n+/i, (fullMatch, leadPhrase) => {
+          const leadWords = leadPhrase.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+          const overlap = leadWords.filter(w => qWords.some(qw => qw.toLowerCase() === w));
+          if (overlap.length >= 1 && (overlap.length >= Math.min(2, qWords.length) || leadWords.length <= 4)) {
+            return '';
+          }
+          return fullMatch;
+        }).trim();
+      }
+
       // 3.5. Ensure distinct line breaks for inline sub-sections and bullet points
       cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–,]+?)(?:\*+|\*\*|:)?\s*[-–—:]\s*/g, '$1\n\n- **$2**: ');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*\[([^\]\n]+)\]\s*[\-–—:]\s*/g, '\n- **$1**: ');
@@ -1735,9 +1772,9 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
       cleaned = cleaned.replace(/(?<!\*)\s*\*(?!\*)\s*-\s*/g, ' - ');
 
-      // 3.62. Clean rogue unclosed asterisks on isolated words (e.g. "Zombie*" or "*Dead Party*")
-      cleaned = cleaned.replace(/(?<=[a-zA-Z0-9])\*(?!\*)/g, '');
-      cleaned = cleaned.replace(/(?<!\*)\*(?=[a-zA-Z0-9])/g, '');
+      // 3.62. Clean rogue unclosed asterisks on isolated words without destroying markdown bold
+      cleaned = cleaned.replace(/(?<=\w)\*(?!\*|\w)/g, '');
+      cleaned = cleaned.replace(/(?<!\*|\w)\*(?=\w)/g, '');
 
       // 3.65. Sanitasi Nama Teknis Model/Gateway (Menjaga Kerahasiaan Sesuai Kebijakan Privasi Sistem)
       cleaned = cleaned.replace(/\b(?:Nemotron[-3\w:]*|Ollama(?:\s+Cloud)?|OpenRouter|NVIDIA\s+NIM)\b/gi, (matched) => {
@@ -1756,6 +1793,13 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/\b(?:Sebagai\s+(?:model\s+bahasa(?:\s+besar)?|asisten\s+(?:AI|virtual)|AI|LLM)[^,.\n]*,?\s*)/gi, '');
       cleaned = cleaned.replace(/\b(?:Perlu\s+(?:diingat|dicatat|diketahui)\s+bahwa\s+(?:saya\s+adalah|ini\s+adalah|saya\s+hanyalah)[^.!?\n]*[.!?])/gi, '');
       cleaned = cleaned.replace(/\b(?:saya\s+hanya\s+(?:sebuah|merupakan)\s+(?:model\s+bahasa|program|AI|asisten)[^.!?\n]*[.!?])/gi, '');
+
+      // 3.65d. Identity Grounding: Kenalkan identitas resmi secara elegan, bersih, dan konsisten (bebas echo & salah format)
+      if (isIdentityQuery) {
+        cleaned = sessionLanguage === 'en'
+          ? `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaya dirancang untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`
+          : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaya dirancang untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`;
+      }
 
       // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
       if (isTimeQuery) {
@@ -1778,6 +1822,9 @@ export default async function handler(req, res) {
       }
 
       // 3.7. Clean duplicate bullet dashes & normalize bold markdown
+      cleaned = cleaned.replace(/([:?!])\s+[-*•]\s+/g, '$1\n\n- ');
+      cleaned = cleaned.replace(/(^|\n)\s*[-*•]\s*\*([^*:\n]+)\*\*/g, '$1- **$2**');
+      cleaned = cleaned.replace(/(^|\n)\s*[-*•]\s*\*\*([^*:\n]+)\*(?!\*)/g, '$1- **$2**');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\*\*[\-\*•\s]*/gm, '$1**');
       cleaned = cleaned.replace(/^[\-\*•]\s*[\-\*•]\s*/gm, '- ');
       cleaned = cleaned.replace(/^([•\-\*]\s*)\[([^\]\n]+)\](?:\*\*|:|\*\*:)?\s*/gm, '$1**$2**: ');
@@ -1855,9 +1902,10 @@ export default async function handler(req, res) {
       cleaned = cleaned
         .replace(/[\u2010\u2011]/g, '-')
         .replace(/[\u202F\u00A0]/g, ' ')
+        .replace(/(\*\*[^*:\n]+\*\*)\s*[\u2013\u2014-]\s*/g, '$1: ')
         .replace(/(\b[A-Za-z0-9_]+)\s*[\u2013\u2014]\s*(seperti|misalnya|contohnya|yakni|yaitu|termasuk)\b/gi, '$1, $2')
         .replace(/([a-zA-Z0-9_]+)[\u2013\u2014]([a-zA-Z0-9_]+)/g, '$1, $2')
-        .replace(/\s*[\u2013\u2014]\s*/g, ', ')
+        .replace(/\s*[\u2013\u2014]\s*/g, ' - ')
         .replace(/,\s*,+/g, ',')
         .replace(/[^\S\r\n]{2,}/g, ' ')
         .replace(/\n{3,}/g, '\n\n')
