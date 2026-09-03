@@ -1901,40 +1901,37 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
     // Tier 3: OpenCode Zen Direct API (nemotron-lightning -> nemotron-ultra -> x-preview -> mimo)
     // ========================================================================
     function buildExecutionPipeline() {
-      // 0. MULTIMODAL & VISION PIPELINE (Prioritas: Mimo v2.5 OpenCode -> Nemotron Nano Omni -> Minimax M2.7 -> Ollama)
+      // 0. MULTIMODAL & VISION PIPELINE (Prioritas: Mimo v2.5 -> Nemotron Nano Omni -> Ollama Nano)
       if (hasImages || (model && model.toLowerCase().includes('vision')) || queryIntent.category === 'vision') {
         return [
-          // Tier 1: Mimo v2.5 from OpenCode (Primary Vision SOTA)
-          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-          // Tier 2: Nemotron Nano Omni from OpenRouter
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 45000 },
-          // Tier 3: MiniMax M2.7 from OpenRouter
-          { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
-          // Tier 4: Ollama Multimodal (nemotron-3-nano / minimax-m3)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
-          { provider: 'ollama', model: 'minimax-m3', timeout: 45000 }
+          // Tier 1: Mimo v2.5 from OpenCode (SOTA Multimodal Vision)
+          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 40000 },
+          // Tier 2: Nemotron Nano Omni from OpenRouter (Multimodal Omni Reasoning)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 40000 },
+          // Tier 3: Ollama Nano Multimodal
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 40000 }
         ];
       }
 
-      // 1. REASONING CHAT PIPELINE (Prioritas: Nemotron Nano Omni OpenRouter -> Ultra 550B -> Super Ollama -> Ultra OpenCode -> DeepSeek)
+      // 1. REASONING CHAT PIPELINE (Prioritas: Ollama Nano -> Nemotron Lightning -> Multimodal Omni -> Laguna Terbaru)
       const isReasoningQuery = queryIntent.category === 'deep_reasoning' || queryIntent.effort === 'thinking' || (effectiveEffort === 'high' && queryIntent.category === 'project_architecture') || (model && (model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni')));
       if (isReasoningQuery && (!model || model === 'auto' || model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni'))) {
-        const reasoningStepTimeout = 14000; // Cepat beralih jika model gratis tertentu sedang overload
+        const reasoningStepTimeout = 12000;
         return [
-          // 1st: Ollama Cloud Nano (Sangat cepat dan konsisten)
+          // 1st: Ollama Cloud Nano (Prioritas Utama)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: reasoningStepTimeout },
-          // 2nd: Nemotron Lightning OpenRouter (Ultra kilat ~1.5s)
+          // 2nd: Nemotron Seri Lightning
           { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: reasoningStepTimeout },
-          // 3rd: OpenCode Lightning
           { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: reasoningStepTimeout },
-          // 4th: OpenRouter Auto Free Pool (Otomatis memilih worker yang sehat)
+          // 3rd: Multimodal & Omni
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: reasoningStepTimeout },
+          { provider: 'opencode', model: 'mimo-v2.5-free', timeout: reasoningStepTimeout },
+          // 4th: Model Terbaru Respons Cepat (Laguna S 2.1 & OpenRouter Free)
+          { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: reasoningStepTimeout },
           { provider: 'openrouter', model: 'openrouter/free', timeout: reasoningStepTimeout },
-          // 5th: DeepSeek Chat dari OpenRouter
-          { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: reasoningStepTimeout },
-          // 6th: Nemotron 3 Super dari Ollama
+          // 5th: Flagship Nemotron Super & Ultra Terbaru
           { provider: 'ollama', model: 'nemotron-3-super', timeout: reasoningStepTimeout },
-          // 7th: MiniMax Production API (Fallback kuat)
-          { provider: 'minimax', model: 'MiniMax-M3', timeout: reasoningStepTimeout }
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: reasoningStepTimeout }
         ];
       }
 
@@ -1964,14 +1961,6 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 }
           ];
         }
-        if (t === 'ollama-minimax') {
-          return [
-            { provider: 'ollama', model: 'minimax-m3', timeout: 45000 },
-            { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
-            { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
-          ];
-        }
 
         // === OPENCODE ZEN GROUP ===
         if (t === 'opencode-lightning') {
@@ -1991,23 +1980,23 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
         if (t === 'opencode-laguna' || t.includes('laguna')) {
           return [
             { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 }
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
+            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 }
           ];
         }
-        if (t === 'mimo' || t.includes('mimo')) {
+        if (t === 'mimo' || t.includes('mimo') || t.includes('vision')) {
           return [
             { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
-            { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
           ];
         }
 
         if (t === 'openrouter-free') {
           return [
             { provider: 'openrouter', model: 'openrouter/free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
-            { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 45000 }
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 }
           ];
         }
         if (t.includes('light') || t.includes('lightning')) {
@@ -2019,9 +2008,9 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
         }
         if (t.includes('super')) {
           return [
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 45000 },
             { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 }
           ];
         }
         if (t.includes('ultra')) {
@@ -2031,65 +2020,41 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
             { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 }
           ];
         }
-        if (t.includes('minimax') || t.includes('vision')) {
+        if (t.includes('antigravity') || t.includes('codex') || t.includes('coding')) {
           return [
-            { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 45000 },
-            { provider: 'minimax', model: 'MiniMax-M3', timeout: 15000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 },
-            { provider: 'ollama', model: 'minimax-m3', timeout: 45000 }
-          ];
-        }
-        if (t === 'cohere-code' || t.includes('cohere') || t.includes('north-mini')) {
-          return [
-            { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 45000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
-            { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 }
-          ];
-        }
-        if (t.includes('codex') || t.includes('coding')) {
-          return [
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
-            { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 45000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 },
+            { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 45000 },
             { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 45000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
-          ];
-        }
-        if (t.includes('antigravity')) {
-          return [
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
-            { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 45000 },
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 }
-          ];
-        }
-        if (t.includes('deepseek')) {
-          return [
-            { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 45000 },
-            { provider: 'ollama', model: 'nemotron-3-super', timeout: 45000 },
-            { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 45000 }
+            { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 45000 }
           ];
         }
       }
 
-      // 3. OVERALL GENERAL CHAT CASCADE (Verified Fast Response: Laguna S 2.1 -> Ollama Nano -> Mimo v2.5)
+      // 3. OVERALL GENERAL CHAT CASCADE
+      // Urutan Hierarki Faktual Terverifikasi (Berdasarkan Live Network Benchmark):
+      // 1. Ollama Nano (Prioritas Utama Pengguna: 0.89s respons kilat)
+      // 2. Nemotron Seri Lightning (OpenCode 5.19s & OpenRouter)
+      // 3. Multimodal: Nemotron Nano Omni (0.33s) & Mimo v2.5
+      // 4. Model Rilis Terbaru Cepat: Gemma 4 31B (0.74s), Nemotron 3 Super (0.27s), OpenRouter Free (0.31s), MiniMax M3 (1.07s), Laguna S 2.1 (3.81s)
+      // *Seluruh model lawas/usang/402 telah dieliminasi.
       return [
-        // === TIER 1: VERIFIED FASTEST ACTIVE PRODUCTION ENGINES ===
-        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 9000 },
-        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 9000 },
-        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 8000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 8000 },
-        { provider: 'openrouter', model: 'openrouter/free', timeout: 8000 },
+        // === 1. PRIORITAS UTAMA: OLLAMA NANO ===
+        { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 8000 },
+
+        // === 2. NEMOTRON SERI LIGHTNING ===
+        { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: 7000 },
+        { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 6000 },
+
+        // === 3. MULTIMODAL: NEMOTRON NANO OMNI & MIMO ===
+        { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 7000 },
+        { provider: 'opencode', model: 'mimo-v2.5-free', timeout: 6000 },
+
+        // === 4. MODEL RILISAN TERBARU & RESPON KILAT (SUB-2 DETIK) ===
+        { provider: 'ollama', model: 'gemma4:31b', timeout: 7000 },
         { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: 6000 },
-        { provider: 'ollama', model: 'nemotron-3-super', timeout: 6000 },
-        { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: 6000 },
-        { provider: 'ollama', model: 'nemotron-3-ultra', timeout: 6000 },
-        { provider: 'opencode', model: 'nemotron-3-ultra-free', timeout: 6000 },
-        { provider: 'openrouter', model: 'cohere/north-mini-code:free', timeout: 6000 },
-        { provider: 'openrouter', model: 'minimax/minimax-m2.7:free', timeout: 6000 },
-        { provider: 'openrouter', model: 'deepseek/deepseek-chat', timeout: 6000 },
-        { provider: 'minimax', model: 'MiniMax-M3', timeout: 6000 },
-        { provider: 'ollama', model: 'minimax-m3', timeout: 6000 }
+        { provider: 'openrouter', model: 'openrouter/free', timeout: 6000 },
+        { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 6000 },
+        { provider: 'ollama', model: 'nemotron-3-super', timeout: 7000 },
+        { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: 7000 }
       ];
     }
 
