@@ -246,6 +246,23 @@ export default function TerminalAI({ onClose } = {}) {
   const [attachments, setAttachments] = useState([]);
   const [attachError, setAttachError] = useState('');
 
+  // Terminal Command History Navigation (ArrowUp / ArrowDown like Bash / PowerShell)
+  const [commandHistory, setCommandHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem('terminal_cmd_history');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const draftInputRef = useRef('');
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('terminal_cmd_history', JSON.stringify(commandHistory.slice(-50)));
+    } catch {}
+  }, [commandHistory]);
+
   const availableCommands = Object.keys(COMMAND_REGISTRY).filter(cmd => cmd.startsWith(slashFilter));
 
   useEffect(() => {
@@ -299,6 +316,14 @@ export default function TerminalAI({ onClose } = {}) {
     const isSlash = userQuery.startsWith('/');
     const cmdNormalized = isSlash ? userQuery.substring(1).toLowerCase() : userQuery.toLowerCase();
     
+    if (userQuery) {
+      setCommandHistory(prev => {
+        const filtered = prev.filter(c => c !== userQuery);
+        return [...filtered, userQuery].slice(-50);
+      });
+    }
+    setHistoryIndex(-1);
+    draftInputRef.current = '';
     setInput('');
     setShowSlashMenu(false);
 
@@ -401,7 +426,16 @@ export default function TerminalAI({ onClose } = {}) {
         .replace(/([a-zA-Z0-9_]+)[\u2013\u2014]([a-zA-Z0-9_]+)/g, '$1, $2')
         .replace(/\s*[\u2013\u2014]\s*/g, ', ')
         .replace(/,\s*,+/g, ',')
-        .replace(/\s{2,}/g, ' ')
+        .replace(/[^\S\r\n]{2,}/g, ' ')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+      // Auto-Format Markdown Structure (Restorasi baris baru untuk Tabel dan List GFM)
+      finalResponse = finalResponse
+        .replace(/([.:?!])\s+([-*•]\s+\*\*)/g, '$1\n$2')
+        .replace(/([.:?!])\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n$2')
+        .replace(/([^\n])\s+(\|[ \t]*[A-Za-z0-9_ -]+[ \t]*\|)/g, '$1\n\n$2')
+        .replace(/(\|[ \t]*)\s+(\|[ \t]*[A-Za-z0-9_-])/g, '$1\n$2')
         .trim();
 
       // Telemetry Chat Logging (Kueri dicatat ke telemetry event, bukan ke basis data RAG)
@@ -475,6 +509,9 @@ export default function TerminalAI({ onClose } = {}) {
   const handleInputChange = (e) => {
     const val = e.target.value;
     setInput(val);
+    if (historyIndex !== -1) {
+      setHistoryIndex(-1);
+    }
     
     if (val.startsWith('/')) {
       const filter = val.substring(1).toLowerCase();
@@ -487,22 +524,57 @@ export default function TerminalAI({ onClose } = {}) {
   };
 
   const handleKeyDown = (e) => {
+    // 1. Navigasi menu slash command bila aktif
     if (showSlashMenu && availableCommands.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSlashSelectedIndex(prev => (prev + 1) % availableCommands.length);
+        return;
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSlashSelectedIndex(prev => (prev - 1 + availableCommands.length) % availableCommands.length);
+        return;
       } else if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
         e.preventDefault();
         const chosen = availableCommands[slashSelectedIndex];
         if (chosen) {
            sendMessage(`/${chosen}`);
         }
+        return;
       } else if (e.key === 'Escape') {
         e.preventDefault();
         setShowSlashMenu(false);
+        return;
+      }
+    }
+
+    // 2. Navigasi riwayat perintah (ArrowUp / ArrowDown ala Terminal & PowerShell)
+    if (!showSlashMenu && commandHistory.length > 0) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex === -1) {
+          draftInputRef.current = input; // simpan draf sebelum menavigasi riwayat
+          const nextIdx = commandHistory.length - 1;
+          setHistoryIndex(nextIdx);
+          setInput(commandHistory[nextIdx]);
+        } else if (historyIndex > 0) {
+          const nextIdx = historyIndex - 1;
+          setHistoryIndex(nextIdx);
+          setInput(commandHistory[nextIdx]);
+        }
+      } else if (e.key === 'ArrowDown') {
+        if (historyIndex !== -1) {
+          e.preventDefault();
+          if (historyIndex < commandHistory.length - 1) {
+            const nextIdx = historyIndex + 1;
+            setHistoryIndex(nextIdx);
+            setInput(commandHistory[nextIdx]);
+          } else {
+            // Sudah di perintah paling baru, kembalikan ke draf ketikan awal
+            setHistoryIndex(-1);
+            setInput(draftInputRef.current);
+          }
+        }
       }
     }
   };
