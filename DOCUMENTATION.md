@@ -1099,7 +1099,18 @@ Released 2026-09-03.
    - Menemukan akar masalah mengapa simbol `**` muncul sebagai teks mentah: regex pembersih `\s*\*\s*-\s*` sebelumnya memotong tanda bintang kedua pada label bold yang diikuti tanda hubung (`**Nama** - Deskripsi` menjadi `**Nama* - `), lalu regex berikutnya menghapus satu bintang tersisa karena dianggap bintang yatim (`*`). Akibatnya, pasangan penutup `**` hilang total sehingga Markdown parser gagal merendernya menjadi huruf tebal (`<strong>`) dan menampilkannya sebagai teks literal `**`.
    - Mengalibrasi regex dengan *negative lookaround* `(?<!\*)\s*\*(?!\*)\s*-\s*` sehingga pasangan bintang ganda `**` milik teks tebal tetap 100% utuh dan valid.
 2. **Pemisahan Baris Numbered List Berformat Bold (`api/chat.js` & `TerminalAI.jsx`):**
-   - Memperbaiki `normalizeStructuredMarkdown` agar mengenali angka list yang diikuti tanda bintang/teks tebal (misal `3. **Model-Model Inti`) agar otomatis terpisah ke baris baru dan tidak lagi menempel di ujung kalimat sebelumnya.
+### v10.636.0 — Elimination of Repository Hallucinations & Deep Ground Truth Injection
+
+Released 2026-09-03.
+1. **Pemberantasan Total Halusinasi Proyek Skripsi Spam-Email (`api/chat.js`):**
+   - Mengganti ringkasan sebaris sebelumnya yang minim konteks dengan basis pengetahuan autentik yang bersumber langsung dari dokumentasi repositori resmi GitHub (`https://github.com/Raflyf/Spam-Email/blob/main/docs/DOKUMENTASI_MODEL.md`).
+   - Melarang keras dan memblokir seluruh klaim halusinasi palsu yang tidak pernah ada pada proyek asli:
+     * Menghapus klaim split acak 70/15/15: Menyuntikkan dataset riil `emails.csv` (Kaggle 5.728 email) dan `data_test_berlabel_awal.csv` (1.000 email modern seimbang: 500 spam + 500 non-spam), dengan skema adaptasi 30% (300 email) berbobot 8× dan 70% (700 email) untuk uji murni.
+     * Menghapus klaim model ensemble/voting: Menegaskan bahwa proyek ini adalah komparasi dua model terpisah (Complement Naive Bayes vs XGBoost) pada Metode 1 (tanpa adaptasi) vs Metode 2 (dengan Domain Adaptation 30%).
+     * Menghapus klaim oversampling (SMOTE): Penanganan ketidakseimbangan kelas murni dilakukan lewat arsitektur Complement Naive Bayes (CNB), parameter `scale_pos_weight` pada XGBoost, serta instance weighting 8×.
+     * Menghapus klaim palsu lainnya: Stemming Bahasa Indonesia, embedding SBERT (hanya milik OpenPlagiarismChecker), data streaming, dan retraining otomatis.
+   - Menyuntikkan arsitektur fitur faktual: TF-IDF Word (20.000) + Char (8.000) + 13 Fitur Struktural + 35 Keyword Spam + SelectKBest Chi-Square (k=12.000) untuk CNB, serta spesifikasi web Flask, mode batch CSV, dan tuning rasio kelas 10:90 s.d. 90:10.
+
 
 
 
