@@ -95,7 +95,8 @@ ${effortDirective}
 
 [PRINSIP GROUNDING FAKTUAL, DINAMIS & ANTI-HALUSINASI]:
 - Eksplorasi Dinamis: Seluruh informasi eksternal terkait perkembangan teknologi, rilis model AI, jadwal produk, berita global, dan peristiwa dunia wajib diperoleh secara 100% dinamis dari data web dan memori RAG aktual.
-- Anti-Noise: Jawab langsung ke inti pertanyaan secara padat, mengalir natural. DILARANG mencampurkan informasi produk atau topik dari percakapan sebelumnya ketika pengguna beralih menanyakan subjek baru.`;
+- Anti-Noise: Jawab langsung ke inti pertanyaan secara padat, mengalir natural. DILARANG mencampurkan informasi produk atau topik dari percakapan sebelumnya ketika pengguna beralih menanyakan subjek baru.
+- DILARANG KERAS mengeja, mengulang aturan sistem, menuliskan 'Check constraints', membuat checklist batasan, draft kalimat, atau membagikan proses berpikir internal ke dalam teks jawaban. Keluarkan HANYA respon final yang bersih kepada pengguna.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -1320,12 +1321,18 @@ export default async function handler(req, res) {
 
     const sendSuccess = (content, modelName, providerName) => {
       let cleaned = String(content || '')
-        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, '')
         .replace(/<br\s*\/?>/gi, '\n')
         .replace(/<\/?(?:div|p|span)[^>]*>/gi, '')
         .trim();
 
-      // 0. Auto-persist validated facts from [SAVE_MEMORY: ...] to Supabase
+      // 0. Strip trailing meta-reflection, chain-of-thought, or constraints scratchpad leaks
+      // (e.g. " - Check constraints: ...", "Response structure: ...", "Draft: ...", "Final plan: ...")
+      cleaned = cleaned.replace(/["']?\s*[-–—*•]?\s*(?:Check constraints|Response structure|Final plan|Draft:|Checking constraints|Let's check constraints|Check against|Response plan:)[\s\S]*/i, '').trim();
+      cleaned = cleaned.replace(/\b(?:Draft|Final plan|Response plan):\s*["']?([\s\S]+?)["']?(?=\s*[-–—*•]?\s*(?:Check|Response structure|Final plan|$))/i, '$1').trim();
+      cleaned = cleaned.replace(/^["']|["']$/g, '').trim();
+
+      // 0.1. Auto-persist validated facts from [SAVE_MEMORY: ...] to Supabase
       const saveMemoryMatches = [...cleaned.matchAll(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/gi)];
       for (const m of saveMemoryMatches) {
         if (m[1] && m[1].trim()) {
@@ -2136,9 +2143,9 @@ Seluruh fakta dari Memori Jangka Panjang di bawah adalah referensi konteks yang 
         if (remainingMs <= 1500) break;
 
         // Dual-Phase Adaptive Timeout:
-        // 1. Connect Timeout (6500ms): Jika model mati, hang, atau tidak merespons awal, langsung alihkan ke model berikutnya!
-        // 2. Active Thinking Timeout (hingga 55s / remainingMs): Jika model merespons dan aktif, biarkan model terus berpikir sampai tuntas tanpa terkendala timeout!
-        const connectTimeout = Math.min(step.timeout || 6500, 6500);
+        // 1. Connect Timeout (15000ms): Waktu cukup untuk inisiasi model & web grounding; jika server benar-benar down/mati, baru alihkan.
+        // 2. Active Thinking Timeout (hingga 55s / remainingMs): Begitu model merespons (200 OK), biarkan model terus berpikir sampai tuntas tanpa terkendala timeout pendek!
+        const connectTimeout = Math.min(step.timeout || 15000, 15000);
         const activeTimeout = Math.max(8000, remainingMs - 1000);
 
         try {

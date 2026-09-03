@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2 } from 'lucide-react';
+import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
 import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
@@ -214,6 +214,15 @@ export default function TerminalAI({ onClose } = {}) {
   const VALID_MODELS = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision', 'laguna', 'opencode-laguna', 'mimo', 'opencode-mimo'];
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState('idle'); // 'idle' | 'request' | 'thinking'
+  const phaseTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
+    };
+  }, []);
+
   const [selectedModel, setSelectedModel] = useState(() => {
     try {
       const saved = localStorage.getItem('ai_selected_model');
@@ -327,7 +336,13 @@ export default function TerminalAI({ onClose } = {}) {
     }
 
     setMessages(prev => [...prev, { role: 'user', content: userQuery, time: getCurrentTime() }]);
+    setLoadingPhase('request');
     setIsLoading(true);
+
+    if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
+    phaseTimerRef.current = setTimeout(() => {
+      setLoadingPhase('thinking');
+    }, 1400);
 
     try {
       // FIX M4: forward attachments ({name,type,data}; images carry a data URL
@@ -370,6 +385,13 @@ export default function TerminalAI({ onClose } = {}) {
           saveAIMemory(memoryMatch[1].trim(), telemetry.sessionId || 'unknown');
         }
       }
+      // Strip internal scratchpad, chain-of-thought, or constraints reflection leaks
+      finalResponse = finalResponse
+        .replace(/["']?\s*[-–—*•]?\s*(?:Check constraints|Response structure|Final plan|Draft:|Checking constraints|Let's check constraints|Check against|Response plan:)[\s\S]*/i, '')
+        .replace(/\b(?:Draft|Final plan|Response plan):\s*["']?([\s\S]+?)["']?(?=\s*[-–—*•]?\s*(?:Check|Response structure|Final plan|$))/i, '$1')
+        .replace(/^["']|["']$/g, '')
+        .trim();
+
       // Clean memory tags & AI punctuation artifacts (remove robotic em-dashes and non-breaking hyphens)
       finalResponse = finalResponse.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
       finalResponse = finalResponse
@@ -441,6 +463,8 @@ export default function TerminalAI({ onClose } = {}) {
         : '⚠️ Gagal terhubung ke API Gateway. Pastikan koneksi atau server dev aktif.';
       setMessages(prev => [...prev, { role: 'ai', content: errMsg, time: getCurrentTime() }]);
     } finally {
+      if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
+      setLoadingPhase('idle');
       setIsLoading(false);
     }
   };
@@ -725,12 +749,29 @@ export default function TerminalAI({ onClose } = {}) {
           </div>
         ))}
         {isLoading && (
-          <div className="flex flex-col items-start w-full">
-             <div className="flex items-center gap-2 mb-1.5 w-full">
-                <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
-                  <Loader2 className="w-3 h-3 text-cyan-400 animate-spin" />
-                </div>
-                <span className="text-xs font-semibold text-cyan-400 animate-pulse">Menyusun respons via Auto Router...</span>
+          <div className="flex flex-col items-start w-full my-2">
+             <div className="flex items-center gap-2.5 w-full">
+                {loadingPhase === 'request' ? (
+                  <>
+                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30 shrink-0">
+                      <Radio className="w-3 h-3 text-amber-400 animate-pulse" />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
+                      <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[10px] uppercase tracking-wider font-mono">API Request</span>
+                      <span className="animate-pulse">Menghubungkan ke API Gateway & mencari data...</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shrink-0">
+                      <Loader2 className="w-3 h-3 text-cyan-400 animate-spin" />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
+                      <span className="px-1.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-[10px] uppercase tracking-wider font-mono">Thinking</span>
+                      <span className="animate-pulse">Model merespons (OK), sedang berpikir & menyusun respons...</span>
+                    </div>
+                  </>
+                )}
              </div>
           </div>
         )}
