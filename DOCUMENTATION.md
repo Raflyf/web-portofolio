@@ -1549,3 +1549,32 @@ Menindaklanjuti instruksi mutlak pengguna untuk mensinkronkan model pada monitor
 3. **Verifikasi:**
    - Kompilasi `npm run build` sukses tanpa galat (1,35 detik).
    - Seluruh perubahan di-commit dan di-push ke GitHub repository.
+
+### v10.657.0 — Elimination of Dynamic Knowledge Hardcoding, Uniform List Item Typography & RAG Memory Isolation
+
+Released 2026-09-03.
+
+Menindaklanjuti teguran dan instruksi pengguna terkait inkonsistensi pewarnaan huruf pada list proyek terminal dan penegakan mutlak aturan `AGENTS.md` (anti-hardcoding pengetahuan dinamis):
+
+1. **Konsistensi Visual Pewarnaan Teks Terminal (`api/chat.js` & `src/index.css`):**
+   - **Akar Masalah:** Judul poin pada pesan terminal hanya berwarna aksen cyan (`#67e8f9`) jika dirender sebagai elemen `<strong>` (dibungkus `**`). Bila model menghasilkan format tanpa `**` (atau bila tanda asterisk terpotong oleh regex pembersih lama), teks judul jatuh ke warna default putih sehingga tampilan terlihat belang (sebagian cyan, sebagian putih).
+   - **Solusi Universal:**
+     * Menambahkan Rule 1.4 di `normalizeStructuredMarkdown` untuk menormalisasi karakter bullet aneh (`•`, `*`) menjadi tanda strip `- `.
+     * Menambahkan Rule 1.6 di `normalizeStructuredMarkdown` untuk mendeteksi seluruh judul list item sebelum titik dua (`- Judul: Penjelasan` atau `1. Judul: Penjelasan`) yang belum bold dan secara otomatis membungkusnya menjadi `**Judul**: `.
+     * Menghapus regex pembersih asterisk tunggal lama yang merusak format cetak miring/tebal.
+     * Hasil: Seluruh 5 proyek portofolio kini 100% konsisten ter-render sebagai teks aksen cyan (`<strong>`).
+
+2. **Eliminasi Total Hardcode Pengetahuan Dinamis (`api/chat.js`):**
+   - Menghapus seluruh penyebutan nama model, nomor versi, dan brand pihak ketiga dari prompt sistem (Rule 6 `[PROTOKOL RESMI BENCHMARK & PERINGKAT LEADERBOARD]`) dan regex codebase (`TOXIC_PATTERNS`).
+   - Rule 6 dikembalikan ke prinsip epistemologis murni: seluruh metrik, skor, dan evaluasi wajib berakar 100% pada data live penelusuran web yang tersedia tanpa pernah mengarang metrik atau mengasumsikan ketiadaan tanpa bukti.
+
+3. **Isolasi Memori Database RAG (Anti-Memory Contamination):**
+   - Menambahkan filter arsitektural pada Semantic Memory Gate (`api/chat.js`): bila kueri sedang menjalankan penelusuran web live untuk entitas eksternal (`isExternalLiveSearch`), potongan memori statis database Supabase `ai_memories` TIDAK DISUNTIKKAN (`rawServerMemories = []`). Fakta teraktual disuplai murni oleh konteks penelusuran internet live.
+   - Menghapus fungsi otomatis `topGroundedMemory` yang sebelumnya menyimpan judul berita luar sembarangan ke dalam Supabase `ai_memories`.
+   - Memperluas deteksi follow-up multi-turn `isDependentFollowUp` untuk mengenali frasa sanggahan/koreksi pengguna (seperti `jangan halu`, `cari yang benar`) sehingga mewarisi subjek percakapan sebelumnya.
+
+4. **Verifikasi:**
+   - Pengujian kueri daftar proyek: Seluruh 5 proyek terformat seragam dengan `- **Nama Proyek**: `.
+   - Pengujian kueri perbandingan benchmark: Model menyajikan fakta riil hasil pencarian secara jujur tanpa mengarang skor fiktif.
+   - Pengujian kueri sanggahan multi-turn ("jangan halu, cari yang benar"): Sistem menelusuri subjek percakapan sebelumnya secara tepat tanpa memuat artikel politik atau mengulang halusinasi.
+   - Kompilasi `npm run build` sukses bersih (1,25 detik).
