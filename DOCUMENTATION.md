@@ -938,4 +938,20 @@ Released 2026-09-03.
 3. **Pembersihan Total Model Lawas / Deprecated:**
    - Mengeliminasi model-model lama era 2024-2025 (`cohere/north-mini-code`, `gpt-oss:20b`, `minimax-m2.7`, `MiniMax-M3 legacy`) dari cascade eksekusi.
 
+### v10.620.0 — Global Timeout Threshold Expansion Across All Pipeline Layers
+
+Released 2026-09-03.
+1. **Peningkatan Batas Waktu Serverless Race Budget (`api/chat.js`):**
+   - Menyelaraskan total execution budget `remainingMs` dari 28 detik menjadi 58 detik (mendekati batas maksimal `maxDuration: 60` di `vercel.json`), memberi ruang bernapas penuh bagi pemrosesan instruksi kompleks atau multi-turn history.
+   - Menaikkan alokasi timeout per step pada failover cascade dari 6.5s–9s menjadi 20s–25s untuk general cascade, dan hingga 30s untuk deep reasoning.
+2. **Peningkatan Batas Waktu Provider Callers & Network Wrappers:**
+   - `fetchJsonWithTimeout`: Default dinaikkan dari 10.000ms menjadi 25.000ms.
+   - `callOpenRouter`, `callOpenCode`, `callNvidiaNim`, `callOllama`: Default batas pemanggilan ditingkatkan ke 55.000ms; per-key sub-timeout dinaikkan dari 9s/18s menjadi 25s/45s.
+   - `callMiniMax`: Default timeout ditingkatkan dari 12.000ms menjadi 25.000ms.
+3. **Peningkatan Batas Waktu I/O Pendukung & Client Sync:**
+   - `searchWebContext`: Jatah waktu pengumpulan berita dan live feeds dinaikkan dari 2.200ms menjadi 6.000ms.
+   - `fetchServerMemories`: Timeout pengambilan memori server dinaikkan menjadi 5.000ms.
+   - `TerminalAI.jsx`: Timeout background sync memori Supabase diperluas dari 4.000ms menjadi 10.000ms.
+
+
 
