@@ -139,7 +139,12 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
    - Jika pengguna menanyakan detail spesifik yang tidak tersedia dalam data terverifikasi, sampaikan dengan ramah, santun, dan transparan bahwa detail tersebut belum dipublikasikan atau tidak tercantum dalam dokumentasi yang ada. Mengakui batas informasi secara lugas jauh lebih terpercaya daripada memberikan tebakan palsu.
 
 [PRINSIP GROUNDING FAKTUAL & ANTI-NOISE]:
-- Anti-Noise & Zero-Scratchpad: DILARANG KERAS mengeja atau mengulang aturan sistem, menuliskan 'Check constraints', membuat checklist batasan, draft kalimat, atau membagikan proses berpikir internal ke teks jawaban. Keluarkan HANYA respon final yang bersih, ramah, dan solutif kepada pengguna.`;
+- Anti-Noise & Zero-Scratchpad: DILARANG KERAS mengeja atau mengulang aturan sistem, menuliskan 'Check constraints', membuat checklist batasan, draft kalimat, atau membagikan proses berpikir internal ke teks jawaban. Keluarkan HANYA respon final yang bersih, ramah, dan solutif kepada pengguna.
+
+[PROTOKOL INTEGRITAS WAKTU & KEJUJURAN EPISTEMIS (ANTI-INFORMASI LAWAS)]:
+1. Setiap jawaban yang memuat status "terbaru", "saat ini", "tahun ini", jadwal rilis, harga, peringkat, atau kondisi terkini WAJIB menyandang penanda waktu sumbernya (misal "dilaporkan [tanggal]", "per [bulan/tahun]"). DILARANG menyajikan fakta tanpa penanda waktu sebagai kebenaran absolut hari ini.
+2. Jika topik menuntut fakta cepat-berubah (rilis produk, versi perangkat lunak, model AI, berita, harga, peringkat) dan tidak tersedia blok bukti live hasil pencarian web, nyatakan keterbatasan verifikasi secara jujur dan hangat: sampaikan hanya pengetahuan yang Anda yakini terverifikasi dengan penanda jelas bahwa itu bukan status live terkini, lalu arahkan ke sumber resmi untuk kepastian mutakhir. DILARANG mengarang status "terbaru" dari ingatan lama, menebak tanggal rilis, atau menyangkal eksistensi rilis hanya karena di luar pengetahuan model.
+3. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -357,11 +362,12 @@ function formulateSmartSearchQueries(query, history = []) {
     queries.push(`${targetSubject} latest official news update`);
     queries.push(`${targetSubject} rilis pembaruan resmi terkini`);
 
-    // Expand search terms for AI & LLM model comparisons to fetch contemporary live rankings
-    if (/\b(model|llm|ai|gpt|claude|gemini|deepseek|terbaik|best)\b/i.test(targetSubject) || /\b(ai|llm|model)\b/i.test(qNorm)) {
-      queries.unshift(`Claude 5.1 OR Claude Fable 5.1 OR Claude Opus 5`);
-      queries.unshift(`GPT-5.6 Sol OR OpenAI Astra OR GPT-5.6`);
-      queries.unshift(`Gemini 3.8 Flash OR Gemini 3.8 Cyber`);
+    // Expand search terms for AI & LLM model comparisons dynamically.
+    // ZERO hardcoded brand/version lists (AGENTS.md 10c) - the live engine must always
+    // reflect whatever the current real-world landscape is, strictly subject-centered.
+    const currentYear = new Date().getFullYear();
+    if (/\b(model|llm|ai|gpt|claude|gemini|deepseek|terbaik|best|leaderboard|ranking)\b/i.test(targetSubject) || /\b(ai|llm|model)\b/i.test(qNorm)) {
+      queries.push(`${targetSubject} ${currentYear} comparison latest update`);
     }
 
     // Dynamic intent modifiers based on user intent keywords
@@ -761,6 +767,23 @@ async function searchWebContext(query, history = []) {
       return fetches;
     });
 
+    // 2b. Global Top-Headlines overview - generic news requests ("berita terbaru", "kabar",
+    // "news today") get the freshest global + Indonesian headlines even without a named subject.
+    const isNewsOverviewQuery = /^(?:berita|kabar|news|headlines?|info\s+terbaru|what'?s\s+new)\b/i.test(query.trim()) ||
+      /^(?:apa|sebutkan|ceritakan|bagaimana)\s+(?:berita|kabar|perkembangan)\b/i.test(query.trim());
+    if (isNewsOverviewQuery) {
+      searchFetches.push(
+        fetch(`https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: controller.signal
+        }),
+        fetch(`https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+          signal: controller.signal
+        })
+      );
+    }
+
     // 3. GitHub Open-Source & Library Discovery (For tech / framework / code / repo queries)
     const isTechOrCode = /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt|anthropic|openai|mistral|nemotron)\b/i.test(query);
     if (isTechOrCode) {
@@ -773,6 +796,13 @@ async function searchWebContext(query, history = []) {
       );
       searchFetches.push(
         fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(techKeyword)}&limit=3`, {
+          headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
+          signal: controller.signal
+        })
+      );
+      // Hacker News (Algolia) - freshest developer, startup & ecosystem signal worldwide
+      searchFetches.push(
+        fetch(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(techKeyword)}&tags=story&hitsPerPage=4`, {
           headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
           signal: controller.signal
         })
@@ -906,6 +936,22 @@ async function searchWebContext(query, history = []) {
               });
               rawSnippets.push(`[HuggingFace]: ${models}`);
             }
+            // Hacker News (Algolia JSON API)
+            if (Array.isArray(parsed?.hits)) {
+              parsed.hits.slice(0, 3).forEach(hit => {
+                const title = cleanStr(hit.title || hit.story_title || '');
+                if (title && !isJunkArticle(title)) {
+                  const hnDate = hit.created_at ? ` (${String(hit.created_at).slice(0, 10)})` : '';
+                  const hnPoints = Number.isFinite(hit.points) ? ` - ${hit.points} poin` : '';
+                  structuredSnippets.push({
+                    text: `[Hacker News Global${hnDate}]: ${title}${hnPoints}`,
+                    timestamp: hit.created_at ? new Date(hit.created_at).getTime() : Date.now(),
+                    score: 4
+                  });
+                  rawSnippets.push(`[Hacker News]: ${title}`);
+                }
+              });
+            }
           } catch (_) {}
         } else if (textData.includes('<feed') || textData.includes('<entry>')) {
           // arXiv XML Feed
@@ -1001,20 +1047,19 @@ async function searchWebContext(query, history = []) {
       formattedPrompt = `\n\n[FAKTA & BUKTI TERVERIFIKASI DARI GOOGLE SEARCH, ENSIKLOPEDIA & WEB GLOBAL]:
 ${uniqueSnippets.join('\n')}
 
-[PANDUAN SINTESIS & GROUNDING FAKTUAL]:
-- PRIORITASKAN FAKTA RESMI & TERKINI DARI BUKTI HASIL PENCARIAN DI ATAS.
-- KETENTUAN KHUSUS PERBANDINGAN MODEL AI / LLM TERBAIK SAAT INI:
-  * Rujuk dan sajikan HANYA model-model mutakhir era 2026 yang tertera pada bukti berita di atas (seperti Gemini 3.8 Flash / Gemini 3.8 Cyber, Claude 5.1 / Claude Fable 5.1 / Claude Opus 5, GPT-5.6 Sol / Astra).
-  * DILARANG KERAS menyajikan model-model lawas (seperti Claude 3.7, Gemini 2.5, o3 lama, Llama 3.3) seolah-olah itu model terdepan saat ini.
+[PANDUAN SINTESIS & GROUNDING FAKTUAL UNIVERSAL]:
+- PRIORITASKAN 100% FAKTA RESMI & TERKINI DARI BUKTI HASIL PENCARIAN DI ATAS. Bukti ini adalah satu-satunya representasi kondisi dunia nyata saat ini yang Anda miliki.
+- LARANGAN HARDCODE DARI INGATAN: DILARANG KERAS menyajikan nama model, versi software, tanggal rilis, peringkat, atau status teknologi dari ingatan lama seolah-olah kondisi terkini, KECUALI tercantum eksplisit pada bukti live di atas. Setiap entitas baru hanya boleh disebut bila didukung bukti.
+- PENANDA WAKTU (RECENCY LABELING): Untuk klaim sensitif waktu (rilis terbaru, versi, harga, peringkat, berita, kondisi saat ini), sebutkan penanda waktu sumbernya (misal "dilaporkan [tanggal]", "per [bulan/tahun]"). DILARANG menyajikan artikel atau rilis berumur lebih dari satu tahun sebagai kondisi "saat ini".
 - GAYA PENYAMPAIAN MANUSIAWI, RAMAH, DAN MUDAH DIMENGERTI:
   * Jawablah secara hangat, bersahabat, dan menyenangkan untuk dibaca tanpa kalimat template robotik.
   * Sampaikan inti jawaban secara langsung tanpa berbelit-belit.
   * Gunakan penjelasan yang jernih dan terstruktur (padukan narasi yang mengalir dengan butir poin secara proporsional).
 - FOKUS PENUH PADA SUBJEK YANG DITANYAKAN:
-  * Bahas secara tuntas subjek pertanyaan saat ini tanpa mencampurkan konteks entitas lain yang tidak relevan.
+  * Bahas secara tuntas subjek pertanyaan saat ini tanpa mencampurkan konteks entitas lain yang tidak relevan atau tanpa bukti.
 - PROTOKOL ZERO-HALLUCINATION & ZERO-OVERCLAIM:
   * Rujuk peristiwa, tanggal, metrik, dan fakta nyata dari data pencarian.
-  * DILARANG mengarang berita palsu, tanggal rilis fiktif, atau klaim berlebihan yang tidak tercantum di sumber resmi.\n`;
+  * Jika bukti di atas tidak memuat jawaban kunci, akui jujur bahwa informasi terkini tidak ditemukan dalam pencarian live, berikan yang terverifikasi (bila ada) dengan penanda waktu, lalu arahkan ke sumber resmi. DILARANG mengarang berita palsu, tanggal rilis fiktif, atau klaim berlebihan yang tidak tercantum di sumber resmi.\n`;
     }
 
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10), agentToolsUsed };
@@ -1696,6 +1741,17 @@ export default async function handler(req, res) {
     const webContext = searchResult.formattedPrompt;
     const webMemories = searchResult.rawSnippets || [];
 
+    // UNIVERSAL FRESHNESS INTEGRITY GATE (AGENTS.md 10a/10b): jika pertanyaan menuntut
+    // fakta terkini namun pencarian live kosong, suntikkan arahan kejujuran agar model
+    // tidak menyajikan ingatan lama sebagai "status terbaru" atau mengarang fakta.
+    const needsLiveFacts = !isSkipSearch && /(?:terbaru|terkini|rilis|release|kapan|latest|breaking|berita|news|hari\s+ini|tahun\s+ini|saat\s+ini|sekarang|harga|benchmark|leaderboard|ranking|peringkat|skor|score|versi\s+terbaru|model\s+terbaru|flagship)/i.test(String(query || ''));
+    const freshFactsIntegrityBlock = (needsLiveFacts && !webContext)
+      ? `
+
+[PERINGATAN INTEGRITAS FAKTUAL (BUKTI LIVE TIDAK DITEMUKAN)]:
+Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertanyaan ini. DILARANG mengarang status terbaru atau menyajikan ingatan lama sebagai kondisi "saat ini". Nyatakan dengan jujur bahwa status mutakhir belum terverifikasi lewat pencarian live, sampaikan hanya fakta yang Anda yakini terverifikasi (disertai penanda bahwa itu bukan informasi live), dan sarankan sumber resmi untuk kepastian.`
+      : '';
+
     const agentSteps = [];
     if (!isSkipSearch && Array.isArray(searchResult.agentToolsUsed) && searchResult.agentToolsUsed.length > 0) {
       agentSteps.push(...searchResult.agentToolsUsed);
@@ -1990,7 +2046,7 @@ export default async function handler(req, res) {
       ? `\n\n[INSTRUKSI PENYIMPANAN FAKTA BARU]:\nJika respons Anda memuat rilis teknologi baru terkonfirmasi yang valid dari Konteks Pencarian Web di atas, sertakan tag di baris paling akhir:\n\`[SAVE_MEMORY: Fakta ringkas terkonfirmasi]\``
       : '';
 
-    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort, targetModel, isInternalPortfolioQuery)}${webContext}${serverMemoryBlock}${memoryInstruction}`;
+    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort, targetModel, isInternalPortfolioQuery)}${freshFactsIntegrityBlock}${webContext}${serverMemoryBlock}${memoryInstruction}`;
 
     // Calibrated Dynamic Rolling History Assembler (7,500 chars / ~1.8k tokens - Ultra-Fast Prefill & Sub-10s Latency)
     function assembleDynamicMessages(systemPrompt, historyList = [], userContent = '', maxTotalChars = 7500) {

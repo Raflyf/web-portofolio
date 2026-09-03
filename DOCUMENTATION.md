@@ -396,7 +396,7 @@ Proyek ini telah dikonfigurasi untuk 1-click zero-config deployment di berbagai 
 | **10.455.0** | 2026-08-24 | Fix RSS Cold-Start Timeout & URL Forgery Filter Whitelist-Based (_Anti-Hallucination URL Sanitizer_): (1) Naikkan `AbortController` timeout scraping RSS dari 2600ms ke 5000ms untuk menghilangkan timeout prematur saat cold start Vercel serverless yang menyebabkan error "antrean penuh" di percobaan pertama; (2) Ganti filter URL fiktif berbasis blacklist (`example.com`) menjadi sistem **whitelist domain resmi** mencakup 30+ domain berita Indonesia/global terpercaya (kompas.com, detik.com, tempo.co, techcrunch.com, reuters.com, dll) dan domain AI resmi (openai.com, anthropic.com, deepseek.com, dll) - semua URL yang dikarang model dari domain tidak dikenal otomatis distrip menjadi teks biasa tanpa link; (3) Menghapus link fiktif kasus nyata: `koran-jakarta.com/gpt-5-6`, `achmadnurhidayat.id/qwen-3827b`, path bloomberg fiktif yang dikarang model sekarang akan terdeteksi dan dieliminasi secara otomatis.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | **10.450.0** | 2026-08-24 | Normalisasi Typo Kueri Pencarian & Batasan Anti-Halusinasi Entitas Global (_Search Typo Normalization & Global Entity Anti-Hallucination Boundaries_): (1) Normalisasi Typo & Slang Internet: Menyematkan normalizer otomatis pada `formulateSmartSearchQueries()` untuk memperbaiki typo umum (mis. `perilisann` ➔ `perilisan`, `apaann` ➔ `apa`, `terbaruu` ➔ `terbaru`, `kloo` ➔ `kalau`) dan menambahkan kueri global AI (`latest AI model release 2026 DeepSeek OpenAI Anthropic Gemini Meta`); (2) Batasan Anti-Halusinasi Ground Truth: Mempertegas arahan bahwa 5 proyek resmi Rafly terisolasi dari perkembangan model AI global, melarang model mengarang proyek fiktif seperti 'Perilisann 2.0 oleh Rafly Firmansyah'; (3) Eliminasi Tautan Fiktif: Menyuntikkan pembersih pada `sendSuccess()` untuk melucuti domain fiktif (seperti `example.com` atau placeholder) jika terdeteksi pada hasil inferensi.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
-| **10.465.0** | 2026-08-25 | Full Ponytail Security & Code Audit � 18 Temuan Diperbaiki: (1) **KRITIS-2 (DB):** Menghapus policy RLS UPDATE anon USING (true) pada tabel dmin*auth_config; (2) **MINOR-6:** Menambah validasi current_pin_hash di endpoint ction=update_pin; (3) **KRITIS-4:** Membatasi Access-Control-Allow-Origin dari * ke origin resmi; (4) **KRITIS-5:** Memasang masking OTP di fallback log; (5) **DB-2:** Menambah partial index idx_memories_omniroute; (6) **DB-3:** Instruksi pg_cron TTL pada schema; (7) **MINOR-8:** Menambah Content-Security-Policy dan Permissions-Policy di ercel.json; (8) **DEAD-1/KONFLIK-3:** Menghapus etchLiveRepoContext stub dan menyederhanakan Promise.all; (9) **DEAD-2:** Menghapus pickAutoModel yang tidak pernah dipanggil; (10) **DEAD-3:** Menghapus typo
+| **10.465.0** | 2026-08-25 | Full Ponytail Security & Code Audit � 18 Temuan Diperbaiki: (1) **KRITIS-2 (DB):** Menghapus policy RLS UPDATE anon USING (true) pada tabel dmin*auth_config; (2) **MINOR-6:** Menambah validasi current_pin_hash di endpoint ction=update_pin; (3) **KRITIS-4:** Membatasi Access-Control-Allow-Origin dari * ke origin resmi; (4) **KRITIS-5:** Memasang masking OTP di fallback log; (5) **DB-2:** Menambah partial index idx*memories_omniroute; (6) **DB-3:** Instruksi pg_cron TTL pada schema; (7) **MINOR-8:** Menambah Content-Security-Policy dan Permissions-Policy di ercel.json; (8) **DEAD-1/KONFLIK-3:** Menghapus etchLiveRepoContext stub dan menyederhanakan Promise.all; (9) **DEAD-2:** Menghapus pickAutoModel yang tidak pernah dipanggil; (10) **DEAD-3:** Menghapus typo
 emotron-lighting dari semua omniCandidates; (11) **KONFLIK-1:** Fix timeout RSS dari 2600ms ke 5000ms; (12) **KONFLIK-4:** Perluas regex isSimpleGreeting; (13) **KONFLIK-7:** Ganti includes(Catatan:) ke regex multiline line-start; (14) **KONFLIK-5/6:** Sinkronkan batas event_target, event_label,
 eferrer, session_id di elemetry.js dengan schema Supabase; (15) **DEAD-5:** Update version import erminal-ai.js ke 10.465.0; (16) **PERF-4:** Kurangi max search queries dari 6 ke 4; (17) **INFO-2:** Fix mojibake header pi/chat.js; (18) **DEAD-4/6:** Tambah scratch/, generate_favicons.py, prompt.md ke .gitignore. |
 | **10.466.0** | 2026-08-25 | Rekonfigurasi Penuh Multi-Tier Auto-Router & Cascade Failover AI: Menerapkan arsitektur 4-Tier komprehensif. (Tier 1) OmniRoute Gateway dengan prioritas utama nemotron-lightning untuk semua kategori dan failover ke nemotron-3-ultra, Codex, Antigravity, Vision-model, x-preview-f-free; (Tier 2) OpenRouter Cloud Failover dengan urutan nvidia/nemotron-3.5-lightning:free -> nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free -> openrouter/free -> deepseek/deepseek-chat -> nvidia/nemotron-3-super-120b-a12b:free -> nvidia/nemotron-3-ultra-550b-a55b:free -> minimax/minimax-m3:free -> poolside/laguna-s-2.1:free; (Tier 3) Ollama Cloud Gateway dengan urutan nemotron-3-nano:30b -> nemotron-3-ultra -> nemotron-3-super -> minimax-m3; (Tier 4) OpenCode Zen Direct API dengan urutan nemotron-3.5-lightning-free -> nemotron-3-ultra-free -> x-preview-f-free -> mimo-v2.5-free. Memperbaiki penanganan Server-Sent Events (SSE) stream dari OmniRoute dan integrasi OMNIROUTE_KEY baru.
@@ -423,7 +423,7 @@ eferrer, session_id di elemetry.js dengan schema Supabase; (15) **DEAD-5:** Upda
 | **10.487.0** | 2026-08-25 | Gaya Bahasa Percakapan Alami, Hangat & Manusiawi (Anti-Robotic Tone): Mengrombak persona prompt dan instruksi bahasa agar bertutur luwes, mengalir, dan komunikatif layaknya rekan developer/partner teknis yang cerdas, mengeliminasi frasa birokratis kaku, serta membersihkan tanda pisah output liar.
 | **10.488.0** | 2026-08-25 | Eliminasi Penyangkalan Pihak Ketiga pada Persona Identitas AI: Menghapus penyebutan entitas negatif (seperti GLM/GPT) pada prompt sistem dan membersihkan frasa penyangkalan defensif di sendSuccess, memastikan jawaban identitas 100% fokus murni pada peran asisten portofolio secara percaya diri dan natural.
 | **10.489.0** | 2026-08-25 | Eliminasi Header Tautan Terkait Kosong / Bogus: Mengkondisikan bagian Tautan Terkait agar hanya muncul jika ada link URL nyata dan menyaring otomatis header kosong atau teks placeholder seperti (tidak ada tautan) di sendSuccess.
-| **10.490.0** | 2026-08-25 | Perbaikan Format Kolom Melebar & Tanda Bintang Rusak: Menambahkan pembersih spasi lebar artifisial, normalisasi tanda bintang kurung siku (_ - / [Topik]**), penegakan baris baru antar bullet point, dan pemisahan kalimat penutup pada sendSuccess di api/chat.js.
+| **10.490.0** | 2026-08-25 | Perbaikan Format Kolom Melebar & Tanda Bintang Rusak: Menambahkan pembersih spasi lebar artifisial, normalisasi tanda bintang kurung siku (* - / [Topik]**), penegakan baris baru antar bullet point, dan pemisahan kalimat penutup pada sendSuccess di api/chat.js.
 | **10.491.0** | 2026-08-25 | Eliminasi Sapaan Pembuka Repetitif (Hai! / Halo!): Menghapus kewajiban sapaan pada prompt dan menerapkan filter cerdas di sendSuccess sehingga AI langsung menjawab topik secara natural tanpa mengulang-ulang sapaan kaku di setiap balasan.
 | **10.492.0** | 2026-08-26 | Transformasi Tipografi Estetik & Futuristik (Space Grotesk + Plus Jakarta Sans): Merombak sistem font landing page dan dashboard dengan mengintegrasikan Google Font Space Grotesk untuk seluruh display title, headings, brand name, dan kartu portofolio berkarakter tegas, dipadukan dengan Plus Jakarta Sans untuk keterbacaan body text maksimal dan JetBrains Mono untuk metrik teknis.\n
 | **10.493.0** | 2026-08-26 | Transformasi Palet Warna Anti-AI Slop (Cyber Titanium & Electric Indigo / Aurora Cyan) & Integrasi Background 3D Morphing on Scroll: (1) Mengeliminasi palet hijau emerald klise dan menerapkan palet modern terkurasi (Deep Obsidian Titanium #080a11, Electric Indigo #6366f1, Aurora Cyan #38bdf8, dan Solar Amber #f59e0b) dengan rasio kontras WCAG 2.2 AA; (2) Mengintegrasikan engine Three.js WebGL js/bg-morph-canvas.js dari CDN Cloudflare yang memutasikan (morphing) geometri 3D Torus Knot wireframe, cincin outer icosahedron, dan medan partikel konstelasi secara parametrik pada setiap pergeseran scroll menyerupai transisi PowerPoint 3D Morph.\n
@@ -499,11 +499,11 @@ eferrer, session_id di elemetry.js dengan schema Supabase; (15) **DEAD-5:** Upda
 | **10.579.0** | 2026-09-01 | **Pemulihan Kunci API Ollama Cloud & Isolasi Ketat Model Omni & Mimo**: (1) Menambahkan`process.env.OLLAMA_KEYS`ke dalam array parser`getUnifiedProviderKeys`di`api/chat.js`yang sebelumnya terlewat sehingga kunci Ollama Cloud terbaca penuh dan tidak lagi dilewati (skipped); (2) Mengisolasi model`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`dan`mimo-v2.5-free` secara eksklusif hanya untuk pipeline Multimodal/Vision (`hasImages`) dan Deep Reasoning / Thinking CoT; (3) Menetapkan `nemotron-3-nano:30b` dari Ollama Cloud sebagai prioritas pertama mutlak pada percakapan umum (General Chat) dengan alokasi timeout penuh 35 detik; (4) Terverifikasi faktual berjalan sukses via live engine test. |
 | **10.580.0** | 2026-09-01 | **Interactive Slash Commands Autocomplete Menu & Unifikasi Cache-Busting Universal**: (1) Mengimplementasikan menu autocomplete interaktif popup perintah slash terminal (`/help`, `/skills`, `/projects`, `/certifs`, `/models`, `/benchmarks`, `/aistatus`, `/about`, `/contact`, `/clear`, `/new`, `/history`, `/setkey`, `/clearkey`, `/telemetry`, `/whoami`) dengan dukungan navigasi keyboard penuh (panah atas/bawah, Enter/Tab untuk pilih, Escape untuk tutup) dan klik mouse langsung di `index.html`dan`js/terminal.js`; (2) Menambahkan styling CSS liquid frosted glass obsidian untuk menu slash (`.terminal-slash-menu`, `.terminal-slash-item`, `.terminal-slash-badge`) untuk tema Gelap & Terang di `css/horizonx.css`; (3) Sinkronisasi versi cache-busting universal ke `v10.580.0`pada`index.html`, `dashboard.html`, dan `preview.html`. |
 | **10.581.0** | 2026-09-01 | **Perbaikan Z-Index & Posisi Relatif Menu Slash Autocomplete**: (1) Menyelaraskan struktur penempatan `.terminal-slash-menu`ke dalam`.terminal-input-row`pada`index.html`; (2) Menerapkan aturan `position: relative`pada kontainer`.terminal-input-row`di`css/components.css`guna menjamin menu slash selalu terpaut (anchored) dan menjulang ke atas dari form input tanpa terpotong (clipped) oleh`overflow: hidden`pada container utama terminal. |
-| **10.582.0** | 2026-09-01 | **Restorasi Konten (Migrasi Tahap 2) & Liquid Glass Dashboard**: (1) Mengimplementasikan`react-router-dom`untuk SPA navigasi antara`Home.jsx`dan`Dashboard.jsx`; (2) Merestorasi `AboutSection`, `SkillsBento`, `ProjectsGrid`, `CertificatesGrid`, dan `ExperienceTimeline`ke React menggunakan data asli dari`data.js`dengan desain estetika *iOS Liquid Glass\*; (3) Membangun UI Admin Dashboard lengkap dengan gerbang otentikasi Master PIN (SHA-256 Web Crypto) yang mereplika logika keamanan lama; (4) Menyelamatkan dan menyajikan folder gambar sertifikat via direktori`public/`. |
+| **10.582.0** | 2026-09-01 | **Restorasi Konten (Migrasi Tahap 2) & Liquid Glass Dashboard**: (1) Mengimplementasikan`react-router-dom`untuk SPA navigasi antara`Home.jsx`dan`Dashboard.jsx`; (2) Merestorasi `AboutSection`, `SkillsBento`, `ProjectsGrid`, `CertificatesGrid`, dan `ExperienceTimeline`ke React menggunakan data asli dari`data.js`dengan desain estetika \*iOS Liquid Glass\*; (3) Membangun UI Admin Dashboard lengkap dengan gerbang otentikasi Master PIN (SHA-256 Web Crypto) yang mereplika logika keamanan lama; (4) Menyelamatkan dan menyajikan folder gambar sertifikat via direktori`public/`. |
 | **10.583.0** | 2026-09-01 | **Horizon Hero & Scrollytelling Parallax Architecture**: (1) Mengimplementasikan `HorizonHero`dengan kurva horizon bumi berpendar neon cyan-indigo, ambient nebula, dan layer paralaks bertingkat (framer-motion`useScroll`dan`useTransform`); (2) Menambahkan HUD `ScrollStoryline`floating sidebar dan progress bar atas untuk navigasi scrollytelling real-time; (3) Menerapkan transisi kemunculan berjenjang (staggered scroll reveals & 3D tilt hover) pada`AboutSection`, `SkillsBento`, `ProjectsGrid`(dengan highlight riset terisolasi`OpenPlagiarismChecker`), `CertificatesGrid`, dan `ExperienceTimeline`(dengan sinar cahaya progresif scroll beam); (4) Memperbaiki assertion error react-markdown v10 pada`TerminalAI.jsx`dan referensi ikon`ProjectsGrid.jsx`. |
 | **10.584.0** | 2026-09-01 | **Model Routing Harmonization, Zero Slop & Production Hardening**: (1) Menyelaraskan seluruh permukaan komponen dengan sistem obsidian dark glass (`bg-slate-950/70`, `border-white/10`, `backdrop-blur-2xl`); (2) Menghilangkan seluruh emoji generik dan menggantikannya dengan ikon semantik presisi dari pustaka Lucide SVG; (3) Menambahkan keyframes infinite marquee dua arah (kiri dan kanan) dan bidirectional scroll reveal framer-motion; (4) Mengintegrasikan mesin peredam inersia Lenis Scroll di `App.jsx`. |
 | **10.585.0** | 2026-09-01 | **Dashboard Telemetry Filtering & Modal Management**: (1) Menambahkan fitur filter tipe log interaktif (Semua, Error, AI Query, Security, Navigasi) dan pagination tabel 10 baris pada Dashboard Observabilitas; (2) Menyempurnakan modal Ubah Master PIN dan modal Konfigurasi Supabase Cloud dengan enkapsulasi dialog yang aman; (3) Memverifikasi build produksi dan sinkronisasi branch git. |
-| **10.586.0** | 2026-09-01 | **Terminal Auto-Archive & UI Consistency**: (1) Memperbaiki logika status memori Terminal AI, sekarang memuat ulang (refresh) halaman otomatis mengarsipkan percakapan berjalan ke dalam panel Riwayat Obrolan dan membersihkan kanvas terminal; (2) Menerapkan utilitas class `no-scrollbar` pada body terminal agar konsisten dan menghilangkan scrollbar abu-abu tebal native browser. |
+| **10.586.0** | 2026-09-01 | **Terminal Auto-Archive & UI Consistency\*\*: (1) Memperbaiki logika status memori Terminal AI, sekarang memuat ulang (refresh) halaman otomatis mengarsipkan percakapan berjalan ke dalam panel Riwayat Obrolan dan membersihkan kanvas terminal; (2) Menerapkan utilitas class `no-scrollbar` pada body terminal agar konsisten dan menghilangkan scrollbar abu-abu tebal native browser. |
 
 ### [2026-09-01] UI/UX Dashboard, Motion Scroll & Parallax Fixes
 
@@ -597,12 +597,14 @@ Released 2026-09-02. The layer-3 audit closed 2 critical (C-1, C-2), 6 major (M-
 ### v10.587.0 — Layer-6 Audit & Fix (Zero-Crash Effort Dropdown & Unified Historical RAG Knowledge)
 
 Released 2026-09-02.
+
 1. **Zero-Crash Effort Dropdown Fix:** Fixed runtime `ReferenceError: CheckCircle2 is not defined` by adding missing icon imports from `lucide-react` in `TerminalAI.jsx`, completely eliminating blackscreen crashes when clicking the effort dropdown.
 2. **Unified Historical RAG Knowledge Extraction:** `Dashboard.jsx` now dynamically extracts and combines AI interaction facts from Supabase `portfolio_telemetry` events with dedicated `ai_memories`, ensuring historical sessions and continuous knowledge are displayed immediately in the RAG table.
 
 ### v10.588.0 — Frontier Agent Tuning & Epistemic Honesty (Zero-Hallucination & Continuous RAG Auto-Persist)
 
 Released 2026-09-02.
+
 1. **Frontier Agent Knowledge Tuning (`api/chat.js` & `src/data.js`):**
    - **Epistemic Humility (Kejujuran Mutlak):** Menegakkan aturan pengakuan batas pengetahuan jika informasi belum diumumkan resmi oleh publisher/developer alih-alih mengarang tanggal atau fitur spekulatif.
    - **Zero-Overclaim & Zero-Noise:** Melarang keras klaim fiktif pada proyek web-portofolio (menghapus residu legacy "Vanilla JS", klaim backend Flask fiktif, CLI `portfolio-cli`, dan metrik SIMD/NumPy palsu). Memperbarui spesifikasi asli menjadi React 19, Vite, Tailwind CSS, Framer Motion, Vercel Serverless Functions, dan Supabase PostgreSQL.
@@ -612,9 +614,11 @@ Released 2026-09-02.
 3. **Continuous Learning & Automatic Server-Side RAG Persist:**
    - Mengintegrasikan `saveServerMemory` di backend untuk menyimpan secara otomatis setiap fakta valid (`[SAVE_MEMORY: ...]`) langsung ke tabel `ai_memories` Supabase.
    - Meningkatkan kapasitas penarikan memori percakapan RAG menjadi 15 memori kontekstual aktif di setiap sesi.
+
 ### v10.589.0 — Clean Codebase Audit (Zero-Warning IDE Diagnostics & Dead-Code Elimination)
 
 Released 2026-09-02.
+
 1. **Pembersihan Total Diagnostik IDE (0 Warning / 0 Error di 19 Berkas `src/`):**
    - **`Dashboard.jsx`**: Mengeliminasi seluruh 30 warning linter dengan menghapus import ikon tidak terpakai (`Filter`, `ChevronLeft`, `ChevronRight`, `ExternalLink`, `Sliders`), membersihkan parameter grafik `_args`/`_pluginOptions`, menghapus deklarasi dead config `DEFAULT_SUPABASE_URL`/`DEFAULT_SUPABASE_ANON_KEY`, mengonversi array allocation `new Array()` menjadi standar modern `Array.from()`, serta memigrasikan seluruh blok `catch` menjadi ES2019 optional catch binding (`catch {}`).
    - **`TerminalAI.jsx`**: Menghapus import ikon berlebih (`TerminalSquare`, `History`, `Minimize2`, `CheckCircle2`), menyinkronkan parameter `onClose` pada tombol tutup modal pop-up, dan meniadakan parameter error yang tidak terpakai pada fungsi persistensi memori.
@@ -625,6 +629,7 @@ Released 2026-09-02.
 ### v10.590.0 — Scroll-Craft Motion Integration & Zero-Layout-Shift Dynamics
 
 Released 2026-09-02.
+
 1. **Instalasi Skill Global scroll-craft**:
    - Mengintegrasikan modul skill scroll-craft dari Nate Herk ke konfigurasi global Antigravity IDE (`~/.gemini/config/skills/scroll-craft/`) lengkap dengan seluruh playbook interaksi, panduan page grammars, kurva emosi, dan rule anti-slop.
 2. **Penerapan Scroll Motion di Landing Page (Zero Layout Shift)**:
@@ -633,9 +638,11 @@ Released 2026-09-02.
    - **Ambient Ground Atmosphere**: Menambahkan layer latar belakang dinamis di `Home.jsx` yang bergeser secara parallax dan beradaptasi warnanya mengikuti posisi scroll pembaca tanpa mengubah struktur tata letak elemen apa pun.
 3. **Penerapan Scroll Motion di Dashboard Admin (`Dashboard.jsx`)**:
    - **Top Sticky Progress Line**: Menambahkan bilah progres scroll linear presisi tinggi tepat di bawah header observabilitas admin untuk navigasi log data yang panjang.
+
 ### v10.591.0 — Terminal AI Runtime Fix & Anti-AI Punctuation Sanitization
 
 Released 2026-09-02.
+
 1. **Pemulihan Fatal Crash Terminal (ReferenceError: remarkGfm is not defined):**
    - Mengembalikan import `remark-gfm` yang terhapus pada `TerminalAI.jsx`, mencegah unmount fatal pada React tree saat merender respons markdown.
    - Membungkus seluruh sinkronisasi `localStorage` di `TerminalContext.jsx` dengan blok `try ... catch` untuk ketahanan terhadap pembatasan kuota penyimpanan browser.
@@ -647,9 +654,10 @@ Released 2026-09-02.
 ### v10.592.0 — Mobile Navbar High-Contrast Solid Glass & Backdrop Dimmer
 
 Released 2026-09-02.
+
 1. **Peningkatan Keterbacaan Menu Mobile (`App.jsx`):**
    - Mengganti permukaan semi-transparan `liquid-glass-strong` pada mobile menu dengan panel **95% High-Opacity Glass Surface** (`bg-white/95` di mode terang dan `dark:bg-zinc-900/95` di mode gelap) yang dipadukan dengan `backdrop-blur-2xl`.
-   - Menambahkan **Backdrop Dimmer Overlay** (`fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md`) di belakang menu mobile untuk menggelapkan konten Hero, meniadakan overlap teks, dan memungkinkan fitur *tap-to-close*.
+   - Menambahkan **Backdrop Dimmer Overlay** (`fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md`) di belakang menu mobile untuk menggelapkan konten Hero, meniadakan overlap teks, dan memungkinkan fitur _tap-to-close_.
 2. **Penyelarasan Kontras Tema Terang & Gelap:**
    - Menyempurnakan warna teks menu menjadi `text-zinc-800` (mode terang) dan `text-zinc-100` (mode gelap) dengan target sentuh tinggi (`py-3`) dan indikator arah panah `→`.
    - Mengoptimalkan kontras logo RF dan nama brand di header bar atas agar selalu terbaca jelas di seluruh mode tampilan.
@@ -657,6 +665,7 @@ Released 2026-09-02.
 ### v10.593.0 — Serverless Auth Gateway Repair & Cross-Device PIN Sync
 
 Released 2026-09-02.
+
 1. **Perbaikan Fatal Crash Backend `/api/admin-otp`:**
    - Menghapus deklarasi fungsi duplikat `storeSessionToken` pada `api/admin-otp.js` yang sebelumnya memicu `SyntaxError: Identifier 'storeSessionToken' has already been declared` (HTTP 500) saat cold start runtime Vercel.
 2. **Pemulihan Sinkronisasi Multi-Perangkat (Laptop vs HP):**
@@ -666,67 +675,74 @@ Released 2026-09-02.
 ### v10.594.0 — Uniform Project Card Layout on Category Filtering
 
 Released 2026-09-02.
+
 1. **Penyelarasan Dimensi Grid Portofolio (`ProjectsGrid.jsx`):**
    - Mengondisikan Featured Showcase Card raksasa agar **hanya aktif pada tab "Semua Proyek"** (`filter === 'all'`).
-   - Saat pengguna memilih tab kategori spesifik (seperti *AI & Machine Learning*, *Vision & Tools*, atau *Web Systems*), seluruh proyek dalam kategori tersebut (termasuk *OpenPlagiarismChecker*) dirender ke dalam grid 2-kolom dengan dimensi kartu yang seragam, proporsional, dan rapi.
+   - Saat pengguna memilih tab kategori spesifik (seperti _AI & Machine Learning_, _Vision & Tools_, atau _Web Systems_), seluruh proyek dalam kategori tersebut (termasuk _OpenPlagiarismChecker_) dirender ke dalam grid 2-kolom dengan dimensi kartu yang seragam, proporsional, dan rapi.
    - Menambahkan rendering badge kategori sekunder pada kartu grid standar untuk mempertahankan konteks label proyek.
 
 ### v10.595.0 — Authentic Liquid Glass Mobile Navbar & Soft Frosted Dimmer
 
 Released 2026-09-02.
+
 1. **Pemulihan Estetika Kaca Cair Asli (`App.jsx`):**
    - Mengembalikan kelas `.liquid-glass-nav` pada header top bar saat halaman di-scroll atau saat menu mobile aktif, memulihkan transparansi optik dinamis dan pembiasan specular border.
-   - Menerapkan `.liquid-glass-strong` murni pada panel menu mobile dengan efek frosted blur multi-layer (`backdrop-filter: blur(40px) saturate(200%)`), mengeliminasi tampilan kotak solid datar (*flat solid box*).
-2. **Harmonisasi Kontras Lembut (*Soft Frosted Dimmer*):**
+   - Menerapkan `.liquid-glass-strong` murni pada panel menu mobile dengan efek frosted blur multi-layer (`backdrop-filter: blur(40px) saturate(200%)`), mengeliminasi tampilan kotak solid datar (_flat solid box_).
+2. **Harmonisasi Kontras Lembut (_Soft Frosted Dimmer_):**
    - Menyelaraskan lapisan dimmer menjadi `bg-black/35 dark:bg-black/50 backdrop-blur-sm`, memberikan peredupan latar belakang yang cukup halus agar teks hero tidak bertabrakan, sembari membiarkan efek kilau kristal kaca cair bersinar alami di atasnya.
    - Menggunakan komponen `.liquid-glass-inset` untuk tombol pengalih tema dalam menu mobile.
 
 ### v10.596.0 — Dashboard Multi-Device Synchronization & Single Source of Truth
 
 Released 2026-09-02.
+
 1. **Eliminasi Polusi Data Lokal Browser (`Dashboard.jsx`):**
    - Menghapus pencampuran otomatis event `localStorage` lokal ke dalam data live server. Sebelumnya, riwayat telemetri lokal di browser laptop yang tidak tersinkronisasi di-prepend ke data server, menyebabkan metrik di laptop tergelembungkan (1181 views) sementara di ponsel hanya (1075 views).
-   - Menetapkan Supabase Cloud sebagai *Single Source of Truth* mutlak: seluruh perangkat (Laptop, HP, Tablet) kini membaca data agregat yang 100% identik langsung dari cloud database.
+   - Menetapkan Supabase Cloud sebagai _Single Source of Truth_ mutlak: seluruh perangkat (Laptop, HP, Tablet) kini membaca data agregat yang 100% identik langsung dari cloud database.
 2. **Deduplikasi Baris Paginasi Supabase:**
    - Menambahkan filter deduplikasi berbasis `id` unik pada fungsi paginasi `fetchBatch` untuk menjamin integritas data saat event baru masuk di tengah pengambilan batch.
-   - Mengamankan `localStorage` murni sebagai *offline emergency fallback* hanya jika server tidak dapat dihubungi.
+   - Mengamankan `localStorage` murni sebagai _offline emergency fallback_ hanya jika server tidak dapat dihubungi.
 
 ### v10.597.0 — Pure Continuous RAG Knowledge Segregation & In-Memory Search
 
 Released 2026-09-02.
+
 1. **Pemisahan Tegas Antara RAG Knowledge dan Log Telemetri (`Dashboard.jsx`):**
-   - Menghapus penyuntikan otomatis log aktivitas router (`ai_query_resolved`, `ai_query`, `terminal_cmd`) ke dalam tabel *Continuous RAG Knowledge*. Sebelumnya, seluruh log kueri terminal disulap menjadi entri memori RAG semu, menyebabkan tabel RAG dan tabel Log Aktivitas Pengunjung menampilkan baris yang identik.
+   - Menghapus penyuntikan otomatis log aktivitas router (`ai_query_resolved`, `ai_query`, `terminal_cmd`) ke dalam tabel _Continuous RAG Knowledge_. Sebelumnya, seluruh log kueri terminal disulap menjadi entri memori RAG semu, menyebabkan tabel RAG dan tabel Log Aktivitas Pengunjung menampilkan baris yang identik.
    - Tabel RAG kini 100% murni memuat fakta dan memori pengetahuan jangka panjang yang tersimpan di tabel `ai_memories` Supabase (1.697+ entri pengetahuan aktual hasil scraping berita, literatur akademik, dan fakta model AI).
-2. **Penambahan Fitur Pencarian Cerdas (*RAG Fact Search*):**
+2. **Penambahan Fitur Pencarian Cerdas (_RAG Fact Search_):**
    - Menyematkan input pencarian real-time pada header panel RAG Knowledge, memungkinkan admin memfilter dan mencari basis pengetahuan tersimpan berdasarkan kata kunci secara instan.
 
 ### v10.598.0 — Continuous Full-Page Interactive Scroll Background Canvas
 
 Released 2026-09-02.
+
 1. **Arsitektur Ambient Canvas Menyeluruh (`InteractiveScrollBackground.jsx`):**
    - Menggantikan elemen glow latar belakang statis di hero atas dengan kanvas interaktif layar penuh berposisi `fixed inset-0` yang beroperasi secara kontinu dari awal (Hero) hingga akhir halaman (Kontak & Footer).
    - Mengimplementasikan perjalanan warna kromatik multi-fase berbasis progress scroll:
-     - *Hero*: Electric Cyan & Deep Indigo
-     - *Tentang & Profil*: Sapphire Blue & Soft Teal
-     - *Keahlian (Bento)*: Neon Violet & Electric Cyan
-     - *Proyek & Riset*: Emerald Green & Algorithmic Cyan
-     - *Sertifikasi & Riwayat*: Galactic Violet & Amber Gold
-     - *Terminal AI & Kontak*: Cyber Emerald & Matrix Teal
+     - _Hero_: Electric Cyan & Deep Indigo
+     - _Tentang & Profil_: Sapphire Blue & Soft Teal
+     - _Keahlian (Bento)_: Neon Violet & Electric Cyan
+     - _Proyek & Riset_: Emerald Green & Algorithmic Cyan
+     - _Sertifikasi & Riwayat_: Galactic Violet & Amber Gold
+     - _Terminal AI & Kontak_: Cyber Emerald & Matrix Teal
 2. **Interaktivitas Fisika Partikel & Kecepatan Scroll:**
-   - Menyematkan jaring konstelasi saraf interaktif (*neural mesh*) dengan 65 simpul partikel yang merespons kursor mouse/touch secara magnetik serta mengalami *kinetic velocity warp* saat pengguna melakukan scroll.
-   - Menjamin efisiensi baterai dan GPU: otomatis jeda saat tab disembunyikan (`document.hidden`) dan patuh pada preferensi *prefers-reduced-motion*.
+   - Menyematkan jaring konstelasi saraf interaktif (_neural mesh_) dengan 65 simpul partikel yang merespons kursor mouse/touch secara magnetik serta mengalami _kinetic velocity warp_ saat pengguna melakukan scroll.
+   - Menjamin efisiensi baterai dan GPU: otomatis jeda saat tab disembunyikan (`document.hidden`) dan patuh pada preferensi _prefers-reduced-motion_.
 
 ### v10.599.0 — Offline-First Telemetry Background Auto-Flush to Supabase
 
 Released 2026-09-03.
+
 1. **Sinkronisasi Otomatis Event Offline Lokal (`telemetry.js`):**
    - Mengimplementasikan fungsi `flushUnsyncedEvents()` pada engine telemetri.
-   - Jika pengunjung berinteraksi saat koneksi internet terputus sesaat, event disimpan secara aman di *buffer* lokal. Begitu koneksi internet pulih (`window.addEventListener('online')`) atau saat sesi baru diinisialisasi, sistem secara otomatis mengunggah kumpulan event tersebut ke Supabase Cloud via batch REST POST.
-   - Setelah sukses terunggah ke database awan, event lokal ditandai dengan flag `synced: true`, menjamin *zero data loss* sekaligus mencegah terjadinya duplikasi data.
+   - Jika pengunjung berinteraksi saat koneksi internet terputus sesaat, event disimpan secara aman di _buffer_ lokal. Begitu koneksi internet pulih (`window.addEventListener('online')`) atau saat sesi baru diinisialisasi, sistem secara otomatis mengunggah kumpulan event tersebut ke Supabase Cloud via batch REST POST.
+   - Setelah sukses terunggah ke database awan, event lokal ditandai dengan flag `synced: true`, menjamin _zero data loss_ sekaligus mencegah terjadinya duplikasi data.
 
 ### v10.600.0 — Smart Auto-Hide Navbar & Top-Layer Scroll Progress
 
 Released 2026-09-03.
+
 1. **Smart Auto-Hide Navigasi Publik (`App.jsx`):**
    - Menerapkan mekanisme sembunyi otomatis pada navbar saat pengguna melakukan scroll ke bawah (`-translate-y-full`), dan otomatis muncul kembali saat pengguna melakukan scroll ke atas (`translate-y-0`) dengan transisi 300ms yang halus.
    - Navbar selalu tetap ditampilkan jika posisi scroll berada di dekat puncak halaman (< 70px) atau saat menu mobile sedang terbuka.
@@ -739,9 +755,10 @@ Released 2026-09-03.
 ### v10.601.0 — Elimination of Hero Solid Background Cut-off & Global Canvas Fusion
 
 Released 2026-09-03.
+
 1. **Eliminasi Potongan Batas Latar Belakang Hero (`horizon-hero.jsx`):**
    - Menghapus kelas solid `bg-background dark:bg-zinc-950` dari kontainer `HorizonHero` dan menggantinya dengan `bg-transparent`.
-   - Sebelumnya, batas ketinggian `min-h-[105vh]` pada Hero memotong layar secara horizontal dengan kotak hitam pekat, sehingga tampak seperti background terpotong saat memasuki bagian *Tentang / Profil*.
+   - Sebelumnya, batas ketinggian `min-h-[105vh]` pada Hero memotong layar secara horizontal dengan kotak hitam pekat, sehingga tampak seperti background terpotong saat memasuki bagian _Tentang / Profil_.
    - Kini seluruh pendaran nebula kanvas dan konstelasi partikel mengalir mulus tanpa batas patahan dari puncak Hero hingga ke section paling bawah.
 2. **Elevasi Canvas ke Tingkat Root Halaman (`Home.jsx`):**
    - Menggeser posisi `<InteractiveScrollBackground />` ke luar kontainer `<main>` sehingga meliputi seluruh kanvas viewport secara utuh hingga ujung footer.
@@ -749,6 +766,7 @@ Released 2026-09-03.
 ### v10.602.0 — Stacking Context Normalization & Resilient Canvas Transform
 
 Released 2026-09-03.
+
 1. **Normalisasi Stacking Context Kanvas (`interactive-scroll-background.jsx` & `Footer.jsx`):**
    - Menyelaraskan kontainer kanvas interaktif ke `z-0` (menggantikan `-z-10` yang berisiko tertelan di balik latar belakang `dark:bg-zinc-950` dari root body/div).
    - Memastikan elemen `Footer` eksplisit bertengger di `relative z-10` di atas kanvas.
@@ -758,11 +776,12 @@ Released 2026-09-03.
 ### v10.603.0 — Forced Always-On Motion & Battery Saver Bypass
 
 Released 2026-09-03.
+
 1. **Penerapan Framer Motion Always-On (`App.jsx`):**
    - Membungkus seluruh aplikasi dengan `<MotionConfig reducedMotion="never">`.
-   - Mengabaikan pembatasan preferensi sistem operasi, browser, atau mode hemat baterai (*battery saver*) yang secara default mematikan atau mempercepat transisi Framer Motion secara instan.
+   - Mengabaikan pembatasan preferensi sistem operasi, browser, atau mode hemat baterai (_battery saver_) yang secara default mematikan atau mempercepat transisi Framer Motion secara instan.
 2. **Aktivasi Gerak Kanvas & Fisika Partikel Penuh (`interactive-scroll-background.jsx`):**
-   - Menghapus pembatasan `prefers-reduced-motion` pada pergerakan partikel konstelasi saraf dan *kinetic velocity scroll physics*.
+   - Menghapus pembatasan `prefers-reduced-motion` pada pergerakan partikel konstelasi saraf dan _kinetic velocity scroll physics_.
    - Partikel dan fluid nebula kini dijamin 100% selalu bergerak secara aktif di semua perangkat pengguna.
 3. **CSS Motion Play-State Override (`index.css`):**
    - Menambahkan rule `@media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-play-state: running !important; } }` untuk mencegah user-agent stylesheet atau ekstensi browser mematikan animasi CSS.
@@ -770,6 +789,7 @@ Released 2026-09-03.
 ### v10.604.0 — Universal Root-Level Scroll Progress Bar (z-[100] Stacking Fix)
 
 Released 2026-09-03.
+
 1. **Elevasi Mutlak Progress Bar ke Tingkat Root (`App.jsx`):**
    - Memindahkan komponen indikator garis progress scroll dari sub-komponen lokal (`ScrollStoryline` & `Dashboard`) langsung ke tingkat root aplikasi (`GlobalScrollProgressBar` di dalam `App.jsx`).
    - Memberikan `z-[100]` pada tingkat root terluar sehingga berada di atas `FloatingNavbar` (`z-50`) dalam hierarki stacking context global yang sama.
@@ -781,6 +801,7 @@ Released 2026-09-03.
 ### v10.605.0 — Complete Elimination of Horizon Arc Line (100% Seamless Dark & Light Mode)
 
 Released 2026-09-03.
+
 1. **Pemusnahan Elemen Garis Busur Horizon (`horizon-hero.jsx`):**
    - Menghapus elemen dekoratif `Horizon Curved Arc` yang sebelumnya terpasang di bagian bawah Hero.
    - Elemen tersebut mengandung `border-t border-cyan-400/40`, garis putih `h-0.5 bg-linear-to-r`, dan gradasi gelap `via-indigo-950/20`. Pada Light Mode, elemen ini membelah latar belakang putih secara tajam dan terlihat seperti garis pemotong cacat, serta menimbulkan garis horizontal samar pada Dark Mode.
@@ -789,11 +810,12 @@ Released 2026-09-03.
 ### v10.606.0 — Dashboard Interactive Canvas & Laptop Inertia Scroll Fix
 
 Released 2026-09-03.
+
 1. **Penyematan InteractiveScrollBackground pada Dashboard (`Dashboard.jsx`):**
    - Mengintegrasikan kanvas partikel konstelasi saraf dan fluid nebula kontinu pada halaman Dashboard (baik layar login gerbang keamanan maupun layar metrik telemetri terautentikasi).
    - Menghapus ambient glow statis lama (`ambientDashboardY`) demi konsistensi visual di seluruh aplikasi.
 2. **Perbaikan Smooth & Inertia Scroll pada Laptop (`App.jsx`):**
-   - **Bypass Reduced Motion:** Mengonfigurasi Lenis dengan `respectReducedMotion: false`. Secara default di Lenis v1, `respectReducedMotion` bernilai `true`, sehingga jika Windows laptop menyalakan mode hemat baterai (*battery saver*) atau mematikan animasi di setelan aksesibilitas, Lenis secara otomatis menonaktifkan smooth scroll menjadi loncat instan (`immediate: true`).
+   - **Bypass Reduced Motion:** Mengonfigurasi Lenis dengan `respectReducedMotion: false`. Secara default di Lenis v1, `respectReducedMotion` bernilai `true`, sehingga jika Windows laptop menyalakan mode hemat baterai (_battery saver_) atau mematikan animasi di setelan aksesibilitas, Lenis secara otomatis menonaktifkan smooth scroll menjadi loncat instan (`immediate: true`).
    - **Aktivasi Touchpad / Trackpad Laptop:** Mengaktifkan `syncTouch: true`, `wheelMultiplier: 1.25`, dan `touchMultiplier: 1.8` agar gesekan dua jari di trackpad laptop dan roda mouse memiliki akselerasi inersia luncur yang nyata.
    - **Impor CSS Resmi Lenis:** Mengimpor `import 'lenis/dist/lenis.css'` untuk memastikan class `html.lenis` memiliki reset overflow dan scroll-behavior yang benar.
    - **Reset Scroll Antar Rute:** Menambahkan listener `useEffect` untuk mereset posisi scroll ke 0 saat rute berpindah.
@@ -801,17 +823,19 @@ Released 2026-09-03.
 ### v10.607.0 — Elimination of Dashboard Refresh Auth Flicker (Synchronous Session Restore)
 
 Released 2026-09-03.
+
 1. **Pemusnahan Flash of Unauthenticated Content (FOUC) pada Dashboard (`Dashboard.jsx`):**
-   - Mengubah inisialisasi state `isAuthenticated` dari nilai default statis `false` menjadi *lazy state initializer* sinkron: `useState(() => { ... sessionStorage.getItem(SESSION_AUTH_KEY) ... })`.
+   - Mengubah inisialisasi state `isAuthenticated` dari nilai default statis `false` menjadi _lazy state initializer_ sinkron: `useState(() => { ... sessionStorage.getItem(SESSION_AUTH_KEY) ... })`.
    - Sebelumnya, komponen me-render layar masukkan PIN terlebih dahulu pada frame 0 karena state default `false`, kemudian baru memanggil `useEffect` asynchronous yang membaca session dan men-trigger re-render ke dashboard (memicu kedipan cepat).
    - Dengan pembacaan sinkron pada inisialisasi state, React merender tampilan Dashboard Observabilitas secara langsung sejak frame pertama tanpa ada jeda atau kedipan layar PIN sama sekali saat halaman di-refresh.
 
 ### v10.608.0 — Real-Time GitHub Stars Integration with SWR Caching
 
 Released 2026-09-03.
+
 1. **Integrasi GitHub REST API Publik (`ProjectsGrid.jsx`):**
    - Menggantikan angka bintang hardcoded statis dengan fetch dinamis dari endpoint resmi GitHub REST API (`https://api.github.com/users/Raflyf/repos?per_page=100`).
-   - Setiap kartu proyek (termasuk *FotoKitaBlur*, *OpenPlagiarismChecker*, *Spam-Email*, dsb) kini otomatis membaca nilai `stargazers_count` langsung dari repository GitHub yang bersangkutan.
+   - Setiap kartu proyek (termasuk _FotoKitaBlur_, _OpenPlagiarismChecker_, _Spam-Email_, dsb) kini otomatis membaca nilai `stargazers_count` langsung dari repository GitHub yang bersangkutan.
 2. **Arsitektur Ketahanan SWR (Stale-While-Revalidate):**
    - Menyimpan hasil fetch ke dalam `localStorage` (`portfolio_github_stars_v1`) dengan TTL 10 menit agar aman dari GitHub rate limiting.
    - Jika perangkat offline atau GitHub API lambat, antarmuka langsung menggunakan data cache lokal dan fallback baseline yang akurat (`FotoKitaBlur`: 1 star) dari `data.js`.
@@ -819,19 +843,21 @@ Released 2026-09-03.
 ### v10.609.0 — Clear & Non-Overclaiming Human Copy
 
 Released 2026-09-03.
+
 1. **Penyelarasan Teks Hero (`horizon-hero.jsx`):**
-   - Mengganti kalimat klise overclaim ("Mengkombinasikan ketajaman analisis algoritmik...") dengan narasi yang lugas, manusiawi, dan membumi: *"Fokus mengembangkan aplikasi web modern dan sistem kecerdasan buatan yang praktis, aman, serta menghormati privasi pengguna."*
+   - Mengganti kalimat klise overclaim ("Mengkombinasikan ketajaman analisis algoritmik...") dengan narasi yang lugas, manusiawi, dan membumi: _"Fokus mengembangkan aplikasi web modern dan sistem kecerdasan buatan yang praktis, aman, serta menghormati privasi pengguna."_
 2. **Penyelarasan Subjudul Profil & Visi (`AboutSection.jsx`):**
-   - Mengeliminasi duplikasi teks dan menyusun deskripsi yang mencerminkan fokus rekayasa nyata: *"Membangun sistem cerdas dan aplikasi web dengan kode yang bersih, terstruktur, dan mengutamakan privasi data."*
+   - Mengeliminasi duplikasi teks dan menyusun deskripsi yang mencerminkan fokus rekayasa nyata: _"Membangun sistem cerdas dan aplikasi web dengan kode yang bersih, terstruktur, dan mengutamakan privasi data."_
 
 ### v10.610.0 — Full-Stack Performance Tuning & Zero-Animation-Casualty Optimization
 
 Released 2026-09-03.
+
 1. **Pemusnahan Draw Call Spikes pada Kanvas Latar Belakang (`interactive-scroll-background.jsx`):**
-   - **Batched Particle Lines:** Mengonsolidasikan puluhan draw call `ctx.stroke()` per frame menjadi 1 *single draw call* tunggal, memangkas beban GPU draw call hingga 95% tanpa mengurangi visual konstelasi partikel.
+   - **Batched Particle Lines:** Mengonsolidasikan puluhan draw call `ctx.stroke()` per frame menjadi 1 _single draw call_ tunggal, memangkas beban GPU draw call hingga 95% tanpa mengurangi visual konstelasi partikel.
    - **Batched Particle Dots:** Mengelompokkan seluruh titik partikel ke dalam 1 operasi `ctx.fill()` tunggal.
    - **Distance-Squared Pre-Filtering:** Mengeliminasi kalkulasi `Math.sqrt` berulang di perulangan $O(N^2)$ dengan perbandingan kuadratik (`dx * dx + dy * dy < connectionDistSq`).
-   - **Bounding-Box Gradient Fill:** Membatasi rasterisasi gradasi radial awan aurora hanya pada *bounding box* area efektif nebula, menyingkirkan overdraw layar penuh 3x per frame pada monitor resolusi tinggi.
+   - **Bounding-Box Gradient Fill:** Membatasi rasterisasi gradasi radial awan aurora hanya pada _bounding box_ area efektif nebula, menyingkirkan overdraw layar penuh 3x per frame pada monitor resolusi tinggi.
 2. **Eliminasi Layout Thrashing / Forced Synchronous Reflow (`scroll-storyline.jsx`):**
    - Menerapkan `requestAnimationFrame` flag throttling pada event listener scroll, menghentikan pembacaan sinkron `el.offsetTop` dan `el.offsetHeight` ratusan kali per detik saat pengguna menggulir.
 3. **Akselerasi Perangkat Keras GPU Layer & Isolasi Reflow (`index.css`):**
@@ -839,44 +865,48 @@ Released 2026-09-03.
 4. **Hibernasi Siklus CPU saat Tab Inaktif (`App.jsx`):**
    - Memastikan engine Lenis (`lenis.raf(time)`) berhenti mengeksekusi kalkulasi inersia saat `document.hidden` bernilai true.
 5. **Pencegahan Re-Render Siklikal Dashboard Telemetri (`Dashboard.jsx`):**
-   - Menambahkan *shallow equality guard* pada polling data Supabase, mencegah re-render instans Chart.js dan kalkulasi memori jika data telemetri tidak berubah.
+   - Menambahkan _shallow equality guard_ pada polling data Supabase, mencegah re-render instans Chart.js dan kalkulasi memori jika data telemetri tidak berubah.
 
 ### v10.611.0 — Calibration of Serverless Realtime WIB Timezone
 
 Released 2026-09-03.
+
 1. **Kalibrasi Timezone Serverless Vercel (`api/chat.js`):**
    - Mengidentifikasi anomali jawaban AI ("Jam 19:03 WIB" saat waktu aktual menunjukkan "02:03 WIB dini hari").
    - Serverless backend di cloud Vercel berjalan pada waktu UTC (GMT+0). Penggunaan `toLocaleTimeString('id-ID')` tanpa spesifikasi zona waktu otomatis mengambil jam lokal server UTC (19:03), kemudian menyuntikkannya ke prompt sistem dengan label "WIB", menyebabkan model AI memberikan jam yang meleset 7 jam.
-   - Menambahkan opsi eksplisit `{ timeZone: 'Asia/Jakarta' }` pada format tanggal dan waktu, serta membekali prompt sistem dengan instruksi *Ground Truth* waktu realtime WIB yang tegas agar model AI menjawab waktu secara presisi dan akurat.
+   - Menambahkan opsi eksplisit `{ timeZone: 'Asia/Jakarta' }` pada format tanggal dan waktu, serta membekali prompt sistem dengan instruksi _Ground Truth_ waktu realtime WIB yang tegas agar model AI menjawab waktu secara presisi dan akurat.
 
 ### v10.612.0 — Deterministic Realtime Clock Grounding & History Isolation
 
 Released 2026-09-03.
+
 1. **Klasifikasi Pertanyaan Waktu & Isolasi Riwayat Chat (`api/chat.js`):**
    - Menambahkan pola `isTimeQuery` untuk mendeteksi pertanyaan seputar jam, waktu sekarang, tanggal, dan zona wilayah (misal Cianjur, Jawa Barat, WIB).
-   - Memotong (*bypass*) riwayat percakapan lama (`validHistory`) saat mendeteksi query waktu, mencegah teks usang dari percakapan sebelumnya yang pernah mencatat jam salah meracuni pemikiran model.
+   - Memotong (_bypass_) riwayat percakapan lama (`validHistory`) saat mendeteksi query waktu, mencegah teks usang dari percakapan sebelumnya yang pernah mencatat jam salah meracuni pemikiran model.
    - Melewati web search DuckDuckGo yang kerap menyuplai cuplikan berita usang.
 2. **Grounding Deterministik Anti-Halusinasi:**
-   - Menyematkan lapisan verifikasi deterministik pasca-inferensi: jika output LLM terdeteksi berhalusinasi atau mencantumkan angka jam yang salah, sistem secara otomatis mengoreksinya dengan tanggal dan jam *Ground Truth* WIB (Asia/Jakarta) terkalibrasi secara presisi.
+   - Menyematkan lapisan verifikasi deterministik pasca-inferensi: jika output LLM terdeteksi berhalusinasi atau mencantumkan angka jam yang salah, sistem secara otomatis mengoreksinya dengan tanggal dan jam _Ground Truth_ WIB (Asia/Jakarta) terkalibrasi secara presisi.
 
 ### v10.613.0 — Continuous RAG Knowledge Auto-Persistence & Supabase Auth Fallback
 
 Released 2026-09-03.
+
 1. **Penyelamatan Jalur Tulis Memori RAG (`api/save-memory.js` & `api/chat.js`):**
    - Mengidentifikasi akar masalah terhentinya pembaruan memori RAG sejak 26 Agustus 2026: kode backend menuntut keberadaan variabel `SUPABASE_SERVICE_ROLE_KEY` yang tidak disetel di environment, memicu silent fail pada `saveServerMemory` dan HTTP 503 pada endpoint `/api/save-memory`.
    - Mengimplementasikan `getSupabaseKey()` dengan fallback hierarkis: `SUPABASE_SERVICE_ROLE_KEY` -> `SUPABASE_ANON_KEY` -> `VITE_SUPABASE_ANON_KEY` -> `DEFAULT_SUPABASE_ANON_KEY`.
    - Memulihkan operasi SELECT dan INSERT pada tabel Supabase `ai_memories` ke status aktif 100%.
-2. **Pembaruan Protokol Pembelajaran Berkelanjutan (*Proactive RAG Harvesting*):**
+2. **Pembaruan Protokol Pembelajaran Berkelanjutan (_Proactive RAG Harvesting_):**
    - Memperluas sistem prompt `memoryInstruction` di `api/chat.js`: AI diinstruksikan tidak hanya menyimpan saat ada klaim baru dari pengguna, melainkan juga secara proaktif menyertakan tag `[SAVE_MEMORY: ...]` ketika menyajikan temuan rilis teknologi atau model AI baru yang terverifikasi via pencarian web (misal: peluncuran Gemini 3.8 Flash).
    - Menyinkronkan fakta rilis Gemini 3.8 Flash ke basis data Supabase secara realtime.
 
 ### v10.614.0 — Elimination of Rigid Search Templates, Anti-Noise & Topic Isolation
 
 Released 2026-09-03.
+
 1. **Pemusnahan Template Laporan 4 Bab Kaku (`api/chat.js`):**
    - Menghapus template prompt web search yang sebelumnya memaksakan 4 subjudul kaku ("Latar Belakang & Intisari Rilis", "Fitur & Spesifikasi Teknis", "Jadwal Peluncuran", "Kesimpulan & Rekomendasi") pada semua pertanyaan berbasis web search.
    - Menggantinya dengan panduan sintesis adaptif: jika pengguna bertanya singkat/santai ("kalo claude"), AI menjawab padat langsung ke pokok topik (1-3 paragraf) tanpa memaksakan subjudul atau materi sampingan yang tidak ditanyakan.
-2. **Isolasi Topik Multi-Turn Query (*Anti-Contamination*):**
+2. **Isolasi Topik Multi-Turn Query (_Anti-Contamination_):**
    - Memperbaiki `formulateSmartSearchQueries`: jika pertanyaan lanjutan pengguna merujuk ke entitas independen baru (misal beralih dari Gemini ke Claude), sistem tidak lagi menggabungkan nama produk lama ("gemini claude") ke dalam query pencarian internet.
    - Melarang model mencampurkan informasi produk terdahulu ke jawaban topik baru kecuali diminta secara eksplisit oleh pengguna.
 3. **Prinsip Grounding Web Dinamis (Zero-Hallucination):**
@@ -885,9 +915,10 @@ Released 2026-09-03.
 ### v10.615.0 — Full Synchronization of Laguna S 2.1 & OpenCode Models in Telemetry Monitoring
 
 Released 2026-09-03.
+
 1. **Penyempurnaan Matriks 16 Model di Dashboard Monitoring (`src/pages/Dashboard.jsx`):**
    - Menambahkan definisi dan matcher untuk `opencode-laguna` (Poolside Laguna S 2.1 Free) dan `opencode-mimo` (Mimo v2.5 Free) ke dalam array `INDIVIDUAL_MODELS`.
-   - Mengeliminasi *misattribution bug* di mana event eksekusi Laguna dari Terminal (`auto:laguna-s-2.1-free`) sebelumnya salah dialihkan ke default fallback `ollama-nemotron-nano`.
+   - Mengeliminasi _misattribution bug_ di mana event eksekusi Laguna dari Terminal (`auto:laguna-s-2.1-free`) sebelumnya salah dialihkan ke default fallback `ollama-nemotron-nano`.
    - Menyelaraskan kartu monitoring sehingga eksekusi model Laguna langsung tampil terpisah dengan hit count dan timestamp `AKTIF TERBARU` yang akurat.
 2. **Sinkronisasi Terminal AI (`src/components/terminal/TerminalAI.jsx`):**
    - Mendaftarkan `laguna`, `opencode-laguna`, `mimo`, dan `opencode-mimo` ke dalam whitelist `VALID_MODELS`.
@@ -896,6 +927,7 @@ Released 2026-09-03.
 ### v10.616.0 — Elimination of Hardcoded Model Directives & Pure Dynamic Web Grounding
 
 Released 2026-09-03.
+
 1. **Pembersihan Total Instruksi Hardcode Versi Model AI (`api/chat.js`):**
    - Menghapus seluruh instruksi yang mendikte versi spesifik model AI dari prompt sistem.
    - Memberikan kebebasan penuh bagi AI untuk mengeksplorasi web dan mengenali model rilis terkini (termasuk Claude 5.1 dan rilis frontier terbaru lainnya) secara dinamis tanpa hambatan aturan statis.
@@ -904,6 +936,7 @@ Released 2026-09-03.
 ### v10.617.0 — Universal Subject-Centered Search & Zero Hardcoded Knowledge
 
 Released 2026-09-03.
+
 1. **Formulasi Pencarian Universal Murni Dinamis (`api/chat.js`):**
    - Menghapus seluruh daftar hardcode entitas/provider (`DeepSeek OpenAI Anthropic Gemini Meta`, if statements brand spesifik, dsb) pada `formulateSmartSearchQueries`.
    - Menggantinya dengan arsitektur pencarian yang 100% berpusat pada subjek aktual yang ditanyakan pengguna (`targetSubject = coreSubject || qClean`).
@@ -915,6 +948,7 @@ Released 2026-09-03.
 ### v10.618.0 — Sub-10s Latency Tuning, Dynamic Lean Prefill & Zero-Timeout Cascade
 
 Released 2026-09-03.
+
 1. **Resolusi Akar Masalah Latensi Prefill & Timeout (`api/chat.js`):**
    - **Dynamic Lean Prefill System Prompt:** Memisahkan penyuntikan 5 repositori dan sertifikasi portofolio Rafly via flag `isInternalPortfolioQuery`. Pertanyaan umum non-portofolio kini menggunakan prompt ramping (~1.500 karakter / ~350 token), memangkas Time-To-First-Token (TTFT) model secara drastis.
    - **Snippets Slicing & Fast Search:** Memangkas batasan snippet web pencarian dari 12 menjadi 5 item teratas paling relevan dan mengurangi timeout pencarian menjadi 2.2 detik agar fase pengumpulan fakta selesai instan.
@@ -927,6 +961,7 @@ Released 2026-09-03.
 ### v10.619.0 — Empirical Multi-Key Live Audit & Strict SOTA Hierarchy Alignment
 
 Released 2026-09-03.
+
 1. **Live Network Audit Seluruh Model (Evidence-First):**
    - Melakukan pengujian HTTP langsung ke seluruh endpoint API aktif (`Ollama Cloud`, `OpenRouter`, `OpenCode Zen Gateway`) untuk mengukur latensi dan status ketersediaan model secara nyata.
    - Mengidentifikasi model yang merespons dengan latensi kilat sub-2 detik: `nemotron-3-nano-omni-30b-a3b-reasoning:free` (0.33s), `nvidia/nemotron-3-super-120b-a12b:free` (0.27s), `openrouter/free` (0.31s), `gemma4:31b` (0.74s), `nemotron-3-nano:30b` (0.89s), dan `minimax-m3:free` (1.07s).
@@ -941,6 +976,7 @@ Released 2026-09-03.
 ### v10.620.0 — Global Timeout Threshold Expansion Across All Pipeline Layers
 
 Released 2026-09-03.
+
 1. **Peningkatan Batas Waktu Serverless Race Budget (`api/chat.js`):**
    - Menyelaraskan total execution budget `remainingMs` dari 28 detik menjadi 58 detik (mendekati batas maksimal `maxDuration: 60` di `vercel.json`), memberi ruang bernapas penuh bagi pemrosesan instruksi kompleks atau multi-turn history.
    - Menaikkan alokasi timeout per step pada failover cascade dari 6.5s–9s menjadi 20s–25s untuk general cascade, dan hingga 30s untuk deep reasoning.
@@ -956,6 +992,7 @@ Released 2026-09-03.
 ### v10.621.0 — Dual-Phase Adaptive Timeout & Instant Failover on Inactive/Limit
 
 Released 2026-09-03.
+
 1. **Arsitektur Dual-Phase Adaptive Timeout (`fetchJsonWithTimeout`):**
    - **Phase 1: Fast Initial Liveness Detection (Connect Timeout 15s):** Alokasi waktu cukup bagi model dan web search; jika server offline, hang, atau endpoint mati, request segera di-abort dan dialihkan seketika ke model berikutnya.
    - **Phase 2: Uncapped Active Thinking (Active Timeout hingga 55s):** Begitu status `200 OK` diterima dari provider, connect timeout dibatalkan seketika dan batas waktu berpikir model diperluas penuh hingga sisa anggaran waktu runtime serverless (55–58 detik).
@@ -965,28 +1002,31 @@ Released 2026-09-03.
 ### v10.622.0 — Dual-Mode Visual Assistant Indicator & Zero-Noise Scratchpad Sanitization
 
 Released 2026-09-03.
+
 1. **Dua Mode Keterangan Status Asisten di UI Terminal (`TerminalAI.jsx`):**
    - **Mode 1 (API Request):** Saat kueri baru dikirimkan pengguna, indikator menampilkan badge `[API REQUEST]` warna amber dengan teks `Menghubungkan ke API Gateway & mencari data...` serta ikon antena berdenyut.
    - **Mode 2 (Thinking):** Ketika gateway terhubung dan model merespons aktif, indikator beralih mulus ke badge `[THINKING]` warna cyan dengan teks `Model merespons (OK), sedang berpikir & menyusun respons...` serta spinner cyan dinamis.
 2. **Eliminasi Total Noise & Kebocoran Scratchpad (`api/chat.js` & `TerminalAI.jsx`):**
-   - Menerapkan *surgical regex stripper* dua lapis (serverless backend dan client UI) untuk menyaring monolog internal, checklist constraint (`- Check constraints: ...`), struktur respons (`Response structure: ...`), draf, maupun rencana akhir (`Final plan: ...`) yang sempat bocor dari model penalaran.
-   - Menambahkan larangan eksplisit pada *system prompt* agar model tidak mengulang aturan sistem atau memverbalisasi batasan di jawaban akhir.
+   - Menerapkan _surgical regex stripper_ dua lapis (serverless backend dan client UI) untuk menyaring monolog internal, checklist constraint (`- Check constraints: ...`), struktur respons (`Response structure: ...`), draf, maupun rencana akhir (`Final plan: ...`) yang sempat bocor dari model penalaran.
+   - Menambahkan larangan eksplisit pada _system prompt_ agar model tidak mengulang aturan sistem atau memverbalisasi batasan di jawaban akhir.
    - Mengalibrasi `connectTimeout` ke 15 detik agar model prioritas utama (`nemotron-3-nano:30b`) tidak ter-abort prematur saat ada pencarian berita web aktif.
 
 ### v10.623.0 — Zero-Hallucination Deterministic Identity Grounding
 
 Released 2026-09-03.
+
 1. **Pemberantasan Klaim Palsu Pihak Ketiga pada Kueri Identitas (`api/chat.js`):**
    - Menghapus contoh teks memori pada system prompt yang sebelumnya memuat nama model eksternal (seperti Gemini Flash) yang secara keliru ditiru dan diklaim oleh model kecil.
-   - Mengimplementasikan *Deterministic Identity Grounding* pada `sendSuccess`: saat pengguna menanyakan identitas atau model (`model apa kamu`, `kamu model apa`, `kamu siapa`), sistem secara deterministik dan faktual menyajikan identitas resmi asisten portofolio.
+   - Mengimplementasikan _Deterministic Identity Grounding_ pada `sendSuccess`: saat pengguna menanyakan identitas atau model (`model apa kamu`, `kamu model apa`, `kamu siapa`), sistem secara deterministik dan faktual menyajikan identitas resmi asisten portofolio.
 2. **Normalisasi Gaya Bahasa & Anti-Klaim Aneh:**
    - Menghilangkan gaya bahasa aneh yang menjiplak frasa memori mentah, menggantikannya dengan struktur kalimat bahasa Indonesia yang profesional, ramah, dan bebas overclaim.
 
 ### v10.624.0 — Conceal Underlying Technical Model Names on Identity Inquiries
 
 Released 2026-09-03.
+
 1. **Penyembunyian Nama Teknis Model Mesin (`api/chat.js`):**
-   - Mengubah respon deterministic identity grounding agar tidak menyebutkan nama teknis model internal (`nemotron-3-nano:30b`, `nemotron-3.5-lightning`, dsb) ataupun gateway penyedia saat pengunjung menanyakan identitas (*"model apa kamu"*, *"kamu model apa"*, *"kamu siapa"*).
+   - Mengubah respon deterministic identity grounding agar tidak menyebutkan nama teknis model internal (`nemotron-3-nano:30b`, `nemotron-3.5-lightning`, dsb) ataupun gateway penyedia saat pengunjung menanyakan identitas (_"model apa kamu"_, _"kamu model apa"_, _"kamu siapa"_).
    - Asisten memperkenalkan diri seutuhnya sebagai **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah** (@Raflyf) yang bertugas mendampingi eksplorasi riset machine learning, proyek rekayasa software, repositori GitHub, dan sertifikasi kompetensi.
 2. **Penyelarasan Instruksi System Prompt:**
    - Menambahkan larangan eksplisit pada prompt sistem agar asisten tidak pernah mengekspos nama teknis model mesin ke pengunjung dalam percakapan umum.
@@ -994,9 +1034,10 @@ Released 2026-09-03.
 ### v10.625.0 — Comprehensive Agentic Tuning: Semantic Relevance Gate & Zero Memory Contamination
 
 Released 2026-09-03.
+
 1. **Eliminasi Total Pencemaran Memori (`TerminalAI.jsx` & Database Supabase):**
    - Menghentikan auto-inject kueri pengunjung mentah (`Kueri Pengunjung: ...`) ke dalam tabel `ai_memories`. Seluruh riwayat percakapan kini hanya dicatat pada sistem telemetri analytics.
-   - Melakukan pembersihan menyeluruh (*purge*) pada database Supabase terhadap seluruh baris log kueri dan sampel memori usang.
+   - Melakukan pembersihan menyeluruh (_purge_) pada database Supabase terhadap seluruh baris log kueri dan sampel memori usang.
 2. **Semantic Relevance Gate pada Injeksi Memori RAG (`api/chat.js`):**
    - Mengimplementasikan `filterRelevantMemories`: memori RAG jangka panjang HANYA disuntikkan jika kata kunci subjek pertanyaan pengguna secara langsung dan spesifik cocok dengan isi memori.
    - Pada kueri teknis umum (misal: coding JavaScript, Python), kueri identitas, atau sapaan santai, blok memori bernilai kosong (`""`), mencegah model mencampuradukkan fakta luar yang tidak berhubungan.
@@ -1006,12 +1047,13 @@ Released 2026-09-03.
 ### v10.626.0 — Agile Gateway Failover, Markdown Table Restoration & Terminal Command History
 
 Released 2026-09-03.
+
 1. **Restorasi Format Markdown & Tabel (`TerminalAI.jsx` & `api/chat.js`):**
    - Memperbaiki regex sanitasi whitespace yang sebelumnya meratakan baris baru (`\s{2,}`) menjadi spasi tunggal. Kini diganti dengan pembersihan spasi horizontal `[^\S\r\n]{2,}` dan pembatasan baris baru `\n{3,}`.
-   - Menambahkan *auto-format markdown table & bullet list* agar tabel dan list GFM selalu diawali baris baru dan ter-render menjadi tabel HTML yang elegan dan nyaman dibaca.
+   - Menambahkan _auto-format markdown table & bullet list_ agar tabel dan list GFM selalu diawali baris baru dan ter-render menjadi tabel HTML yang elegan dan nyaman dibaca.
 2. **Agile Gateway Failover (Anti-Timeout 60 Detik):**
    - Mengalibrasi `connectTimeout` pada `executePipelineWithPriorityRace` di `api/chat.js` menjadi 7.5 detik (7500ms).
-   - Jika provider utama sedang mengalami antrean atau *cold start*, sistem langsung beralih lincah ke gateway berikutnya tanpa menahan request hingga fungsi Vercel kehabisan waktu (58s budget). Pengguna tidak perlu lagi bertanya 2 kali.
+   - Jika provider utama sedang mengalami antrean atau _cold start_, sistem langsung beralih lincah ke gateway berikutnya tanpa menahan request hingga fungsi Vercel kehabisan waktu (58s budget). Pengguna tidak perlu lagi bertanya 2 kali.
 3. **Fitur Navigasi Riwayat Perintah Keyboard (ArrowUp / ArrowDown di `TerminalAI.jsx`):**
    - Menambahkan state `commandHistory` (tersimpan di `localStorage`) dan handler navigasi keyboard ala Bash / PowerShell pada input terminal.
    - Menekan tombol **ArrowUp** otomatis memunculkan perintah atau pertanyaan pengguna sebelumnya. Menekan **ArrowDown** menavigasi maju atau mengembalikan ke draf ketikan awal.
@@ -1019,6 +1061,7 @@ Released 2026-09-03.
 ### v10.627.0 — Dynamic Table Reconstruction & Full Markdown Structure Normalization
 
 Released 2026-09-03.
+
 1. **Dynamic Markdown Table Reconstruction Engine (`api/chat.js` & `TerminalAI.jsx`):**
    - Mengimplementasikan `repairMarkdownTables`: mendeteksi tabel markdown yang sel datanya digabung dalam satu baris datar oleh model AI kecil, menghitung jumlah kolom header, dan secara otomatis memecah sel-sel data ke baris-baris GFM yang valid lengkap dengan header dan divider standar.
 2. **Pembersihan Artefak & Separasi Heading Otomatis (`normalizeStructuredMarkdown`):**
@@ -1031,6 +1074,7 @@ Released 2026-09-03.
 ### v10.628.0 — Spacious Terminal Canvas & Multi-Pipe Orphan Table Splitter
 
 Released 2026-09-03.
+
 1. **Pelebaran Ruang Canvas Chat Terminal (`TerminalAI.jsx`):**
    - Merampingkan tinggi vertikal komponen pembungkus: Terminal App Header (`py-1.5`), Control Bar (`py-1.5`, tombol compact), dan Shortcut Bar (`py-1`, micro chips).
    - Mengurangi tinggi footer input bar (`py-2 sm:py-2.5`, padding container `p-2.5`), menghemat total lebih dari 120px ruang vertikal.
@@ -1045,8 +1089,9 @@ Released 2026-09-03.
 ### v10.629.0 — Dynamic AI Identity Responses & UI Model Header Anonymization
 
 Released 2026-09-03.
+
 1. **Penghapusan Jawaban Statis Template Identitas (`api/chat.js`):**
-   - Menghapus penimpaan hardcoded `if (isIdentityQuery)` yang sebelumnya menggantikan seluruh respons LLM menjadi satu teks template kaku yang sama persis setiap kali user bertanya *"kamu model apa"* atau *"kamu siapa"*.
+   - Menghapus penimpaan hardcoded `if (isIdentityQuery)` yang sebelumnya menggantikan seluruh respons LLM menjadi satu teks template kaku yang sama persis setiap kali user bertanya _"kamu model apa"_ atau _"kamu siapa"_.
    - Menyuntikkan panduan identitas dinamis pada `buildSystemPrompt`: model wajib menghasilkan jawaban cerdas, variatif, dan alami menggunakan kalimatnya sendiri sambil tetap mempertahankan inti bahwa ia adalah AI Assistant & Developer Agent resmi portofolio Rafly Firmansyah (@Raflyf).
 2. **Sanitasi Nama Teknis Model & Gateway:**
    - Menggantikan penyebutan merek internal mentah (Nemotron, Ollama, OpenRouter) di respons teks menggunakan token-level sanitizer halus (`AI Assistant Engine`, `Cloud Neural Gateway`) tanpa merusak struktur kalimat alami dari model.
@@ -1057,6 +1102,7 @@ Released 2026-09-03.
 ### v10.630.0 — Handle Username Omission (@Raflyf Removal)
 
 Released 2026-09-03.
+
 1. **Pembersihan Handle Username (@Raflyf):**
    - Menghapus penyebutan handle `(@Raflyf)` dari instruksi prompt identitas sistem di [`api/chat.js`](file:///d:/code/project/portofolio%20landing%20page/api/chat.js). Asisten diinstruksikan untuk hanya menyebut nama "Rafly Firmansyah" secara wajar tanpa embel-embel username/handle.
    - Menambahkan filter pembersihan ganda di pipeline backend `sendSuccess` dan normalizer frontend `normalizeStructuredMarkdown` di [`src/components/terminal/TerminalAI.jsx`](file:///d:/code/project/portofolio%20landing%20page/src/components/terminal/TerminalAI.jsx) untuk menghapus pola `\s*\(@?Raflyf\)` dan `\s*@Raflyf\b` secara otomatis dari seluruh teks respon.
@@ -1064,14 +1110,16 @@ Released 2026-09-03.
 ### v10.631.0 — Restored Dynamic Model Header in Terminal UI
 
 Released 2026-09-03.
+
 1. **Pemulihan Label Header Model Dinamis (`TerminalAI.jsx`):**
    - Mengembalikan label header bubble pesan AI agar menampilkan nama model dan provider aktif secara dinamis sesuai yang sebenarnya digunakan (misal `Auto Router -> NEMOTRON-3-NANO:30B (Ollama Cloud SOTA Engine)`), menjaga transparansi engine aktif bagi pengguna.
 
 ### v10.632.0 — Ban & Elimination of Self-Validation and Defensive Meta-Disclaimers
 
 Released 2026-09-03.
+
 1. **Pembaruan Instruksi Sistem Anti-Validasi Diri (`api/chat.js`):**
-   - Melarang keras model mengeluarkan kalimat validasi defensif, pembelaan diri, atau disclaimer status AI pada semua percakapan (seperti *"Jadi, secara singkat, saya bukan model dengan nama brand tertentu..."*, *"Sebagai model bahasa..."*, *"Perlu diingat bahwa saya hanyalah asisten..."*).
+   - Melarang keras model mengeluarkan kalimat validasi defensif, pembelaan diri, atau disclaimer status AI pada semua percakapan (seperti _"Jadi, secara singkat, saya bukan model dengan nama brand tertentu..."_, _"Sebagai model bahasa..."_, _"Perlu diingat bahwa saya hanyalah asisten..."_).
    - Menginstruksikan model untuk menjawab langsung secara percaya diri, lugas, dan profesional tanpa perlu menjelaskan apa yang bukan dirinya.
 2. **Filter Regex Pembersihan Kalimat Validasi Diri di Backend & Frontend:**
    - Menyuntikkan pembersih pola regex di `sendSuccess` ([`api/chat.js`](file:///d:/code/project/portofolio%20landing%20page/api/chat.js)) dan `normalizeStructuredMarkdown` ([`src/components/terminal/TerminalAI.jsx`](file:///d:/code/project/portofolio%20landing%20page/src/components/terminal/TerminalAI.jsx)) untuk secara deterministik memangkas seluruh kalimat defensif/disclaimer brand yang tidak sengaja tergenerasi model di semua sesi obrolan.
@@ -1079,6 +1127,7 @@ Released 2026-09-03.
 ### v10.633.0 — Balanced Typography & Section Heading Normalizer (Anti-Bullet Overload)
 
 Released 2026-09-03.
+
 1. **Pencegahan Bullet-Point Overload & Kalibrasi Prompt Tipografi (`api/chat.js`):**
    - Menghapus instruksi agresif yang sebelumnya memaksa model memprioritaskan daftar butir poin di atas segalanya.
    - Mengalibrasi panduan tipografi agar membagi topik pembahasan menggunakan Heading markdown resmi (`### Judul Bagian`) dan memadukannya dengan paragraf narasi pengantar yang mengalir alami, serta melarang keras mengubah seluruh isi pesan menjadi rentetan butir poin berulang tanpa jeda.
@@ -1090,37 +1139,43 @@ Released 2026-09-03.
 ### v10.634.0 — Dashboard Auto Router Count Sync Fix
 
 Released 2026-09-03.
+
 1. **Sinkronisasi Total Resolusi Router dengan Jumlah Card Model (`Dashboard.jsx`):**
    - Memperbaiki hitungan `autoRouterCount` pada banner "Total Resolusi Router" yang sebelumnya hanya menghitung event yang terdeteksi melalui Auto Router (via filter `isAutoRouted`), sementara jumlah total dari 16 card individual model lebih besar karena mencakup event pemilihan model manual oleh pengguna.
+
 ### v10.635.0 — Markdown Bold Asterisk Preservation & Numbered List Split Fix
 
 Released 2026-09-03.
+
 1. **Perbaikan Destruksi Tanda Bintang Bold Markdown (`api/chat.js`):**
    - Menemukan akar masalah mengapa simbol `**` muncul sebagai teks mentah: regex pembersih `\s*\*\s*-\s*` sebelumnya memotong tanda bintang kedua pada label bold yang diikuti tanda hubung (`**Nama** - Deskripsi` menjadi `**Nama* - `), lalu regex berikutnya menghapus satu bintang tersisa karena dianggap bintang yatim (`*`). Akibatnya, pasangan penutup `**` hilang total sehingga Markdown parser gagal merendernya menjadi huruf tebal (`<strong>`) dan menampilkannya sebagai teks literal `**`.
-   - Mengalibrasi regex dengan *negative lookaround* `(?<!\*)\s*\*(?!\*)\s*-\s*` sehingga pasangan bintang ganda `**` milik teks tebal tetap 100% utuh dan valid.
+   - Mengalibrasi regex dengan _negative lookaround_ `(?<!\*)\s*\*(?!\*)\s*-\s*` sehingga pasangan bintang ganda `**` milik teks tebal tetap 100% utuh dan valid.
 2. **Pemisahan Baris Numbered List Berformat Bold (`api/chat.js` & `TerminalAI.jsx`):**
+
 ### v10.636.0 — Elimination of Repository Hallucinations & Deep Ground Truth Injection
 
 Released 2026-09-03.
+
 1. **Pemberantasan Total Halusinasi Proyek Skripsi Spam-Email (`api/chat.js`):**
    - Mengganti ringkasan sebaris sebelumnya yang minim konteks dengan basis pengetahuan autentik yang bersumber langsung dari dokumentasi repositori resmi GitHub (`https://github.com/Raflyf/Spam-Email/blob/main/docs/DOKUMENTASI_MODEL.md`).
    - Melarang keras dan memblokir seluruh klaim halusinasi palsu yang tidak pernah ada pada proyek asli:
-     * Menghapus klaim split acak 70/15/15: Menyuntikkan dataset riil `emails.csv` (Kaggle 5.728 email) dan `data_test_berlabel_awal.csv` (1.000 email modern seimbang: 500 spam + 500 non-spam), dengan skema adaptasi 30% (300 email) berbobot 8× dan 70% (700 email) untuk uji murni.
-     * Menghapus klaim model ensemble/voting: Menegaskan bahwa proyek ini adalah komparasi dua model terpisah (Complement Naive Bayes vs XGBoost) pada Metode 1 (tanpa adaptasi) vs Metode 2 (dengan Domain Adaptation 30%).
-     * Menghapus klaim oversampling (SMOTE): Penanganan ketidakseimbangan kelas murni dilakukan lewat arsitektur Complement Naive Bayes (CNB), parameter `scale_pos_weight` pada XGBoost, serta instance weighting 8×.
-     * Menghapus klaim palsu lainnya: Stemming Bahasa Indonesia, embedding SBERT (hanya milik OpenPlagiarismChecker), data streaming, dan retraining otomatis.
+     - Menghapus klaim split acak 70/15/15: Menyuntikkan dataset riil `emails.csv` (Kaggle 5.728 email) dan `data_test_berlabel_awal.csv` (1.000 email modern seimbang: 500 spam + 500 non-spam), dengan skema adaptasi 30% (300 email) berbobot 8× dan 70% (700 email) untuk uji murni.
+     - Menghapus klaim model ensemble/voting: Menegaskan bahwa proyek ini adalah komparasi dua model terpisah (Complement Naive Bayes vs XGBoost) pada Metode 1 (tanpa adaptasi) vs Metode 2 (dengan Domain Adaptation 30%).
+     - Menghapus klaim oversampling (SMOTE): Penanganan ketidakseimbangan kelas murni dilakukan lewat arsitektur Complement Naive Bayes (CNB), parameter `scale_pos_weight` pada XGBoost, serta instance weighting 8×.
+     - Menghapus klaim palsu lainnya: Stemming Bahasa Indonesia, embedding SBERT (hanya milik OpenPlagiarismChecker), data streaming, dan retraining otomatis.
    - Menyuntikkan arsitektur fitur faktual: TF-IDF Word (20.000) + Char (8.000) + 13 Fitur Struktural + 35 Keyword Spam + SelectKBest Chi-Square (k=12.000) untuk CNB, serta spesifikasi web Flask, mode batch CSV, dan tuning rasio kelas 10:90 s.d. 90:10.
 
 ### v10.637.0 — Universal Evidence-First Retrieval Engine & Zero-Hallucination Meta-Directives
 
 Released 2026-09-03.
+
 1. **Penerapan Protokol Mutlak Anti-Halusinasi Universal (`api/chat.js`):**
    - Menetapkan pilar kejujuran epistemis universal pada `basePrompt` yang mengikat seluruh model dan seluruh topik (machine learning, rekayasa software, arsitektur sistem, repositori kode, maupun pengetahuan umum):
-     * *Ground Truth Supremacy*: Seluruh jawaban teknis wajib didasarkan hanya pada bukti nyata yang eksplisit ada dalam konteks terverifikasi.
-     * *Zero Fake Metrics*: Melarang mutlak mengarang rasio data split (misal 70/15/15, 80/20), angka akurasi, atau waktu eksekusi yang tidak ada di sumber.
-     * *Anti-Generic Conjectures*: Melarang berasumsi bahwa sistem menggunakan teknik generik internet (seperti oversampling SMOTE, stemming bahasa asing, SBERT, atau ensemble voting) jika tidak tertulis dalam data.
-     * *Anti-Cross Contamination*: Mengisolasi modul dan pustaka antar-proyek agar tidak saling tertukar (misal SBERT hanya di OpenPlagiarismChecker, MediaPipe hanya di FotoKitaBlur).
-     * *Explicit Absence of Data*: Mewajibkan model mengakui dengan lugas jika suatu detail tidak tercantum dalam dokumentasi, alih-alih mengarang jawaban spekulatif.
+     - _Ground Truth Supremacy_: Seluruh jawaban teknis wajib didasarkan hanya pada bukti nyata yang eksplisit ada dalam konteks terverifikasi.
+     - _Zero Fake Metrics_: Melarang mutlak mengarang rasio data split (misal 70/15/15, 80/20), angka akurasi, atau waktu eksekusi yang tidak ada di sumber.
+     - _Anti-Generic Conjectures_: Melarang berasumsi bahwa sistem menggunakan teknik generik internet (seperti oversampling SMOTE, stemming bahasa asing, SBERT, atau ensemble voting) jika tidak tertulis dalam data.
+     - _Anti-Cross Contamination_: Mengisolasi modul dan pustaka antar-proyek agar tidak saling tertukar (misal SBERT hanya di OpenPlagiarismChecker, MediaPipe hanya di FotoKitaBlur).
+     - _Explicit Absence of Data_: Mewajibkan model mengakui dengan lugas jika suatu detail tidak tercantum dalam dokumentasi, alih-alih mengarang jawaban spekulatif.
 2. **Universal Search & Retrieval-First Engine (`api/chat.js`):**
    - Mengubah kebijakan `isSkipSearch`: Pencarian hanya di-skip untuk sapaan murni ("halo", "hai"), pengecekan waktu/jam ("jam berapa sekarang"), dan pertanyaan identitas model singkat ("kamu model apa").
    - Seluruh kueri analitis, proyek repositori, konsep teknologi, dan wawasan teknis kini secara universal menjalankan retrieval terlebih dahulu sebelum inferensi model.
@@ -1132,65 +1187,74 @@ Released 2026-09-03.
 ### v10.638.0 — Universal Agentic Web Integration, Zero-Overclaim & Human-Centric Communication Engine
 
 Released 2026-09-03.
+
 1. **Penyempurnaan Persona Manusiawi, Hangat, Ramah & Solutif (`api/chat.js`):**
-   - Menghilangkan nada birokratis dan kaku dari instruksi sistem, menggantinya dengan persona insinyur perangkat lunak dan asisten riset senior yang cerdas, ramah (*approachable*), hangat (*warm*), dan sangat membantu (*helpful*).
-   - Menekankan gaya percakapan yang mengalir alami antar-manusia (*conversational excellence*), mudah dimengerti siapa saja, tidak berbelit-belit, dan menyajikan analogi sederhana untuk konsep-konsep rumit.
+   - Menghilangkan nada birokratis dan kaku dari instruksi sistem, menggantinya dengan persona insinyur perangkat lunak dan asisten riset senior yang cerdas, ramah (_approachable_), hangat (_warm_), dan sangat membantu (_helpful_).
+   - Menekankan gaya percakapan yang mengalir alami antar-manusia (_conversational excellence_), mudah dimengerti siapa saja, tidak berbelit-belit, dan menyajikan analogi sederhana untuk konsep-konsep rumit.
    - Menjaga proporsi estetika tipografi: memadukan narasi pengantar yang hangat dengan heading markdown (`###`) yang tertata dan butir poin secara proporsional.
 2. **Protokol Mutlak Anti-Halusinasi & Anti-Overclaim Universal (Seluruh Domain):**
-   - Menegakkan larangan mutlak *overclaim*, asal klaim, atau klaim bombastis pada SELURUH DOMAIN (berita global, peristiwa dunia, sains, sejarah, budaya, model AI, pemrograman, hingga obrolan umum).
+   - Menegakkan larangan mutlak _overclaim_, asal klaim, atau klaim bombastis pada SELURUH DOMAIN (berita global, peristiwa dunia, sains, sejarah, budaya, model AI, pemrograman, hingga obrolan umum).
    - Mengharuskan seluruh data peristiwa dan teknologi bersumber dari bukti nyata hasil pencarian Google dan ensiklopedia terverifikasi.
    - Melarang keras mengarang tanggal rilis palsu, metrik performa fiktif, harga spekulatif, atau rasio data split. Jika informasi belum resmi diumumkan, model wajib menyampaikannya secara santun, jujur, dan transparan.
 3. **Peningkatan Engine Pencarian Web Real-Time & Ensiklopedia:**
    - Menghapus ketergantungan pada DuckDuckGo (yang terkena intersepsi DNS/TLS di jaringan ISP Indonesia) dan memperluas integrasi Google News Global & Indonesia (baik arsip bertema maupun breaking news terkini).
    - Menambahkan integrasi langsung pencarian ensiklopedia Wikipedia Bahasa Indonesia dan Bahasa Inggris untuk memberikan definisi dan fakta sejarah/sains yang akurat dan berwibawa.
-   - Melacak dan menyalurkan metadata perkakas agen (*agentToolsUsed*) yang mencakup `google_search`, `wikipedia_lookup`, `github_inspector`, dan `web_scraper`.
+   - Melacak dan menyalurkan metadata perkakas agen (_agentToolsUsed_) yang mencakup `google_search`, `wikipedia_lookup`, `github_inspector`, dan `web_scraper`.
 4. **Agentic Tool Badges & Transparansi Validasi di Terminal UI (`TerminalAI.jsx`):**
-   - Menampilkan *badge strip* interaktif di setiap pesan AI (`Google Search & Live Web`, `Wikipedia Verified`, `GitHub Live Repo`, `Verified Ground Truth`) yang memperlihatkan alat verifikasi yang dipanggil beserta jumlah sumber data faktual yang diakses.
-   - Memperbarui indikator status pemuatan menjadi *Agentic Search: Menghubungkan ke live internet & memvalidasi fakta...* untuk memberikan transparansi penuh kepada pengguna atas proses validasi bukti.
+   - Menampilkan _badge strip_ interaktif di setiap pesan AI (`Google Search & Live Web`, `Wikipedia Verified`, `GitHub Live Repo`, `Verified Ground Truth`) yang memperlihatkan alat verifikasi yang dipanggil beserta jumlah sumber data faktual yang diakses.
+   - Memperbarui indikator status pemuatan menjadi _Agentic Search: Menghubungkan ke live internet & memvalidasi fakta..._ untuk memberikan transparansi penuh kepada pengguna atas proses validasi bukti.
 
 ### v10.639.0 — Elimination of Hardcoded Knowledge, Clean Dynamic Retrieval & Anti-Echo Typography
 
 Released 2026-09-03.
+
 1. **Penghapusan Total Hardcode Model & Pengetahuan Eksternal (`api/chat.js`):**
-   - Menghapus seluruh blok pengetahuan hardcode model/perusahaan dari system prompt, mengembalikan sistem ke arsitektur 100% *Dynamic Evidence Retrieval* berbasis pencarian live internet faktual tanpa asumsi atau limitasi tanggal cut-off.
+   - Menghapus seluruh blok pengetahuan hardcode model/perusahaan dari system prompt, mengembalikan sistem ke arsitektur 100% _Dynamic Evidence Retrieval_ berbasis pencarian live internet faktual tanpa asumsi atau limitasi tanggal cut-off.
    - Mengalibrasi `stripFillers` dan ekstraksi entitas subjek: partikel percakapan bahasa Indonesia ("lah", "kan", "sudah", "model", dsb) dibersihkan secara presisi sehingga nama entitas murni (misal "claude 5.1", "gemini 3.8", "gpt 5") langsung menjadi kueri prioritas utama pencarian Google News Global.
 2. **Eliminasi Pengulangan Pertanyaan Pengguna (Anti-Echo Filter):**
-   - Menambahkan filter pemotong otomatis `3.4b` pada `sendSuccess`: memangkas teks pembuka atau heading yang sekadar mengulang kueri pengunjung (seperti *"Kamu Model Apa?"*, *"Tentang Claude 5.1:"*, atau *"Model AI Terbaik Saat Ini"*).
+   - Menambahkan filter pemotong otomatis `3.4b` pada `sendSuccess`: memangkas teks pembuka atau heading yang sekadar mengulang kueri pengunjung (seperti _"Kamu Model Apa?"_, _"Tentang Claude 5.1:"_, atau _"Model AI Terbaik Saat Ini"_).
    - Menegakkan larangan anti-echo pada prompt sistem agar model langsung memulai percakapan dengan narasi substantif yang mengalir alami.
 3. **Pemulihan Format Respon Identitas Asisten Resmi:**
-   - Mengembalikan respon identitas resmi yang elegan, profesional, dan berimbang (3 paragraf bersih) saat pengunjung menanyakan identitas asisten (*"kamu model apa"*, *"kamu siapa"*).
+   - Mengembalikan respon identitas resmi yang elegan, profesional, dan berimbang (3 paragraf bersih) saat pengunjung menanyakan identitas asisten (_"kamu model apa"_, _"kamu siapa"_).
    - Menghilangkan glitch formatting (seluruh paragraf bold, tanda bintang hilang, atau pemotongan butir list).
 4. **Preservasi Estetika Tipografi List & Sanitasi Em-Dash:**
-   - Memperbaiki penanganan em-dash/en-dash pada baris list dan definisi: mengubah tanda pisah setelah label tebal (`**Label** — Deskripsi`) menjadi titik dua (`: `) dan tanda pisah umum menjadi strip spasi (` - `), mencegah perubahan sembarangan menjadi tanda koma (`, `).
+   - Memperbaiki penanganan em-dash/en-dash pada baris list dan definisi: mengubah tanda pisah setelah label tebal (`**Label** — Deskripsi`) menjadi titik dua (`: `) dan tanda pisah umum menjadi strip spasi (`-`), mencegah perubahan sembarangan menjadi tanda koma (`, `).
    - Menambahkan normalisasi marker list bold (`- *Label**` dinormalisasi menjadi `- **Label**`) dan penyeimbang otomatis tanda bintang (`**`) untuk mencegah kebocoran format bold ke seluruh paragraf.
    - Menambahkan isolasi tegas anti-kontaminasi entitas agar produk atau rilis teknologi pihak ketiga (seperti Anthropic Claude) tidak pernah diklaim atau dihubungkan sebagai karya Rafly Firmansyah.
 5. **Sinkronisasi Aturan Mutlak ke Asisten Terminal (`api/chat.js`):**
-   - Mengintegrasikan aturan mutlak *Anti-Outdated Knowledge* dan *Larangan Asal Menyangkal Rilis* langsung ke `buildSystemPrompt` pada terminal assistant.
+   - Mengintegrasikan aturan mutlak _Anti-Outdated Knowledge_ dan _Larangan Asal Menyangkal Rilis_ langsung ke `buildSystemPrompt` pada terminal assistant.
    - Asisten dilarang mengandalkan batas cut-off pelatihan model lama dan diwajibkan 100% memprioritaskan bukti fakta hasil penelusuran internet live yang disuntikkan secara dinamis.
 
 ### v10.640.0 — Frontier 2026 AI Scraping Pipeline & Outdated Model Purge
 
 Released 2026-09-03.
+
 1. **Peningkatan Pipeline Multi-Query Frontier AI (`api/chat.js`):**
    - Menambahkan kueri pencarian terarah konkuren untuk keluarga frontier terkini: Google Gemini 3.8 (Flash & Cyber), Anthropic Claude 5.1 (Fable 5.1, Mythos 5.1, Opus 5), dan OpenAI GPT-5.6 (Sol, Terra, Astra).
-   - Memperluas kuota pengambilan *searchQueries* dari 3 menjadi 5 kueri paralel sehingga seluruh ekosistem model mutakhir terjaring dalam satu siklus pencarian real-time.
+   - Memperluas kuota pengambilan _searchQueries_ dari 3 menjadi 5 kueri paralel sehingga seluruh ekosistem model mutakhir terjaring dalam satu siklus pencarian real-time.
 2. **Larangan Model Lawas di Panduan Sintesis:**
-   - Menambahkan instruksi veto pada *Panduan Sintesis & Grounding Faktual*: mewajibkan model hanya menggunakan model-model mutakhir era 2026 dari bukti berita pencarian dan melarang keras menyebut model generasi lama (Claude 3.7, Gemini 2.5, o3 lama, Llama 3.3) seolah-olah itu model terdepan saat ini.
+   - Menambahkan instruksi veto pada _Panduan Sintesis & Grounding Faktual_: mewajibkan model hanya menggunakan model-model mutakhir era 2026 dari bukti berita pencarian dan melarang keras menyebut model generasi lama (Claude 3.7, Gemini 2.5, o3 lama, Llama 3.3) seolah-olah itu model terdepan saat ini.
 3. **Penyelarasan Format Em-Dash dan Delimiter List di Sisi Klien (`TerminalAI.jsx`):**
-   - Menyelaraskan sanitasi em-dash pada komponen frontend terminal agar tanda pisah definisi (`**Label** — Deskripsi`) tetap menggunakan titik dua (`: `) dan tanda pisah umum menjadi strip spasi (` - `), bukan koma.
+   - Menyelaraskan sanitasi em-dash pada komponen frontend terminal agar tanda pisah definisi (`**Label** — Deskripsi`) tetap menggunakan titik dua (`: `) dan tanda pisah umum menjadi strip spasi (`-`), bukan koma.
    - Memperbaiki parsing penutup list dan penyeimbang format bold yang tidak tertutup.
 
+### v10.641.0 — Universal Freshness Integrity Gate, Dynamic AI Query Generation & Global Headlines Retrieval
 
+Released 2026-09-03.
 
-
-
-
-
-
-
-
-
-
-
-
-
+1. **Protokol Integritas Waktu & Kejujuran Epistemis (System Prompt):**
+   - Menambahkan seksi `[PROTOKOL INTEGRITAS WAKTU & KEJUJURAN EPISTEMIS (ANTI-INFORMASI LAWAS)]` pada `buildSystemPrompt` yang berlaku universal untuk seluruh topik dan sesi.
+   - Mewajibkan penanda waktu sumber (misal "dilaporkan [tanggal]", "per [bulan/tahun]") pada setiap klaim status "terbaru/saat ini", jadwal rilis, harga, peringkat, atau kondisi terkini.
+   - Mewajibkan pengakuan jujur ketika tidak ada bukti live: model dilarang menyajikan ingatan lama sebagai status live atau menyangkal eksistensi rilis di luar pengetahuannya.
+2. **Penghapusan Hardcode Daftar Model Frontier (Kepatuhan AGENTS.md 10c):**
+   - Menghapus kueri statis `Claude 5.1 OR Claude Fable 5.1 OR Claude Opus 5`, `GPT-5.6 Sol OR OpenAI Astra`, dan `Gemini 3.8 Flash OR Gemini 3.8 Cyber` dari `formulateSmartSearchQueries` beserta instruksi sintesis "era 2026" dan larangan model lawas yang mengunci lanskap pada tahun tertentu.
+   - Menggantinya dengan pembangkitan kueri dinamis berpusat-subjek yang menyertakan tahun berjalan (misal `"<subjek> <tahun> comparison latest update"`), sehingga hasil selalu merefleksikan lanskap riil dunia pada saat penelusuran tanpa bias entitas statis yang dapat basi.
+   - Menulis ulang `[PANDUAN SINTESIS & GROUNDING FAKTUAL]` menjadi `[PANDUAN SINTESIS & GROUNDING FAKTUAL UNIVERSAL]`: larangan keras menyajikan entitas dari ingatan kecuali didukung bukti live, kewajiban penanda waktu (recency labeling), dan kewajiban mengakui kekosongan bukti.
+3. **Universal Freshness Integrity Gate:**
+   - Menambahkan gate deterministik setelah `searchWebContext`: jika pertanyaan menuntut fakta terkini (regex terbaru/terkini/rilis/berita/hari ini/tahun ini/harga/benchmark/leaderboard/ranking) namun pencarian live mengembalikan nol bukti, sistem menyuntikkan `[PERINGATAN INTEGRITAS FAKTUAL (BUKTI LIVE TIDAK DITEMUKAN)]` ke prompt agar model tidak mengarang atau menyajikan data lawas.
+4. **Perluasan Cakupan Retrieval Global (Universal, Bukan Hanya AI/Tech):**
+   - Menambahkan pengambilan berita utama global real-time (Google News Global & Indonesia top-headlines) untuk pertanyaan umum seperti "berita terbaru", "kabar dunia", "news today" tanpa subjek spesifik.
+   - Menambahkan integrasi Hacker News (Algolia) sebagai sumber sinyal terbaru ekosistem developer, startup, dan teknologi dunia pada kueri bertema teknologi.
+   - Menambahkan label tool baru `Hacker News Global` pada `agentToolsUsed` sehingga badge transparansi sumber muncul di UI terminal.
+5. **Sinkronisasi UI Terminal:**
+   - Memperbarui placeholder input terminal menjadi contoh universal yang mendorong pertanyaan fakta terkini ("berita terbaru apa hari ini").
