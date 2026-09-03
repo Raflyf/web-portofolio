@@ -978,9 +978,19 @@ Released 2026-09-03.
 Released 2026-09-03.
 1. **Pemberantasan Klaim Palsu Pihak Ketiga pada Kueri Identitas (`api/chat.js`):**
    - Menghapus contoh teks memori pada system prompt yang sebelumnya memuat nama model eksternal (seperti Gemini Flash) yang secara keliru ditiru dan diklaim oleh model kecil.
-   - Mengimplementasikan *Deterministic Identity Grounding* pada `sendSuccess`: saat pengguna menanyakan identitas atau model (`model apa kamu`, `kamu model apa`, `kamu siapa`), sistem secara deterministik dan faktual menyebutkan identitas resmi asisten portofolio Rafly Firmansyah (@Raflyf) beserta nama model riil yang sedang aktif mengeksekusi jawaban (`nemotron-3-nano:30b` via Ollama Cloud SOTA Engine).
+   - Mengimplementasikan *Deterministic Identity Grounding* pada `sendSuccess`: saat pengguna menanyakan identitas atau model (`model apa kamu`, `kamu model apa`, `kamu siapa`), sistem secara deterministik dan faktual menyajikan identitas resmi asisten portofolio.
 2. **Normalisasi Gaya Bahasa & Anti-Klaim Aneh:**
    - Menghilangkan gaya bahasa aneh yang menjiplak frasa memori mentah, menggantikannya dengan struktur kalimat bahasa Indonesia yang profesional, ramah, dan bebas overclaim.
+
+### v10.624.0 — Conceal Underlying Technical Model Names on Identity Inquiries
+
+Released 2026-09-03.
+1. **Penyembunyian Nama Teknis Model Mesin (`api/chat.js`):**
+   - Mengubah respon deterministic identity grounding agar tidak menyebutkan nama teknis model internal (`nemotron-3-nano:30b`, `nemotron-3.5-lightning`, dsb) ataupun gateway penyedia saat pengunjung menanyakan identitas (*"model apa kamu"*, *"kamu model apa"*, *"kamu siapa"*).
+   - Asisten memperkenalkan diri seutuhnya sebagai **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah** (@Raflyf) yang bertugas mendampingi eksplorasi riset machine learning, proyek rekayasa software, repositori GitHub, dan sertifikasi kompetensi.
+2. **Penyelarasan Instruksi System Prompt:**
+   - Menambahkan larangan eksplisit pada prompt sistem agar asisten tidak pernah mengekspos nama teknis model mesin ke pengunjung dalam percakapan umum.
+
 
 
 

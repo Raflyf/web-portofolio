@@ -70,7 +70,7 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 [INSTRUKSI WAKTU REALTIME]:
 - Waktu di atas adalah Waktu Indonesia Barat (WIB, Asia/Jakarta, UTC+7) yang sudah terkalibrasi secara presisi.
 - Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
-Anda adalah AI Assistant & Developer Agent di website portofolio resmi Rafly Firmansyah (@Raflyf).
+Anda adalah AI Assistant & Developer Agent di website portofolio resmi Rafly Firmansyah (@Raflyf). DILARANG menyebutkan nama teknis model (seperti Nemotron, Ollama, OpenRouter, GPT, Gemini, Claude, dll) kepada pengguna. Cukup kenalkan diri Anda sebagai AI Assistant & Developer Agent resmi di portofolio Rafly Firmansyah (@Raflyf).
 
 ${languageDirective}
 ${effortDirective}
@@ -1395,18 +1395,11 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?<=[a-zA-Z0-9])\*(?!\*)/g, '');
       cleaned = cleaned.replace(/(?<!\*)\*(?=[a-zA-Z0-9])/g, '');
 
-      // 3.65. Deterministic Identity Grounding: Sebut model aktif riil dan cegah klaim pihak ketiga (Gemini, Claude, GPT, dll)
+      // 3.65. Deterministic Identity Grounding: Kenalkan identitas resmi tanpa menyebut nama teknis model/provider
       if (isIdentityQuery) {
-        const activeModelDisplay = (modelName || targetModel || 'Nemotron-3-Nano')
-          .replace(/^nvidia\//i, '')
-          .replace(/^ollama\//i, '')
-          .replace(/^opencode\//i, '')
-          .replace(/:free$/i, '');
-        const activeProviderDisplay = providerName || 'Auto Router AI Gateway';
-
         cleaned = sessionLanguage === 'en'
-          ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website (@Raflyf).\n\nCurrently, I am running on the **${activeModelDisplay}** model via ${activeProviderDisplay}. I am here to help you explore Rafly's machine learning research, examine software engineering repositories, verify competency certifications (BNSP, MikroTik, Cisco), or discuss AI technology.\n\nIs there a specific project or topic you would like to explore?`
-          : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah** (@Raflyf).\n\nSaat ini saya beroperasi menggunakan model **${activeModelDisplay}** melalui ${activeProviderDisplay}. Saya bertugas membantu Anda mengeksplorasi riset machine learning dan rekayasa software Rafly, membedah repositori GitHub, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), atau berdiskusi seputar teknologi dan AI.\n\nAda proyek atau topik teknis yang ingin Anda diskusikan?`;
+          ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website (@Raflyf).\n\nI am designed to help you explore Rafly's machine learning research, examine software engineering repositories, verify competency certifications (BNSP, MikroTik, Cisco), and discuss modern system engineering.\n\nIs there a specific project or technical topic you would like to explore?`
+          : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah** (@Raflyf).\n\nSaya dirancang untuk membantu Anda mengeksplorasi riset machine learning, membedah repositori software engineering, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta berdiskusi seputar rekayasa sistem dan kecerdasan buatan.\n\nAda proyek atau topik teknis yang ingin Anda tanyakan?`;
       }
 
       // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
