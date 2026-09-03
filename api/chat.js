@@ -70,7 +70,13 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 [INSTRUKSI WAKTU REALTIME]:
 - Waktu di atas adalah Waktu Indonesia Barat (WIB, Asia/Jakarta, UTC+7) yang sudah terkalibrasi secara presisi.
 - Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
-Anda adalah AI Assistant & Developer Agent di website portofolio resmi Rafly Firmansyah (@Raflyf). DILARANG menyebutkan nama teknis model (seperti Nemotron, Ollama, OpenRouter, GPT, Gemini, Claude, dll) kepada pengguna. Cukup kenalkan diri Anda sebagai AI Assistant & Developer Agent resmi di portofolio Rafly Firmansyah (@Raflyf).
+[IDENTITAS & PERAN ASISTEN]:
+- Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio Rafly Firmansyah (@Raflyf).
+- Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "kamu model apa", "siapa Anda", "model apa ini", dsb):
+  1. Jawablah secara DINAMIS, ALAMI, CERDAS, dan BERVARIASI menggunakan gaya bahasa Anda sendiri (DILARANG mengulang template statis yang kaku atau sama persis setiap kali).
+  2. Inti yang tetap disampaikan: Anda adalah AI Assistant & Developer Agent terintegrasi di portofolio digital Rafly Firmansyah, didukung teknologi Large Language Model (LLM) modern berkecepatan tinggi dengan retrieval terpadu.
+  3. Kerahasiaan Nama Teknis: DILARANG menyebutkan merek dagang teknis internal model mentah (seperti Nemotron, Ollama, OpenRouter, GPT, Gemini, Claude, Llama, Qwen). Cukup perkenalkan diri Anda sebagai AI Assistant & Developer Agent resmi portofolio Rafly.
+  4. Sampaikan peran Anda secara antusias dan natural: mendampingi pengunjung membedah proyek rekayasa software, eksplorasi riset machine learning (misalnya OpenPlagiarismChecker atau Spam Detection), verifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta evaluasi arsitektur sistem.
 
 ${languageDirective}
 ${effortDirective}
@@ -1564,12 +1570,12 @@ export default async function handler(req, res) {
       cleaned = cleaned.replace(/(?<=[a-zA-Z0-9])\*(?!\*)/g, '');
       cleaned = cleaned.replace(/(?<!\*)\*(?=[a-zA-Z0-9])/g, '');
 
-      // 3.65. Deterministic Identity Grounding: Kenalkan identitas resmi tanpa menyebut nama teknis model/provider
-      if (isIdentityQuery) {
-        cleaned = sessionLanguage === 'en'
-          ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website (@Raflyf).\n\nI am designed to help you explore Rafly's machine learning research, examine software engineering repositories, verify competency certifications (BNSP, MikroTik, Cisco), and discuss modern system engineering.\n\nIs there a specific project or technical topic you would like to explore?`
-          : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah** (@Raflyf).\n\nSaya dirancang untuk membantu Anda mengeksplorasi riset machine learning, membedah repositori software engineering, memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta berdiskusi seputar rekayasa sistem dan kecerdasan buatan.\n\nAda proyek atau topik teknis yang ingin Anda tanyakan?`;
-      }
+      // 3.65. Sanitasi Nama Teknis Model/Gateway (Menjaga Kerahasiaan Sesuai Kebijakan Privasi Sistem)
+      cleaned = cleaned.replace(/\b(?:Nemotron[-3\w:]*|Ollama(?:\s+Cloud)?|OpenRouter|NVIDIA\s+NIM)\b/gi, (matched) => {
+        if (/nemotron/i.test(matched)) return 'AI Assistant Engine';
+        if (/ollama|openrouter|nvidia/i.test(matched)) return 'Cloud Neural Gateway';
+        return 'AI Engine';
+      });
 
       // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
       if (isTimeQuery) {

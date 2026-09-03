@@ -1042,6 +1042,19 @@ Released 2026-09-03.
    - Mengalibrasi `buildSystemPrompt` pada `api/chat.js` agar menyajikan penjelasan dengan bahasa komunikatif, lugas, dan menyertakan analogi sederhana tanpa jargon akademis kaku.
    - Menginstruksikan model untuk memprioritaskan format daftar butir poin tebal (`- **Istilah**: Penjelasan`) dibanding tabel mentah.
 
+### v10.629.0 — Dynamic AI Identity Responses & UI Model Header Anonymization
+
+Released 2026-09-03.
+1. **Penghapusan Jawaban Statis Template Identitas (`api/chat.js`):**
+   - Menghapus penimpaan hardcoded `if (isIdentityQuery)` yang sebelumnya menggantikan seluruh respons LLM menjadi satu teks template kaku yang sama persis setiap kali user bertanya *"kamu model apa"* atau *"kamu siapa"*.
+   - Menyuntikkan panduan identitas dinamis pada `buildSystemPrompt`: model wajib menghasilkan jawaban cerdas, variatif, dan alami menggunakan kalimatnya sendiri sambil tetap mempertahankan inti bahwa ia adalah AI Assistant & Developer Agent resmi portofolio Rafly Firmansyah (@Raflyf).
+2. **Sanitasi Nama Teknis Model & Gateway:**
+   - Menggantikan penyebutan merek internal mentah (Nemotron, Ollama, OpenRouter) di respons teks menggunakan token-level sanitizer halus (`AI Assistant Engine`, `Cloud Neural Gateway`) tanpa merusak struktur kalimat alami dari model.
+3. **Anonimisasi Header Bubble Chat (`TerminalAI.jsx`):**
+   - Mengubah label header bubble pesan AI dari `Auto Router -> NEMOTRON-3-NANO:30B (Ollama Cloud SOTA Engine)` menjadi `Auto Router -> SOTA AI Engine (Cloud Neural Gateway)`.
+   - Mencegah kebocoran nama model teknis backend di antarmuka terminal pengunjung sesuai aturan privasi sistem.
+
+
 
 
 
