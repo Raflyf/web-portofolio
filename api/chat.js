@@ -89,7 +89,7 @@ ${effortDirective}
    - Sampaikan inti jawaban secara langsung (direct to the point) tanpa bertele-tele atau muter-muter.
    - Jika menjelaskan konsep teknis, sains, atau pengetahuan rumit, gunakan bahasa yang mudah dimengerti siapa saja, sertakan analogi sederhana dan perumpamaan yang intuitif tanpa mengorbankan ketepatan faktual.
 3. LARANGAN KERAS MENGULANG PERTANYAAN USER (ANTI-ECHO):
-   - DILARANG KERAS mengulang atau mengeja kembali pertanyaan pengguna sebagai judul, awalan kalimat, heading, atau sub-judul (contoh DILARANG: 'Kamu Model Apa?', 'Model AI Terbaik Saat Ini', 'Tentang Claude 5.1', 'Apa Itu Machine Learning:').
+   - DILARANG KERAS mengulang atau mengeja kembali pertanyaan pengguna sebagai judul, awalan kalimat, heading, atau sub-judul (contoh DILARANG: 'Kamu Model Apa?', 'Model AI Terbaik Saat Ini', 'Tentang Produk X', 'Apa Itu Machine Learning:').
    - Langsung mulai dengan kalimat jawaban substantif yang mengalir secara alami dan ramah.
 4. Format List & Estetika Tipografi:
    - Awali dengan paragraf narasi pengantar yang hangat dan informatif sebelum masuk ke rincian teknis.
@@ -134,7 +134,7 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 
 7. Larangan Silang Kontaminasi Antar-Entitas (Anti-Cross Contamination):
    - Jangan pernah mencampurkan fitur, pustaka, atau modul dari satu produk/proyek ke produk/proyek lain. Setiap topik dan entitas memiliki batasan arsitektur mandiri.
-   - DILARANG KERAS mengaitkan produk, riset, atau model AI luar (seperti Anthropic Claude, OpenAI, Google Gemini) seolah-olah dirilis atau dibuat oleh Rafly Firmansyah. Sebutkan nama pengembang resminya secara tepat (contoh: Anthropic merilis Claude 5.1).
+   - DILARANG KERAS mengaitkan produk, riset, atau model AI pihak ketiga seolah-olah dirilis atau dibuat oleh Rafly Firmansyah. Sebutkan nama organisasi atau perusahaan pengembang aslinya secara tepat.
 
 8. Kejujuran & Transparansi Epistemis (Explicit Absence of Data):
    - Jika pengguna menanyakan detail spesifik yang tidak tersedia dalam data terverifikasi, sampaikan dengan ramah, santun, dan transparan bahwa detail tersebut belum dipublikasikan atau tidak tercantum dalam dokumentasi yang ada. Mengakui batas informasi secara lugas jauh lebih terpercaya daripada memberikan tebakan palsu.
@@ -148,7 +148,12 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 3. [ENUMERASI KETAT LANDSKAP TERKINI]: Saat pengguna menanyakan kondisi terbaik/terbaru/terkini, state-of-the-art, peringkat, atau perbandingan kondisi masa kini (contoh: "model AI terbaik saat ini", "versi terbaru X", "ranking produk Y"), daftar entitas "terkini" WAJIB disusun HANYA dari entitas yang eksplisit tercantum pada blok bukti live hasil pencarian yang disuntikkan. DILARANG KERAS menambahkan entitas apa pun dari ingatan (versi lama maupun model lain) sebagai pelengkap, pembanding, pelengkap daftar, atau konteks "terkini". Entitas di luar bukti HANYA boleh disebut bila pengguna secara eksplisit menanyakan sejarah/riwayat versi, dan wajib diberi label waktu historis yang jelas (misal "generasi sebelumnya", "rilis tahun ..."). Jika blok bukti tidak menyebut peringkat juara, JANGAN mengarang peringkat dari ingatan; cukup laporkan model yang terbukti muncul dalam pemberitaan.
 4. [LARANGAN KLAIM TANGGAL PALSU]: DILARANG KERAS menulis kalimat atribusi buatan seperti "Semua informasi ini didasarkan pada laporan terbaru yang tersedia pada [tanggal]", "berdasarkan laporan terbaru [tanggal]", "menurut rilis [tanggal]", atau melabeli seluruh jawaban dengan tanggal publikasi tertentu yang TIDAK eksplisit tercantum pada bukti live. Tanggal hanya boleh dikutip bila benar-benar muncul pada bukti (misal pubDate artikel). Tanpa tanggal pada bukti, cukup tulis "berdasarkan hasil penelusuran web real-time saat ini" tanpa menyebut tanggal fiktif.
 5. [LARANGAN MUTLAK KLAIM BELUM RILIS TANPA BUKTI RESMI]: DILARANG KERAS menyimpulkan atau menyatakan bahwa suatu produk, perangkat keras, versi sistem operasi, game, atau entitas apa pun "belum dirilis", "belum ada di pasaran", "belum pernah diluncurkan", atau "masih tahap perencanaan/rumor" hanya karena hasil pencarian saat ini tidak memuat tanggal peluncuran perdananya atau karena ingatan internal model tidak mengetahuinya. Ketiadaan artikel peluncuran pada feed berita BUKAN bukti ketiadaan produk (produk mungkin telah dirilis berbulan-bulan atau bertahun-tahun sebelumnya). Sampaikan temuan penelusuran yang ada secara objektif tanpa spekulasi ketiadaan.
-6. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
+6. [PROTOKOL RESMI BENCHMARK & PERINGKAT LEADERBOARD]:
+   - DILARANG KERAS mengarang metrik, skor Elo, atau skor benchmark buatan jika angka tersebut TIDAK TERCANTUM EKSPLISIT dalam bukti live hasil pencarian web.
+   - Jika pengguna menanyakan perbandingan benchmark atau posisi peringkat model/teknologi:
+     * Seluruh penilaian posisi, skor, dan pemenang WAJIB 100% berakar pada data leaderboard live hasil penelusuran saat ini.
+     * Jika entitas yang ditanyakan tidak tertera pada data leaderboard hasil penelusuran web resmi, NYATAKAN SECARA TERBUKA DAN JUJUR bahwa entitas tersebut tidak terdata dalam leaderboard resmi terkini. DILARANG mengarang skor fiktif atau mengarang pemenang tanpa data faktual.
+7. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -366,7 +371,7 @@ function formulateSmartSearchQueries(query, history = []) {
   const coreSubject = stripFillers(qNorm).slice(0, 80);
   const qClean = qNorm.replace(/[^\w\s\.\-]/gi, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
 
-  // Extract clean entity if "model" / "versi" is used (e.g. "model claude 5.1" -> "claude 5.1")
+  // Extract clean entity if "model" / "versi" is used (e.g. "model X" -> "X")
   const strippedEntity = coreSubject.replace(/\b(model|versi|seri)\b/gi, ' ').replace(/\s+/g, ' ').trim();
   if (strippedEntity.length >= 2) {
     queries.push(strippedEntity);
@@ -411,6 +416,12 @@ function formulateSmartSearchQueries(query, history = []) {
       queries.push(`${targetSubject} ${currentYear} comparison latest update`);
     }
 
+    // Penanganan khusus benchmark Arena AI (LMSYS Chatbot Arena / arena.ai)
+    if (/\b(arena\s*ai|chatbot\s*arena|lmsys|arena\.ai)\b/i.test(qNorm)) {
+      queries.unshift('lmsys chatbot arena leaderboard top models ranking');
+      queries.push('arena.ai leaderboard top models');
+    }
+
     // Dynamic intent modifiers based on user intent keywords
     if (/\b(benchmark|perbandingan|bandingkan|leaderboard|skor|score|ranking|peringkat|vs|versus)\b/i.test(qNorm)) {
       queries.push(`${targetSubject} benchmark leaderboard evaluation results`);
@@ -419,10 +430,10 @@ function formulateSmartSearchQueries(query, history = []) {
     }
   }
 
-  // 3. Dynamic Multi-Turn Context Awareness (Universal Follow-Up Detection)
-  const isDependentFollowUp = /^(harganya|fiturnya|speknya|spesifikasinya|jadwalnya|tanggalnya|rilisnya|fitur|spek|harga|biaya|kapan|dimana|siapa|kenapa|mengapa|bagaimana|gimana|beneran|benar|cek|internet|tahun|berapa|coba|kok|belum|udah|sudah)$/i.test(coreSubject) ||
+  // 3. Dynamic Multi-Turn Context Awareness (Universal Follow-Up & Correction Detection)
+  const isDependentFollowUp = /^(harganya|fiturnya|speknya|spesifikasinya|jadwalnya|tanggalnya|rilisnya|fitur|spek|harga|biaya|kapan|dimana|siapa|kenapa|mengapa|bagaimana|gimana|beneran|benar|cek|internet|tahun|berapa|coba|kok|belum|udah|sudah|halu|ngarang|ngibul|bener)$/i.test(coreSubject) ||
     (coreSubject.length > 0 && coreSubject.length < 4) ||
-    /^(cek|periksa|cari lagi|coba lagi|cek lagi|internet|kok|kenapa|beneran)\b/i.test(qNorm);
+    /^(cek|periksa|cari lagi|coba lagi|cek lagi|internet|kok|kenapa|beneran|jangan halu|jangan ngibul|jangan ngarang|cari yang benar|cari yg benar|yang bener|yg bener|yang benar|yg benar|salah itu|salah|bukan itu|masa sih|masa|serius|bukan)\b/i.test(qNorm);
 
   if (isDependentFollowUp && Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
@@ -1454,7 +1465,9 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
     'itu', 'saya', 'kamu', 'anda', 'kita', 'mereka', 'bisa', 'tolong', 'coba', 'buat', 'bikin',
     'halo', 'hai', 'tes', 'test', 'ada', 'tidak', 'nggak', 'gak', 'mau', 'dong', 'sih', 'kah',
     'model', 'ai', 'assistant', 'terbaru', 'info', 'tentang', 'soal', 'seperti', 'kayak', 'akan',
-    'tau', 'tahu', 'kasih', 'beri', 'tolong', 'mohon', 'punya', 'ada', 'bisa', 'dapat'
+    'tau', 'tahu', 'kasih', 'beri', 'tolong', 'mohon', 'punya', 'ada', 'bisa', 'dapat',
+    'vs', 'versus', 'halu', 'cari', 'benar', 'bener', 'peringkat', 'nomor', 'skor', 'score',
+    'menang', 'kalah', 'mana', 'lebih', 'bagus', 'terbaik', 'ranking', 'leaderboard', 'benchmark', 'tabel', 'arena'
   ]);
 
   const tokens = String(userQuery)
@@ -1469,6 +1482,7 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
     const txt = String(m || '').trim();
     if (txt.startsWith('Kueri Pengunjung:') || txt.startsWith('Query:') || txt.includes('[SAVE_MEMORY:')) return false;
     if (txt.length < 15) return false;
+    if (/^(?:fakta\s+ringkas\s+terkonfirmasi|fakta\s+terkonfirmasi|ringkas\s+terkonfirmasi|test\s+memory\s+probe)/i.test(txt)) return false;
     return true;
   });
 
@@ -1603,8 +1617,20 @@ function normalizeStructuredMarkdown(str) {
 
   // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" atau "ringan. 2.\n**Inference**:")
   out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '$1\n\n$2. $3');
+
+  // 1.4 Normalisasi bullet character aneh ('•', '*') ke standard '-'
+  out = out.replace(/^[•*]\s+/gm, '- ');
+
   // 1.5 Format bullet items starting with bold label: e.g. "**Kemampuan Multimodal**: ..." -> "- **Kemampuan Multimodal**: ..."
   out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•])(\*\*[^*:\n]+\*\*)\s*(?:[:–—,]|: )?\s*([A-Za-z])/g, '\n- $1: $2');
+
+  // 1.6 Normalisasi konsistensi label judul list item (Anti-Pewarnaan Huruf Tidak Konsisten):
+  // Menjamin seluruh judul poin sebelum tanda titik dua (- Judul: Penjelasan, • Judul: Penjelasan, atau 1. Judul: Penjelasan)
+  // selalu dibungkus dengan **Judul**: secara seragam agar ter-render konsisten sebagai teks aksen cyan (<strong>)
+  out = out.replace(/(?:^|\n)\s*([•\-\*]|\d+\.)\s*(?!\*\*|#)\*?([\w][\w\s/&._\-]{1,50}?)\*?:\s+([^\n]+)/g, (match, bullet, title, desc) => {
+    const cleanBullet = (bullet === '•' || bullet === '*') ? '-' : bullet;
+    return `\n${cleanBullet} **${title.trim()}**: ${desc.trim()}`;
+  });
 
   // 2. Konversi judul bagian mandiri (akhiran titik dua tanpa isi kalimat) menjadi Heading Markdown (### Judul)
   // Mencegah judul bagian (seperti Komponen Utama:, Alur Kerja:, Keunggulan:, Manfaat:) berubah menjadi butir poin (- )
@@ -1963,40 +1989,6 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
           saveServerMemory(m[1].trim(), sessionId || null).catch(() => {});
         }
       }
-
-      // 0.2. DETERMINISTIC GROUNDED MEMORY CAPTURE (tanpa bergantung tag model):
-      // Model jarang mematuhi instruksi [SAVE_MEMORY], sehingga ai_memories (dashboard
-      // monitoring) tidak pernah bertambah. Solusi: bila jawaban berhasil disusun dari bukti
-      // live yang valid (bukan identitas/sapaan/error), simpan SATU ringkasan fakta dari
-      // judul berita teratas yang relevan sebagai memori terverifikasi. Tidak memakai awalan
-      // "Kueri Pengunjung:" (klien mengecualikannya dari tampilan RAG). Dedupe per topik per
-      // menit agar tidak spam.
-      const topGroundedMemory = (() => {
-        if (isSkipSearch || isIdentityQuery || isCasualGreeting || isTimeQuery) return null;
-        if (!Array.isArray(webMemories) || webMemories.length === 0) return null;
-        if (typeof query !== 'string' || query.trim().length < 5) return null;
-        // Ambil judul bukti paling relevan (hindari baris label/teknis)
-        const candidate = webMemories.find((s) => {
-          const t = String(s || '');
-          return t.length > 20 && !t.startsWith('[Wikipedia]') && !t.startsWith('[GitHub') && !t.startsWith('[Scraped');
-        });
-        if (!candidate) return null;
-        const cleanTitle = String(candidate).replace(/\[Global Live Web\/News[^\]]*\]\s*/g, '').trim();
-        if (cleanTitle.length < 20 || cleanTitle.length > 240) return null;
-        // Ringkas jadi kalimat fakta
-        return `Fakta live (${new Date().toISOString().slice(0, 10)}): ${cleanTitle}`;
-      })();
-      if (topGroundedMemory) {
-        const nowMin = Math.floor(Date.now() / 60000);
-        if (!globalThis.__lastGroundedMemory || globalThis.__lastGroundedMemory.min !== nowMin) {
-          globalThis.__lastGroundedMemory = { min: nowMin, keys: new Set() };
-        }
-        const topicKey = String(query || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 60);
-        if (!globalThis.__lastGroundedMemory.keys.has(topicKey)) {
-          globalThis.__lastGroundedMemory.keys.add(topicKey);
-          saveServerMemory(topGroundedMemory, sessionId || null).catch(() => {});
-        }
-      }
       const textWithoutTags = cleaned.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
       if (/^(?:User Safety:\s*\w+[\s\S]*?Response Safety:\s*\w+|Safety:\s*safe)$/i.test(cleaned) || !textWithoutTags.trim()) {
         return null;
@@ -2037,7 +2029,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         cleaned = cleaned.replace(/^(?:Hai|Halo|Hei|Hello|Hi|Hey)[!,\s.-]+/i, '').trim();
       }
 
-      // 3.4b. Strip leading query echoes as headings or bold text (e.g. "**Kamu Model Apa?**", "### Model AI Terbaik Saat Ini", "Tentang Claude 5.1:")
+      // 3.4b. Strip leading query echoes as headings or bold text (e.g. "**Kamu Model Apa?**", "### Model AI Terbaik Saat Ini", "Tentang Topik X:")
       const qWords = qClean.replace(/[^\w\s]/g, ' ').trim().split(/\s+/).filter(w => w.length > 2);
       if (qWords.length >= 1) {
         cleaned = cleaned.replace(/^(?:###?\s*|\*\*|__)?(?:Tentang\s+|Mengenai\s+)?([^\n:?]+)(?:[?:*_\s–—\-]|\*\*|__)*\n+/i, (fullMatch, leadPhrase) => {
@@ -2065,9 +2057,6 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
       cleaned = cleaned.replace(/(?<!\*)\s*\*(?!\*)\s*-\s*/g, ' - ');
 
-      // 3.62. Clean rogue unclosed asterisks on isolated words without destroying markdown bold
-      cleaned = cleaned.replace(/(?<=\w)\*(?!\*|\w)/g, '');
-      cleaned = cleaned.replace(/(?<!\*|\w)\*(?=\w)/g, '');
 
       // 3.65. Sanitasi Nama Teknis Model/Gateway (Menjaga Kerahasiaan Sesuai Kebijakan Privasi Sistem)
       cleaned = cleaned.replace(/\b(?:Nemotron[-3\w:]*|Ollama(?:\s+Cloud)?|OpenRouter|NVIDIA\s+NIM)\b/gi, (matched) => {
@@ -2304,10 +2293,11 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
     };
 
     // SEMANTIC RELEVANCE GATE (Zero Memory Contamination & Anti-Hallucination)
-    // Only query memories if the query is NOT a greeting, time check, or identity query.
-    // Filter strictly by topical keywords so completely unrelated queries receive ZERO memories.
+    // Jangan mencemari kueri pencarian internet live dengan potongan memori lokal lama di database.
+    // Jika sedang melakukan live web search, fakta teraktual sudah disajikan murni oleh webContext.
     const isSpecialOrInternal = isIdentityQuery || isTimeQuery || isCasualGreeting;
-    const rawServerMemories = isSpecialOrInternal ? [] : await fetchServerMemories(25);
+    const isExternalLiveSearch = !isSkipSearch && searchResult.rawSnippets && searchResult.rawSnippets.length > 0;
+    const rawServerMemories = (isSpecialOrInternal || isExternalLiveSearch) ? [] : await fetchServerMemories(25);
     const relevantMemories = filterRelevantMemories(rawServerMemories, query, isSpecialOrInternal);
 
     const serverMemoryBlock = relevantMemories.length > 0
