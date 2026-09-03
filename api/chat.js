@@ -786,6 +786,64 @@ async function searchWebContext(query, history = []) {
       );
     }
 
+    // 2c. UNIVERSAL LANDSCAPE SCAN (semua domain: model AI, gadget, game, software, film, produk, dll.)
+    // Meniru metodologi riset multi-query lintas-entitas yang terbukti akurat: ketika pertanyaan
+    // menanyakan "apa yang baru/terbaru/rilis terbaru" secara umum (bukan subjek tunggal spesifik),
+    // lakukan liputan lebar: feed utama global + jendela bulan berjalan + (khusus domain AI) seed
+    // nama produsen utama. Seed hanya berisi NAMA PERUSAHAAN STABIL tanpa versi apa pun (AGENTS.md 10c).
+    const nowDate = new Date();
+    const monthNamesArr = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const curMonthName = monthNamesArr[nowDate.getMonth()];
+    const prevMonthName = monthNamesArr[(nowDate.getMonth() + 11) % 12];
+    const curYearNum = nowDate.getFullYear();
+    let maxItemsPerFeed = 8;
+
+    const isLatestLandscapeQuery = isNewsOverviewQuery ||
+      /(?:semua|all|macam|berbagai|daftar|list|apa saja|what'?s new|berita terbaru|rilis terbaru|terbaru\s+apa|model terbaru|produk terbaru|game terbaru|perangkat terbaru|hp terbaru|versi terbaru|update terbaru|terbaru\s+yang|baru[- ]baru\s+ini|baru\s+dirilis|baru\s+diluncurkan|dirilis\s+baru|just\s+released|recently\s+released|newest)\b/i.test(query) ||
+      /\b(?:terbaik\s+saat\s+ini|terbaik\s+sekarang|best\s+(?:right\s+)?now|best\s+current|top\s+terbaru|paling\s+baru|terkini\s+saat\s+ini)\b/i.test(query);
+    const isAiModelLandscape = isLatestLandscapeQuery &&
+      /\b(?:model\s+(?:terbaru|baru|terkini|ai|llm)|ai\s+model|\bai\b|\bllm\b|gpt|claude|gemini|deepseek|grok|llama|mistral|foundation\s+model|large\s+language\s+model)\b/i.test(query);
+    if (isLatestLandscapeQuery) maxItemsPerFeed = 12;
+
+    if (isAiModelLandscape) {
+      const providerSeedQueries = [
+        `OpenAI new model release ${curMonthName} ${curYearNum}`,
+        `Anthropic Claude new model release ${curMonthName} ${curYearNum}`,
+        `Google Gemini new model release ${curMonthName} ${curYearNum}`,
+        `Meta AI new model release ${curMonthName} ${curYearNum}`,
+        `xAI Grok new model release ${curMonthName} ${curYearNum}`,
+        `DeepSeek new model release ${curMonthName} ${curYearNum}`,
+        `Mistral AI new model release ${curMonthName} ${curYearNum}`,
+        `AI foundation model launch news ${curMonthName} ${curYearNum}`
+      ];
+      for (const seedQ of providerSeedQueries) {
+        searchFetches.push(
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(seedQ)}&hl=en-US&gl=US&ceid=US:en`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          })
+        );
+      }
+      // Freshness signal ekosistem developer (Hacker News Algolia - newest first)
+      searchFetches.push(
+        fetch(`https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent('AI model OR LLM release')}&tags=story&hitsPerPage=10`, {
+          headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
+          signal: controller.signal
+        })
+      );
+    } else if (isLatestLandscapeQuery) {
+      // Lanskap umum non-AI: jendela bulan berjalan untuk topik apa pun (berita, produk, rilis, dll.)
+      const monthWindowQueries = [`${curMonthName} ${curYearNum}`, `${prevMonthName} ${curYearNum}`];
+      for (const wq of monthWindowQueries) {
+        searchFetches.push(
+          fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(wq)}&hl=en-US&gl=US&ceid=US:en`, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            signal: controller.signal
+          })
+        );
+      }
+    }
+
     // 3. GitHub Open-Source & Library Discovery (For tech / framework / code / repo queries)
     const isTechOrCode = /\b(github|repo|library|framework|package|model|tool|sdk|api|kode|script|koding|coding|npm|pip|cargo|golang|rust|python|javascript|typescript|svelte|react|vue|deepseek|llama|gemini|claude|gpt|anthropic|openai|mistral|nemotron)\b/i.test(query);
     if (isTechOrCode) {
@@ -975,7 +1033,7 @@ async function searchWebContext(query, history = []) {
         } else {
           // RSS News Feeds (Google News Global & ID, Bing)
           const items = textData.match(/<item>[\s\S]*?<\/item>/gi) || [];
-          items.slice(0, 8).forEach((item) => {
+          items.slice(0, maxItemsPerFeed).forEach((item) => {
             const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
             const descMatch = item.match(/<description>([\s\S]*?)<\/description>/i);
             const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
@@ -1041,7 +1099,7 @@ async function searchWebContext(query, history = []) {
         seen.add(item.text);
         uniqueSnippets.push(item.text);
       }
-      if (uniqueSnippets.length >= 7) break;
+      if (uniqueSnippets.length >= (isLatestLandscapeQuery ? 14 : 7)) break;
     }
 
     let formattedPrompt = '';
@@ -1066,7 +1124,18 @@ ${uniqueSnippets.join('\n')}
   * Jika bukti di atas tidak memuat jawaban kunci, akui jujur bahwa informasi terkini tidak ditemukan dalam pencarian live, berikan yang terverifikasi (bila ada) dengan penanda waktu, lalu arahkan ke sumber resmi. DILARANG mengarang berita palsu, tanggal rilis fiktif, atau klaim berlebihan yang tidak tercantum di sumber resmi.\n`;
     }
 
-    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, 10), agentToolsUsed };
+    // Arahan sintesis khusus LANSKAP "apa yang baru / rilis terbaru" (universal, semua domain):
+    // mengelompokkan per entitas/produsen/kategori dan memisahkan terkonfirmasi vs belum resmi.
+    if (isLatestLandscapeQuery && formattedPrompt) {
+      formattedPrompt += `
+[ARAHAN SINTESIS LANSKAP "APA YANG BARU / RILIS TERBARU"]:
+- Sajikan sebagai RINGKASAN LANSKAP yang dikelompokkan per entitas/produsen/kategori (bukan daftar linear acak).
+- Untuk setiap entitas, tulis penanda waktu laporan yang TERTERA pada bukti (misal "dilaporkan [tanggal]"). DILARANG menambah entitas tanpa bukti hanya untuk "melengkapi daftar".
+- Pisahkan eksplisit: (a) rilis yang terkonfirmasi liputan, vs (b) kabar/rencana/rumor yang belum resmi dirilis.
+- Nyatakan jujur bahwa daftar mencakup hal yang tertangkap penelusuran real-time dan mungkin tidak lengkap; arahkan ke sumber resmi untuk daftar menyeluruh.`;
+    }
+
+    return { formattedPrompt, rawSnippets: rawSnippets.slice(0, isLatestLandscapeQuery ? 18 : 10), agentToolsUsed };
   } catch (_) {
     return { formattedPrompt: '', rawSnippets: [], agentToolsUsed: [] };
   }

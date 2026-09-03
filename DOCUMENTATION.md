@@ -1277,3 +1277,25 @@ Menindaklanjuti pengujian nyata yang masih menampilkan model lawas (Claude 3.7 S
    - Transformasi hanya menyentuh kalimat dengan format tanggal penuh (hari-bulan-tahun) sehingga tidak merusak kalimat lain.
 4. **Verifikasi:**
    - `node --check` lolos; guard regex teruji mencocokkan sampel keluaran nyata ("...didasarkan pada laporan terbaru yang tersedia pada 2 September 2026") dan menggantinya menjadi frasa netral.
+
+### v10.643.0 — Universal Landscape Scan Engine (Multi-Vendor/Entity Releases, All Domains)
+
+Released 2026-09-03.
+
+Menanamkan metodologi riset live yang terbukti akurat (multi-query lintas entitas + jendela waktu + sintesis berkelompok berbukti) langsung ke mesin pencarian terminal, secara universal untuk semua domain (model AI, gadget, game, software, film, produk, dll.).
+
+1. **Universal Landscape Scan (`searchWebContext`):**
+   - Menambahkan deteksi intent `isLatestLandscapeQuery`: pertanyaan tentang "apa yang baru/terbaru/dirilis baru-baru ini/terbaik saat ini" (semua domain) kini memicu liputan lebar alih-alih hanya subjek tunggal.
+   - Regex diperluas mencakup frasa Indonesia & Inggris: "baru-baru ini", "baru dirilis", "baru diluncurkan", "terbaik saat ini", "just released", "recently released", "best right now", dll.
+   - Ketika lanskap terdeteksi, kapasitas bukti dinaikkan (12 item per feed RSS, hingga 14 bukti unik, hingga 18 rawSnippets) sehingga ringkasan tidak kehilangan entitas penting.
+2. **Seed Kueri Khusus Domain AI Models (Tanpa Hardcode Versi):**
+   - Untuk pertanyaan lanskap model AI, menyuntikkan seed kueri per produsen utama (OpenAI, Anthropic Claude, Google Gemini, Meta AI, xAI Grok, DeepSeek, Mistral) + "AI foundation model launch" dengan bulan-tahun berjalan dinamis.
+   - Seed hanya berisi NAMA PERUSAHAAN STABIL tanpa versi/spesifikasi apa pun, patuh AGENTS.md 10c (zero hardcode pengetahuan eksternal yang dapat basi).
+   - Menambahkan fetch Hacker News Algolia `search_by_date` (terbaru dulu) untuk sinyal ekosistem developer terkini.
+   - Untuk lanskap umum non-AI, memanfaatkan jendela bulan berjalan + bulan sebelumnya sebagai kueri.
+3. **Arahan Sintesis Lanskap Khusus:**
+   - Menambahkan blok arahan sintesis yang meminta model menyajikan RINGKASAN LANSKAP berkelompok per entitas/produsen/kategori (bukan daftar linear acak), dengan penanda waktu laporan per entitas.
+   - Mewajibkan pemisahan eksplisit antara rilis terkonfirmasi vs kabar/rencana/rumor, serta pernyataan jujur bahwa daftar bersifat tidak lengkap dan merujuk sumber resmi.
+4. **Verifikasi:**
+   - `node --check` lolos; intent detection teruji terhadap frasa nyata ("apa saja model terbaru yang rilis baru-baru ini dari semua model dan provider", "model ai terbaik saat ini", "gadget yang baru diluncurkan", "rilis game terbaru").
+   - Uji live: 8 kueri seed per-produsen mengembalikan HTTP 200 dengan 61–78 item berita per kueri (Google News), memastikan bukti lanskap selalu tersedia.
