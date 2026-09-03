@@ -83,12 +83,33 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 ${languageDirective}
 ${effortDirective}
 
-[PILAR KECERDASAN EMOSIONAL, ADAPTIF & KEJUJURAN EPISTEMIS]:
-1. Kejujuran Mutlak & Presisi Faktual (Zero-Hallucination):
-   - Jawablah HANYA apa yang secara spesifik ditanyakan pengguna. Jawab langsung ke inti persoalan secara padat, cerdas, dan lugas.
-   - DILARANG KERAS mencampurkan informasi, fakta memori, atau topik acak yang tidak ditanyakan pengguna.
-   - Jika suatu fakta, versi rilis, tanggal rilis, atau detail teknis belum terkonfirmasi resmi: **WAJIB AKUI DENGAN JUJUR TANPA BERSPEKULASI**.
-   - DILARANG mengarang angka presisi palsu, fitur rekaan, ataupun klaim yang tidak ada pada data terverifikasi.
+[PILAR KEJUJURAN EPISTEMIS & PROTOKOL MUTLAK ZERO-HALLUCINATION (BERLAKU UNIVERSAL)]:
+Sebagai AI rekayasa perangkat lunak dan asisten riset berintegritas tinggi, Anda TERIKAT SECARA MUTLAK pada protokol anti-halusinasi berikut di SELURUH TOPIK (teknologi, pemrograman, machine learning, riset ilmiah, repositori, sains, maupun pengetahuan umum):
+
+1. BUKTI FAKTUAL SEBAGAI FONDASI TUNGGAL (GROUND TRUTH SUPREMACY):
+   - Seluruh pernyataan teknis, klaim fungsionalitas, metodologi, dan penjelasan konsep WAJIB berdasar HANYA pada data yang terverifikasi (konteks sistem, ground truth repositori, atau bukti hasil pencarian web yang disertakan).
+   - DILARANG KERAS mengarang, mereka-reka, berasumsi, atau berspekulasi tentang detail yang tidak ada dalam data.
+
+2. LARANGAN KERAS MENGARANG ANGKA, RASIO DATA, & METRIK (ZERO FAKE METRICS):
+   - DILARANG KERAS mengarang rasio pemotongan/pembagian dataset (misalnya mengklaim split 70/15/15, 80/20, 60/20/20 jika tidak eksplisit di dokumentasi).
+   - DILARANG mengarang angka akurasi, F1-score, loss, jumlah sampel, waktu eksekusi, atau persentase statistik palsu.
+   - Jika suatu angka atau rasio tidak tercantum dalam sumber data, JANGAN PERNAH MENEBAK! Nyatakan pembagian data sesuai apa yang tertulis dalam sumber resmi.
+
+3. LARANGAN MENGASUMSIKAN POLA & ALGORITMA BUKU TEKS GENERIK (ANTI-GENERIC CONJECTURE):
+   - Jangan pernah mengasumsikan bahwa suatu sistem otomatis mengimplementasikan teknik buku teks generik hanya karena teknik itu umum di internet:
+     * DILARANG mengasumsikan teknik oversampling (SMOTE, ADASYN, dsb) pada data tidak seimbang jika tidak eksplisit digunakan.
+     * DILARANG mengasumsikan teknik stemming bahasa tertentu (misal stemming Sastrawi Bahasa Indonesia) pada teks berbahasa Inggris atau korpus umum.
+     * DILARANG mengasumsikan penggunaan Word Embedding atau LLM (SBERT, BERT, Word2Vec) jika ekstraksi fitur adalah TF-IDF atau N-Gram.
+     * DILARANG mengasumsikan beberapa model digabungkan sebagai Ensemble Voting/Stacking jika aslinya adalah komparasi mandiri.
+     * DILARANG mengasumsikan adanya pipeline streaming data, retraining otomatis periodik, atau runtime inference (seperti ONNX/TensorRT) jika tidak ada di rancangan nyata.
+
+4. LARANGAN SILANG KONTAMINASI ANTAR-ENTITAS (ANTI-CROSS CONTAMINATION):
+   - DILARANG mencampurkan modul, pustaka, metrik, atau algoritma dari satu proyek ke proyek lain. Setiap proyek atau produk memiliki arsitektur yang independen dan terisolasi.
+
+5. KEJUJURAN ATAS KETIDAKSEDIAAN INFORMASI (EXPLICIT ABSENCE OF DATA):
+   - Jika pengguna menanyakan suatu detail teknis, konfigurasi, atau arsitektur spesifik yang TIDAK TERCANTUM dalam data terverifikasi:
+     Model WAJIB MENJAWAB DENGAN JUJUR DAN LUGAS bahwa detail tersebut tidak dijelaskan dalam dokumentasi yang tersedia atau tidak diterapkan dalam sistem, alih-alih mengarang jawaban spekulatif.
+   - Mengakui batas informasi secara lugas dan faktual adalah standar profesional tertinggi.
 
 2. Kecerdasan Kontekstual & Relevansi Topik (Topical Alignment):
    - Pertahankan fokus penuh pada subjek pertanyaan saat ini. DILARANG mengaitkan data dari pertanyaan sebelumnya jika pengguna sudah beralih menanyakan subjek baru.
@@ -194,8 +215,8 @@ Wajib jadikan seluruh rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENA
 async function fetchJsonWithTimeout(url, options, timeoutConfig = 25000) {
   const controller = new AbortController();
   const connectTimeoutMs = typeof timeoutConfig === 'object' 
-    ? (timeoutConfig.connectTimeoutMs || 7000) 
-    : Math.min(typeof timeoutConfig === 'number' ? timeoutConfig : 7000, 7000);
+    ? (timeoutConfig.connectTimeoutMs || 15000) 
+    : Math.min(typeof timeoutConfig === 'number' ? timeoutConfig : 15000, 20000);
   const activeTimeoutMs = typeof timeoutConfig === 'object' 
     ? (timeoutConfig.activeTimeoutMs || 55000) 
     : 55000;
@@ -674,7 +695,7 @@ async function searchWebContext(query, history = []) {
       await Promise.allSettled(urlPromises);
     }
 
-    // 2. Ultra-Fast Parallel Live News Feeds (Google News Global & Indonesia + Bing News)
+    // 2. Ultra-Fast Parallel Live News Feeds (Google News Global & Indonesia + Bing News + DuckDuckGo)
     const searchFetches = searchQueries.flatMap(targetQ => [
       // Google News Global (US / English) - Fresh News
       fetch(`https://news.google.com/rss/search?q=${encodeURIComponent(targetQ + ' when:30d')}&hl=en-US&gl=US&ceid=US:en`, {
@@ -689,6 +710,11 @@ async function searchWebContext(query, history = []) {
       // Bing News Global
       fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(targetQ)}&format=rss`, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        signal: controller.signal
+      }),
+      // DuckDuckGo Instant Answers (Definitions, Overviews, Direct Facts)
+      fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(targetQ)}&format=json&no_html=1&skip_disambig=1`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
         signal: controller.signal
       })
     ]);
@@ -711,10 +737,30 @@ async function searchWebContext(query, history = []) {
       );
     }
 
+    // 3b. Direct GitHub README Discovery for specific repositories
+    const repoPatterns = [
+      { pattern: /\b(?:spam[-_ ]?email|skripsi|classifier|concept[-_ ]?drift)\b/i, repo: 'Raflyf/Spam-Email' },
+      { pattern: /\b(?:openplagiarism(?:checker)?|plagiarism|plagiarisme|shingling)\b/i, repo: 'Raflyf/OpenPlagiarismChecker' },
+      { pattern: /\b(?:laser[-_ ]?pointer[-_ ]?ppt|pointer|presenter|gyroscope)\b/i, repo: 'Raflyf/laser_pointer_PPT' },
+      { pattern: /\b(?:fotokitablur|foto kita|mediapipe|gestur|v-sign)\b/i, repo: 'FotoKitaBlur/FotoKitaBlur' },
+      { pattern: /\b(?:web[-_ ]?portofolio|portfolio|liquid glassmorphism)\b/i, repo: 'Raflyf/web-portofolio' }
+    ];
+    for (const rp of repoPatterns) {
+      if (rp.pattern.test(query)) {
+        searchFetches.push(
+          fetch(`https://api.github.com/repos/${rp.repo}/readme`, {
+            headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
+            signal: controller.signal
+          })
+        );
+        break;
+      }
+    }
+
     // 4. Open-Web Encyclopedic Knowledge (Multi-Language: English & Indonesian)
-    const isEncyclopedic = /\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|siapa|apa|jelaskan|how does)\b/i.test(query);
+    const isEncyclopedic = /\b(apa|siapa|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what|who|history|definition|jelaskan|analisis|komparasi|perbedaan|bagaimana|cara|faktor|arsitektur|konsep|mekanisme|struktur|prinsip|metode|algoritma|algorithm|how|explain|compare|versus|vs|kelebihan|kekurangan|manfaat|tujuan|fitur|dataset|evaluasi|akurasi|keunggulan)\b/i.test(query);
     if (isEncyclopedic) {
-      const mainKeyword = query.replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|dong|how does)\b/gi, ' ').trim();
+      const mainKeyword = query.replace(/\b(apa itu|siapa itu|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what is|who is|history of|definition of|tolong|jelaskan|analisis|dong|how does|bagaimana|ceritakan|tentang|mengenai)\b/gi, ' ').trim();
       if (mainKeyword.length >= 3) {
         searchFetches.push(
           fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(mainKeyword)}&format=json&origin=*`, {
@@ -787,7 +833,7 @@ async function searchWebContext(query, history = []) {
                 }
               }
             }
-            // GitHub
+            // GitHub Search Items
             if (Array.isArray(parsed?.items)) {
               parsed.items.slice(0, 2).forEach(repo => {
                 const desc = cleanStr(repo.description);
@@ -798,6 +844,21 @@ async function searchWebContext(query, history = []) {
                 });
                 rawSnippets.push(`[GitHub]: ${repo.full_name}`);
               });
+            }
+            // GitHub Raw README (Base64 Encoded from /repos/:owner/:repo/readme)
+            if (parsed?.content && parsed?.encoding === 'base64') {
+              try {
+                const decodedReadme = Buffer.from(parsed.content, 'base64').toString('utf8');
+                if (decodedReadme && decodedReadme.length > 50) {
+                  const cleanedReadme = cleanStr(decodedReadme.slice(0, 2500));
+                  structuredSnippets.push({
+                    text: `[Live GitHub README Dokumentasi Resmi (${parsed.name || 'README.md'})]:\n${cleanedReadme}`,
+                    timestamp: Date.now() + 2000000,
+                    score: 12
+                  });
+                  rawSnippets.push(`[GitHub README]: ${parsed.name || 'README'}`);
+                }
+              } catch (_) {}
             }
             // HuggingFace
             if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.id) {
@@ -1555,7 +1616,10 @@ export default async function handler(req, res) {
     const isTimeQuery = /(?:jam\s*berapa|waktu\s*sekarang|tanggal\s*berapa|hari\s*apa\s*sekarang|sekarang\s*jam|sekarang\s*tanggal|pukul\s*berapa|zona\s*waktu|wib\b|wita\b|wit\b)/i.test(qClean);
     const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
     const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
-    const isSkipSearch = isIdentityQuery || isTimeQuery || isCasualGreeting || isInternalPortfolioQuery;
+    
+    // UNIVERSAL RETRIEVAL-FIRST: Pencarian hanya di-skip untuk sapaan murni, pertanyaan waktu, atau pertanyaan identitas diri singkat.
+    // Seluruh pertanyaan lain (baik proyek lokal, teknologi luar, konsep ML, coding, atau wawasan umum) WAJIB MENJALANKAN RETRIEVAL FAKTUAL!
+    const isSkipSearch = isIdentityQuery || isTimeQuery || isCasualGreeting;
 
     // DEAD-1/KONFLIK-3: Removed fetchLiveRepoContext (was always ''). Direct await is cleaner.
     const searchResult = isSkipSearch
@@ -1572,10 +1636,12 @@ export default async function handler(req, res) {
         sourcesCount: webMemories.length,
         sources: webMemories.slice(0, 3)
       });
-    } else if (isInternalPortfolioQuery) {
+    }
+    if (isInternalPortfolioQuery) {
       agentSteps.push({
         tool: 'portfolio_rag',
-        topic: query.substring(0, 50)
+        topic: query.substring(0, 50),
+        status: 'verified_ground_truth'
       });
     }
 
@@ -1805,9 +1871,9 @@ export default async function handler(req, res) {
     };
 
     // SEMANTIC RELEVANCE GATE (Zero Memory Contamination & Anti-Hallucination)
-    // Only query memories if the query is NOT identity, time, greeting, or internal portfolio.
+    // Only query memories if the query is NOT a greeting, time check, or identity query.
     // Filter strictly by topical keywords so completely unrelated queries receive ZERO memories.
-    const isSpecialOrInternal = isIdentityQuery || isTimeQuery || isCasualGreeting || isInternalPortfolioQuery;
+    const isSpecialOrInternal = isIdentityQuery || isTimeQuery || isCasualGreeting;
     const rawServerMemories = isSpecialOrInternal ? [] : await fetchServerMemories(25);
     const relevantMemories = filterRelevantMemories(rawServerMemories, query, isSpecialOrInternal);
 
@@ -2404,9 +2470,10 @@ export default async function handler(req, res) {
 
         // Dual-Phase Adaptive Timeout:
         // 1. Connect Timeout (7500ms): Waktu optimal untuk inisiasi gateway & model handshake; jika gateway lambat/antre, cepat failover ke fallback berikutnya.
-        // 2. Active Thinking Timeout (hingga 55s / remainingMs): Begitu model merespons (200 OK), biarkan model terus berpikir sampai tuntas tanpa terkendala timeout pendek!
-        const connectTimeout = Math.min(step.timeout || 7500, 7500);
-        const activeTimeout = Math.max(8000, remainingMs - 1000);
+        // 2. Active Thinking Timeout: Untuk mode auto, batasi max 20-22s per step agar kegagalan 1 gateway segera failover ke gateway berikutnya dalam sisa budget 58s.
+        const connectTimeout = Math.min(step.timeout || 15000, 15000);
+        const maxStepActive = isSpecificManual ? (remainingMs - 1000) : Math.min(30000, remainingMs - 1000);
+        const activeTimeout = Math.max(8000, maxStepActive);
 
         try {
           const result = await executeStep(step, {

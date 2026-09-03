@@ -1111,8 +1111,23 @@ Released 2026-09-03.
      * Menghapus klaim palsu lainnya: Stemming Bahasa Indonesia, embedding SBERT (hanya milik OpenPlagiarismChecker), data streaming, dan retraining otomatis.
    - Menyuntikkan arsitektur fitur faktual: TF-IDF Word (20.000) + Char (8.000) + 13 Fitur Struktural + 35 Keyword Spam + SelectKBest Chi-Square (k=12.000) untuk CNB, serta spesifikasi web Flask, mode batch CSV, dan tuning rasio kelas 10:90 s.d. 90:10.
 
+### v10.637.0 — Universal Evidence-First Retrieval Engine & Zero-Hallucination Meta-Directives
 
-
+Released 2026-09-03.
+1. **Penerapan Protokol Mutlak Anti-Halusinasi Universal (`api/chat.js`):**
+   - Menetapkan pilar kejujuran epistemis universal pada `basePrompt` yang mengikat seluruh model dan seluruh topik (machine learning, rekayasa software, arsitektur sistem, repositori kode, maupun pengetahuan umum):
+     * *Ground Truth Supremacy*: Seluruh jawaban teknis wajib didasarkan hanya pada bukti nyata yang eksplisit ada dalam konteks terverifikasi.
+     * *Zero Fake Metrics*: Melarang mutlak mengarang rasio data split (misal 70/15/15, 80/20), angka akurasi, atau waktu eksekusi yang tidak ada di sumber.
+     * *Anti-Generic Conjectures*: Melarang berasumsi bahwa sistem menggunakan teknik generik internet (seperti oversampling SMOTE, stemming bahasa asing, SBERT, atau ensemble voting) jika tidak tertulis dalam data.
+     * *Anti-Cross Contamination*: Mengisolasi modul dan pustaka antar-proyek agar tidak saling tertukar (misal SBERT hanya di OpenPlagiarismChecker, MediaPipe hanya di FotoKitaBlur).
+     * *Explicit Absence of Data*: Mewajibkan model mengakui dengan lugas jika suatu detail tidak tercantum dalam dokumentasi, alih-alih mengarang jawaban spekulatif.
+2. **Universal Search & Retrieval-First Engine (`api/chat.js`):**
+   - Mengubah kebijakan `isSkipSearch`: Pencarian hanya di-skip untuk sapaan murni ("halo", "hai"), pengecekan waktu/jam ("jam berapa sekarang"), dan pertanyaan identitas model singkat ("kamu model apa").
+   - Seluruh kueri analitis, proyek repositori, konsep teknologi, dan wawasan teknis kini secara universal menjalankan retrieval terlebih dahulu sebelum inferensi model.
+   - Menambahkan integrasi pencarian DuckDuckGo Instant Answers dan pembacaan langsung dokumentasi repositori GitHub (`/repos/:owner/:repo/readme`) yang didekode secara real-time via buffer base64.
+3. **Optimasi Ketahanan Koneksi Dual-Phase Gateway:**
+   - Meningkatkan `connectTimeoutMs` dari 7.500ms menjadi 15.000ms untuk mengakomodasi waktu prefill prompt RAG berkonteks besar tanpa terputus prematur.
+   - Menetapkan batas waktu aktif model analitis hingga 30 detik pada loop eksekusi pipeline untuk memastikan respons teknis mendalam terselesaikan secara sempurna.
 
 
 
