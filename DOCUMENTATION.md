@@ -1355,3 +1355,24 @@ Menindaklanjuti laporan bahwa asisten masih lama "berpikir" dan sering timeout p
    - Panjang deskripsi artikel pada bukti RSS dipotong dari 250 menjadi 150 karakter, memperkecil ukuran system prompt sehingga waktu prefill model turun.
 4. **Verifikasi:**
    - `node --check` lolos; seluruh perubahan di-commit dan di-push.
+
+### v10.647.0 — Reordered Model Pipeline Based on Live Provider Probing (Correct Current Model Names)
+
+Released 2026-09-03.
+
+Menata ulang prioritas model sesuai permintaan: Nemotron Nano Ollama → Gemma 4 Ollama → Lightning → model terbaru aktif lainnya (Super/Nano-Omni/Ultra/Laguna/MiniMax). Semua nama model diverifikasi langsung terhadap katalog & endpoint live.
+
+1. **Audit Provider Ber-Key:**
+   - Hanya **Ollama Cloud (1 key)** dan **OpenRouter (5 key)** yang aktif. OpenCode Zen, NVIDIA NIM, dan MiniMax langsung TIDAK punya key → seluruh entri `opencode`/`minimax`/`nim` di pipeline auto dihapus (sebelumnya sia-sia karena tak pernah terpanggil).
+2. **Probe Langsung Nama Model (Endpoint Live, 3 September 2026):**
+   - Merespons OK: Ollama `nemotron-3-nano:30b`, `gemma4:31b`, `nemotron-3-super`; OpenRouter `nvidia/nemotron-3.5-lightning:free`, `google/gemma-4-31b-it:free`, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`, `nvidia/nemotron-3-super-120b-a12b:free`, `nvidia/nemotron-3-ultra-550b-a55b:free`, `poolside/laguna-s-2.1:free`, `minimax/minimax-m3:free`, `openrouter/free`.
+   - Tidak ada/tidak merespons: `nvidia/nemotron-3-nano-30b-a3b:free` (HTTP 404 - tidak ada varian free), `google/gemma-4-26b-a4b-it:free` (429 sementara), Ollama `nemotron-3-ultra` & `minimax-m3` (timeout). Entri-entri ini disingkirkan atau diganti padanan aktif.
+3. **Urutan Prioritas Baru (General Chat Cascade):**
+   - Ollama Nano → Ollama Gemma 4 31B → Ollama Nemotron 3 Super → OpenRouter Lightning → OpenRouter Gemma 4 31B → OpenRouter Super/Nano-Omni/Ultra → Laguna/MiniMax M3/OpenRouter Free.
+4. **Reasoning & Vision Pipeline Diselaraskan:**
+   - Reasoning: Ollama Nano → Ollama Gemma 4 → Nano-Omni/Lightning → Super/Ultra → cadangan aktif.
+   - Vision: Nano-Omni (OpenRouter) → MiniMax M3 (OpenRouter) → Ollama Nano → OpenRouter Free. Entri `mimo-v2.5-free` (OpenCode, tanpa key) dihapus.
+5. **Manual Override Diselaraskan:**
+   - Seluruh pilihan manual kini dirutekan hanya ke provider ber-key dengan nama model terverifikasi (mis. `laguna`/`mimo`/`opencode` → `poolside/laguna-s-2.1:free`; `minimax`/`m3` → `minimax/minimax-m3:free`; `vision` → Nano-Omni).
+6. **Verifikasi:**
+   - `node --check` lolos; seluruh perubahan di-commit dan di-push.
