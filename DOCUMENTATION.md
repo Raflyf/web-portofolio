@@ -1970,6 +1970,31 @@ Menyempurnakan efek kaca buram (*frosted glass*) pada modal Riwayat Percakapan (
 3. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 580ms.
 
+### v10.667.0 — Dynamic Query-Based Session Titles & High-Contrast Text Legibility
+
+Released 2026-09-04.
+
+Meningkatkan kenyamanan pembacaan dan pengalaman pengguna pada modal Riwayat Percakapan (`src/components/terminal/TerminalAI.jsx`):
+
+1. **Judul Riwayat Berbasis Pertanyaan Pengguna (*Query-Based Intelligent Naming*):**
+   - Mengeliminasi penomoran statis kaku (`Sesi Terdahulu 1, 2, 3...`).
+   - Menerapkan helper `getSessionTitle(msgs)` yang otomatis mengekstrak pertanyaan pertama pengguna sebagai judul kartu (contoh: "Kamu model apa", "Jelaskan dan analisis proyek openplagiarism", "Hai saya adalah jhon pengunjung web ini").
+   - Memformat judul dengan sentence casing yang rapi serta batasan panjang cerdas dengan elipsis.
+   - Sesi Aktif menampilkan badge khusus `Sesi Aktif` berdampingan dengan judul pertanyaan yang sedang aktif berlangsung.
+
+2. **Ringkasan Isi Chat Realistis (*Assistant Snippet Extraction*):**
+   - Menerapkan helper `getSessionSnippet(msgs)` yang mengekstrak intisari jawaban asisten (dibersihkan dari simbol markdown) sebagai preview konteks sebelum pengguna membuka sesi.
+
+3. **Peningkatan Keterbacaan Teks (*High-Contrast Text Legibility*):**
+   - Judul kartu ditingkatkan ke `text-white font-semibold text-sm sm:text-base` dengan `drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]` agar huruf terpisah tegas dari material kaca.
+   - Cuplikan pesan ditingkatkan dari `text-zinc-500` (redup) menjadi `text-zinc-200 text-xs sm:text-[13px] leading-relaxed line-clamp-2` sehingga mudah dan nyaman dibaca.
+   - Stempel waktu diformat dengan badge monospaced `text-zinc-300 bg-white/10 px-2 py-0.5 rounded border border-white/15`.
+   - Tombol hapus sesi didesain lebih jelas dan mudah ditekan (`w-4 h-4 text-red-300 bg-red-500/15`).
+
+4. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 626ms.
+
+
 
 
 
