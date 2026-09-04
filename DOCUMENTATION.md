@@ -2025,6 +2025,26 @@ Menghilangkan keberadaan redundan tombol *Back to Top* saat pengguna sudah berad
 2. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 998ms.
 
+### v10.667.3 — Ultra-Smooth Spring Physics & Cubic-Bezier Transition for Back to Top
+
+Released 2026-09-04.
+
+Menyempurnakan kehalusan transisi kemunculan dan hilangnya tombol *Back to Top* pada `src/App.jsx`:
+
+1. **Integrasi AnimatePresence & Motion Curve Fisika:**
+   - Mengganti transisi kelas CSS statis dengan `AnimatePresence` dan `<motion.button>` dari Framer Motion.
+   - Menggunakan parameter mount/unmount presisi:
+     - `initial={{ opacity: 0, scale: 0.6, y: 16 }}`
+     - `animate={{ opacity: 1, scale: 1, y: 0 }}`
+     - `exit={{ opacity: 0, scale: 0.6, y: 16 }}`
+     - Kurva pelunakan gerak: `transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}` (quartic ease-out).
+   - Menghasilkan efek terbit (*glide-up fade in*) dan terbenam (*glide-down fade out*) yang sangat organik, bebas jank, dan tidak lagi terpotong secara mendadak.
+   - Menambahkan mikro-interaksi responsif: `whileHover={{ scale: 1.08, y: -2 }}` dan `whileTap={{ scale: 0.92 }}`.
+
+2. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 759ms.
+
+
 
 
 
