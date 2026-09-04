@@ -1156,7 +1156,7 @@ export default function TerminalAI({ onClose } = {}) {
       {showHistoryModal && (
         <div 
           data-lenis-prevent="true"
-          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 glass-backdrop-in p-4"
+          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-2xl glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -1167,12 +1167,7 @@ export default function TerminalAI({ onClose } = {}) {
         >
           <div 
             data-lenis-prevent="true"
-            className="w-full max-w-2xl rounded-2xl overflow-hidden font-mono glass-spring-in border border-white/20 shadow-[0_24px_50px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)]"
-            style={{
-              background: 'linear-gradient(135deg, rgba(16, 18, 27, 0.82) 0%, rgba(10, 12, 18, 0.78) 100%)',
-              backdropFilter: 'blur(40px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-            }}
+            className="w-full max-w-2xl liquid-glass-strong backdrop-blur-3xl rounded-2xl overflow-hidden font-mono glass-spring-in"
             onWheel={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
@@ -1199,19 +1194,12 @@ export default function TerminalAI({ onClose } = {}) {
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
-               <div 
-                 className="p-4 rounded-xl cursor-pointer transition group relative border border-cyan-400/30 hover:border-cyan-400/50"
-                 style={{
-                   background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%)',
-                   backdropFilter: 'blur(16px)',
-                   WebkitBackdropFilter: 'blur(16px)',
-                 }}
-               >
+               <div className="p-4 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group relative">
                  <div className="flex items-center justify-between mb-1">
                    <span className="text-cyan-400 font-medium group-hover:text-cyan-300 text-sm">Sesi Aktif</span>
                    <span className="text-[10px] text-zinc-500">Sekarang</span>
                  </div>
-               <p className="text-xs text-zinc-300 truncate">
+               <p className="text-xs text-zinc-400 truncate">
                  {messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
                </p>
              </div>
@@ -1222,19 +1210,14 @@ export default function TerminalAI({ onClose } = {}) {
                    setMessages(hist.messages);
                    setShowHistoryModal(false);
                  }} 
-                 className="p-4 rounded-xl cursor-pointer transition group flex items-center justify-between border border-white/10 hover:border-white/25 hover:bg-white/[0.06]"
-                 style={{
-                   background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%)',
-                   backdropFilter: 'blur(16px)',
-                   WebkitBackdropFilter: 'blur(16px)',
-                 }}
+                 className="p-4 bg-white/2 backdrop-blur-2xl border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between"
                >
                  <div className="flex-1 min-w-0 pr-3">
                    <div className="flex items-center justify-between mb-1">
                      <span className="text-zinc-300 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
                      <span className="text-[10px] text-zinc-500">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
                    </div>
-                   <p className="text-xs text-zinc-400 truncate">
+                   <p className="text-xs text-zinc-500 truncate">
                      {hist.messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
                    </p>
                  </div>
@@ -1250,7 +1233,7 @@ export default function TerminalAI({ onClose } = {}) {
              ))}
 
              {historyList.length === 0 && (
-               <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2">
+               <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-xl">
                   <p className="text-sm text-zinc-500">Belum ada riwayat sesi terdahulu tersimpan.</p>
                </div>
              )}

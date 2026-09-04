@@ -1951,6 +1951,26 @@ Menyelesaikan tembusnya teks terminal di belakang modal tanpa mengubah warna tem
 3. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 569ms.
 
+### v10.666.3 — Pure Glass Blur Intensity Elevation Without Theme Color Alteration
+
+Released 2026-09-04.
+
+Menyempurnakan efek kaca buram (*frosted glass*) pada modal Riwayat Percakapan (`src/components/terminal/TerminalAI.jsx`) secara murni tanpa memodifikasi palet warna tema:
+
+1. **Restorasi Penuh Warna & Material Asli:**
+   - Menghapus seluruh inline background custom yang membuat kartu tampak gelap pekat.
+   - Mengembalikan 100% kelas tema asli bawaan: kontainer modal menggunakan `liquid-glass-strong`, kartu Sesi Aktif menggunakan `bg-white/5 border border-white/10`, dan kartu Sesi Terdahulu menggunakan `bg-white/2 border border-white/10`.
+
+2. **Peningkatan Intensitas Blur Murni (Optical Frosted Elevation):**
+   - Menambahkan utility `backdrop-blur-3xl` pada kontainer modal `liquid-glass-strong`.
+   - Menambahkan utility `backdrop-blur-2xl` langsung pada masing-masing kartu sesi riwayat (`bg-white/5` dan `bg-white/2`).
+   - Menambahkan `backdrop-blur-2xl` pada backdrop overlay luar (`bg-black/60`).
+   - Menjaga retensi isolasi Lenis scroll (`data-lenis-prevent="true"`, `overscroll-contain`, `stopPropagation`) sehingga tidak menggeser halaman utama.
+
+3. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 580ms.
+
+
 
 
 
