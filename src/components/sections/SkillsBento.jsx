@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Cpu, Network, Server, Eye } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -28,6 +29,8 @@ const badgeVariants = {
 };
 
 export default function SkillsBento() {
+  const { t } = useLanguage();
+
   return (
     <section id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       <motion.div 
@@ -38,13 +41,13 @@ export default function SkillsBento() {
         className="text-center space-y-4 mb-14"
       >
         <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Matriks Keahlian</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('skills.badge')}</span>
         </motion.div>
         <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
-          Teknologi & Lingkup Rekayasa
+          {t('skills.title')}
         </motion.h2>
         <motion.p variants={itemVariants} className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-          Arsitektur piranti lunak, kerangka kerja AI/ML, dan pustaka yang rutin digunakan dalam implementasi nyata.
+          {t('skills.subtitle')}
         </motion.p>
       </motion.div>
 
@@ -114,7 +117,7 @@ export default function SkillsBento() {
             <div className="p-2.5 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Cpu className="w-5 h-5" />
             </div>
-            Machine Learning & NLP Engineering
+            {t('skills.catMl')}
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["Python 3", "PyTorch", "Scikit-Learn", "XGBoost", "Sentence-Transformers", "N-Gram Shingling", "Pandas", "NumPy"].map((tech, i) => (
@@ -136,7 +139,7 @@ export default function SkillsBento() {
             <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Network className="w-5 h-5" />
             </div>
-            Network & Infrastructure
+            {t('skills.catNet')}
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MikroTik RouterOS", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filter Rules", "Simple Queues (QoS)", "VLAN & Tunnels"].map((tech, i) => (
@@ -158,7 +161,7 @@ export default function SkillsBento() {
             <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Server className="w-5 h-5" />
             </div>
-            Backend & Full-Stack Systems
+            {t('skills.catFullstack')}
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["React.js", "Tailwind CSS", "Framer Motion", "Supabase DB", "Node.js API", "Flask API"].map((tech, i) => (
@@ -180,7 +183,7 @@ export default function SkillsBento() {
             <div className="p-2.5 rounded-xl bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Eye className="w-5 h-5" />
             </div>
-            Vision, Interactive & Realtime Tools
+            {t('skills.catVision')}
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MediaPipe Tasks Vision", "OpenCV Python", "Flask-SocketIO", "WebSockets", "PyAutoGUI", "DeviceOrientation API"].map((tech, i) => (

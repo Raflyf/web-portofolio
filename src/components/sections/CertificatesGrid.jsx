@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CERTIFICATES_DATA } from '../../data';
+import { getCertificatesData } from '../../data';
+import { useLanguage } from '../../context/LanguageContext';
 import { FileText, Award, Calendar, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { telemetry } from '../../lib/telemetry';
 
@@ -18,6 +19,8 @@ const tabVariants = {
 };
 
 export default function CertificatesGrid() {
+  const { language, t } = useLanguage();
+  const certificates = useMemo(() => getCertificatesData(language), [language]);
   const [filter, setFilter] = useState('all');
   const [selectedCert, setSelectedCert] = useState(null);
   const [selectedPage, setSelectedPage] = useState(0);
@@ -30,7 +33,7 @@ export default function CertificatesGrid() {
     setSelectedPage(0);
     // Remember which card opened the modal so focus can return on close.
     triggerRef.current = triggerEl || null;
-    const title = cert.title || 'Sertifikat';
+    const title = cert.title || (language === 'id' ? 'Sertifikat' : 'Certificate');
     telemetry.logEvent('cert_view', cert.id || title, `Buka Detail Kredensial: ${title}`);
   };
 
@@ -51,11 +54,21 @@ export default function CertificatesGrid() {
     }
   }, [selectedCert]);
 
-  const filteredCertificates = CERTIFICATES_DATA.filter(cert => {
-    if (filter === 'all') return true;
-    if (filter === 'security') return cert.category === 'security' || cert.category === 'network';
-    return cert.category === filter;
-  });
+  const filteredCertificates = useMemo(() => {
+    return certificates.filter(cert => {
+      if (filter === 'all') return true;
+      if (filter === 'security') return cert.category === 'security' || cert.category === 'network';
+      return cert.category === filter;
+    });
+  }, [certificates, filter]);
+
+  const filterTabs = useMemo(() => [
+    { id: 'all', label: t('certificates.tabAll') },
+    { id: 'ai-ml', label: t('certificates.tabAi') },
+    { id: 'security', label: t('certificates.tabSecurity') },
+    { id: 'web', label: t('certificates.tabWeb') },
+    { id: 'cloud', label: t('certificates.tabCloud') }
+  ], [t]);
 
   return (
     <section id="certificates" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
@@ -67,13 +80,13 @@ export default function CertificatesGrid() {
         className="text-center space-y-4 mb-12"
       >
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Validasi Kredensial</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('certificates.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
-          Sertifikasi Resmi & Penghargaan
+          {t('certificates.title')}
         </h2>
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-          Lisensi profesional dan transkrip akademik yang divalidasi oleh lembaga tersertifikasi (BNSP, MikroTik, Cisco, dll).
+          {t('certificates.subtitle')}
         </p>
       </motion.div>
 
@@ -85,13 +98,7 @@ export default function CertificatesGrid() {
         viewport={{ once: false, amount: 0.8 }}
         className="flex flex-wrap justify-center gap-2 mb-12"
       >
-        {[
-          { id: 'all', label: 'Semua Sertifikat' },
-          { id: 'ai-ml', label: 'AI & Python' },
-          { id: 'security', label: 'Jaringan & Keamanan' },
-          { id: 'web', label: 'Web & BNSP' },
-          { id: 'cloud', label: 'Cloud Computing' }
-        ].map(tab => (
+        {filterTabs.map(tab => (
           <motion.button
             variants={tabVariants}
             key={tab.id}
@@ -133,7 +140,7 @@ export default function CertificatesGrid() {
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCertModal(cert, e.currentTarget); } }}
                   role="button"
                   tabIndex={0}
-                  aria-label={`Lihat detail sertifikat ${cert.title}`}
+                  aria-label={`${t('certificates.previewTitle')} ${cert.title}`}
                   className="h-44 w-full relative overflow-hidden liquid-glass-inset mb-5 group/img cursor-pointer"
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-zinc-600 bg-slate-900/80 z-0">
@@ -159,7 +166,7 @@ export default function CertificatesGrid() {
 
                   <div className="absolute bottom-3 right-3 z-30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center gap-1 px-2.5 py-1 rounded-md bg-cyan-500/20 backdrop-blur-md border border-cyan-400/40 text-[10px] font-semibold text-cyan-300">
                     <Eye className="w-3 h-3" />
-                    Pratinjau
+                    {language === 'id' ? 'Pratinjau' : 'Preview'}
                   </div>
                 </div>
 
@@ -189,7 +196,7 @@ export default function CertificatesGrid() {
                   className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-cyan-300 flex items-center justify-center gap-2 transition-all shadow-sm group/btn"
                 >
                   <FileText className="w-4 h-4 text-cyan-400 group-hover/btn:scale-110 transition-transform" />
-                  <span>Lihat Dokumen PDF</span>
+                  <span>{t('certificates.viewPdf')}</span>
                 </a>
               </div>
             </motion.div>
@@ -204,7 +211,7 @@ export default function CertificatesGrid() {
             ref={modalRef}
             role="dialog"
             aria-modal="true"
-            aria-label={`Pratinjau sertifikat ${selectedCert.title}`}
+            aria-label={`${t('certificates.previewTitle')} ${selectedCert.title}`}
             tabIndex={-1}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in"
             onClick={closeCertModal}
@@ -219,7 +226,7 @@ export default function CertificatesGrid() {
                 <button
                   onClick={closeCertModal}
                   className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white cursor-pointer shrink-0"
-                  aria-label="Tutup Pratinjau"
+                  aria-label={t('certificates.close')}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -237,7 +244,7 @@ export default function CertificatesGrid() {
                   <div className="relative flex-1 min-h-0 overflow-hidden">
                     <img
                       src={currentPage}
-                      alt={`${selectedCert.title} - Halaman ${pageIndex + 1}`}
+                      alt={`${selectedCert.title} - ${t('certificates.page')} ${pageIndex + 1}`}
                       className="w-full h-auto max-h-[70vh] object-contain rounded-2xl mx-auto"
                     />
 
@@ -247,7 +254,7 @@ export default function CertificatesGrid() {
                           onClick={() => setSelectedPage(prev => (prev - 1 + pages.length) % pages.length)}
                           disabled={pages.length <= 1}
                           className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center text-white cursor-pointer"
-                          aria-label="Halaman Sebelumnya"
+                          aria-label={t('certificates.prevPage')}
                         >
                           <ChevronLeft className="w-5 h-5" />
                         </button>
@@ -255,7 +262,7 @@ export default function CertificatesGrid() {
                           onClick={() => setSelectedPage(prev => (prev + 1) % pages.length)}
                           disabled={pages.length <= 1}
                           className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center text-white cursor-pointer"
-                          aria-label="Halaman Berikutnya"
+                          aria-label={t('certificates.nextPage')}
                         >
                           <ChevronRight className="w-5 h-5" />
                         </button>
@@ -278,7 +285,7 @@ export default function CertificatesGrid() {
                     className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-cyan-300 flex items-center justify-center gap-2 transition-all"
                   >
                     <FileText className="w-4 h-4 text-cyan-400" />
-                    <span>Lihat Dokumen PDF Lengkap</span>
+                    <span>{t('certificates.viewPdf')}</span>
                   </a>
                 </div>
               )}

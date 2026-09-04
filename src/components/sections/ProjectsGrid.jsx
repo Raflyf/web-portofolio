@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PROJECTS_DATA } from '../../data';
+import { getProjectsData } from '../../data';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 import { Star, ExternalLink } from 'lucide-react';
 import { telemetry } from '../../lib/telemetry';
 
@@ -27,21 +28,20 @@ const GITHUB_STARS_CACHE_KEY = 'portfolio_github_stars_v1';
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 menit TTL cache agar bebas rate-limit GitHub
 
 export default function ProjectsGrid() {
+  const { language, t } = useLanguage();
   const [filter, setFilter] = useState('all');
 
-  const filteredProjects = PROJECTS_DATA.filter(project => {
+  const projects = getProjectsData(language);
+
+  const filteredProjects = projects.filter(project => {
     if (filter === 'all') return true;
     if (filter === 'tools') return project.category === 'tools' || project.category === 'cv-tools';
     return project.category === filter;
   });
 
   const isAllFilter = filter === 'all';
-  // Featured Project Showcase Card (raksasa) HANYA tampil saat tab 'Semua Proyek' (filter === 'all')
-  const featuredProject = isAllFilter ? PROJECTS_DATA.find(p => p.id === 'open-plagiarism-checker') : null;
+  const featuredProject = isAllFilter ? projects.find(p => p.id === 'open-plagiarism-checker') : null;
 
-  // Saat filter === 'all': proyek selain open-plagiarism-checker ditampilkan di grid bawah
-  // Saat memilih kategori (filter !== 'all'): SELURUH proyek kategori tersebut (termasuk open-plagiarism-checker)
-  // ditampilkan di grid dengan ukuran card yang SAMA PERSIS dengan proyek lainnya
   const displayProjects = isAllFilter 
     ? filteredProjects.filter(p => p.id !== 'open-plagiarism-checker')
     : filteredProjects;
@@ -116,13 +116,13 @@ export default function ProjectsGrid() {
         className="text-center space-y-4 mb-12"
       >
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Karya Terpilih</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('projects.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
-          Portofolio Riset & Proyek GitHub
+          {t('projects.title')}
         </h2>
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-          Implementasi terbuka dengan penekanan pada akurasi komputasi, benchmark empiris, dan kejelasan arsitektur.
+          {t('projects.subtitle')}
         </p>
       </motion.div>
 
@@ -135,10 +135,10 @@ export default function ProjectsGrid() {
         className="flex flex-wrap justify-center gap-2 mb-12"
       >
         {[
-          { id: 'all', label: 'Semua Proyek' },
-          { id: 'ai-ml', label: 'AI & Machine Learning' },
-          { id: 'tools', label: 'Vision & Tools' },
-          { id: 'web', label: 'Web Systems' }
+          { id: 'all', label: t('projects.tabAll') },
+          { id: 'ai-ml', label: t('projects.tabAi') },
+          { id: 'tools', label: t('projects.tabTools') },
+          { id: 'web', label: t('projects.tabWeb') }
         ].map(tab => (
           <motion.button
             variants={tabVariants}
@@ -177,7 +177,7 @@ export default function ProjectsGrid() {
                 </span>
                 <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
                   <Star className="w-3.5 h-3.5 fill-current" />
-                  <span>{getProjectStars(featuredProject)} Stars</span>
+                  <span>{getProjectStars(featuredProject)} {t('projects.stars')}</span>
                 </div>
               </div>
 
@@ -215,14 +215,14 @@ export default function ProjectsGrid() {
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm transition-all hover:scale-105 shadow-md"
                 >
                   <GithubIcon className="w-4 h-4" />
-                  Kunjungi Repositori
+                  {t('projects.viewRepo')}
                 </a>
               </div>
             </div>
 
             <div className="lg:col-span-4 liquid-glass-inset p-6 space-y-4">
               <div className="text-xs font-mono font-semibold text-emerald-400 uppercase tracking-wider">
-                Basis Data Riset Terindeks:
+                {t('projects.indexedDbs')}
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs text-zinc-300 font-mono">
                 <span className="p-2 rounded bg-white/5 border border-white/5">GARUDA</span>
@@ -300,7 +300,7 @@ export default function ProjectsGrid() {
                   className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
                 >
                   <GithubIcon className="w-4 h-4" />
-                  GitHub Repository
+                  {t('projects.githubRepo')}
                 </a>
                 
                 {project.demoUrl ? (
@@ -311,11 +311,11 @@ export default function ProjectsGrid() {
                     onClick={() => telemetry.logEvent('link_click', `demo_${project.id}`, `Buka Demo: ${project.title}`)}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
                   >
-                    Live Demo
+                    {t('projects.liveDemo')}
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 ) : (
-                  <span className="text-[11px] font-mono text-zinc-500">Standalone App</span>
+                  <span className="text-[11px] font-mono text-zinc-500">{t('projects.standaloneApp')}</span>
                 )}
               </div>
             </motion.div>

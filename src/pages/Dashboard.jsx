@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext.jsx';
 import InteractiveScrollBackground from '../components/ui/interactive-scroll-background.jsx';
 import { telemetry } from '../lib/telemetry';
 import { getSupabaseConfig } from '../lib/supabase';
@@ -350,6 +351,8 @@ const alwaysShowDataLabelPlugin = {
 };
 
 export default function Dashboard() {
+  const { language, setLanguage, toggleLanguage, t } = useLanguage();
+
   // Theme State
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === 'undefined') return true;
@@ -1008,7 +1011,7 @@ export default function Dashboard() {
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      labels.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
+      labels.push(d.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { weekday: 'short', day: 'numeric' }));
     }
 
     const uniqueSessionsPerDay = Array.from({ length: daysCount }, () => new Set());
@@ -1031,7 +1034,7 @@ export default function Dashboard() {
       labels: labels,
       datasets: [
         {
-          label: 'Total Kunjungan (Page Views)',
+          label: language === 'id' ? 'Total Kunjungan (Page Views)' : 'Total Visits (Page Views)',
           data: finalViews,
           borderColor: '#22d3ee',
           backgroundColor: 'rgba(34, 211, 238, 0.12)',
@@ -1043,7 +1046,7 @@ export default function Dashboard() {
           pointHoverRadius: 6
         },
         {
-          label: 'Pengunjung Unik (Unique Sessions)',
+          label: language === 'id' ? 'Pengunjung Unik (Unique Sessions)' : 'Unique Visitors (Unique Sessions)',
           data: finalVisitors,
           borderColor: '#a855f7',
           backgroundColor: 'rgba(168, 85, 247, 0.12)',
@@ -1059,11 +1062,11 @@ export default function Dashboard() {
     // FIX M4: keyed only on the actual data source (chartFilteredEvents). The
     // previous deps (totalViews/uniqueVisitors) are not referenced inside and
     // caused the chart to rebuild on every unrelated KPI re-render.
-  }, [chartFilteredEvents, chartRange]);
+  }, [chartFilteredEvents, chartRange, language]);
 
   // Chart 2: Link Click & Action Distribution (9 Categories)
   const barChartData = useMemo(() => {
-    const categories = ['WhatsApp', 'GitHub', 'Plagiarism', 'Spam-Email', 'Laser PPT', 'FotoKita', 'Portfolio', 'Sertifikat', 'Terminal'];
+    const categories = ['WhatsApp', 'GitHub', 'Plagiarism', 'Spam-Email', 'Laser PPT', 'FotoKita', 'Portfolio', language === 'id' ? 'Sertifikat' : 'Certificate', 'Terminal'];
     const counts = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     chartFilteredEvents.forEach(e => {
@@ -1083,7 +1086,7 @@ export default function Dashboard() {
       labels: categories,
       datasets: [
         {
-          label: 'Total Klik / Aksi',
+          label: language === 'id' ? 'Total Klik / Aksi' : 'Total Clicks / Actions',
           data: counts,
           backgroundColor: [
             'rgba(34, 211, 238, 0.7)',
@@ -1102,7 +1105,7 @@ export default function Dashboard() {
         }
       ]
     };
-  }, [chartFilteredEvents]);
+  }, [chartFilteredEvents, language]);
 
   // Intelligence Grid Computations
   const gridFilteredEvents = useMemo(() => filterByRange(events, gridRange), [events, gridRange]);
@@ -1401,6 +1404,20 @@ export default function Dashboard() {
         <div className="w-full max-w-md liquid-glass-strong p-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
           
+          {/* Top-Right Language Switcher Pill */}
+          <div className="absolute top-4 right-4 z-20">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-mono font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer"
+              title={t('dashboard.header.switchLang')}
+              aria-label={t('dashboard.header.switchLang')}
+            >
+              <Globe className="w-3 h-3 text-cyan-400" />
+              <span>{language === 'id' ? 'ID' : 'EN'}</span>
+            </button>
+          </div>
+
           <div className="flex justify-center mb-6 relative z-10">
             <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
               <Shield className="w-8 h-8" />
@@ -1410,10 +1427,10 @@ export default function Dashboard() {
           <div className="text-center mb-8 relative z-10">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[11px] font-mono mb-3">
               <Lock className="w-3 h-3" />
-              <span>Restricted Security Zone</span>
+              <span>{t('dashboard.auth.restricted')}</span>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Observability Gateway</h1>
-            <p className="text-xs text-zinc-400">Masukkan Master PIN keamanan untuk membuka akses metrik telemetri Supabase Cloud.</p>
+            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">{t('dashboard.auth.gatewayTitle')}</h1>
+            <p className="text-xs text-zinc-400">{t('dashboard.auth.gatewayDesc')}</p>
           </div>
 
           {!isForgotPinOpen ? (
@@ -1423,8 +1440,8 @@ export default function Dashboard() {
                   type="password"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
-                  placeholder="••••••"
-                  aria-label="Master PIN"
+                  placeholder={t('dashboard.auth.pinPlaceholder')}
+                  aria-label={t('dashboard.auth.pinPlaceholder')}
                   maxLength={8}
                   disabled={lockoutSeconds > 0}
                   autoFocus
@@ -1441,7 +1458,7 @@ export default function Dashboard() {
 
               {lockoutSeconds > 0 && (
                 <div className="text-amber-400 text-xs text-center font-mono">
-                  Menunggu {lockoutSeconds} detik sebelum dapat mencoba lagi...
+                  {t('dashboard.auth.lockout', { sec: lockoutSeconds })}
                 </div>
               )}
               
@@ -1450,7 +1467,7 @@ export default function Dashboard() {
                 disabled={lockoutSeconds > 0}
                 className="w-full py-3.5 px-6 rounded-2xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)] cursor-pointer disabled:opacity-50"
               >
-                <span>Buka Panel Observabilitas</span>
+                <span>{t('dashboard.auth.openPanel')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -1460,7 +1477,7 @@ export default function Dashboard() {
                   onClick={() => setIsForgotPinOpen(true)}
                   className="text-xs text-zinc-400 hover:text-cyan-300 transition-colors cursor-pointer"
                 >
-                  Lupa Master PIN? Pulihkan via Email OTP
+                  {t('dashboard.auth.forgotPin')}
                 </button>
               </div>
             </form>
@@ -1469,7 +1486,7 @@ export default function Dashboard() {
               {otpStep === 1 ? (
                 <div className="space-y-4">
                   <p className="text-xs text-zinc-300 leading-relaxed">
-                    Kirim kode 6-digit OTP pemulihan ke email administrator terdaftar: <strong className="text-cyan-300 font-mono">raflyfirmansyah02@gmail.com</strong>
+                    {t('dashboard.auth.otpDesc')} <strong className="text-cyan-300 font-mono">raflyfirmansyah02@gmail.com</strong>
                   </p>
                   <button
                     onClick={handleRequestOtp}
@@ -1477,7 +1494,7 @@ export default function Dashboard() {
                     className="w-full py-3 px-4 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 text-indigo-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     <Mail className="w-4 h-4" />
-                    {otpLoading ? 'Mengirim OTP...' : 'Kirim OTP Pemulihan'}
+                    {otpLoading ? t('dashboard.auth.sendingOtp') : t('dashboard.auth.sendOtp')}
                   </button>
                 </div>
               ) : (
@@ -1486,8 +1503,8 @@ export default function Dashboard() {
                     type="text"
                     value={otpInput}
                     onChange={(e) => setOtpInput(e.target.value)}
-                    placeholder="Kode OTP 6-Digit"
-                    aria-label="Kode OTP 6-Digit"
+                    placeholder={t('dashboard.auth.otpPlaceholder')}
+                    aria-label={t('dashboard.auth.otpPlaceholder')}
                     maxLength={6}
                     className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
@@ -1495,8 +1512,8 @@ export default function Dashboard() {
                     type="password"
                     value={newPinInput}
                     onChange={(e) => setNewPinInput(e.target.value)}
-                    placeholder="Master PIN Baru (6+ Angka)"
-                    aria-label="Master PIN Baru (minimal 6 karakter)"
+                    placeholder={t('dashboard.auth.newPinPlaceholder')}
+                    aria-label={t('dashboard.auth.newPinPlaceholder')}
                     maxLength={8}
                     className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
@@ -1506,7 +1523,7 @@ export default function Dashboard() {
                     className="w-full py-3 px-4 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    {otpLoading ? 'Memverifikasi...' : 'Reset PIN & Simpan'}
+                    {otpLoading ? t('dashboard.auth.verifying') : t('dashboard.auth.resetPin')}
                   </button>
                 </div>
               )}
@@ -1522,14 +1539,14 @@ export default function Dashboard() {
                 onClick={() => { setIsForgotPinOpen(false); setOtpStep(1); setOtpMessage(''); }}
                 className="w-full text-center text-xs text-zinc-500 hover:text-zinc-300 pt-2 cursor-pointer"
               >
-                &larr; Kembali ke Layar Masuk
+                {t('dashboard.auth.backToLogin')}
               </button>
             </div>
           )}
 
           <div className="mt-8 pt-6 border-t border-white/10 flex justify-center items-center gap-2 text-[11px] font-mono text-zinc-500 relative z-10">
             <Database className="w-3 h-3 text-cyan-400" />
-            <span>Supabase Cloud REST API & Web Crypto SHA-256</span>
+            <span>{t('dashboard.auth.dbSecurity')}</span>
           </div>
         </div>
       </main>
@@ -1557,20 +1574,31 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full shrink-0 ${isLiveConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]' : 'bg-amber-400'}`} />
               <h1 className="text-sm sm:text-base font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2 whitespace-nowrap">
-                Admin Observability
+                {t('dashboard.header.title')}
               </h1>
             </div>
             <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-[10px] font-mono text-zinc-600 dark:text-zinc-400">
-              {isLiveConnected ? 'Supabase Live' : 'Local Cache'}
+              {isLiveConnected ? t('dashboard.header.live') : t('dashboard.header.cached')}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 relative z-10">
+            {/* Language Switcher Pill */}
+            <button
+              onClick={toggleLanguage}
+              className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer"
+              title={t('dashboard.header.switchLang')}
+              aria-label={t('dashboard.header.switchLang')}
+            >
+              <Globe className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
+              <span>{language === 'id' ? 'ID' : 'EN'}</span>
+            </button>
+
             {/* Theme Toggle Button */}
             <button
               onClick={handleThemeToggle}
               className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer"
-              title={isDark ? "Beralih ke Mode Terang" : "Beralih ke Mode Gelap"}
+              title={isDark ? t('nav.lightMode') : t('nav.darkMode')}
             >
               {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-500" />}
               <span className="hidden sm:inline">{isDark ? "Light" : "Dark"}</span>
@@ -1579,38 +1607,38 @@ export default function Dashboard() {
             <button
               onClick={handleSendPing}
               className="px-2.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-[11px] font-medium text-cyan-600 dark:text-cyan-300 flex items-center gap-1.5 transition-all cursor-pointer"
-              title="Kirim event tes langsung ke Supabase"
+              title={t('dashboard.header.testPingTitle')}
             >
               <Zap className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
-              <span className="hidden sm:inline">Uji Ping</span>
+              <span className="hidden sm:inline">{t('dashboard.header.testPing')}</span>
             </button>
 
             <button
               onClick={() => setIsChangePinOpen(true)}
               className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
-              title="Ubah Master PIN"
+              title={t('dashboard.header.changePinTitle')}
             >
               <KeyRound className="w-3 h-3 text-purple-500 dark:text-purple-400" />
-              <span className="hidden sm:inline">Ubah PIN</span>
+              <span className="hidden sm:inline">{t('dashboard.header.changePin')}</span>
             </button>
 
             <button
               onClick={fetchTelemetryData}
               disabled={isLoading}
               className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-              title="Segarkan Data"
+              title={t('dashboard.header.refreshTitle')}
             >
               <RefreshCw className={`w-3 h-3 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Segarkan</span>
+              <span className="hidden sm:inline">{t('dashboard.header.refresh')}</span>
             </button>
 
             <button
               onClick={handleLogout}
               className="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-[11px] font-medium text-rose-300 flex items-center gap-1.5 transition-all cursor-pointer"
-              title="Keluar dari Admin"
+              title={t('dashboard.header.logoutTitle')}
             >
               <LogOut className="w-3 h-3" />
-              <span>Keluar</span>
+              <span>{t('dashboard.header.logout')}</span>
             </button>
           </div>
         </div>
@@ -1631,15 +1659,15 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-cyan-400" />
-              <h2 className="text-base font-bold text-white">Ringkasan Metrik Kunci (KPI Telemetry)</h2>
+              <h2 className="text-base font-bold text-white">{t('dashboard.kpi.title')}</h2>
             </div>
             <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-[11px] font-mono">
               {[
-                { id: 'today', label: 'Hari Ini' },
-                { id: '7d', label: '7 Hari' },
-                { id: '14d', label: '14 Hari' },
-                { id: '30d', label: '30 Hari' },
-                { id: 'all', label: 'Semua' }
+                { id: 'today', label: t('dashboard.ranges.today') },
+                { id: '7d', label: t('dashboard.ranges.7d') },
+                { id: '14d', label: t('dashboard.ranges.14d') },
+                { id: '30d', label: t('dashboard.ranges.30d') },
+                { id: 'all', label: t('dashboard.ranges.all') }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -1656,7 +1684,7 @@ export default function Dashboard() {
             {/* Card 1: Page Views */}
             <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-zinc-400">Total Page Views</span>
+                <span className="text-xs font-medium text-zinc-400">{t('dashboard.kpi.views')}</span>
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
                   <Activity className="w-4 h-4" />
                 </div>
@@ -1670,7 +1698,7 @@ export default function Dashboard() {
             {/* Card 2: Unique Visitors */}
             <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-zinc-400">Pengunjung Unik</span>
+                <span className="text-xs font-medium text-zinc-400">{t('dashboard.kpi.visitors')}</span>
                 <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
                   <Users className="w-4 h-4" />
                 </div>
@@ -1684,7 +1712,7 @@ export default function Dashboard() {
             {/* Card 3: Link Clicks */}
             <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-zinc-400">Total Klik Tautan</span>
+                <span className="text-xs font-medium text-zinc-400">{t('dashboard.kpi.clicks')}</span>
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                   <MousePointerClick className="w-4 h-4" />
                 </div>
@@ -1698,7 +1726,7 @@ export default function Dashboard() {
             {/* Card 4: Contact Conversions */}
             <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-zinc-400">Konversi Kontak</span>
+                <span className="text-xs font-medium text-zinc-400">{t('dashboard.kpi.conversions')}</span>
                 <div className="w-9 h-9 rounded-xl bg-pink-500/15 border border-pink-500/30 flex items-center justify-center text-pink-400">
                   <MessageSquare className="w-4 h-4" />
                 </div>
@@ -1712,7 +1740,7 @@ export default function Dashboard() {
             {/* Card 5: Interactivity Ratio */}
             <div className="p-5 liquid-glass liquid-glass-hover flex flex-col justify-between relative overflow-hidden group">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-zinc-400">Rasio Interaktivitas</span>
+                <span className="text-xs font-medium text-zinc-400">{language === 'id' ? 'Rasio Interaktivitas' : 'Interactivity Ratio'}</span>
                 <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                   <Sparkles className="w-4 h-4" />
                 </div>
@@ -1735,16 +1763,16 @@ export default function Dashboard() {
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-cyan-400" />
-                  <span>Tren Kunjungan Portofolio (Traffic Velocity)</span>
+                  <span>{t('dashboard.charts.trafficTitle')}</span>
                 </h3>
-                <p className="text-[11px] text-zinc-400">Perbandingan Page Views vs Pengunjung Unik harian</p>
+                <p className="text-[11px] text-zinc-400">{t('dashboard.charts.trafficSub')}</p>
               </div>
               <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-[10px] font-mono">
                 {[
-                  { id: '7d', label: '7 Hari' },
-                  { id: '14d', label: '14 Hari' },
-                  { id: '30d', label: '30 Hari' },
-                  { id: 'all', label: 'Semua' }
+                  { id: '7d', label: t('dashboard.ranges.7d') },
+                  { id: '14d', label: t('dashboard.ranges.14d') },
+                  { id: '30d', label: t('dashboard.ranges.30d') },
+                  { id: 'all', label: t('dashboard.ranges.all') }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -1768,9 +1796,9 @@ export default function Dashboard() {
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   <MousePointerClick className="w-4 h-4 text-purple-400" />
-                  <span>Distribusi Klik Tautan & Aksi</span>
+                  <span>{language === 'id' ? 'Distribusi Klik Tautan & Aksi' : 'Link Click & Action Distribution'}</span>
                 </h3>
-                <p className="text-[11px] text-zinc-400">9 Kategori Interaksi Utama Pengguna</p>
+                <p className="text-[11px] text-zinc-400">{language === 'id' ? '9 Kategori Interaksi Utama Pengguna' : '9 Primary User Interaction Categories'}</p>
               </div>
             </div>
 
@@ -1787,14 +1815,14 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Radar className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
-              <h2 className="text-base font-bold text-zinc-900 dark:text-white">Analisis Intelijen Platform & Konten</h2>
+              <h2 className="text-base font-bold text-zinc-900 dark:text-white">{language === 'id' ? 'Analisis Intelijen Platform & Konten' : 'Platform & Content Intelligence'}</h2>
             </div>
             <div className="flex items-center gap-1 bg-zinc-200/80 dark:bg-black/40 p-1 rounded-xl border border-zinc-300/80 dark:border-white/10 text-[11px] font-mono">
               {[
-                { id: 'today', label: 'Hari Ini' },
-                { id: '7d', label: '7 Hari' },
-                { id: '30d', label: '30 Hari' },
-                { id: 'all', label: 'Semua' }
+                { id: 'today', label: t('dashboard.ranges.today') },
+                { id: '7d', label: t('dashboard.ranges.7d') },
+                { id: '30d', label: t('dashboard.ranges.30d') },
+                { id: 'all', label: t('dashboard.ranges.all') }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -1813,7 +1841,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                   <Smartphone className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
-                  <span>Rasio Perangkat</span>
+                  <span>{language === 'id' ? 'Rasio Perangkat' : 'Device Ratio'}</span>
                 </h3>
               </div>
 
@@ -1842,7 +1870,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                   <Layers className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
-                  <span>Proyek Terpopuler</span>
+                  <span>{language === 'id' ? 'Proyek Terpopuler' : 'Top Projects'}</span>
                 </h3>
               </div>
 
@@ -1866,7 +1894,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
-                  <span>Sertifikat Diminati</span>
+                  <span>{language === 'id' ? 'Sertifikat Diminati' : 'Top Certificates'}</span>
                 </h3>
               </div>
 
@@ -1890,7 +1918,7 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                  <span>Saluran Trafik (Referrer)</span>
+                  <span>{language === 'id' ? 'Saluran Trafik (Referrer)' : 'Traffic Referrers'}</span>
                 </h3>
               </div>
 
@@ -1919,24 +1947,24 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center gap-2">
                 <Cpu className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Pemantauan Eksekusi AI Multi-Model</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">{t('dashboard.models.title')}</h2>
               </div>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
-                Multi-Tier Smart Inference Cascades (OpenRouter, Ollama Cloud & OpenCode Zen)
+                {t('dashboard.models.subtitle')}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               <span className="text-xs font-mono px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-700 dark:text-cyan-300">
-                Total Inferensi: <strong>{aiModelsStats.totalAIQueries}x</strong>
+                {t('dashboard.models.totalInferences')}: <strong>{aiModelsStats.totalAIQueries}x</strong>
               </span>
 
               <div className="flex items-center gap-1 bg-zinc-200/80 dark:bg-black/40 p-1 rounded-xl border border-zinc-300/80 dark:border-white/10 text-[10px] font-mono">
                 {[
-                  { id: 'today', label: 'Hari Ini' },
-                  { id: '7d', label: '7 Hari' },
-                  { id: '30d', label: '30 Hari' },
-                  { id: 'all', label: 'Semua' }
+                  { id: 'today', label: t('dashboard.ranges.today') },
+                  { id: '7d', label: t('dashboard.ranges.7d') },
+                  { id: '30d', label: t('dashboard.ranges.30d') },
+                  { id: 'all', label: t('dashboard.ranges.all') }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -1961,12 +1989,14 @@ export default function Dashboard() {
               </div>
               <h3 className="text-base font-bold text-zinc-900 dark:text-white">Auto Gateway Router (Smart Cascades)</h3>
               <p className="text-xs text-zinc-700 dark:text-zinc-300 max-w-2xl">
-                Routing otomatis cerdas yang mendeteksi latensi, kuota, dan kapabilitas kueri pengguna untuk mengarahkan ke model AI terbaik secara real-time.
+                {language === 'id'
+                  ? 'Routing otomatis cerdas yang mendeteksi latensi, kuota, dan kapabilitas kueri pengguna untuk mengarahkan ke model AI terbaik secara real-time.'
+                  : 'Intelligent automatic routing evaluating latency, quota, and query capabilities to route to optimal AI models in real-time.'}
               </p>
             </div>
 
             <div className="text-right shrink-0 bg-white/80 dark:bg-black/40 px-5 py-3 rounded-xl border border-zinc-200 dark:border-white/10 shadow-sm">
-              <div className="text-[10px] uppercase font-mono text-zinc-500 dark:text-zinc-400">Total Resolusi Router</div>
+              <div className="text-[10px] uppercase font-mono text-zinc-500 dark:text-zinc-400">{language === 'id' ? 'Total Resolusi Router' : 'Total Router Resolutions'}</div>
               <div className="text-2xl font-bold font-mono text-cyan-700 dark:text-cyan-300">{aiModelsStats.autoRouterCount}x</div>
             </div>
           </div>
@@ -1990,7 +2020,7 @@ export default function Dashboard() {
                       <div className="flex items-center gap-1.5">
                         {isLatestUsed && (
                           <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-mono font-bold bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/40 animate-pulse">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-600 dark:bg-cyan-400" /> AKTIF TERBARU
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-600 dark:bg-cyan-400" /> {language === 'id' ? 'AKTIF TERBARU' : 'LATEST ACTIVE'}
                           </span>
                         )}
                         <span className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-semibold border ${m.badgeClass}`}>
@@ -2006,7 +2036,7 @@ export default function Dashboard() {
                   </div>
 
                   <div className="pt-2 border-t border-zinc-200/60 dark:border-white/5 flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400 font-mono text-[10px]">Total Eksekusi</span>
+                    <span className="text-zinc-500 dark:text-zinc-400 font-mono text-[10px]">{language === 'id' ? 'Total Eksekusi' : 'Total Inferences'}</span>
                     <span className="font-mono text-cyan-700 dark:text-cyan-300 font-bold">{m.count}x</span>
                   </div>
                 </div>
@@ -2023,10 +2053,10 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center gap-2">
                 <Database className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Memori Jangka Panjang AI (Continuous RAG Knowledge)</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">{t('dashboard.rag.title')}</h2>
               </div>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
-                Fakta dan pengetahuan kontekstual yang dipelajari AI dari sesi pengguna dan dipersistenkan di Supabase
+                {t('dashboard.rag.subtitle')}
               </p>
             </div>
 
@@ -2035,7 +2065,7 @@ export default function Dashboard() {
                 <Search className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Cari fakta pengetahuan RAG..."
+                  placeholder={t('dashboard.rag.searchPlaceholder')}
                   value={ragSearchTerm}
                   onChange={(e) => { setRagSearchTerm(e.target.value); setMemoryCurrentPage(1); }}
                   className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500 w-full sm:w-56"
@@ -2043,14 +2073,14 @@ export default function Dashboard() {
               </div>
 
               <span className="text-xs font-mono px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shrink-0">
-                {filteredMemories.length} Fakta Aktif
+                {filteredMemories.length} {language === 'id' ? 'Fakta Aktif' : 'Active Facts'}
               </span>
 
               <div className="flex items-center gap-1 bg-zinc-200/80 dark:bg-black/40 p-1 rounded-xl border border-zinc-300/80 dark:border-white/10 text-[10px] font-mono">
                 {[
-                  { id: 'today', label: 'Hari Ini' },
-                  { id: '7d', label: '7 Hari' },
-                  { id: 'all', label: 'Semua' }
+                  { id: 'today', label: t('dashboard.ranges.today') },
+                  { id: '7d', label: t('dashboard.ranges.7d') },
+                  { id: 'all', label: t('dashboard.ranges.all') }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -2068,9 +2098,9 @@ export default function Dashboard() {
             <table className="w-full text-left text-xs text-zinc-700 dark:text-zinc-300">
               <thead className="text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-white/10 bg-zinc-100/70 dark:bg-white/5">
                 <tr>
-                  <th className="py-3 px-4">Waktu (WIB)</th>
-                  <th className="py-3 px-4">Tipe Memori</th>
-                  <th className="py-3 px-4">Fakta / Pengetahuan Kontekstual</th>
+                  <th className="py-3 px-4">{language === 'id' ? 'Waktu (WIB)' : 'Timestamp (UTC+7)'}</th>
+                  <th className="py-3 px-4">{language === 'id' ? 'Tipe Memori' : 'Memory Type'}</th>
+                  <th className="py-3 px-4">{language === 'id' ? 'Fakta / Pengetahuan Kontekstual' : 'Contextual Fact / Knowledge'}</th>
                   <th className="py-3 px-4">Session ID</th>
                 </tr>
               </thead>
@@ -2079,7 +2109,7 @@ export default function Dashboard() {
                   currentMemories.map((m, i) => (
                     <tr key={m.id || i} className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
                       <td className="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                        {m.created_at ? new Date(m.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Baru saja'}
+                        {m.created_at ? new Date(m.created_at).toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : (language === 'id' ? 'Baru saja' : 'Just now')}
                       </td>
                       <td className="py-3 px-4 whitespace-nowrap">
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300">
@@ -2097,7 +2127,7 @@ export default function Dashboard() {
                 ) : (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-zinc-500">
-                      Tidak ada memori yang sesuai dengan rentang waktu filter.
+                      {t('dashboard.rag.empty')}
                     </td>
                   </tr>
                 )}
@@ -2108,7 +2138,9 @@ export default function Dashboard() {
           {/* Memories Pagination */}
           <div className="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-white/10 text-xs">
             <span className="text-zinc-600 dark:text-zinc-400 text-[11px] font-mono">
-              Halaman {memoryCurrentPage} dari {memoryTotalPages} ({filteredMemories.length} entri)
+              {language === 'id'
+                ? `Halaman ${memoryCurrentPage} dari ${memoryTotalPages} (${filteredMemories.length} entri)`
+                : `Page ${memoryCurrentPage} of ${memoryTotalPages} (${filteredMemories.length} entries)`}
             </span>
             <div className="flex gap-1.5">
               <button
@@ -2116,14 +2148,14 @@ export default function Dashboard() {
                 disabled={memoryCurrentPage === 1}
                 className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
-                &lsaquo; Sebelumnya
+                &lsaquo; {t('dashboard.rag.prev')}
               </button>
               <button
                 onClick={() => setMemoryCurrentPage(p => Math.min(memoryTotalPages, p + 1))}
                 disabled={memoryCurrentPage === memoryTotalPages}
                 className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
-                Berikutnya &rsaquo;
+                {t('dashboard.rag.next')} &rsaquo;
               </button>
             </div>
           </div>
@@ -2137,13 +2169,13 @@ export default function Dashboard() {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <Activity className="w-4 h-4 text-cyan-500 dark:text-cyan-400 shrink-0" />
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white truncate">Log Aktivitas Pengunjung Terkini</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white truncate">{t('dashboard.table.title')}</h2>
                 <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-400 shrink-0">
-                  {filteredActivityEvents.length} entri
+                  {filteredActivityEvents.length} {language === 'id' ? 'entri' : 'entries'}
                 </span>
               </div>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 line-clamp-2">
-                Rekaman telemetri event lengkap termasuk navigasi, interaksi tombol, klik proyek, dan kueri terminal
+                {t('dashboard.table.subtitle')}
               </p>
             </div>
 
@@ -2152,7 +2184,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleExportCsv}
                   className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
-                  title="Ekspor sebagai CSV"
+                  title={t('dashboard.table.exportCsv')}
                 >
                   <Download className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
                   <span>CSV</span>
@@ -2161,7 +2193,7 @@ export default function Dashboard() {
                 <button
                   onClick={handleExportJson}
                   className="px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-xs text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer"
-                  title="Ekspor sebagai JSON"
+                  title={t('dashboard.table.exportJson')}
                 >
                   <Download className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                   <span>JSON</span>
@@ -2173,7 +2205,7 @@ export default function Dashboard() {
                   <Search className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Cari target / sesi..."
+                    placeholder={t('dashboard.table.searchPlaceholder')}
                     value={tableSearchTerm}
                     onChange={(e) => { setTableSearchTerm(e.target.value); setTableCurrentPage(1); }}
                     className="pl-8 pr-3 py-1.5 liquid-glass-inset border border-zinc-300 dark:border-white/10 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-cyan-500 w-full sm:w-56"
@@ -2184,7 +2216,7 @@ export default function Dashboard() {
                   value={selectedEventType}
                   onChange={(val) => { setSelectedEventType(val); setTableCurrentPage(1); }}
                   options={[
-                    { value: 'all', label: 'Semua Tipe Event' },
+                    { value: 'all', label: t('dashboard.table.allTypes') },
                     { value: 'page_view', label: 'Page View' },
                     { value: 'link_click', label: 'Link Click' },
                     { value: 'cert_filter', label: 'Cert Filter' },
@@ -2198,11 +2230,11 @@ export default function Dashboard() {
                   value={tableRange}
                   onChange={(val) => { setTableRange(val); setTableCurrentPage(1); }}
                   options={[
-                    { value: 'all', label: 'Semua Waktu' },
-                    { value: 'today', label: 'Hari Ini' },
-                    { value: '7d', label: '7 Hari Terakhir' },
-                    { value: '14d', label: '14 Hari Terakhir' },
-                    { value: '30d', label: '30 Hari Terakhir' },
+                    { value: 'all', label: t('dashboard.ranges.all') },
+                    { value: 'today', label: t('dashboard.ranges.today') },
+                    { value: '7d', label: t('dashboard.ranges.7d') },
+                    { value: '14d', label: t('dashboard.ranges.14d') },
+                    { value: '30d', label: t('dashboard.ranges.30d') },
                   ]}
                 />
               </div>
@@ -2213,11 +2245,11 @@ export default function Dashboard() {
             <table className="w-full text-left text-xs text-zinc-700 dark:text-zinc-300">
               <thead className="text-[11px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-white/10 bg-zinc-100/70 dark:bg-white/5">
                 <tr>
-                  <th className="py-3 px-4">Waktu (WIB)</th>
-                  <th className="py-3 px-4">Tipe Event</th>
-                  <th className="py-3 px-4">Aksi / Target Interaksi</th>
-                  <th className="py-3 px-4">Perangkat</th>
-                  <th className="py-3 px-4">Sesi ID</th>
+                  <th className="py-3 px-4">{language === 'id' ? 'Waktu (WIB)' : 'Timestamp (UTC+7)'}</th>
+                  <th className="py-3 px-4">{t('dashboard.table.colType')}</th>
+                  <th className="py-3 px-4">{t('dashboard.table.colTarget')}</th>
+                  <th className="py-3 px-4">{language === 'id' ? 'Perangkat' : 'Device'}</th>
+                  <th className="py-3 px-4">{language === 'id' ? 'Sesi ID' : 'Session ID'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200/60 dark:divide-white/5">
@@ -2227,7 +2259,7 @@ export default function Dashboard() {
                     return (
                       <tr key={ev.id || i} className="hover:bg-zinc-100/70 dark:hover:bg-white/5 transition-colors">
                         <td className="py-3 px-4 font-mono text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                          {ev.created_at ? new Date(ev.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
+                          {ev.created_at ? new Date(ev.created_at).toLocaleString(language === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
                           <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/20 text-cyan-800 dark:text-cyan-300">
@@ -2249,7 +2281,7 @@ export default function Dashboard() {
                 ) : (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-zinc-500">
-                      Tidak ada data aktivitas yang sesuai dengan filter.
+                      {t('dashboard.table.empty')}
                     </td>
                   </tr>
                 )}
@@ -2260,7 +2292,9 @@ export default function Dashboard() {
           {/* Activity Table Pagination */}
           <div className="flex items-center justify-between pt-4 border-t border-zinc-200 dark:border-white/10 text-xs">
             <span className="text-zinc-600 dark:text-zinc-400 text-[11px] font-mono">
-              Halaman {tableCurrentPage} dari {activityTotalPages} ({filteredActivityEvents.length} entri)
+              {language === 'id' 
+                ? `Halaman ${tableCurrentPage} dari ${activityTotalPages} (${filteredActivityEvents.length} entri)`
+                : `Page ${tableCurrentPage} of ${activityTotalPages} (${filteredActivityEvents.length} entries)`}
             </span>
             <div className="flex gap-1.5">
               <button
@@ -2268,14 +2302,14 @@ export default function Dashboard() {
                 disabled={tableCurrentPage === 1}
                 className="px-3 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
-                &lsaquo; Sebelumnya
+                &lsaquo; {t('dashboard.table.prev')}
               </button>
               <button
                 onClick={() => setTableCurrentPage(p => Math.min(activityTotalPages, p + 1))}
                 disabled={tableCurrentPage === activityTotalPages}
                 className="px-3 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-zinc-700 dark:text-zinc-300 disabled:opacity-30 cursor-pointer text-xs"
               >
-                Berikutnya &rsaquo;
+                {t('dashboard.table.next')} &rsaquo;
               </button>
             </div>
           </div>
@@ -2292,7 +2326,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-center pb-3 border-b border-white/10">
               <div className="flex items-center gap-2">
                 <KeyRound className="w-5 h-5 text-purple-400" />
-                <h3 className="text-base font-bold text-white">Ubah Master PIN Dashboard</h3>
+                <h3 className="text-base font-bold text-white">{t('dashboard.modals.changePinTitle')}</h3>
               </div>
               <button
                 onClick={() => setIsChangePinOpen(false)}
@@ -2304,26 +2338,26 @@ export default function Dashboard() {
 
             <form onSubmit={handleChangePin} className="space-y-4">
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">Master PIN Saat Ini</label>
+                <label className="text-xs text-zinc-400 block mb-1">{t('dashboard.modals.currentPin')}</label>
                 <input
                   type="password"
                   value={currentPinChange}
                   onChange={(e) => setCurrentPinChange(e.target.value)}
-                  placeholder="PIN Saat Ini"
-                  aria-label="Master PIN saat ini"
+                  placeholder={t('dashboard.modals.currentPin')}
+                  aria-label={t('dashboard.modals.currentPin')}
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">Master PIN Baru (Min 6 Digit)</label>
+                <label className="text-xs text-zinc-400 block mb-1">{t('dashboard.modals.newPin')}</label>
                 <input
                   type="password"
                   value={newPinChange}
                   onChange={(e) => setNewPinChange(e.target.value)}
-                  placeholder="PIN Baru"
-                  aria-label="Master PIN baru (minimal 6 digit)"
+                  placeholder={t('dashboard.modals.newPin')}
+                  aria-label={t('dashboard.modals.newPin')}
                   maxLength={8}
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
@@ -2331,13 +2365,13 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">Konfirmasi Master PIN Baru</label>
+                <label className="text-xs text-zinc-400 block mb-1">{t('dashboard.modals.confirmPin')}</label>
                 <input
                   type="password"
                   value={confirmPinChange}
                   onChange={(e) => setConfirmPinChange(e.target.value)}
-                  placeholder="Ulangi PIN Baru"
-                  aria-label="Konfirmasi master PIN baru"
+                  placeholder={t('dashboard.modals.confirmPin')}
+                  aria-label={t('dashboard.modals.confirmPin')}
                   maxLength={8}
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
@@ -2356,13 +2390,13 @@ export default function Dashboard() {
                   onClick={() => setIsChangePinOpen(false)}
                   className="w-1/2 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-zinc-300 cursor-pointer"
                 >
-                  Batal
+                  {t('dashboard.modals.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="w-1/2 py-2.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 text-xs font-semibold cursor-pointer"
                 >
-                  Simpan PIN Baru
+                  {t('dashboard.modals.savePin')}
                 </button>
               </div>
             </form>
@@ -2380,8 +2414,8 @@ export default function Dashboard() {
           }
         }}
         className="fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-0.5 shadow-lg cursor-pointer"
-        aria-label="Scroll ke Atas"
-        title="Kembali ke Atas Dashboard"
+        aria-label={t('dashboard.backToTop')}
+        title={t('dashboard.backToTop')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
       </button>

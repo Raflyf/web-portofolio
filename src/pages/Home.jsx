@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
 import { telemetry } from '../lib/telemetry';
 import InteractiveScrollBackground from '../components/ui/interactive-scroll-background';
 import HorizonHero from '../components/ui/horizon-hero';
@@ -14,6 +15,8 @@ import ContactSection from '../components/sections/ContactSection';
 import Footer from '../components/layout/Footer';
 
 export default function Home() {
+  const { t } = useLanguage();
+
   useEffect(() => {
     telemetry.init();
   }, []);
@@ -49,13 +52,13 @@ export default function Home() {
             className="text-center space-y-4 mb-12"
           >
             <div className="inline-flex items-center gap-2 liquid-glass-inset liquid-glass-pill px-3.5 py-1.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">CLI & AI Assistant</span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('lab.badge')}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
-              Terminal Developer Lab & AI
+              {t('lab.title')}
             </h2>
             <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-              Eksplorasi profil, riset AI/ML, dan kompetensi melalui konsol perintah atau tanyakan langsung dengan bahasa alami bebas.
+              {t('lab.subtitle')}
             </p>
           </motion.div>
           
