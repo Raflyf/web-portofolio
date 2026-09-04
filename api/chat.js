@@ -185,10 +185,14 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 - Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
 [IDENTITAS & PERAN ASISTEN]:
 - Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.
-- Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "kamu model apa", "siapa Anda", "model apa ini", dsb):
-  1. DILARANG KERAS mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.
-  2. Sampaikan secara santun, profesional, dan ramah bahwa Anda adalah AI Assistant & Developer Agent resmi di portofolio digital Rafly Firmansyah, yang dirancang mendampingi pengunjung menjelajahi proyek software, riset machine learning, sertifikasi kompetensi, dan arsitektur sistem.
-  3. DILARANG menggunakan kalimat validasi defensif seperti "saya bukan brand tertentu", "saya tidak berafiliasi...", dsb.
+- Mesin model AI aktif yang sedang Anda jalankan saat ini adalah: **${activeModelName}**.
+- Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "siapa Anda") atau model apa yang Anda gunakan ("kamu model apa", "model apa ini", "kamu pakai model apa", "model apa yang aktif"):
+  1. Jawablah secara DINAMIS, luwes, komunikatif, dan alami sesuai konteks percakapan (DILARANG menggunakan template kaku atau mengulang kalimat yang sama persis).
+  2. Jelaskan peran Anda sebagai AI Assistant & Developer Agent di portofolio digital Rafly Firmansyah.
+  3. Sebutkan secara percaya diri bahwa saat ini Anda didukung oleh model **${activeModelName}** (atau arsitektur yang bersangkutan) untuk memberikan penalaran teknis yang akurat dan responsif.
+  4. Sampaikan kesiapan Anda mendampingi pengunjung menjelajahi riset machine learning Rafly (Spam-Email Detection, OpenPlagiarismChecker), pengendali presentasi IoT (laser_pointer_PPT), Edge Vision (FotoKitaBlur), sertifikasi kompetensi (BNSP, MikroTik, Cisco), ataupun diskusi teknologi perangkat lunak lainnya.
+  5. DILARANG KERAS mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.
+  6. DILARANG menggunakan kalimat validasi defensif seperti "saya bukan brand tertentu", "saya tidak berafiliasi...", dsb.
 
 ${languageDirective}
 ${effortDirective}
@@ -2152,7 +2156,8 @@ export default async function handler(req, res) {
     }
 
     const qClean = (query || '').trim();
-    const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda)$/i.test(qClean);
+    const qNormalized = qClean.toLowerCase().replace(/[?!.,]/g, '').replace(/\s+/g, ' ').trim();
+    const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda|kamu itu siapa|kamu itu model apa|model apa yang kamu gunakan|apa modelmu|kamu menggunakan model apa)$/i.test(qNormalized);
     const isTimeQuery = /(?:jam\s*berapa|waktu\s*sekarang|tanggal\s*berapa|hari\s*apa\s*sekarang|sekarang\s*jam|sekarang\s*tanggal|pukul\s*berapa|zona\s*waktu|wib\b|wita\b|wit\b)/i.test(qClean);
     const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
     const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
@@ -2329,12 +2334,8 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/<[^>]+>/g, '');
       cleaned = cleaned.replace(/\s*Baca selengkapnya\b/gi, '');
 
-      // 3.65. Sanitasi Nama Teknis Model/Gateway (Menjaga Kerahasiaan Sesuai Kebijakan Privasi Sistem)
-      cleaned = cleaned.replace(/\b(?:Nemotron[-3\w:]*|Ollama(?:\s+Cloud)?|OpenRouter|NVIDIA\s+NIM)\b/gi, (matched) => {
-        if (/nemotron/i.test(matched)) return 'AI Assistant Engine';
-        if (/ollama|openrouter|nvidia/i.test(matched)) return 'Cloud Neural Gateway';
-        return 'AI Engine';
-      });
+      // 3.65. Sanitasi Gateway Teknis Internal
+      cleaned = cleaned.replace(/\b(?:OpenRouter(?:\s+API)?|NVIDIA\s+NIM\s+API)\b/gi, 'Cloud Neural Engine');
 
       // 3.65b. Sanitasi Handle Username: Hapus (@Raflyf) atau @Raflyf sesuai instruksi pengguna
       cleaned = cleaned.replace(/\s*\(@?Raflyf\)/gi, '');
@@ -2351,11 +2352,16 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/(?:^|\n+)(?:Semoga\s+(?:penjelasan\s+ini\s+)?(?:ini\s+)?membantu|Hope\s+this\s+helps)[^.\n]*[.!?]?(?:\s*(?:Jika|Bila|Apabila)\s+ada\s+(?:hal|pertanyaan)\s+lain[^.\n]*[.!?]?)?/gi, '').trim();
       cleaned = cleaned.replace(/(?:^|\n+)(?:Jika|Bila|Apabila)\s+ada\s+(?:hal|pertanyaan|yang\s+ingin\s+ditanyakan)\s+lain[^.\n]*[.!?]?$/gi, '').trim();
 
-      // 3.65d. Identity Grounding: Kenalkan identitas resmi secara elegan, bersih, dan konsisten (bebas echo & salah format)
+      // 3.65d. Dynamic Identity Presentation & Emergency Fallback
+      // Pertahankan jawaban dinamis yang dihasilkan model AI.
+      // Template statis HANYA diterapkan sebagai jaring pengaman jika model gagal atau mengembalikan string kosong.
       if (isIdentityQuery) {
-        cleaned = sessionLanguage === 'en'
-          ? `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaya dirancang untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`
-          : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaya dirancang untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`;
+        if (!cleaned || cleaned.trim().length < 20) {
+          const currentEngineName = modelName || targetModel || 'Nemotron-3-Nano-30B';
+          cleaned = sessionLanguage === 'en'
+            ? `I am the official **AI Assistant & Developer Agent** on **Rafly Firmansyah**'s portfolio website.\n\nCurrently running on **${currentEngineName}**, I am designed to assist you in exploring software engineering projects, machine learning research (such as OpenPlagiarismChecker and Spam Email Detection), and verifying technical architectures.\n\nIs there a specific technical topic or project you'd like to discuss?`
+            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaat ini saya ditenagai oleh model **${currentEngineName}** untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`;
+        }
       }
 
       // 3.66. Deterministic Realtime Clock Grounding (Zero Hallucination)
