@@ -2044,6 +2044,26 @@ Menyempurnakan kehalusan transisi kemunculan dan hilangnya tombol *Back to Top* 
 2. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 759ms.
 
+### v10.667.4 — Continuous GPU-Accelerated Easing for Back to Top Fade-Out
+
+Released 2026-09-04.
+
+Menyelesaikan kendala *fade out* instan pada tombol *Back to Top* pada `src/App.jsx`:
+
+1. **Eliminasi Interupsi Unmount Siklus Re-render:**
+   - Mengganti siklus unmount `AnimatePresence` yang rentan terpotong instan saat re-render gulir intensif (*scroll RAF loop*), dengan elemen persisten yang dianimasikan menggunakan *Continuous GPU-Accelerated Transition*.
+   - Menerapkan kurva transisi kontinu hardware:
+     - `opacity: showBackToTop ? 1 : 0`
+     - `transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.65)'`
+     - `transition: 'opacity 450ms cubic-bezier(0.16, 1, 0.3, 1), transform 450ms cubic-bezier(0.16, 1, 0.3, 1)'`
+     - `pointerEvents: showBackToTop ? 'auto' : 'none'`
+     - `will-change-[transform,opacity]` untuk rendering di thread GPU compositor.
+   - Hasil: Baik fase *fade in* (saat mulai scroll) maupun fase *fade out* (saat kembali ke puncak) kini 100% simetris, berdurasi penuh 450ms, dan meluncur turun secara lembut tanpa pernah terpotong instan.
+
+2. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 574ms.
+
+
 
 
 

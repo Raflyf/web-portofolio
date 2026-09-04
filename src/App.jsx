@@ -396,31 +396,26 @@ export default function App() {
         {/* Floating Action Buttons */}
         {location.pathname !== '/dashboard' && (
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
-            <AnimatePresence>
-              {showBackToTop && (
-                <motion.button 
-                  key="back-to-top"
-                  initial={{ opacity: 0, scale: 0.6, y: 16 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.6, y: 16 }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  whileHover={{ scale: 1.08, y: -2 }}
-                  whileTap={{ scale: 0.92 }}
-                  onClick={() => {
-                    if (window.__lenis) {
-                      window.__lenis.scrollTo(0, { duration: 1.2 });
-                    } else {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                  }}
-                  className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center cursor-pointer shadow-lg select-none"
-                  aria-label={t('nav.backToTop')}
-                  title={t('nav.backToTop')}
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-                </motion.button>
-              )}
-            </AnimatePresence>
+            <button 
+              onClick={() => {
+                if (window.__lenis) {
+                  window.__lenis.scrollTo(0, { duration: 1.2 });
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              style={{
+                opacity: showBackToTop ? 1 : 0,
+                transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.65)',
+                pointerEvents: showBackToTop ? 'auto' : 'none',
+                transition: 'opacity 450ms cubic-bezier(0.16, 1, 0.3, 1), transform 450ms cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+              className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center cursor-pointer shadow-lg select-none will-change-[transform,opacity]"
+              aria-label={t('nav.backToTop')}
+              title={t('nav.backToTop')}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+            </button>
             
             <button
               onClick={() => {
