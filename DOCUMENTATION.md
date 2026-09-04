@@ -1994,6 +1994,24 @@ Meningkatkan kenyamanan pembacaan dan pengalaman pengguna pada modal Riwayat Per
 4. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 626ms.
 
+### v10.667.1 — Transient Auto-Hide for Scrollytelling Section Indicator
+
+Released 2026-09-04.
+
+Menghilangkan gangguan visual permanen dari label navigasi samping (*scroll indicator storyline*) pada `src/components/ui/scroll-storyline.jsx`:
+
+1. **Auto-Hide Label Sub-Seksi (*Transient Toast Behavior*):**
+   - Menghilangkan tampilan label sub-seksi permanen (`opacity-100` konstan) yang sebelumnya terus menutupi tepi konten halaman.
+   - Menerapkan timer transien: saat pengguna menggulir halaman dan berpindah ke sub-seksi baru, label seksi hanya muncul sejenak (1.8 detik) untuk memberi tahu posisi baru, kemudian otomatis memudar (*fade-out* ke `opacity-0`).
+   - Saat pengguna berdiam di satu seksi tanpa ada perpindahan, label tetap tersembunyi (*clean uncluttered view*).
+
+2. **Interaktivitas Hover Tetap Responsif:**
+   - Tetap mempertahankan `group-hover:opacity-100` sehingga pengguna dapat melihat nama seksi kapan saja hanya dengan mengarahkan kursor mouse ke titik (*dot*) navigasi yang diinginkan.
+
+3. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 1.28s.
+
+
 
 
 
