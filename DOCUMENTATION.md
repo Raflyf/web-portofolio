@@ -1711,6 +1711,26 @@ Menyelesaikan investigasi dan rekayasa sinkronisasi bintang GitHub proyek secara
    - Uji lokal handler `api/github-stars.js` berhasil (status 200, sumber `live_github_api`).
    - Kompilasi produksi `npm run build` sukses 100% tanpa error.
 
+### v10.665.1 — Concise Identity Persona Hardening & Elimination of Defensive Vendor Meta-Talk
+
+Released 2026-09-04.
+
+Menyempurnakan persona asisten AI agar lebih ringkas, padat, alami, dan bebas dari kalimat pembelaan diri (*defensive meta-talk*):
+
+1. **Pemangkasan Respons Identitas (Ultra-Concise & Direct):**
+   - Mengubah arahan respons identitas agar maksimal hanya 2–3 kalimat pendek dan langsung ke inti perannya.
+   - Menghapus penumpukan katalog nama proyek (dilarang mengeja CNB, XGBoost, OpenPlagiarismChecker, FotoKitaBlur, laser pointer saat hanya ditanya identitas/model dasar).
+   - Menggantikannya dengan rangkuman elegan seputar pendampingan proyek software, riset ML, arsitektur sistem, dan sertifikasi Rafly Firmansyah.
+
+2. **Eliminasi Total Klaim Defensif Merek/Vendor:**
+   - Melarang keras kalimat defensif seperti *"Saya tidak berasal dari suatu merek atau vendor tertentu..."*, *"Saya bukan brand tertentu..."*, atau semacamnya.
+   - Menambahkan filter regex pasca-inferensi yang secara otomatis memotong kalimat klaim defensif vendor jika sempat dihasilkan model dasar.
+
+3. **Verifikasi & Kompilasi:**
+   - Sintaksis `node -c api/chat.js` lolos 100%.
+   - Kompilasi produksi Vite `npm run build` sukses 100% tanpa error.
+
+
 
 
 

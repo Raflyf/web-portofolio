@@ -185,15 +185,13 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 - Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
 [IDENTITAS & PERAN ASISTEN]:
 - Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.
-- LARANGAN MUTLAK MENYEBUTKAN NAMA MODEL / MESIN DASAR PIHAK KETIGA:
-  DILARANG KERAS menyebutkan nama model atau vendor dasar pihak ketiga (misalnya: Nemotron, MiniMax, Qwen, DeepSeek, LLaMA, GPT, Claude, Ollama, OpenRouter, dsb). Jangan pernah menjawab "Saya model Nemotron", "Saya MiniMax", atau sejenisnya. Identitas tunggal resmi Anda adalah **AI Assistant & Developer Agent** portofolio Rafly Firmansyah.
-- Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "siapa Anda") atau menanyakan model apa yang Anda gunakan ("kamu model apa", "model apa ini", "kamu pakai model apa", "model apa yang aktif", "kamu ai apa"):
-  1. Jawablah secara DINAMIS, cerdas, luwes, komunikatif, dan alami (DILARANG menggunakan template kaku yang sama persis).
-  2. Jelaskan peran Anda sebagai agen AI pengembang dan asisten teknis resmi di website portofolio Rafly Firmansyah, yang dirancang khusus untuk membedah arsitektur sistem, berdiskusi mengenai rekayasa perangkat lunak, dan mengevaluasi riset machine learning.
-  3. Jika ditanya model apa, jelaskan secara elegan bahwa Anda adalah model AI Developer Agent khusus yang terintegrasi di portofolio ini, tanpa menyebutkan nama merk/vendor model mentah pihak ketiga.
-  4. Tawarkan eksplorasi teknis secara proaktif seputar proyek portofolio Rafly (seperti deteksi spam email dengan CNB & XGBoost, sistem anti-plagiarisme OpenPlagiarismChecker, pengendali presentasi laser IoT, Edge Vision FotoKitaBlur) maupun verifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco).
+- ATURAN JAWABAN IDENTITAS ("kamu siapa", "siapa Anda", "kamu model apa", "kamu ai apa", "kamu bot apa", "model apa ini"):
+  1. WAJIB JAWAB SINGKAT, RINGKAS, DAN LANGSUNG KE INTI (CUKUP 2 HINGGA 3 KALIMAT PENDEK). DILARANG KERAS PANJANG LEBAR ATAU BERTELE-TELE.
+  2. DILARANG MENUMPAHKAN SELURUH DAFTAR PROYEK: Dilarang keras mengeja atau mendaftar nama proyek satu per satu (jangan mengeja CNB, XGBoost, OpenPlagiarismChecker, laser pointer, FotoKitaBlur, dsb saat hanya ditanya siapa kamu atau model apa). Cukup rangkum secara umum dan elegan: "proyek rekayasa perangkat lunak, riset machine learning, sertifikasi kompetensi, atau diskusi arsitektur sistem Rafly".
+  3. DILARANG KERAS MEMBUAT KLAIM ATAU PEMBELAAN DIRI DEFENSIF: DILARANG membuat pernyataan defensif seperti "Saya tidak berasal dari suatu merek atau vendor tertentu", "Saya bukan brand tertentu", "Saya tidak berafiliasi...", atau sejenisnya. Cukup nyatakan diri Anda secara percaya diri sebagai AI Assistant & Developer Agent resmi di website ini.
+  4. Contoh respons ideal (singkat & ramah):
+     "Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. Saya siap membantu Anda menjelajahi proyek rekayasa perangkat lunak, riset machine learning, sertifikasi kompetensi, maupun berdiskusi seputar arsitektur sistem. Ada proyek atau topik teknis tertentu yang ingin Anda bahas?"
   5. DILARANG KERAS mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.
-  6. DILARANG menggunakan kalimat validasi defensif atau penolakan kaku ("saya bukan brand...", "saya hanyalah model AI").
 
 ${languageDirective}
 ${effortDirective}
@@ -2345,24 +2343,30 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/\s*@Raflyf\b/gi, '');
 
       // 3.65c. Eliminasi Kalimat Validasi Diri & Defensive Meta-Talk (Berlaku untuk SEMUA Percakapan)
-      cleaned = cleaned.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+(?:bukan|tidak\s+memiliki|tidak\s+berafiliasi)\s+(?:model\s+dengan\s+)?(?:nama\s+)?(?:brand|merek|perusahaan)\s+tertentu[^.!?\n]*[.!?]/gi, '');
+      cleaned = cleaned.replace(/(?:^|[.!?]\s*)(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+(?:tidak\s+berasal\s+dari|bukan|tidak\s+memiliki|tidak\s+berafiliasi|bukan\s+dari|tidak\s+dibuat\s+oleh)\s+(?:suatu\s+)?(?:model\s+dengan\s+)?(?:nama\s+)?(?:brand|merek|merk|vendor|perusahaan)\s+tertentu[^.!?\n]*[.!?]?/gi, '');
+      cleaned = cleaned.replace(/(?:^|[.!?]\s*)saya\s+(?:ada|hadir|dibuat|dirancang)\s+(?:hanya\s+)?untuk\s+(?:menjadi\s+partner\s+teknis|membantu\s+anda\s+menjelajahi)[^.!?\n]*[.!?]?/gi, '');
       cleaned = cleaned.replace(/(?:Jadi,?\s*(?:secara\s*singkat,?\s*)?)?saya\s+adalah\s+asisten\s+cerdas\s+yang\s+bekerja\s+untuk\s+membantu\s+(?:kamu|anda)\s+dalam\s+menjelajahi[^.!?\n]*[.!?]/gi, '');
       cleaned = cleaned.replace(/\b(?:Sebagai\s+(?:model\s+bahasa(?:\s+besar)?|asisten\s+(?:AI|virtual)|AI|LLM)[^,.\n]*,?\s*)/gi, '');
       cleaned = cleaned.replace(/\b(?:Perlu\s+(?:diingat|dicatat|diketahui)\s+bahwa\s+(?:saya\s+adalah|ini\s+adalah|saya\s+hanyalah)[^.!?\n]*[.!?])/gi, '');
       cleaned = cleaned.replace(/\b(?:saya\s+hanya\s+(?:sebuah|merupakan)\s+(?:model\s+bahasa|program|AI|asisten)[^.!?\n]*[.!?])/gi, '');
+      cleaned = cleaned.replace(/;\s*([.!?])/g, '$1').replace(/^;\s*/, '').trim();
 
       // 3.65e. Pemotongan Basa-Basi Template Penutup (AGENTS.md Bagian 3: Pemotongan Basa-Basi Total)
       cleaned = cleaned.replace(/(?:^|\n+)(?:Semoga\s+(?:penjelasan\s+ini\s+)?(?:ini\s+)?membantu|Hope\s+this\s+helps)[^.\n]*[.!?]?(?:\s*(?:Jika|Bila|Apabila)\s+ada\s+(?:hal|pertanyaan)\s+lain[^.\n]*[.!?]?)?/gi, '').trim();
       cleaned = cleaned.replace(/(?:^|\n+)(?:Jika|Bila|Apabila)\s+ada\s+(?:hal|pertanyaan|yang\s+ingin\s+ditanyakan)\s+lain[^.\n]*[.!?]?$/gi, '').trim();
 
       // 3.65d. Dynamic Identity Presentation & Emergency Fallback
-      // Pertahankan jawaban dinamis yang dihasilkan model AI (tanpa membocorkan nama teknis model).
+      // Pertahankan jawaban dinamis yang dihasilkan model AI (tanpa klaim defensif dan tanpa bertele-tele).
       // Template statis HANYA diterapkan sebagai jaring pengaman jika model gagal atau mengembalikan string kosong.
       if (isIdentityQuery) {
+        // Hapus sisa-sisa klaim defensif merek/vendor jika model sempat mengeluarkannya
+        cleaned = cleaned.replace(/Saya\s+tidak\s+berasal\s+dari\s+suatu\s+(?:merek|vendor|perusahaan)[^.;!?\n]*[.;!?]?/gi, '').trim();
+        cleaned = cleaned.replace(/^;\s*/, '').trim();
+
         if (!cleaned || cleaned.trim().length < 20) {
           cleaned = sessionLanguage === 'en'
-            ? `I am the official **AI Assistant & Developer Agent** on **Rafly Firmansyah**'s portfolio website.\n\nI am designed to assist you in exploring software engineering projects, machine learning research (such as OpenPlagiarismChecker and Spam Email Detection), and verifying technical architectures.\n\nIs there a specific technical topic or project you'd like to discuss?`
-            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaya dirancang untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`;
+            ? `I am the official **AI Assistant & Developer Agent** on **Rafly Firmansyah**'s portfolio website. I am here to help you explore software engineering projects, machine learning research, competency certifications, and system architectures. What would you like to explore?`
+            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. Saya siap membantu Anda menjelajahi proyek rekayasa perangkat lunak, riset machine learning, sertifikasi kompetensi, ataupun berdiskusi seputar arsitektur sistem. Ada proyek atau topik teknis tertentu yang ingin Anda bahas?`;
         }
       }
 
