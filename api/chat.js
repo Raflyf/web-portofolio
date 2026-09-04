@@ -183,15 +183,18 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   const isIdentity = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda|kamu itu siapa|kamu itu model apa|model apa yang kamu gunakan|apa modelmu|kamu menggunakan model apa)$/i.test(cleanQ);
 
   const identityInstruction = isIdentity ? `[IDENTITAS & PERAN ASISTEN]:
-- Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban.
-- ATURAN MUTLAK JAWABAN IDENTITAS (SUPER RINGKAS, ALAMI, DAN DINAMIS):
-  1. JAWAB SUPER SINGKAT (CUKUP 1 HINGGA 2 KALIMAT SAJA!). DILARANG KERAS PANJANG LEBAR ATAU BERTELE-TELE.
-  2. JANGAN MELEBAR KE ISI WEBSITE: Pengguna HANYA bertanya siapa Anda atau model apa ini. DILARANG KERAS mengeja, mempromosikan, atau mendaftar isi website, riset, machine learning, proyek (seperti spam email, plagiarism, laser, foto, dll), atau sertifikasi. Jangan melebar ke topik portofolio yang tidak ditanyakan!
-  3. CUKUP NYATAKAN SECARA DINAMIS & RAMAH: Bahwa Anda adalah asisten AI dan AI developer agent resmi di website portofolio Rafly Firmansyah yang siap membantu menjawab pertanyaan atau mendampingi pengunjung di website ini.
-  4. DILARANG MEMBUAT KLAIM DEFENSIF APAPUN (jangan pernah sebut merek/vendor/brand).
-  5. DILARANG mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.`
+- Anda adalah **AI Assistant & Developer Agent** resmi yang terintegrasi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban.
+- RUANG LINGKUP ASISTEN (SERBAGUNA & GENERAL):
+  Lingkup Anda TIDAK TERBATAS pada website ini saja. Anda adalah asisten AI serbaguna yang berpengetahuan luas dan siap membantu menjawab pertanyaan apa saja secara umum (pemrograman, coding, arsitektur software, sains, teknologi AI terkini, pengetahuan umum, maupun eksplorasi karya dan riset Rafly Firmansyah).
+- ATURAN JAWABAN IDENTITAS ("kamu siapa", "siapa kamu", "kamu model apa", "model apa ini", dsb):
+  1. JAWAB SINGKAT, PADAT, DAN DINAMIS (Cukup 1 hingga 2 kalimat mengalir). DILARANG PANJANG LEBAR ATAU BERTELE-TELE.
+  2. TEGASKAN RUANG LINGKUP UMUM & TERBUKA: Sampaikan secara alami dan ramah bahwa Anda adalah AI Assistant & Developer Agent di portofolio Rafly Firmansyah yang siap membantu menjawab apa saja—mulai dari pemrograman, teknologi, wawasan umum, hingga mendiskusikan karya dan riset di web ini.
+  3. DILARANG MEMBATASI DIRI HANYA PADA WEB: DILARANG mengesankan bahwa Anda hanya bisa membahas website ini saja. Anda bisa ditanya apa saja secara umum.
+  4. DILARANG MENUMPAHKAN DAFTAR PROYEK: Jangan mengeja satu per satu nama proyek (seperti spam email, plagiarism, laser, dll) saat hanya ditanya siapa kamu atau model apa.
+  5. DILARANG MEMBUAT KLAIM DEFENSIF APAPUN (jangan pernah sebut merek/vendor/brand).
+  6. DILARANG mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.`
 : `[IDENTITAS & PERAN ASISTEN]:
-- Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.`;
+- Anda adalah **AI Assistant & Developer Agent** serbaguna resmi di website portofolio **Rafly Firmansyah**. Anda siap membantu menjawab berbagai pertanyaan secara luas (pemrograman, teknologi terkini, sains, pengetahuan umum, maupun proyek portofolio). DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.`;
 
   const basePrompt = `Status: ${isEnglish ? 'ENGLISH' : 'BAHASA INDONESIA'}. Waktu Saat Ini (Ground Truth): ${dynamicDateStr}, Pukul ${dynamicTimeStr} WIB (Waktu Indonesia Barat, UTC+7).
 [INSTRUKSI WAKTU REALTIME]:
@@ -2374,6 +2377,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         cleaned = cleaned.replace(/(?:^|[.!?]\s*)Saya\s+juga\s+siap\s+membantu\s+verifikasi\s+sertifikasi[^.!?\n]*[.!?]?/gi, '');
         cleaned = cleaned.replace(/(?:^|[.!?]\s*)Semua\s+ini\s+saya\s+lakukan\s+dengan\s+cara\s+yang\s+santai[^.!?\n]*[.!?]?/gi, '');
         cleaned = cleaned.replace(/\s*,\s*serta\s+mengeksplorasi\s+detail\s+teknis\s+lainnya[^.!?\n]*/gi, '');
+        cleaned = cleaned.replace(/Saya\s+siap\s+membantu\s+Anda\s+menjelajahi\s+proyek\s+rekayasa\s+perangkat\s+lunak,\s*riset\s+machine\s+learning[^.!?\n]*[.!?]?/gi, 'Saya siap membantu menjawab berbagai pertanyaan—mulai dari pemrograman, teknologi, wawasan umum, hingga mendiskusikan karya di portofolio ini.');
 
         // 3. Batasi hanya mengambil maksimal 2 kalimat pertama agar tetap singkat, padat, dan dinamis
         const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
@@ -2385,8 +2389,8 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         // 4. Emergency fallback jika kosong
         if (!cleaned || cleaned.trim().length < 15) {
           cleaned = sessionLanguage === 'en'
-            ? `I am the official **AI Assistant & AI Agent** on Rafly Firmansyah's portfolio website, ready to assist you. How can I help you today?`
-            : `Saya adalah asisten AI dan AI agent resmi di website portofolio Rafly Firmansyah, siap membantu menjawab pertanyaan atau kebutuhan Anda di website ini. Ada yang bisa saya bantu?`;
+            ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website. I am ready to assist you with any questions—from programming, science, and technology, to exploring projects on this site. How can I help you?`
+            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio Rafly Firmansyah. Saya siap membantu menjawab pertanyaan apa saja—mulai dari pemrograman, teknologi, wawasan umum, hingga seputar portofolio ini. Ada yang bisa saya bantu?`;
         }
       }
 
