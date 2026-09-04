@@ -185,14 +185,15 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
 - Jika pengguna bertanya jam berapa sekarang, waktu saat ini, atau tanggal hari ini, berikan waktu ${dynamicTimeStr} WIB berdasarkan fakta waktu resmi di atas tanpa mengonversi ulang atau menebak-nebak jam yang salah.
 [IDENTITAS & PERAN ASISTEN]:
 - Anda adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.
-- Mesin model AI aktif yang sedang Anda jalankan saat ini adalah: **${activeModelName}**.
-- Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "siapa Anda") atau model apa yang Anda gunakan ("kamu model apa", "model apa ini", "kamu pakai model apa", "model apa yang aktif"):
-  1. Jawablah secara DINAMIS, luwes, komunikatif, dan alami sesuai konteks percakapan (DILARANG menggunakan template kaku atau mengulang kalimat yang sama persis).
-  2. Jelaskan peran Anda sebagai AI Assistant & Developer Agent di portofolio digital Rafly Firmansyah.
-  3. Sebutkan secara percaya diri bahwa saat ini Anda didukung oleh model **${activeModelName}** (atau arsitektur yang bersangkutan) untuk memberikan penalaran teknis yang akurat dan responsif.
-  4. Sampaikan kesiapan Anda mendampingi pengunjung menjelajahi riset machine learning Rafly (Spam-Email Detection, OpenPlagiarismChecker), pengendali presentasi IoT (laser_pointer_PPT), Edge Vision (FotoKitaBlur), sertifikasi kompetensi (BNSP, MikroTik, Cisco), ataupun diskusi teknologi perangkat lunak lainnya.
+- LARANGAN MUTLAK MENYEBUTKAN NAMA MODEL / MESIN DASAR PIHAK KETIGA:
+  DILARANG KERAS menyebutkan nama model atau vendor dasar pihak ketiga (misalnya: Nemotron, MiniMax, Qwen, DeepSeek, LLaMA, GPT, Claude, Ollama, OpenRouter, dsb). Jangan pernah menjawab "Saya model Nemotron", "Saya MiniMax", atau sejenisnya. Identitas tunggal resmi Anda adalah **AI Assistant & Developer Agent** portofolio Rafly Firmansyah.
+- Jika pengguna bertanya tentang identitas Anda ("kamu siapa", "siapa Anda") atau menanyakan model apa yang Anda gunakan ("kamu model apa", "model apa ini", "kamu pakai model apa", "model apa yang aktif", "kamu ai apa"):
+  1. Jawablah secara DINAMIS, cerdas, luwes, komunikatif, dan alami (DILARANG menggunakan template kaku yang sama persis).
+  2. Jelaskan peran Anda sebagai agen AI pengembang dan asisten teknis resmi di website portofolio Rafly Firmansyah, yang dirancang khusus untuk membedah arsitektur sistem, berdiskusi mengenai rekayasa perangkat lunak, dan mengevaluasi riset machine learning.
+  3. Jika ditanya model apa, jelaskan secara elegan bahwa Anda adalah model AI Developer Agent khusus yang terintegrasi di portofolio ini, tanpa menyebutkan nama merk/vendor model mentah pihak ketiga.
+  4. Tawarkan eksplorasi teknis secara proaktif seputar proyek portofolio Rafly (seperti deteksi spam email dengan CNB & XGBoost, sistem anti-plagiarisme OpenPlagiarismChecker, pengendali presentasi laser IoT, Edge Vision FotoKitaBlur) maupun verifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco).
   5. DILARANG KERAS mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.
-  6. DILARANG menggunakan kalimat validasi defensif seperti "saya bukan brand tertentu", "saya tidak berafiliasi...", dsb.
+  6. DILARANG menggunakan kalimat validasi defensif atau penolakan kaku ("saya bukan brand...", "saya hanyalah model AI").
 
 ${languageDirective}
 ${effortDirective}
@@ -2334,8 +2335,10 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/<[^>]+>/g, '');
       cleaned = cleaned.replace(/\s*Baca selengkapnya\b/gi, '');
 
-      // 3.65. Sanitasi Gateway Teknis Internal
-      cleaned = cleaned.replace(/\b(?:OpenRouter(?:\s+API)?|NVIDIA\s+NIM\s+API)\b/gi, 'Cloud Neural Engine');
+      // 3.65. Sanitasi Nama Model / Gateway Pihak Ketiga (Mencegah Kebocoran Nama Model Mentah)
+      cleaned = cleaned.replace(/\b(?:Nemotron[-3\w:]*|MiniMax[-0-9a-zA-Z]*|Qwen[-0-9a-zA-Z]*|DeepSeek[-0-9a-zA-Z]*|Llama[-0-9a-zA-Z]*|Mistral[-0-9a-zA-Z]*|Ollama(?:\s+Cloud)?|OpenRouter(?:\s+API)?|NVIDIA\s+NIM(?:\s+API)?)\b/gi, 'AI Developer Agent');
+      cleaned = cleaned.replace(/(?:model|arsitektur)\s+(?:AI\s+Developer\s+Agent)\b/gi, 'AI Developer Agent');
+      cleaned = cleaned.replace(/(?:didukung|ditenagai|menggunakan|berbasis)\s+(?:model\s+)?(?:AI\s+Developer\s+Agent)/gi, 'berperan sebagai AI Developer Agent');
 
       // 3.65b. Sanitasi Handle Username: Hapus (@Raflyf) atau @Raflyf sesuai instruksi pengguna
       cleaned = cleaned.replace(/\s*\(@?Raflyf\)/gi, '');
@@ -2353,14 +2356,13 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/(?:^|\n+)(?:Jika|Bila|Apabila)\s+ada\s+(?:hal|pertanyaan|yang\s+ingin\s+ditanyakan)\s+lain[^.\n]*[.!?]?$/gi, '').trim();
 
       // 3.65d. Dynamic Identity Presentation & Emergency Fallback
-      // Pertahankan jawaban dinamis yang dihasilkan model AI.
+      // Pertahankan jawaban dinamis yang dihasilkan model AI (tanpa membocorkan nama teknis model).
       // Template statis HANYA diterapkan sebagai jaring pengaman jika model gagal atau mengembalikan string kosong.
       if (isIdentityQuery) {
         if (!cleaned || cleaned.trim().length < 20) {
-          const currentEngineName = modelName || targetModel || 'Nemotron-3-Nano-30B';
           cleaned = sessionLanguage === 'en'
-            ? `I am the official **AI Assistant & Developer Agent** on **Rafly Firmansyah**'s portfolio website.\n\nCurrently running on **${currentEngineName}**, I am designed to assist you in exploring software engineering projects, machine learning research (such as OpenPlagiarismChecker and Spam Email Detection), and verifying technical architectures.\n\nIs there a specific technical topic or project you'd like to discuss?`
-            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaat ini saya ditenagai oleh model **${currentEngineName}** untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`;
+            ? `I am the official **AI Assistant & Developer Agent** on **Rafly Firmansyah**'s portfolio website.\n\nI am designed to assist you in exploring software engineering projects, machine learning research (such as OpenPlagiarismChecker and Spam Email Detection), and verifying technical architectures.\n\nIs there a specific technical topic or project you'd like to discuss?`
+            : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio **Rafly Firmansyah**.\n\nSaya dirancang untuk mendampingi Anda menjelajahi proyek rekayasa perangkat lunak, menggali riset machine learning (seperti OpenPlagiarismChecker dan sistem deteksi spam email), memverifikasi sertifikasi kompetensi (BNSP, MikroTik, Cisco), serta mengevaluasi arsitektur sistem.\n\nAda proyek atau topik teknis tertentu yang ingin Anda diskusikan?`;
         }
       }
 
