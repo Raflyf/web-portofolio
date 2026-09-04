@@ -1823,9 +1823,8 @@ Menerapkan mandat keringkasan universal untuk seluruh domain pertanyaan (`api/ch
    - Seluruh jawaban kini difokuskan HANYA pada inti jawaban (100–200 kata, 1 kalimat pembuka langsung ke inti + 3–5 butir poin padat berbobot).
    - Pengunjung dapat membaca dan menyerap inti informasi dalam waktu kurang dari 30 detik.
 
-2. **Kalibrasi Token Generasi Ultra-Cepat (512 Tokens):**
-   - Batas token output `maxTokensConfig` diturunkan ke 512 token untuk mode medium/auto.
-   - Waktu inferensi model terpangkas menjadi 1.5–3 detik (sub-5s TTFT), mengeliminasi total kemungkinan antrean gateway Vercel terhenti.
+2. **Kapasitas Token Output Utuh (Token Limit Preserved):**
+   - Batas token output `maxTokensConfig` dipertahankan penuh (8192 thinking / 4096 high / 2048 medium) sesuai konfigurasi awal pengguna agar tidak memotong kode atau penjelasan teknis penting saat diminta. Keringkasan jawaban dikendalikan secara presisi lewat instruksi prompt sistem universal.
 
 3. **Fast Failover Guard Step #1 (4.5s Timeout):**
    - Batas aktif untuk percobaan pertama model Ollama Cloud diperketat ke 4.5 detik.
