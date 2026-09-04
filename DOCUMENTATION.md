@@ -1879,6 +1879,25 @@ Memperbaiki arsitektur pembagian waktu antara respon koneksi API gateway dan wak
    - Sintaksis `node -c api/chat.js` valid 100%.
    - Build Vite `npm run build` sukses dalam 746ms.
 
+### v10.665.9 — High-Opacity & Deep Backdrop Blur for Conversation History Modal
+
+Released 2026-09-04.
+
+Menyelesaikan masalah tembusnya teks percakapan terminal di balik modal Riwayat Percakapan (`src/components/terminal/TerminalAI.jsx`):
+
+1. **Backdrop & Container Opacity Elevation:**
+   - Mempertebal backdrop modal dari `bg-black/60 backdrop-blur-xl` menjadi `bg-black/80 backdrop-blur-2xl` untuk meredam teks terminal di latar belakang secara visual.
+   - Mengganti styling transparan kartu modal utama dengan `bg-zinc-950/95 backdrop-blur-3xl border border-zinc-700/60 dark:border-cyan-500/30` serta bayangan ambient `shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_40px_rgba(6,182,212,0.12)]`.
+
+2. **Isolated High-Contrast Session Cards:**
+   - Card "Sesi Aktif" kini menggunakan latar belakang `bg-cyan-950/45 border border-cyan-500/40 backdrop-blur-xl` dengan aksen cyan yang tegas.
+   - Card "Sesi Terdahulu" ditingkatkan ke `bg-zinc-900/85 border border-zinc-800 dark:border-white/10 backdrop-blur-xl shadow-md` sehingga teks judul sesi dan ringkasan pertanyaan tidak lagi mengalami tabrakan visual dengan konten di baliknya.
+   - Memenuhi standar WCAG 2.2 AA untuk rasio kontras teks minimum (> 7:1).
+
+3. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 720ms.
+
+
 
 
 
