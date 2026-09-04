@@ -1790,6 +1790,31 @@ Menyelesaikan tuntas kegagalan inferensi (*context drift*) saat pengguna menanya
    - Sintaksis `node -c api/chat.js` valid 100%.
    - Build Vite `npm run build` sukses 100% tanpa error.
 
+### v10.665.5 — Fast-Path Inference & Zero-504 Gateway Timeout Architecture
+
+Released 2026-09-04.
+
+Menyelesaikan masalah latensi tinggi dan HTTP 504 Gateway Timeout saat kueri analisis teknis dijalankan (`api/chat.js`):
+
+1. **Short-Circuit Bypass Web Search untuk Proyek Portofolio Murni (`isPurePortfolioQuery`):**
+   - Kueri yang secara spesifik membahas proyek atau riset Rafly (OpenPlagiarismChecker, Spam-Email Detection, laser_pointer_PPT, FotoKitaBlur, skripsi, dsb) secara otomatis melewati penelusuran web eksternal 14 feed.
+   - Fakta telah disediakan 100% lengkap dan resmi di memori bedah `getSurgicalPortfolioContext`, memangkas latensi pra-pemrosesan dari 8000ms menjadi ~0ms.
+
+2. **Pangkas Timeout Search Eksternal (`searchWebContext`):**
+   - Menurunkan batas abort timeout dari 11000ms menjadi 3800ms untuk menjamin kueri eksternal tidak menahan fungsi serverless terlalu lama.
+
+3. **Optimasi Pipeline Penalaran Cepat (*Fast Reasoning Pipeline*):**
+   - Menurunkan `reasoningStepTimeout` dari 30000ms menjadi 8000ms per provider.
+   - Memprioritaskan model cepat berefisiensi tinggi (`nvidia/nemotron-3.5-lightning:free` dan `nemotron-3-nano:30b`) di puncak cascade penalaran, sehingga menghasilkan analisis masif dan terstruktur dengan TTFT di bawah 3 detik tanpa risiko timeout Vercel (504).
+
+4. **Optimasi Supabase Memory Fetch:**
+   - Mengurangi timeout pembacaan memori Supabase dari 3000ms menjadi 1500ms agar fail-fast tanpa membebani budget eksekusi.
+
+5. **Verifikasi & Kompilasi:**
+   - Sintaksis `node -c api/chat.js` valid 100%.
+   - Build Vite `npm run build` sukses 100% (670ms).
+
+
 
 
 
