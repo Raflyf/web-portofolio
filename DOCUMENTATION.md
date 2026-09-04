@@ -1897,6 +1897,26 @@ Menyelesaikan masalah tembusnya teks percakapan terminal di balik modal Riwayat 
 3. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 720ms.
 
+### v10.666.0 — Frosted Liquid Glass Ultra-Blur & Total Scroll Chaining Isolation
+
+Released 2026-09-04.
+
+Menyempurnakan estetika visual glassmorphism dan mengatasi insiden *scroll leak* pada modal Riwayat Percakapan (`src/components/terminal/TerminalAI.jsx`):
+
+1. **Ultra-Heavy Frosted Glassmorphism (Tanpa Latar Hitam Solid):**
+   - Menghapus background hitam legam (`zinc-950/95`) dan mengembalikan karakter *Liquid Glassmorphism iOS* yang tembus cahaya namun memiliki difusi blur optik sangat kuat.
+   - Mengombinasikan `backdrop-blur-[28px]` pada overlay, `backdrop-blur-[45px] backdrop-saturate-[220%]` pada kontainer modal (`bg-zinc-900/40`), dan `backdrop-blur-[35px]` pada kartu sesi (`bg-white/[0.06]`).
+   - Difusi blur kumulatif melebihi 70px membuat teks terminal di latar belakang terurai halus menjadi dispersi cahaya abstrak yang tidak terbaca, menghilangkan konflik tabrakan teks 100% tanpa mematikan estetika kaca.
+
+2. **Isolasi Penuh Scroll & Pembatasan Event Lenis (*Anti-Scroll Chaining*):**
+   - Mengunci scroll halaman utama dengan `useEffect`: saat modal aktif, memanggil `window.__lenis.stop()` dan menyetel `document.body.style.overflow = 'hidden'`. Mengembalikan ke semula saat modal ditutup.
+   - Menambahkan atribut `data-lenis-prevent="true"` pada backdrop overlay, kontainer modal, dan elemen daftar kartu sesi yang dapat di-scroll.
+   - Menyematkan kelas `overscroll-contain` serta event listener `stopPropagation()` pada `onWheel` dan `onTouchMove` sehingga gerakan gulir roda tetikus atau sentuhan di dalam kartu riwayat tidak pernah merembet ke halaman utama.
+
+3. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 588ms.
+
+
 
 
 

@@ -447,6 +447,23 @@ export default function TerminalAI({ onClose } = {}) {
     };
   }, []);
 
+  // Lock body scroll and pause Lenis smooth scroll while history modal is active
+  useEffect(() => {
+    if (showHistoryModal) {
+      if (window.__lenis) {
+        try { window.__lenis.stop(); } catch (_) {}
+      }
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        if (window.__lenis) {
+          try { window.__lenis.start(); } catch (_) {}
+        }
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [showHistoryModal]);
+
   const [selectedModel, setSelectedModel] = useState(() => {
     try {
       const saved = localStorage.getItem('ai_selected_model');
@@ -1138,15 +1155,23 @@ export default function TerminalAI({ onClose } = {}) {
       {/* History Modal */}
       {showHistoryModal && (
         <div 
-          className="fixed inset-0 z-150 flex items-center justify-center bg-black/80 backdrop-blur-2xl glass-backdrop-in p-4"
+          data-lenis-prevent="true"
+          className="fixed inset-0 z-150 flex items-center justify-center bg-black/40 backdrop-blur-[28px] glass-backdrop-in p-4 overscroll-contain"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowHistoryModal(false);
             }
           }}
         >
-          <div className="w-full max-w-2xl bg-zinc-950/95 dark:bg-zinc-950/95 border border-zinc-700/60 dark:border-cyan-500/30 rounded-2xl overflow-hidden font-mono glass-spring-in backdrop-blur-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_40px_rgba(6,182,212,0.12)]">
-            <div className="flex items-center justify-between border-b border-zinc-800 dark:border-white/10 pb-4 mb-4 p-6 bg-zinc-900/40">
+          <div 
+            data-lenis-prevent="true"
+            className="w-full max-w-2xl bg-zinc-900/40 dark:bg-slate-950/40 border border-white/20 dark:border-cyan-500/30 rounded-2xl overflow-hidden font-mono glass-spring-in backdrop-blur-[45px] backdrop-saturate-[220%] shadow-[0_20px_60px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.25)]"
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 p-6 bg-white/[0.03] backdrop-blur-[25px]">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2"><Clock className="w-5 h-5 text-cyan-400" /> Riwayat Percakapan</h3>
               <div className="flex items-center gap-2">
                 {historyList.length > 0 && (
@@ -1163,27 +1188,36 @@ export default function TerminalAI({ onClose } = {}) {
                 </button>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto max-h-[60vh] no-scrollbar space-y-3 p-6 pt-0">
-               <div className="p-4 bg-cyan-950/40 dark:bg-cyan-950/45 border border-cyan-500/40 rounded-xl cursor-pointer hover:bg-cyan-950/60 hover:border-cyan-400 transition group relative backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.4),0_0_15px_rgba(6,182,212,0.1)]">
+            <div 
+              data-lenis-prevent="true"
+              className="flex-1 overflow-y-auto overscroll-contain max-h-[60vh] no-scrollbar space-y-3 p-6 pt-0"
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
+               <div className="p-4 bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-400/40 rounded-xl cursor-pointer hover:bg-cyan-500/20 hover:border-cyan-300 transition group relative backdrop-blur-[35px] backdrop-saturate-[200%] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_20px_rgba(6,182,212,0.12)]">
                  <div className="flex items-center justify-between mb-1">
-                   <span className="text-cyan-400 font-medium group-hover:text-cyan-300 text-sm">Sesi Aktif</span>
-                   <span className="text-[10px] text-zinc-400">Sekarang</span>
+                   <span className="text-cyan-300 font-semibold group-hover:text-cyan-200 text-sm">Sesi Aktif</span>
+                   <span className="text-[10px] text-cyan-200/80">Sekarang</span>
                  </div>
-               <p className="text-xs text-zinc-300 truncate">
+               <p className="text-xs text-zinc-200 truncate">
                  {messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
                </p>
              </div>
              {historyList.map((hist, idx) => (
-               <div key={hist.id} onClick={() => {
-                 setMessages(hist.messages);
-                 setShowHistoryModal(false);
-               }} className="p-4 bg-zinc-900/80 dark:bg-zinc-900/85 border border-zinc-800 dark:border-white/10 rounded-xl cursor-pointer hover:bg-zinc-800/90 hover:border-zinc-700 dark:hover:border-cyan-500/30 transition group flex items-center justify-between backdrop-blur-xl shadow-md">
+               <div 
+                 key={hist.id} 
+                 onClick={() => {
+                   setMessages(hist.messages);
+                   setShowHistoryModal(false);
+                 }} 
+                 className="p-4 bg-zinc-800/30 dark:bg-white/[0.06] border border-white/15 dark:border-white/10 hover:border-white/30 hover:bg-white/[0.12] rounded-xl cursor-pointer transition group flex items-center justify-between backdrop-blur-[35px] backdrop-saturate-[200%] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_4px_16px_rgba(0,0,0,0.2)]"
+               >
                  <div className="flex-1 min-w-0 pr-3">
                    <div className="flex items-center justify-between mb-1">
-                     <span className="text-zinc-200 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
-                     <span className="text-[10px] text-zinc-400">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+                     <span className="text-white font-medium group-hover:text-cyan-300 text-sm">Sesi Terdahulu {historyList.length - idx}</span>
+                     <span className="text-[10px] text-zinc-300">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
                    </div>
-                   <p className="text-xs text-zinc-400 truncate">
+                   <p className="text-xs text-zinc-300 truncate">
                      {hist.messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
                    </p>
                  </div>
@@ -1199,8 +1233,8 @@ export default function TerminalAI({ onClose } = {}) {
              ))}
 
              {historyList.length === 0 && (
-               <div className="text-center py-10 mt-6 border border-dashed border-zinc-800 dark:border-white/15 rounded-xl bg-zinc-900/50 backdrop-blur-xl">
-                  <p className="text-sm text-zinc-400">Belum ada riwayat sesi terdahulu tersimpan.</p>
+               <div className="text-center py-10 mt-6 border border-dashed border-white/20 rounded-xl bg-white/[0.03] backdrop-blur-[25px]">
+                  <p className="text-sm text-zinc-300">Belum ada riwayat sesi terdahulu tersimpan.</p>
                </div>
              )}
           </div>
