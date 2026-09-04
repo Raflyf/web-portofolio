@@ -1834,6 +1834,28 @@ Menerapkan mandat keringkasan universal untuk seluruh domain pertanyaan (`api/ch
    - Sintaksis `node -c api/chat.js` valid 100%.
    - Build Vite `npm run build` selesai dalam 1.00s tanpa error.
 
+### v10.665.7 — Dynamic Multi-Stage Backend Pipeline Progress Indicator
+
+Released 2026-09-04.
+
+Menerapkan indikator status interaktif yang dinamis dan mencerminkan fase-fase riil yang berlangsung di backend (`src/components/terminal/TerminalAI.jsx`):
+
+1. **Progress Pipeline Dinamis Berbasis Intensi Kueri (*Dynamic Pipeline Generator*):**
+   - Menghilangkan teks status statis lama (`[THINKING]` tunggal yang monoton).
+   - Menambahkan generator tahapan progress kontekstual `getDynamicLoadingPipeline(query)` yang memetakan aktivitas backend secara langsung:
+     - **Kueri Proyek Portofolio:** `[Query Parser]` (deteksi intensi) -> `[Portfolio RAG]` (mengambil Ground Truth lokal) -> `[API Gateway]` (menghubungkan model) -> `[Thinking]` (analisis arsitektur) -> `[Synthesis]` (validasi & formatting).
+     - **Kueri Web & Berita Terkini:** `[Agentic Intent]` -> `[Web Search]` (mencari informasi live) -> `[Scraping & Rerank]` (ekstraksi fakta & BM25) -> `[API Gateway]` -> `[Thinking]` -> `[Synthesis]`.
+     - **Kueri Rekayasa Perangkat Lunak & Coding:** `[Syntax Analyzer]` -> `[API Gateway]` -> `[Deep Reasoning]` -> `[Code Synthesis]`.
+     - **Kueri Identitas & Percakapan Umum:** `[System Route / Agentic Router]` -> `[API Gateway]` -> `[Thinking]` -> `[Synthesis]`.
+
+2. **Visualisasi Transisi Warna & Ikon Spesifik:**
+   - Setiap fase kini memiliki perpaduan badge warna (Violet, Amber, Emerald, Indigo, Cyan, Sky) dengan ikon animasi spesifik (`Search`, `Globe`, `Database`, `Radio`, `Code`, `Cpu`, `Loader2`, `Sparkles`) serta efek glowing soft.
+   - Timer transisi fase otomatis dibersihkan saat respons diterima atau terjadi kegagalan (`finally` block) untuk mencegah memory leak.
+
+3. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses 100% dalam 718ms.
+
+
 
 
 

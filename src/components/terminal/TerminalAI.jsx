@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles, Globe, BookOpen, ShieldCheck, Code, ExternalLink } from 'lucide-react';
+import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles, Globe, BookOpen, ShieldCheck, Code, ExternalLink, Search, Database } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
 import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
@@ -349,6 +349,80 @@ function normalizeStructuredMarkdown(str) {
   return out;
 }
 
+/**
+ * Dynamic Multi-Stage Backend Pipeline Progress Generator
+ * Memetakan intensi kueri pengguna dan menghasilkan tahapan progress interaktif
+ * yang mencerminkan fase-fase riil yang sedang berlangsung di backend:
+ * - Intent Classification / Query Parsing
+ * - Web Scraping & Live Internet Search / Local Portfolio Ground Truth RAG
+ * - Payload Grounding & API Gateway Connection
+ * - Model Deep Reasoning & Thinking
+ * - Output Synthesis, Faktualitas & CommonMark Formatting
+ */
+function getDynamicLoadingPipeline(query) {
+  const qClean = (query || '').toLowerCase();
+  
+  const isIdentity = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|siapa namamu|namamu siapa|who are you|what model|kamu ai apa|kamu ini apa|anda siapa)/i.test(qClean);
+  const isTime = /(?:jam berapa|waktu sekarang|tanggal berapa|hari apa|sekarang jam|sekarang tanggal|pukul berapa|wib\b)/i.test(qClean);
+  const isSiteAnatomy = /(?:(?:isi|konten|bagian|menu|fitur|halaman|seksi|ada apa)\s*(?:di\s*)?(?:web|website|situs|porto|portofolio)|sedang dibuka|web porto ini)/i.test(qClean);
+  const isPortfolio = isSiteAnatomy || /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|cv|resume)/i.test(qClean);
+  const isCode = /(?:kode|coding|code|fungsi|function|script|komponen|component|react|python|javascript|bug|error|refactor|algoritma|sql|database|query|api|backend|frontend)/i.test(qClean);
+  const isWebSearch = /(?:terbaru|terkini|rilis|release|kapan|berita|news|hari ini|tahun ini|saat ini|sekarang|harga|siapa presiden|apa itu|cuaca|update|2026|flagship|skor|benchmark)/i.test(qClean);
+
+  if (isIdentity) {
+    return [
+      { delay: 0, badge: 'System Route', text: 'Memverifikasi status model & identitas asisten...', color: 'violet', icon: 'cpu' },
+      { delay: 550, badge: 'API Gateway', text: 'Menghubungkan ke gateway model AI aktif...', color: 'indigo', icon: 'radio' },
+      { delay: 1400, badge: 'Thinking', text: 'Model merespons (OK), sedang menyusun perkenalan dinamis...', color: 'cyan', icon: 'loader' }
+    ];
+  }
+
+  if (isTime) {
+    return [
+      { delay: 0, badge: 'Clock Sync', text: 'Mengambil waktu presisi server & zona WIB (UTC+7)...', color: 'emerald', icon: 'clock' },
+      { delay: 400, badge: 'Formatting', text: 'Memvalidasi timestamp & menyusun format waktu...', color: 'cyan', icon: 'loader' }
+    ];
+  }
+
+  if (isPortfolio) {
+    return [
+      { delay: 0, badge: 'Query Parser', text: 'Menganalisis kueri & mendeteksi domain proyek portofolio...', color: 'violet', icon: 'search' },
+      { delay: 650, badge: 'Portfolio RAG', text: 'Mengambil arsitektur & Ground Truth proyek dari indeks lokal (0ms bypass)...', color: 'emerald', icon: 'database' },
+      { delay: 1500, badge: 'API Gateway', text: 'Mengirimkan payload konteks resmi ke gateway model AI...', color: 'indigo', icon: 'radio' },
+      { delay: 2700, badge: 'Thinking', text: 'Model merespons (OK), sedang berpikir & menganalisis arsitektur...', color: 'cyan', icon: 'loader' },
+      { delay: 5000, badge: 'Synthesis', text: 'Menyusun intisari jawaban padat & memvalidasi fakta...', color: 'sky', icon: 'sparkles' }
+    ];
+  }
+
+  if (isCode) {
+    return [
+      { delay: 0, badge: 'Syntax Analyzer', text: 'Menganalisis dependensi kode, struktur data & algoritma...', color: 'violet', icon: 'code' },
+      { delay: 750, badge: 'API Gateway', text: 'Mengirimkan prompt rekayasa perangkat lunak ke gateway AI...', color: 'indigo', icon: 'radio' },
+      { delay: 1900, badge: 'Deep Reasoning', text: 'Model merespons (OK), sedang merancang logika & struktur kode...', color: 'cyan', icon: 'loader' },
+      { delay: 4200, badge: 'Code Synthesis', text: 'Menyusun blok kode, formatting markdown & memverifikasi sintaksis...', color: 'sky', icon: 'sparkles' }
+    ];
+  }
+
+  if (isWebSearch) {
+    return [
+      { delay: 0, badge: 'Agentic Intent', text: 'Menganalisis kueri & mendeteksi kebutuhan data eksternal...', color: 'violet', icon: 'search' },
+      { delay: 700, badge: 'Web Search', text: 'Mencari informasi live di internet, Google News & ensiklopedia...', color: 'amber', icon: 'globe' },
+      { delay: 1800, badge: 'Scraping & Rerank', text: 'Mengekstrak snippet web, memfilter noise & reranking BM25...', color: 'emerald', icon: 'database' },
+      { delay: 3000, badge: 'API Gateway', text: 'Mengirimkan payload ter-grounding ke gateway model AI...', color: 'indigo', icon: 'radio' },
+      { delay: 4500, badge: 'Thinking', text: 'Model merespons (OK), sedang berpikir mendalam & bernalar...', color: 'cyan', icon: 'loader' },
+      { delay: 6800, badge: 'Synthesis', text: 'Menyusun intisari padat, memvalidasi bukti & memformat respons...', color: 'sky', icon: 'sparkles' }
+    ];
+  }
+
+  // General / Default Chat Flow
+  return [
+    { delay: 0, badge: 'Agentic Router', text: 'Menganalisis intensi kueri & memvalidasi konteks percakapan...', color: 'violet', icon: 'search' },
+    { delay: 650, badge: 'API Gateway', text: 'Menghubungkan gateway model AI (Ollama Cloud / OpenRouter)...', color: 'indigo', icon: 'radio' },
+    { delay: 1600, badge: 'Thinking', text: 'Model merespons (OK), sedang berpikir & menyusun respons...', color: 'cyan', icon: 'loader' },
+    { delay: 4000, badge: 'Synthesis', text: 'Menyaring output, memvalidasi faktualitas & memformat jawaban...', color: 'sky', icon: 'sparkles' }
+  ];
+}
+
 export default function TerminalAI({ onClose } = {}) {
   const { 
     isTerminalPopupOpen, setIsTerminalPopupOpen,
@@ -363,12 +437,13 @@ export default function TerminalAI({ onClose } = {}) {
   const VALID_MODELS = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision', 'laguna', 'opencode-laguna', 'mimo', 'opencode-mimo'];
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [loadingPhase, setLoadingPhase] = useState('idle'); // 'idle' | 'request' | 'thinking'
-  const phaseTimerRef = useRef(null);
+  const [loadingStatus, setLoadingStatus] = useState(null); // { badge, text, color, icon }
+  const phaseTimersRef = useRef([]);
 
   useEffect(() => {
     return () => {
-      if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
+      phaseTimersRef.current.forEach(t => clearTimeout(t));
+      phaseTimersRef.current = [];
     };
   }, []);
 
@@ -510,13 +585,20 @@ export default function TerminalAI({ onClose } = {}) {
     }
 
     setMessages(prev => [...prev, { role: 'user', content: userQuery, time: getCurrentTime() }]);
-    setLoadingPhase('request');
+    
+    // Dynamic Multi-Stage Backend Progress Pipeline
+    const pipeline = getDynamicLoadingPipeline(userQuery);
+    setLoadingStatus(pipeline[0]);
     setIsLoading(true);
 
-    if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-    phaseTimerRef.current = setTimeout(() => {
-      setLoadingPhase('thinking');
-    }, 1400);
+    phaseTimersRef.current.forEach(t => clearTimeout(t));
+    phaseTimersRef.current = [];
+    pipeline.slice(1).forEach(step => {
+      const timer = setTimeout(() => {
+        setLoadingStatus(step);
+      }, step.delay);
+      phaseTimersRef.current.push(timer);
+    });
 
     try {
       // FIX M4: forward attachments ({name,type,data}; images carry a data URL
@@ -642,8 +724,9 @@ export default function TerminalAI({ onClose } = {}) {
         : '⚠️ Gagal terhubung ke API Gateway. Pastikan koneksi atau server dev aktif.';
       setMessages(prev => [...prev, { role: 'ai', content: errMsg, time: getCurrentTime() }]);
     } finally {
-      if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
-      setLoadingPhase('idle');
+      phaseTimersRef.current.forEach(t => clearTimeout(t));
+      phaseTimersRef.current = [];
+      setLoadingStatus(null);
       setIsLoading(false);
     }
   };
@@ -994,29 +1077,59 @@ export default function TerminalAI({ onClose } = {}) {
           </div>
         ))}
         {isLoading && (
-          <div className="flex flex-col items-start w-full my-2">
+          <div className="flex flex-col items-start w-full my-2 animate-in fade-in duration-200">
              <div className="flex items-center gap-2.5 w-full">
-                {loadingPhase === 'request' ? (
-                  <>
-                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30 shrink-0">
-                      <Radio className="w-3 h-3 text-amber-400 animate-pulse" />
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
-                      <span className="px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-[10px] uppercase tracking-wider font-mono">Agentic Search</span>
-                      <span className="animate-pulse">Menghubungkan ke live internet & memvalidasi fakta...</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shrink-0">
-                      <Loader2 className="w-3 h-3 text-cyan-400 animate-spin" />
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
-                      <span className="px-1.5 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/30 text-[10px] uppercase tracking-wider font-mono">Thinking</span>
-                      <span className="animate-pulse">Model merespons (OK), sedang berpikir & menyusun respons...</span>
-                    </div>
-                  </>
-                )}
+                <div className={cn(
+                  "w-5 h-5 rounded-full flex items-center justify-center border shrink-0 transition-all duration-300",
+                  loadingStatus?.color === 'amber' && "bg-amber-500/20 border-amber-500/30 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]",
+                  loadingStatus?.color === 'violet' && "bg-purple-500/20 border-purple-500/30 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.2)]",
+                  loadingStatus?.color === 'emerald' && "bg-emerald-500/20 border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]",
+                  loadingStatus?.color === 'indigo' && "bg-indigo-500/20 border-indigo-500/30 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)]",
+                  loadingStatus?.color === 'sky' && "bg-sky-500/20 border-sky-500/30 text-sky-400 shadow-[0_0_10px_rgba(14,165,233,0.2)]",
+                  (!loadingStatus || loadingStatus?.color === 'cyan') && "bg-cyan-500/20 border-cyan-500/30 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)]"
+                )}>
+                  {loadingStatus?.icon === 'loader' ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : loadingStatus?.icon === 'globe' ? (
+                    <Globe className="w-3 h-3 animate-pulse" />
+                  ) : loadingStatus?.icon === 'database' ? (
+                    <Database className="w-3 h-3 animate-pulse" />
+                  ) : loadingStatus?.icon === 'radio' ? (
+                    <Radio className="w-3 h-3 animate-pulse" />
+                  ) : loadingStatus?.icon === 'code' ? (
+                    <Code className="w-3 h-3 animate-pulse" />
+                  ) : loadingStatus?.icon === 'sparkles' ? (
+                    <Sparkles className="w-3 h-3 animate-pulse" />
+                  ) : loadingStatus?.icon === 'clock' ? (
+                    <Clock className="w-3 h-3 animate-pulse" />
+                  ) : loadingStatus?.icon === 'cpu' ? (
+                    <Cpu className="w-3 h-3 animate-pulse" />
+                  ) : (
+                    <Search className="w-3 h-3 animate-pulse" />
+                  )}
+                </div>
+                <div className={cn(
+                  "flex items-center gap-2 text-xs font-semibold transition-colors duration-300",
+                  loadingStatus?.color === 'amber' && "text-amber-300",
+                  loadingStatus?.color === 'violet' && "text-purple-300",
+                  loadingStatus?.color === 'emerald' && "text-emerald-300",
+                  loadingStatus?.color === 'indigo' && "text-indigo-300",
+                  loadingStatus?.color === 'sky' && "text-sky-300",
+                  (!loadingStatus || loadingStatus?.color === 'cyan') && "text-cyan-300"
+                )}>
+                  <span className={cn(
+                    "px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-mono border transition-all duration-300",
+                    loadingStatus?.color === 'amber' && "bg-amber-500/15 border-amber-500/30",
+                    loadingStatus?.color === 'violet' && "bg-purple-500/15 border-purple-500/30",
+                    loadingStatus?.color === 'emerald' && "bg-emerald-500/15 border-emerald-500/30",
+                    loadingStatus?.color === 'indigo' && "bg-indigo-500/15 border-indigo-500/30",
+                    loadingStatus?.color === 'sky' && "bg-sky-500/15 border-sky-500/30",
+                    (!loadingStatus || loadingStatus?.color === 'cyan') && "bg-cyan-500/15 border-cyan-500/30"
+                  )}>
+                    {loadingStatus?.badge || 'Processing'}
+                  </span>
+                  <span className="animate-pulse">{loadingStatus?.text || 'Memproses permintaan di backend...'}</span>
+                </div>
              </div>
           </div>
         )}
