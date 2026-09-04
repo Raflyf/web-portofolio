@@ -304,6 +304,28 @@ export default function App() {
   const { setIsTerminalPopupOpen } = useTerminal();
   const { t } = useLanguage();
   const location = useLocation();
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Monitor scroll position: tombol Back to Top hanya tampil saat ada pergerakan/scroll (posisi > 250px)
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
+          setShowBackToTop(scrollPos > 250);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
     const lenis = new Lenis({
@@ -373,7 +395,7 @@ export default function App() {
       
         {/* Floating Action Buttons */}
         {location.pathname !== '/dashboard' && (
-          <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3 pointer-events-none">
             <button 
               onClick={() => {
                 if (window.__lenis) {
@@ -382,7 +404,11 @@ export default function App() {
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
               }}
-              className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-1"
+              className={`w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all duration-300 ${
+                showBackToTop 
+                  ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto cursor-pointer shadow-lg' 
+                  : 'opacity-0 scale-75 translate-y-4 pointer-events-none'
+              }`}
               aria-label={t('nav.backToTop')}
               title={t('nav.backToTop')}
             >
@@ -394,7 +420,7 @@ export default function App() {
                 telemetry.logEvent('terminal_open', 'terminal_modal', 'Buka Jendela Terminal AI Modal');
                 setIsTerminalPopupOpen(true);
               }}
-              className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow"
+              className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow pointer-events-auto cursor-pointer"
               aria-label={t('nav.openTerminal')}
               title={t('nav.openTerminal')}
             >

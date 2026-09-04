@@ -2011,6 +2011,21 @@ Menghilangkan gangguan visual permanen dari label navigasi samping (*scroll indi
 3. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 1.28s.
 
+### v10.667.2 — Scroll-Aware Visibility for Floating Back to Top Button
+
+Released 2026-09-04.
+
+Menghilangkan keberadaan redundan tombol *Back to Top* saat pengguna sudah berada di posisi paling atas halaman (`src/App.jsx`):
+
+1. **Auto-Hide pada Posisi Puncak Halaman (*Scroll Threshold Detection*):**
+   - Menambahkan pemantau posisi gulir window scroll (`window.scrollY > 250`).
+   - Saat halaman berada di paling atas (`scrollY <= 250px`), tombol *Back to Top* otomatis menghilang secara halus (`opacity-0 scale-75 translate-y-4 pointer-events-none`), sehingga tidak mengotori sudut layar saat tidak diperlukan.
+   - Saat pengguna mulai menggulir halaman ke bawah (`scrollY > 250px`), tombol muncul kembali secara elegan (`opacity-100 scale-100 translate-y-0 duration-300 pointer-events-auto`) dan siap digunakan untuk kembali ke puncak.
+
+2. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 998ms.
+
+
 
 
 
