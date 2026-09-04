@@ -187,8 +187,8 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   const isEnglish = sessionLanguage === 'en';
 
   const effortDirective = reasoningEffort === 'low'
-    ? (isEnglish ? '[MODE: CONCISE & NATURAL. Direct, engaging, human-like answer.]' : '[MODE: CEPAT & NATURAL. Jawab lugas, mengalir santai, dan langsung ke inti topik.]')
-    : (isEnglish ? '[MODE: HIGH-DENSITY & STRUCTURED. Provide sharp, technically rich explanation that is direct to the point without excessive essay padding.]' : '[MODE: ANALISIS PADAT & TERSTRUKTUR. Sajikan analisis tajam, berbobot teknis, terstruktur rapi, dan langsung ke inti arsitektur tanpa esai naratif yang bertele-tele.]');
+    ? (isEnglish ? '[MODE: ULTRA-CONCISE. Deliver only the core answer in 1-2 short sentences or bullet points.]' : '[MODE: ULTRA-RINGKAS. Berikan hanya inti jawaban dalam 1-2 kalimat pendek atau butir poin.]')
+    : (isEnglish ? '[MODE: UNIVERSAL CONCISE & HIGH-DENSITY. Deliver only the core essence in 2-3 short paragraphs or 3-5 bullet points. Strictly ban wall-of-text.]' : '[MODE: INTI PADAT UNIVERSAL. Berikan HANYA intinya saja dalam 2-3 paragraf ringkas atau 3-5 butir poin padat. Dilarang keras menulis dinding teks atau esai panjang.]');
 
   const languageDirective = isEnglish
     ? '[LANGUAGE: Fluent, natural, human-like English. Engaging tone without robotic cliches.]'
@@ -250,13 +250,20 @@ ${effortDirective}
      - **Nama Poin**: Penjelasan ringkas dan padat.
      DILARANG mengganti tanda butir poin (-) dengan koma atau tanda baca aneh lainnya.
    - Untuk alur kerja atau tahapan langkah demi langkah, gunakan numbered list resmi (1., 2., 3.).
-5. Kepadatan Jawaban & Efisiensi Analisis (High-Density, Zero-Padding & Sub-10s Delivery):
-   - Ketika pengguna meminta penjelasan, analisis, atau bedah teknis proyek (misal OpenPlagiarismChecker, Spam-Email, dll), sajikan analisis yang padat, tajam, dan langsung ke inti arsitektur tanpa bertele-tele.
-   - HINDARI esai naratif panjang ribuan kata yang membuang waktu dan berisiko timeout. Susun jawaban secara terstruktur, informatif, dan ringkas:
-     * **Ikhtisar Arsitektur**: 1-2 kalimat esensial mengenai masalah yang diselesaikan dan pendekatan sistem.
-     * **Algoritma & Komponen Inti**: 3-5 butir poin teknis spesifik (dataset, model/metode, metrik evaluasi, arsitektur).
-     * **Evaluasi & Nilai Rekayasa**: 2-3 butir poin keunggulan dan batasan teknis yang objektif.
-   - DILARANG menulis basa-basi pembuka atau penutup yang berulang. Langsung mulai dengan analisis substantif.
+[ATURAN UNIVERSAL: KEPADATAN MAKSIMAL & INTI JAWABAN (CORE-ONLY & ANTI-WALL-OF-TEXT)]:
+Aturan ini BERLAKU MUTLAK untuk SEMUA TOPIK & SELURUH PERTANYAAN tanpa kecuali (proyek, coding, teknologi, sains, berita, karier, maupun obrolan umum):
+1. Pengunjung Malas Membaca Teks Panjang (Anti Wall-of-Text):
+   - DILARANG KERAS menghasilkan jawaban esai panjang ribuan kata atau dinding teks padat yang melelahkan pembaca.
+   - Sampaikan HANYA INTI UTAMA (The Core Signal). Buat jawaban ringkas, padat, berbobot, dan langsung menjawab esensi pertanyaan.
+2. Batas Panjang Universal:
+   - Panjang jawaban ideal adalah 1 hingga 3 paragraf pendek, ATAU 1 kalimat pengantar inti + 3 hingga 5 butir poin ringkas.
+   - Total panjang teks cukup 100 hingga 200 kata. Harus cepat dibaca dan scannable dalam waktu kurang dari 30 detik di layar HP maupun desktop.
+3. Struktur Universal yang Terbaca Cepat (Scannable Structure):
+   - Awali dengan 1 kalimat langsung ke inti jawaban (tanpa basa-basi pengantar seperti "Tentu", "Senang bisa membahas...", "Berikut adalah...").
+   - Jika membutuhkan rincian, gunakan butir poin Markdown (- **Poin Inti**: Penjelasan ringkas 1-2 baris). Maksimal 3-5 butir poin saja.
+   - DILARANG menyusun penutup bertele-tele (seperti saran filosofis, kesimpulan panjang, atau tawaran berulang).
+4. Pengecualian Khusus:
+   - Penjelasan panjang HANYA diizinkan jika pengguna secara eksplisit meminta: "jelaskan secara sangat mendalam", "tulis kode lengkap dari awal sampai akhir", atau "buatkan esai". Jika tidak diminta secara eksplisit, WAJIB SELALU RINGKAS & PADAT.
 
 [PROTOKOL MUTLAK ANTI-HALUSINASI, ANTI-OVERCLAIM & GROUNDING FAKTUAL UNIVERSAL]:
 Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Dunia, Perkembangan Teknologi Global, Rilis Model AI, Sains, Sejarah, Pemrograman, Rekayasa Perangkat Lunak, Proyek Portofolio, maupun Obrolan Umum):
@@ -2782,14 +2789,14 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       }
     }
 
-    // Maximum token limits: Balanced for blazing fast first-token latency and complete answers
+    // Maximum token limits: Balanced for blazing fast first-token latency and concise high-density answers (Anti-Timeout)
     const maxTokensConfig = (effectiveEffort === 'thinking')
-      ? 8192
+      ? 1536
       : (effectiveEffort === 'high'
-          ? 4096
+          ? 1024
           : (effectiveEffort === 'medium'
-              ? 2048
-              : (effectiveEffort === 'low' ? 1024 : 2048)));
+              ? 512
+              : (effectiveEffort === 'low' ? 300 : 512)));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.35 : 0.25);
 
     // ========================================================================
@@ -3312,8 +3319,8 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
         const firstStep = pipeline[0];
         if (firstStep) {
           const firstR = await executeStep(firstStep, {
-            connectTimeoutMs: Math.min(firstStep.timeout || 15000, 6000),
-            activeTimeoutMs: Math.min(firstStep.timeout || 15000, 9000)
+            connectTimeoutMs: Math.min(firstStep.timeout || 15000, 2500),
+            activeTimeoutMs: Math.min(firstStep.timeout || 15000, 4500)
           }).catch(() => null);
           if (firstR) return firstR;
         }
