@@ -1634,4 +1634,27 @@ Mengeksekusi peningkatan kecerdasan komprehensif pada AI Assistant gateway (`api
    - Seluruh unit test arsitektural lulus 100% (Surgical Context, Sub-Query Decomposition, BM25-Lite Re-Ranking, dan Context Ingestion).
    - Build produksi `npm run build` sukses 100% tanpa error.
 
+### v10.664.0 — Dynamic Agent Identity Presentation & Elimination of Hardcoded Static Override
+
+Released 2026-09-04.
+
+Menyelesaikan investigasi mendalam dan perbaikan presisi pada respon identitas asisten AI (`api/chat.js`):
+
+1. **Eliminasi Hardcoded Static Override pada `isIdentityQuery`:**
+   - Mengidentifikasi akar masalah respon kaku/template: penimpaan variabel `cleaned` secara mutlak di lapisan post-processing yang membuang hasil inferensi LLM dan menggantikannya dengan string template statis.
+   - Mengubah mekanisme menjadi *Preserved Dynamic Response*: respon dinamis model LLM dipertahankan sepenuhnya. String template resmi kini hanya berfungsi sebagai *safety net / emergency fallback* jika model mengembalikan string kosong atau gagal inferensi (`!cleaned || cleaned.trim().length < 20`).
+
+2. **Injeksi Identitas Model Dinamis (`activeModelName`):**
+   - Menyuntikkan nama mesin model aktif (`activeModelName` / `targetModel`) secara presisi ke dalam sistem prompt agar model dapat memperkenalkan dirinya secara luwes, akurat, dan percaya diri sesuai model yang sedang berjalan (misal Nemotron-3-Nano-30B, Qwen, dsb).
+   - Mengarahkan model untuk menjelaskan perannya secara dinamis, manusiawi, dan komunikatif tanpa terikat template kaku.
+
+3. **Penyempurnaan Sanitasi & Deteksi Kueri Identitas:**
+   - Memperluas deteksi `isIdentityQuery` dengan normalisasi tanda baca (`?`, `!`, `.`) dan variasi kueri alami pengunjung.
+   - Menghapus penyensoran agresif terhadap nama arsitektur model resmi saat pengunjung menanyakan model yang aktif, menjaga konsistensi antara teks jawaban dengan label model router di antarmuka pengguna (UI).
+
+4. **Verifikasi & Build:**
+   - Uji validasi sintaksis `node -c api/chat.js` sukses (exit code 0).
+   - Uji build produksi Vite `npm run build` sukses tanpa error.
+
+
 
