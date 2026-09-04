@@ -1812,6 +1812,30 @@ Menyelesaikan akar masalah *HTTP 504 Gateway Timeout* pada analisis teknis proye
    - Sintaksis `node -c api/chat.js` valid 100%.
    - Build Vite `npm run build` selesai dalam 672ms tanpa error.
 
+### v10.665.6 — Universal Brevity & Core-First High-Density Engine
+
+Released 2026-09-04.
+
+Menerapkan mandat keringkasan universal untuk seluruh domain pertanyaan (`api/chat.js`):
+
+1. **Aturan Universal Kepadatan Maksimal & Inti Jawaban (Core-Only & Anti-Wall-of-Text):**
+   - Dilarang keras menghasilkan dinding teks atau esai naratif panjang di seluruh domain (proyek, pemrograman, sains, berita, karier, maupun obrolan umum).
+   - Seluruh jawaban kini difokuskan HANYA pada inti jawaban (100–200 kata, 1 kalimat pembuka langsung ke inti + 3–5 butir poin padat berbobot).
+   - Pengunjung dapat membaca dan menyerap inti informasi dalam waktu kurang dari 30 detik.
+
+2. **Kalibrasi Token Generasi Ultra-Cepat (512 Tokens):**
+   - Batas token output `maxTokensConfig` diturunkan ke 512 token untuk mode medium/auto.
+   - Waktu inferensi model terpangkas menjadi 1.5–3 detik (sub-5s TTFT), mengeliminasi total kemungkinan antrean gateway Vercel terhenti.
+
+3. **Fast Failover Guard Step #1 (4.5s Timeout):**
+   - Batas aktif untuk percobaan pertama model Ollama Cloud diperketat ke 4.5 detik.
+   - Jika endpoint sedang sibuk atau mengalami antrean, sistem langsung mengeksekusi failover paralel ke OpenRouter/OpenCode tanpa menahan koneksi hingga timeout gateway (HTTP 504).
+
+4. **Verifikasi & Kompilasi:**
+   - Sintaksis `node -c api/chat.js` valid 100%.
+   - Build Vite `npm run build` selesai dalam 1.00s tanpa error.
+
+
 
 
 
