@@ -1933,6 +1933,25 @@ Mengembalikan pewarnaan dan material visual modal Riwayat Percakapan (`src/compo
 3. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 604ms.
 
+### v10.666.2 — Deep Optical Blur Frosted Glass for Conversation History Modal
+
+Released 2026-09-04.
+
+Menyelesaikan tembusnya teks terminal di belakang modal tanpa mengubah warna tema:
+
+1. **Eliminasi Tabrakan Nested Backdrop-Filter:**
+   - Menghapus `backdrop-blur-xl` pada elemen backdrop luar (`fixed inset-0`) yang sebelumnya mematikan kemampuan rasterisasi `backdrop-filter` pada kartu modal di peramban berbasis Chromium.
+   - Memberikan jalur langsung bagi kartu modal untuk merasterisasi konten terminal di bawahnya dengan blur penuh.
+
+2. **Penerapan Frosted Glass Netral 40px Blur:**
+   - Menyematkan `backdropFilter: blur(40px) saturate(180%)` dengan latar belakang semi-transparan netral tema terminal (`rgba(16, 18, 27, 0.82)` ke `rgba(10, 12, 18, 0.78)`).
+   - Menghasilkan efek kaca buram (*frosted glass*) tebal yang mendifusikan teks terminal di baliknya menjadi kabut halus tanpa mengubah palet warna tema, sehingga teks sesi di dalam modal terbaca jelas dan tidak bertabrakan visual.
+   - Menyematkan `backdropFilter: blur(16px)` pada kartu-kartu sesi di dalam modal untuk isolasi pembacaan bertingkat.
+
+3. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 569ms.
+
+
 
 
 
