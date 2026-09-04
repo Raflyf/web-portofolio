@@ -124,7 +124,34 @@ Wajib jadikan rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENARAN. Dil
 - Email: mailto:raflyfirmansyah02@gmail.com
 - WhatsApp: https://wa.me/628991333323`;
 
+  const portfolioPageAnatomySection = `[KONTEN & ANATOMI HALAMAN WEBSITE PORTOFOLIO INI (YANG SEDANG DIKUNJUNGI)]:
+Website ini adalah landing page portofolio interaktif resmi Rafly Firmansyah. Jika pengunjung bertanya tentang isi website ini ("web ini isinya apa saja", "ada apa saja di web ini", "isi web porto ini", "bagian-bagian web ini", dsb), jelaskan secara terstruktur, ramah, dan manusiawi mengenai bagian-bagian halaman yang tersaji di layar pengunjung:
+1. **Hero Section (Beranda Utama)**:
+   - Profil pembuka Rafly Firmansyah sebagai Software Engineer & AI Researcher. Menampilkan status ketersediaan kerja, ringkasan kompetensi, serta tombol aksi cepat untuk mengunduh CV, melihat proyek, atau langsung menghubungi Rafly.
+2. **About Section (Tentang Rafly)**:
+   - Latar belakang pendidikan formal di Universitas Bina Sarana Informatika (S1 Teknologi Informasi, lulus dengan IPK 3.93).
+   - Fokus keahlian utama pada Machine Learning (penanganan concept drift & covariate shift), arsitektur backend, Computer Vision, dan IoT.
+3. **Projects Showcase (Galeri Proyek Unggulan)**:
+   - Menampilkan 4 karya rekayasa nyata dengan filter kategori, kartu interaktif, live GitHub stars, dan tautan demo/repositori:
+     * **Spam-Email Detection System**: Riset skripsi adaptasi domain email spam menggunakan Complement Naive Bayes (CNB) dan XGBoost.
+     * **OpenPlagiarismChecker**: Mesin pendeteksi plagiarisme akademik lokal/offline berbasis SBERT semantic similarity dan N-Gram Shingling.
+     * **laser_pointer_PPT**: Pengendali presentasi PowerPoint nirsentuh berbasis sensor gyroscope smartphone via WebSocket.
+     * **FotoKitaBlur**: Edge AI Computer Vision di peramban untuk proteksi privasi wajah menggunakan gestur tangan (MediaPipe).
+4. **Skills & Tech Stack (Keahlian & Teknologi)**:
+   - Rangkuman teknologi yang dikuasai: Python, JavaScript, PHP, C++, TensorFlow, PyTorch, Scikit-learn, React, Tailwind CSS, PostgreSQL, Docker, MikroTik, Linux.
+5. **Experience & Leadership Timeline (Pengalaman & Organisasi)**:
+   - Rekam jejak pengalaman kerja/magang, asisten laboratorium komputer, dan kepengurusan organisasi mahasiswa di kampus UBSI.
+6. **Certifications (Sertifikasi Kompetensi Resmi)**:
+   - Tiga lisensi kompetensi terverifikasi: BNSP Analis Program (2025), MikroTik Certified Network Associate / MTCNA (2025), dan Cisco PCAP Certified Associate in Python Programming (2024).
+7. **Contact Section (Kontak & Formulir Pesan)**:
+   - Formulir pesan langsung ke email Rafly, serta tautan ke GitHub resmi (@Raflyf), email (raflyfirmansyah02@gmail.com), dan WhatsApp.
+8. **Interactive Terminal AI (Asisten AI di Layar)**:
+   - Terminal interaktif (tempat Anda berinteraksi saat ini) yang ditenagai router cerdas dan memori terverifikasi untuk melayani diskusi pengunjung seputar rekayasa teknologi maupun wawasan umum.`;
+
   const matchedSections = [];
+  if (/(?:isi\s*(?:web|porto|situs|halaman)|ada\s*apa\s*(?:aja|saja)\s*di\s*(?:web|sini|porto|situs)|halaman\s*ini|bagian\s*(?:web|halaman|porto)|menu\s*(?:web|halaman|porto)|fitur\s*(?:web|halaman|porto)|anatomi|tentang\s*web\s*ini|web\s*ini\s*isi|web\s*porto\s*ini|web\s*portofolio\s*ini)/i.test(q)) {
+    matchedSections.push(portfolioPageAnatomySection);
+  }
   if (/(?:spam|email|cnb|xgboost|skripsi|covariate|concept[-_ ]?drift|instance[-_ ]?weighting|emails\.csv|f1|akurasi.*model)/i.test(q)) {
     matchedSections.push(spamEmailSection);
   }
@@ -147,13 +174,13 @@ Wajib jadikan rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENARAN. Dil
     matchedSections.push(contactSection);
   }
 
-  // Jika pertanyaan menyasar proyek/sertifikasi tertentu, suntikkan segmen terkait saja
+  // Jika pertanyaan menyasar proyek/sertifikasi/halaman tertentu, suntikkan segmen terkait saja
   if (matchedSections.length > 0) {
     return `${batasanTeknologi}\n\n${groundTruthHeader}\n\n${matchedSections.join('\n\n')}\n\n${contactSection}`;
   }
 
-  // Kueri umum tentang portofolio/profil Rafly: berikan seluruh fakta proyek lengkap
-  return `${batasanTeknologi}\n\n${groundTruthHeader}\n\n${spamEmailSection}\n\n${plagiarismSection}\n\n${laserPointerSection}\n\n${fotoKitaSection}\n\n${webPortofolioSection}\n\n${certSection}\n\n${contactSection}`;
+  // Kueri umum tentang portofolio/profil Rafly: berikan seluruh fakta proyek lengkap + anatomi halaman
+  return `${batasanTeknologi}\n\n${groundTruthHeader}\n\n${portfolioPageAnatomySection}\n\n${spamEmailSection}\n\n${plagiarismSection}\n\n${laserPointerSection}\n\n${fotoKitaSection}\n\n${webPortofolioSection}\n\n${certSection}\n\n${contactSection}`;
 }
 
 function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', activeModelName = 'Nemotron-3-Nano-30B', includeDetailedPortfolio = false, userQuery = '') {
@@ -272,7 +299,12 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
 2. Jika topik menuntut fakta cepat-berubah (rilis produk, versi perangkat lunak, model AI, berita, harga, peringkat) dan tidak tersedia blok bukti live hasil pencarian web, nyatakan keterbatasan verifikasi secara jujur dan hangat: sampaikan hanya pengetahuan yang Anda yakini terverifikasi dengan penanda jelas bahwa itu bukan status live terkini, lalu arahkan ke sumber resmi untuk kepastian mutakhir. DILARANG mengarang status "terbaru" dari ingatan lama, menebak tanggal rilis, atau menyangkal eksistensi rilis hanya karena di luar pengetahuan model.
 3. [ENUMERASI KETAT LANDSKAP TERKINI]: Saat pengguna menanyakan kondisi terbaik/terbaru/terkini, state-of-the-art, peringkat, atau perbandingan kondisi masa kini (contoh: "model AI terbaik saat ini", "versi terbaru X", "ranking produk Y"), daftar entitas "terkini" WAJIB disusun HANYA dari entitas yang eksplisit tercantum pada blok bukti live hasil pencarian yang disuntikkan. DILARANG KERAS menambahkan entitas apa pun dari ingatan (versi lama maupun model lain) sebagai pelengkap, pembanding, pelengkap daftar, atau konteks "terkini". Entitas di luar bukti HANYA boleh disebut bila pengguna secara eksplisit menanyakan sejarah/riwayat versi, dan wajib diberi label waktu historis yang jelas (misal "generasi sebelumnya", "rilis tahun ..."). Jika blok bukti tidak menyebut peringkat juara, JANGAN mengarang peringkat dari ingatan; cukup laporkan model yang terbukti muncul dalam pemberitaan.
 4. [LARANGAN BASA-BASI & ZERO BOILERPLATE]: DILARANG KERAS menuliskan kalimat template, pengantar, atau penutup meta seperti "Semua informasi ini didasarkan pada laporan...", "Informasi ini diambil dari pencarian...", "Berdasarkan hasil penelusuran web real-time...", atau "Semoga membantu". Sampaikan jawaban substantif secara langsung, alami, dan to the point tanpa basa-basi meta.
-5. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
+5. [RESOLUSI DEIKTIS & ACUAN RUJUKAN TEMPAT (GROUND TRUTH MUTLAK)]:
+   - Jika pengguna menggunakan kata penunjuk tempat atau rujukan situs seperti "web ini", "website ini", "situs ini", "di sini", "porto ini", atau "halaman ini", rujukannya SECARA MUTLAK adalah website portofolio resmi Rafly Firmansyah yang sedang dibuka dan dikunjungi oleh pengguna saat ini.
+   - DILARANG KERAS mengaitkan atau membiaskan frasa "web ini" dengan topik dari riwayat percakapan sebelumnya (misalnya jika sebelumnya membahas lowongan kerja, perusahaan luar, berita teknologi, atau website pihak ketiga). "Web ini" SELALU berarti website portofolio Rafly Firmansyah!
+   - Jika pengguna bertanya "web ini isinya apa saja", "ada apa saja di web ini", "jelaskan isi web ini", "web porto ini isinya apa", dsb., jelaskan bagian-bagian yang tersaji di layar pengunjung secara jelas, ramah, dan terstruktur (Hero/Pengenalan, Tentang Rafly, Showcase Proyek Unggulan, Skills/Keahlian, Pengalaman & Organisasi, Sertifikasi Resmi, Kontak, dan Terminal AI).
+   - DILARANG KERAS memberikan tutorial cara membuat portofolio dan DILARANG menjelaskan website lowongan kerja saat ditanya isi web ini!
+6. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -2168,11 +2200,11 @@ export default async function handler(req, res) {
     const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda|kamu itu siapa|kamu itu model apa|model apa yang kamu gunakan|apa modelmu|kamu menggunakan model apa)$/i.test(qNormalized);
     const isTimeQuery = /(?:jam\s*berapa|waktu\s*sekarang|tanggal\s*berapa|hari\s*apa\s*sekarang|sekarang\s*jam|sekarang\s*tanggal|pukul\s*berapa|zona\s*waktu|wib\b|wita\b|wit\b)/i.test(qClean);
     const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
-    const isInternalPortfolioQuery = /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
+    const isSiteAnatomyQuery = /(?:(?:isi|konten|bagian|menu|fitur|halaman|seksi|ada\s+apa\s*(?:aja|saja))\s*(?:di\s*)?(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?|(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?\s*(?:isi\s*nya\s*apa|ada\s*apa\s*(?:aja|saja)|tentang\s*apa|memuat\s*apa)|sedang\s*dibuka|yang\s*sedang\s*dibuka|web\s*porto\s*ini|isi\s*web\s*porto)/i.test(qClean);
+    const isInternalPortfolioQuery = isSiteAnatomyQuery || /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
     
-    // UNIVERSAL RETRIEVAL-FIRST: Pencarian hanya di-skip untuk sapaan murni, pertanyaan waktu, atau pertanyaan identitas diri singkat.
-    // Seluruh pertanyaan lain (baik proyek lokal, teknologi luar, konsep ML, coding, atau wawasan umum) WAJIB MENJALANKAN RETRIEVAL FAKTUAL!
-    const isSkipSearch = isIdentityQuery || isTimeQuery || isCasualGreeting;
+    // UNIVERSAL RETRIEVAL-FIRST: Pencarian hanya di-skip untuk sapaan murni, pertanyaan waktu, pertanyaan identitas diri singkat, atau pertanyaan tentang isi website portofolio ini sendiri.
+    const isSkipSearch = isIdentityQuery || isTimeQuery || isCasualGreeting || isSiteAnatomyQuery;
 
     // DEAD-1/KONFLIK-3: Removed fetchLiveRepoContext (was always ''). Direct await is cleaner.
     const searchResult = isSkipSearch
@@ -2207,7 +2239,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
     if (isInternalPortfolioQuery) {
       agentSteps.push({
         tool: 'portfolio_rag',
-        label: 'Portfolio Ground Truth RAG',
+        label: isSiteAnatomyQuery ? 'Portfolio Page Anatomy' : 'Portfolio Ground Truth RAG',
         topic: query.substring(0, 50),
         status: 'verified_ground_truth'
       });
@@ -2391,6 +2423,44 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
           cleaned = sessionLanguage === 'en'
             ? `I am the official **AI Assistant & Developer Agent** on Rafly Firmansyah's portfolio website. I am ready to assist you with any questions—from programming, science, and technology, to exploring projects on this site. How can I help you?`
             : `Saya adalah **AI Assistant & Developer Agent** resmi di website portofolio Rafly Firmansyah. Saya siap membantu menjawab pertanyaan apa saja—mulai dari pemrograman, teknologi, wawasan umum, hingga seputar portofolio ini. Ada yang bisa saya bantu?`;
+        }
+      }
+
+      // 3.65f. Deterministic Site Anatomy Guard (Anti-Tutorial & Anti-Loker Drift)
+      if (isSiteAnatomyQuery) {
+        // Jika model terdistraksi percakapan lama dan menghasilkan tutorial membuat portofolio pelamar kerja
+        if (/(?:Siapkan Konten Inti|Upload file PDF|Langkah-langkah Mengunggah|portal lowongan|melamar ke perusahaan|siapkan cover letter|membuat portofolio lamaran)/i.test(cleaned)) {
+          cleaned = sessionLanguage === 'en'
+            ? `This official portfolio website of **Rafly Firmansyah** contains several main sections you can explore directly on your screen:
+
+1. **Hero Section (Home)**: Introduction to Rafly Firmansyah as a Software Engineer & AI Researcher, current availability status, and quick access to download CV or view projects.
+2. **About Me**: Academic background at Universitas Bina Sarana Informatika (B.S. in Information Technology, 3.93 GPA) focusing on Machine Learning, Backend Architecture, and IoT.
+3. **Projects Showcase**: Interactive gallery of featured engineering works:
+   - *Spam-Email Detection*: Thesis research on domain adaptation for concept drift using Complement Naive Bayes (CNB) & XGBoost.
+   - *OpenPlagiarismChecker*: Offline academic text plagiarism detector (SBERT & N-Gram Shingling).
+   - *laser_pointer_PPT*: Touchless presentation controller using smartphone gyroscope via WebSocket.
+   - *FotoKitaBlur*: Browser Edge AI Computer Vision for face privacy streaming using hand gestures.
+4. **Skills & Tech Stack**: Core technologies (Python, JavaScript, React, Tailwind CSS, PostgreSQL, Docker, MikroTik, PyTorch, Linux).
+5. **Experience & Leadership**: Career timeline, computer laboratory assistantships, and campus student organization roles.
+6. **Official Certifications**: Verified credentials from BNSP Program Analyst (2025), MikroTik MTCNA (2025), and Cisco PCAP (2024).
+7. **Contact & Terminal AI**: Direct message form, social/WhatsApp links, and this interactive Terminal AI.
+
+Is there a specific section or project you would like to explore further?`
+            : `Website portofolio resmi **Rafly Firmansyah** ini memuat beberapa bagian utama yang dapat Anda jelajahi langsung di layar:
+
+1. **Hero Section (Beranda Utama)**: Profil pembuka Rafly Firmansyah sebagai Software Engineer & AI Researcher, status ketersediaan kerja, dan akses unduh CV.
+2. **About Me (Tentang Rafly)**: Latar belakang pendidikan S1 Teknologi Informasi di Universitas Bina Sarana Informatika (IPK 3.93) serta fokus riset pada Machine Learning, Arsitektur Backend, dan IoT.
+3. **Projects Showcase (Galeri Proyek Unggulan)**: Galeri proyek nyata interaktif, meliputi:
+   - *Spam-Email Detection*: Riset skripsi adaptasi domain email spam (Complement Naive Bayes & XGBoost).
+   - *OpenPlagiarismChecker*: Pendeteksi plagiarisme akademik lokal/offline (SBERT & N-Gram).
+   - *laser_pointer_PPT*: Pengendali presentasi IoT nirsentuh via sensor giroskop smartphone.
+   - *FotoKitaBlur*: Edge AI Vision di peramban untuk proteksi privasi wajah dengan gestur tangan.
+4. **Skills & Tech Stack**: Penguasaan teknologi (Python, JavaScript, React, PostgreSQL, Docker, MikroTik, PyTorch, Linux, dll).
+5. **Experience & Leadership**: Rekam jejak magang, asisten laboratorium komputer, dan kepengurusan organisasi mahasiswa.
+6. **Sertifikasi Resmi**: Sertifikat kompetensi terverifikasi BNSP Analis Program (2025), MikroTik MTCNA (2025), dan Cisco PCAP (2024).
+7. **Kontak & Terminal AI**: Formulir pesan langsung, tautan sosial/WhatsApp, serta Terminal AI interaktif ini.
+
+Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
         }
       }
 

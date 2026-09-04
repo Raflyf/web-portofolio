@@ -1768,6 +1768,29 @@ Memperluas ruang lingkup representasi asisten AI di `api/chat.js` agar mencermin
    - Sintaksis `node -c api/chat.js` valid 100%.
    - Build Vite `npm run build` sukses 100% tanpa error.
 
+### v10.665.4 — Absolute Deictic Resolution & Portfolio Page Anatomy RAG
+
+Released 2026-09-04.
+
+Menyelesaikan tuntas kegagalan inferensi (*context drift*) saat pengguna menanyakan isi website ini (`api/chat.js`):
+
+1. **Resolusi Deiktis Mutlak (*Absolute Deictic Resolution*):**
+   - Menetapkan aturan mutlak pada prompt sistem bahwa kata penunjuk *"web ini"*, *"situs ini"*, *"website ini"*, *"di sini"*, dan *"porto ini"* selalu merujuk pada website portofolio resmi Rafly Firmansyah.
+   - Dilarang keras membiaskan frasa tersebut dengan topik dari percakapan sebelumnya (misal lowongan kerja, perusahaan luar, dsb).
+
+2. **Injeksi Basis Pengetahuan Anatomi Halaman Portofolio (`portfolioPageAnatomySection`):**
+   - Menyediakan data terstruktur mengenai 8 seksi utama halaman yang sedang dikunjungi: Hero, About Me, Projects Showcase, Skills & Tech Stack, Experience & Leadership, Certifications, Contact Form, dan Interactive Terminal AI.
+   - Menyuntikkan segmen ini secara langsung saat pengunjung bertanya *"web ini isinya apa saja"*, *"isi web porto ini"*, dsb.
+
+3. **Pencegahan Pencarian Web Luar & Guardrail Anti-Tutorial:**
+   - Kueri anatomi halaman (`isSiteAnatomyQuery`) secara otomatis mematikan Google Search eksternal agar tidak menarik artikel pihak ketiga.
+   - Menambahkan filter pengaman pasca-inferensi (`Deterministic Site Anatomy Guard`) untuk memangkas dan menormalkan jawaban jika model keliru mengira pengguna meminta tutorial pembuatan portofolio pelamar kerja.
+
+4. **Verifikasi & Kompilasi:**
+   - Sintaksis `node -c api/chat.js` valid 100%.
+   - Build Vite `npm run build` sukses 100% tanpa error.
+
+
 
 
 
