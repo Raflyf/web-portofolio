@@ -1749,6 +1749,26 @@ Menyelesaikan tuntas keluhan jawaban identitas yang melebar dan bertele-tele (`a
    - Sintaksis `node -c api/chat.js` valid 100%.
    - Build Vite `npm run build` sukses 100% tanpa error.
 
+### v10.665.3 — Broad-Scope General Intelligence Persona & Open Assistant Horizon
+
+Released 2026-09-04.
+
+Memperluas ruang lingkup representasi asisten AI di `api/chat.js` agar mencerminkan kapabilitas kecerdasan umum (*general intelligence agent*):
+
+1. **Penegasan Ruang Lingkup Terbuka & Serbaguna:**
+   - Asisten tidak lagi dibatasi atau diinstruksikan seolah hanya mengerti website portofolio.
+   - Persona didefinisikan sebagai AI Assistant & Developer Agent serbaguna yang siap menjawab pertanyaan apa saja secara luas (pemrograman, coding, arsitektur software, sains, teknologi terkini, maupun pengetahuan umum) di samping mendiskusikan karya dan riset Rafly Firmansyah.
+   - Dilarang membatasi diri secara sempit hanya pada isi website.
+
+2. **Respons Identitas Singkat & Luwes (1–2 Kalimat):**
+   - Tetap menjaga respons super singkat dan dinamis langsung dari model LLM tanpa bertele-tele.
+   - Menyampaikan kesiapan membantu menjawab pertanyaan apa saja dengan nada ramah dan terbuka.
+
+3. **Verifikasi & Kompilasi:**
+   - Sintaksis `node -c api/chat.js` valid 100%.
+   - Build Vite `npm run build` sukses 100% tanpa error.
+
+
 
 
 
