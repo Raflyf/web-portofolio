@@ -865,11 +865,9 @@ async function searchWebContext(query, history = []) {
 
   try {
     const controller = new AbortController();
-    // Budget pencarian adaptif: 6s terlalu pendek utk 8-14 feed paralel -> sering ke-abort
-    // sebelum fetch resolve, membuat konteks kosong secara acak (jawaban jadi kadang akurat
-    // kadang lawas karena model mengarang dari ingatan). Dinaikkan ke 11s; masih aman dalam
-    // budget 60s Vercel karena pencarian biasanya ~2-3s.
-    const timeout = setTimeout(() => controller.abort(), 11000);
+    // Budget pencarian adaptif berpresisi tinggi: 3800ms cukup untuk feed paralel cepat
+    // dan menyisakan minimal 10-15 detik untuk eksekusi token LLM tanpa terkena Vercel Gateway Timeout (504).
+    const timeout = setTimeout(() => controller.abort(), 3800);
 
     const structuredSnippets = [];
     const rawSnippets = [];
@@ -1619,7 +1617,7 @@ async function fetchServerMemories(limit = 15) {
     const res = await fetchWithHardTimeout(
       `${supabaseUrl}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=${limit}`,
       { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, Accept: 'application/json' } },
-      3000
+      1500
     );
     if (!res.ok) return [];
     const rows = await res.json();
@@ -2203,8 +2201,12 @@ export default async function handler(req, res) {
     const isSiteAnatomyQuery = /(?:(?:isi|konten|bagian|menu|fitur|halaman|seksi|ada\s+apa\s*(?:aja|saja))\s*(?:di\s*)?(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?|(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?\s*(?:isi\s*nya\s*apa|ada\s*apa\s*(?:aja|saja)|tentang\s*apa|memuat\s*apa)|sedang\s*dibuka|yang\s*sedang\s*dibuka|web\s*porto\s*ini|isi\s*web\s*porto)/i.test(qClean);
     const isInternalPortfolioQuery = isSiteAnatomyQuery || /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
     
-    // UNIVERSAL RETRIEVAL-FIRST: Pencarian hanya di-skip untuk sapaan murni, pertanyaan waktu, pertanyaan identitas diri singkat, atau pertanyaan tentang isi website portofolio ini sendiri.
-    const isSkipSearch = isIdentityQuery || isTimeQuery || isCasualGreeting || isSiteAnatomyQuery;
+    // Deteksi apakah kueri membandingkan proyek portofolio dengan platform pihak ketiga eksternal
+    const isExternalComparison = /(?:dibanding|perbandingan|komparasi|versus|vs\b|dibandingkan|turnitin|copyleaks|unicheck)/i.test(qClean);
+    const isPurePortfolioQuery = isInternalPortfolioQuery && !isExternalComparison;
+
+    // UNIVERSAL RETRIEVAL-FIRST: Pencarian luar hanya di-skip untuk sapaan murni, pertanyaan waktu, pertanyaan identitas diri singkat, atau kueri proyek/isi portofolio internal (sudah memiliki Ground Truth bedah lokal super-presisi).
+    const isSkipSearch = isIdentityQuery || isTimeQuery || isCasualGreeting || isPurePortfolioQuery;
 
     // DEAD-1/KONFLIK-3: Removed fetchLiveRepoContext (was always ''). Direct await is cleaner.
     const searchResult = isSkipSearch
@@ -3094,25 +3096,26 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       // OpenCode free-tier, MiniMax direct)
       const isReasoningQuery = queryIntent.category === 'deep_reasoning' || queryIntent.effort === 'thinking' || (effectiveEffort === 'high' && queryIntent.category === 'project_architecture') || (model && (model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni')));
       if (isReasoningQuery && (!model || model === 'auto' || model.toLowerCase().includes('reason') || model.toLowerCase().includes('omni'))) {
-        const reasoningStepTimeout = 30000;
+        const fastReasoningTimeout = 8000;
         return [
-          // 1st: Ollama Cloud Nano (Prioritas Utama)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: reasoningStepTimeout },
-          // 2nd: Ollama Gemma 4 31B
-          { provider: 'ollama', model: 'gemma4:31b', timeout: reasoningStepTimeout },
-          // 3rd: Nemotron Nano Omni (reasoning/multimodal) & Lightning
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: reasoningStepTimeout },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: reasoningStepTimeout },
-          // 4th: Flagship Nemotron Super & Ultra Terbaru
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: reasoningStepTimeout },
-          { provider: 'ollama', model: 'nemotron-3-super', timeout: reasoningStepTimeout },
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: reasoningStepTimeout },
-          // 5th: Cadangan aktif lain (OpenCode free + OpenRouter)
-          { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: reasoningStepTimeout },
-          { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: reasoningStepTimeout },
-          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: reasoningStepTimeout },
-          { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: reasoningStepTimeout },
-          { provider: 'openrouter', model: 'openrouter/free', timeout: reasoningStepTimeout }
+          // 1st: Nemotron 3.5 Lightning (Ultra-Fast SOTA Reasoning, Sub-3s TTFT)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: fastReasoningTimeout },
+          // 2nd: Ollama Cloud Nano (SOTA Compact Engine)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: fastReasoningTimeout },
+          // 3rd: Nemotron Nano Omni Reasoning
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: fastReasoningTimeout },
+          // 4th: Flagship Nemotron Super (Deep Comprehensive Analysis)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free', timeout: fastReasoningTimeout },
+          // 5th: Ollama Gemma 4 31B & Super
+          { provider: 'ollama', model: 'gemma4:31b', timeout: fastReasoningTimeout },
+          { provider: 'ollama', model: 'nemotron-3-super', timeout: fastReasoningTimeout },
+          // 6th: Nemotron Ultra & Cadangan Terverifikasi
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', timeout: fastReasoningTimeout },
+          { provider: 'opencode', model: 'nemotron-3.5-lightning-free', timeout: fastReasoningTimeout },
+          { provider: 'opencode', model: 'laguna-s-2.1-free', timeout: fastReasoningTimeout },
+          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: fastReasoningTimeout },
+          { provider: 'openrouter', model: 'poolside/laguna-s-2.1:free', timeout: fastReasoningTimeout },
+          { provider: 'openrouter', model: 'openrouter/free', timeout: fastReasoningTimeout }
         ];
       }
 
