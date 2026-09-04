@@ -1870,9 +1870,14 @@ Memperbaiki arsitektur pembagian waktu antara respon koneksi API gateway dan wak
    - Memberikan waktu berpikir seluas mungkin (`Math.max(15000, remainingMs - 2000)` hingga ~55 detik penuh sesuai budget runtime serverless) begitu koneksi API berhasil diverifikasi.
    - Model memiliki waktu yang leluasa untuk melakukan penalaran mendalam (*deep reasoning*), analisis konteks, dan penyusunan jawaban berbobot.
 
-3. **Verifikasi & Kompilasi:**
+3. **Pembaruan Menyeluruh README.md (Faktual & Zero Overclaim):**
+   - Menyelaraskan seluruh isi dokumentasi utama repositori dengan status codebase terkini v10.665.8.
+   - Merinci arsitektur proyek unggulan (komparasi mandiri CNB vs XGBoost pada skripsi Covariate Shift, Dual-Engine SBERT/N-Gram pada OpenPlagiarismChecker, dsb).
+   - Menghapus klaim hiperbolis dan menerapkan prinsip Stop-Slop secara disiplin.
+
+4. **Verifikasi & Kompilasi:**
    - Sintaksis `node -c api/chat.js` valid 100%.
-   - Build Vite `npm run build` sukses dalam 729ms.
+   - Build Vite `npm run build` sukses dalam 746ms.
 
 
 
