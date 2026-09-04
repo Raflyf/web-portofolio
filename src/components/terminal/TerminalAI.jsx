@@ -1156,7 +1156,7 @@ export default function TerminalAI({ onClose } = {}) {
       {showHistoryModal && (
         <div 
           data-lenis-prevent="true"
-          className="fixed inset-0 z-150 flex items-center justify-center bg-black/40 backdrop-blur-[28px] glass-backdrop-in p-4 overscroll-contain"
+          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-xl glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -1167,11 +1167,11 @@ export default function TerminalAI({ onClose } = {}) {
         >
           <div 
             data-lenis-prevent="true"
-            className="w-full max-w-2xl bg-zinc-900/40 dark:bg-slate-950/40 border border-white/20 dark:border-cyan-500/30 rounded-2xl overflow-hidden font-mono glass-spring-in backdrop-blur-[45px] backdrop-saturate-[220%] shadow-[0_20px_60px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.25)]"
+            className="w-full max-w-2xl liquid-glass-strong rounded-2xl overflow-hidden font-mono glass-spring-in"
             onWheel={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 p-6 bg-white/[0.03] backdrop-blur-[25px]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 p-6">
               <h3 className="text-lg font-semibold text-white flex items-center gap-2"><Clock className="w-5 h-5 text-cyan-400" /> Riwayat Percakapan</h3>
               <div className="flex items-center gap-2">
                 {historyList.length > 0 && (
@@ -1194,12 +1194,12 @@ export default function TerminalAI({ onClose } = {}) {
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
-               <div className="p-4 bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-400/40 rounded-xl cursor-pointer hover:bg-cyan-500/20 hover:border-cyan-300 transition group relative backdrop-blur-[35px] backdrop-saturate-[200%] shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_4px_20px_rgba(6,182,212,0.12)]">
+               <div className="p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group relative">
                  <div className="flex items-center justify-between mb-1">
-                   <span className="text-cyan-300 font-semibold group-hover:text-cyan-200 text-sm">Sesi Aktif</span>
-                   <span className="text-[10px] text-cyan-200/80">Sekarang</span>
+                   <span className="text-cyan-400 font-medium group-hover:text-cyan-300 text-sm">Sesi Aktif</span>
+                   <span className="text-[10px] text-zinc-500">Sekarang</span>
                  </div>
-               <p className="text-xs text-zinc-200 truncate">
+               <p className="text-xs text-zinc-400 truncate">
                  {messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
                </p>
              </div>
@@ -1210,14 +1210,14 @@ export default function TerminalAI({ onClose } = {}) {
                    setMessages(hist.messages);
                    setShowHistoryModal(false);
                  }} 
-                 className="p-4 bg-zinc-800/30 dark:bg-white/[0.06] border border-white/15 dark:border-white/10 hover:border-white/30 hover:bg-white/[0.12] rounded-xl cursor-pointer transition group flex items-center justify-between backdrop-blur-[35px] backdrop-saturate-[200%] shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_4px_16px_rgba(0,0,0,0.2)]"
+                 className="p-4 bg-white/2 border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between"
                >
                  <div className="flex-1 min-w-0 pr-3">
                    <div className="flex items-center justify-between mb-1">
-                     <span className="text-white font-medium group-hover:text-cyan-300 text-sm">Sesi Terdahulu {historyList.length - idx}</span>
-                     <span className="text-[10px] text-zinc-300">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+                     <span className="text-zinc-300 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
+                     <span className="text-[10px] text-zinc-500">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
                    </div>
-                   <p className="text-xs text-zinc-300 truncate">
+                   <p className="text-xs text-zinc-500 truncate">
                      {hist.messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
                    </p>
                  </div>
@@ -1233,8 +1233,8 @@ export default function TerminalAI({ onClose } = {}) {
              ))}
 
              {historyList.length === 0 && (
-               <div className="text-center py-10 mt-6 border border-dashed border-white/20 rounded-xl bg-white/[0.03] backdrop-blur-[25px]">
-                  <p className="text-sm text-zinc-300">Belum ada riwayat sesi terdahulu tersimpan.</p>
+               <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2">
+                  <p className="text-sm text-zinc-500">Belum ada riwayat sesi terdahulu tersimpan.</p>
                </div>
              )}
           </div>

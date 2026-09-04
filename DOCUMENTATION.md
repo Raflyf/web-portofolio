@@ -1916,6 +1916,24 @@ Menyempurnakan estetika visual glassmorphism dan mengatasi insiden *scroll leak*
 3. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses dalam 588ms.
 
+### v10.666.1 — Restoration of Original Liquid Glass Theme with Preserved Scroll Isolation
+
+Released 2026-09-04.
+
+Mengembalikan pewarnaan dan material visual modal Riwayat Percakapan (`src/components/terminal/TerminalAI.jsx`) 100% ke bentuk tema awal:
+
+1. **Restorasi Gaya Visual Asli (Liquid Glass Pure):**
+   - Mengembalikan kontainer dialog modal ke token sistem asli `liquid-glass-strong rounded-2xl` tanpa tint/border biru buatan.
+   - Mengembalikan backdrop ke `bg-black/60 backdrop-blur-xl glass-backdrop-in`.
+   - Mengembalikan kartu sesi ke palet natural tema: `bg-white/5 border border-white/10` untuk sesi aktif dan `bg-white/2 border border-white/10` untuk sesi terdahulu.
+
+2. **Retensi Isolasi Scroll (Zero Visual Impact):**
+   - Mempertahankan penanganan scroll leak via `data-lenis-prevent="true"`, `overscroll-contain`, `stopPropagation()` pada wheel/touch, serta pause hook `window.__lenis.stop()` saat modal terbuka sehingga halaman utama tetap terkunci saat menggulir riwayat tanpa mengubah tampilan tema sedikit pun.
+
+3. **Verifikasi & Kompilasi:**
+   - Build Vite `npm run build` sukses dalam 604ms.
+
+
 
 
 
