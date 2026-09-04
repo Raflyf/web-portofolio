@@ -1678,6 +1678,40 @@ Menerapkan aturan mutlak pelindungan persona dan kerahasiaan nama model dasar ek
    - Uji sintaksis `node -c api/chat.js` lulus 100%.
    - Build Vite `npm run build` sukses 100% tanpa error.
 
+### v10.665.0 — Real-Time GitHub Stars Aggregator, Edge Caching Gateway & Resilient Dual-Pipeline
+
+Released 2026-09-04.
+
+Menyelesaikan investigasi dan rekayasa sinkronisasi bintang GitHub proyek secara realtime (`api/github-stars.js`, `src/components/sections/ProjectsGrid.jsx`, dan `src/data.js`):
+
+1. **Akar Masalah Ketidaksinkronan Bintang:**
+   - **Rate Limiting Browser IP:** Panggilan langsung `fetch('https://api.github.com/users/Raflyf/repos')` dari browser pengunjung dibatasi 60 request/jam tanpa autentikasi. Ketika limit tercapai (HTTP 403), fungsi fetch diam-diam berhenti dan gagal meng-update state.
+   - **Stale Fallback Data:** Nilai fallback statis di `src/data.js` masih bernilai lama (`stars: 1` untuk FotoKitaBlur, laser_pointer_PPT, dan web-portofolio), padahal di GitHub sudah bertambah menjadi `2`.
+   - **Cache TTL Kaku:** LocalStorage menyimpan cache data lama hingga 10 menit tanpa mekanisme background revalidation yang agresif.
+
+2. **Serverless Edge Gateway (`api/github-stars.js`):**
+   - Membuat endpoint serverless khusus Vercel untuk mengagregasi data repositori GitHub Raflyf.
+   - Dilengkapi in-memory caching 60 detik dan HTTP header `Cache-Control: public, s-maxage=60, stale-while-revalidate=300` agar respons disajikan langsung dari Edge CDN Vercel dalam < 50ms tanpa menghabiskan kuota rate limit GitHub API.
+   - Mendukung integrasi opsional `process.env.GITHUB_TOKEN` untuk kuota hingga 5.000 req/jam.
+
+3. **Dual-Pipeline Fetch & SWR Background Revalidation (`ProjectsGrid.jsx`):**
+   - Prioritas 1: Mengambil data bintang dari endpoint internal `/api/github-stars` (bebas CORS, bebas rate limit IP klien, dan ter-cache di Edge).
+   - Prioritas 2 (Fallback): Mengambil langsung dari GitHub API jika serverless offline.
+   - LocalStorage cache diperbarui dengan key baru (`portfolio_github_stars_v2`) dan TTL diperpendek ke 3 menit dengan continuous background revalidation.
+
+4. **Sinkronisasi Ground Truth Default (`src/data.js`):**
+   - Menyelaraskan angka bintang default di `src/data.js` untuk bahasa `id` dan `en` sesuai data live GitHub terkini:
+     * `FotoKitaBlur`: 2 bintang.
+     * `laser_pointer_PPT`: 2 bintang.
+     * `web-portofolio`: 2 bintang.
+     * `Spam-Email`: 3 bintang.
+     * `OpenPlagiarismChecker`: 4 bintang.
+
+5. **Verifikasi & Build:**
+   - Uji lokal handler `api/github-stars.js` berhasil (status 200, sumber `live_github_api`).
+   - Kompilasi produksi `npm run build` sukses 100% tanpa error.
+
+
 
 
 

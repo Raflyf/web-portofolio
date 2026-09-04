@@ -97,7 +97,7 @@ export const PROJECTS_DATA_I18N = {
       techStack: ["Python", "Flask-SocketIO", "PyAutoGUI", "WebSockets", "JavaScript DeviceOrientation"],
       githubUrl: "https://github.com/Raflyf/laser_pointer_PPT",
       demoUrl: null,
-      stars: 1
+      stars: 2
     },
     {
       id: "fotokita-blur",
@@ -116,7 +116,7 @@ export const PROJECTS_DATA_I18N = {
       techStack: ["JavaScript", "MediaPipe Vision", "OpenCV", "Flask", "WebRTC"],
       githubUrl: "https://github.com/Raflyf/FotoKitaBlur",
       demoUrl: null,
-      stars: 1
+      stars: 2
     },
     {
       id: "web-portofolio",
@@ -136,7 +136,7 @@ export const PROJECTS_DATA_I18N = {
       techStack: ["React 19", "Vite", "Tailwind CSS", "Framer Motion", "Vercel Serverless", "Supabase PostgreSQL"],
       githubUrl: "https://github.com/Raflyf/web-portofolio",
       demoUrl: "https://raflyfirmansyah-portofolio.vercel.app/",
-      stars: 1
+      stars: 2
     }
   ],
   en: [
@@ -197,7 +197,7 @@ export const PROJECTS_DATA_I18N = {
       techStack: ["Python", "Flask-SocketIO", "PyAutoGUI", "WebSockets", "JavaScript DeviceOrientation"],
       githubUrl: "https://github.com/Raflyf/laser_pointer_PPT",
       demoUrl: null,
-      stars: 1
+      stars: 2
     },
     {
       id: "fotokita-blur",
@@ -216,7 +216,7 @@ export const PROJECTS_DATA_I18N = {
       techStack: ["JavaScript", "MediaPipe Vision", "OpenCV", "Flask", "WebRTC"],
       githubUrl: "https://github.com/Raflyf/FotoKitaBlur",
       demoUrl: null,
-      stars: 1
+      stars: 2
     },
     {
       id: "web-portofolio",
@@ -236,7 +236,7 @@ export const PROJECTS_DATA_I18N = {
       techStack: ["React 19", "Vite", "Tailwind CSS", "Framer Motion", "Vercel Serverless", "Supabase PostgreSQL"],
       githubUrl: "https://github.com/Raflyf/web-portofolio",
       demoUrl: "https://raflyfirmansyah-portofolio.vercel.app/",
-      stars: 1
+      stars: 2
     }
   ]
 };

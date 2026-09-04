@@ -24,8 +24,8 @@ const tabVariants = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } }
 };
 
-const GITHUB_STARS_CACHE_KEY = 'portfolio_github_stars_v1';
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 menit TTL cache agar bebas rate-limit GitHub
+const GITHUB_STARS_CACHE_KEY = 'portfolio_github_stars_v2';
+const CACHE_TTL_MS = 3 * 60 * 1000; // 3 menit TTL SWR cache
 
 export default function ProjectsGrid() {
   const { language, t } = useLanguage();
@@ -52,8 +52,8 @@ export default function ProjectsGrid() {
     try {
       const cached = localStorage.getItem(GITHUB_STARS_CACHE_KEY);
       if (cached) {
-        const { data, timestamp } = JSON.parse(cached);
-        if (data && timestamp && Date.now() - timestamp < CACHE_TTL_MS) {
+        const { data } = JSON.parse(cached);
+        if (data && typeof data === 'object') {
           return data;
         }
       }
@@ -63,32 +63,52 @@ export default function ProjectsGrid() {
 
   useEffect(() => {
     let isMounted = true;
+
     async function fetchStars() {
+      // 1. Coba fetch dari endpoint internal /api/github-stars (Bebas rate-limit browser & di-cache di Vercel Edge)
+      try {
+        const res = await fetch('/api/github-stars');
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.stars && typeof json.stars === 'object' && isMounted) {
+            setStarsMap(json.stars);
+            try {
+              localStorage.setItem(GITHUB_STARS_CACHE_KEY, JSON.stringify({
+                data: json.stars,
+                timestamp: Date.now()
+              }));
+            } catch {}
+            return;
+          }
+        }
+      } catch {
+        // Fallthrough ke direct GitHub API jika serverless endpoint belum aktif / offline
+      }
+
+      // 2. Fallback: Direct GitHub API fetch
       try {
         const res = await fetch('https://api.github.com/users/Raflyf/repos?per_page=100', {
           headers: { 'Accept': 'application/vnd.github.v3+json' }
         });
         if (!res.ok) return;
         const repos = await res.json();
-        if (Array.isArray(repos)) {
+        if (Array.isArray(repos) && isMounted) {
           const map = {};
           repos.forEach(repo => {
-            if (repo.name) {
+            if (repo && repo.name && typeof repo.stargazers_count === 'number') {
               map[repo.name.toLowerCase()] = repo.stargazers_count;
             }
           });
-          if (isMounted) {
-            setStarsMap(map);
-            try {
-              localStorage.setItem(GITHUB_STARS_CACHE_KEY, JSON.stringify({
-                data: map,
-                timestamp: Date.now()
-              }));
-            } catch {}
-          }
+          setStarsMap(map);
+          try {
+            localStorage.setItem(GITHUB_STARS_CACHE_KEY, JSON.stringify({
+              data: map,
+              timestamp: Date.now()
+            }));
+          } catch {}
         }
       } catch {
-        // Fallback otomatis ke project.stars default jika offline
+        // Fallback otomatis ke data project.stars default jika kedua fetch gagal
       }
     }
 
@@ -98,12 +118,12 @@ export default function ProjectsGrid() {
 
   const getProjectStars = (project) => {
     if (!project) return 0;
-    if (!project.githubUrl) return project.stars ?? 0;
-    const repoName = project.githubUrl.split('/').pop()?.toLowerCase();
-    if (repoName && starsMap[repoName] !== undefined) {
+    if (!project.githubUrl) return Number(project.stars) || 0;
+    const repoName = project.githubUrl.replace(/\.git$/i, '').split('/').pop()?.toLowerCase();
+    if (repoName && typeof starsMap[repoName] === 'number') {
       return starsMap[repoName];
     }
-    return project.stars ?? 0;
+    return Number(project.stars) || 0;
   };
 
   return (
