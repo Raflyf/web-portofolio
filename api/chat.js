@@ -43,7 +43,120 @@ function loadLocalEnv() {
 }
 loadLocalEnv();
 
-function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', activeModelName = 'Nemotron-3-Nano-30B', includeDetailedPortfolio = false) {
+/**
+ * Surgical Portfolio Ground-Truth Router (Anti-Attention Dilution & Sub-10s TTFT)
+ * Dynamically selects and injects ONLY the specific project, research, or certification
+ * context that directly matches the user's inquiry, preventing prompt bloating and model distraction.
+ */
+function getSurgicalPortfolioContext(userQuery = '', sessionLanguage = 'id') {
+  const q = String(userQuery || '').toLowerCase();
+
+  const batasanTeknologi = `[BATASAN TEKNOLOGI PORTOFOLIO RAFLY FIRMANSYAH]:
+- Proyek **web-portofolio** dibangun menggunakan **React 19, Vite, Tailwind CSS, Framer Motion, Vercel Serverless Functions, dan Supabase PostgreSQL**.
+- DILARANG mengklaim portofolio ini menggunakan Vanilla JS.`;
+
+  const groundTruthHeader = `[GROUND TRUTH RESMI RAFLY FIRMANSYAH (@Raflyf)]:
+Wajib jadikan rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENARAN. Dilarang keras berasumsi, mengarang angka/metrik palsu, atau menambahkan teknik generic ML yang tidak ada di sini:`;
+
+  const spamEmailSection = `1. **Spam-Email Detection System (Skripsi S1 Informatika UBSI - Rafly Firmansyah)**:
+   - Judul Skripsi Resmi: "Analisis Performa Complement Naive Bayes dan XGBoost dalam Mengatasi Concept Drift pada Klasifikasi Spam Email Menggunakan Pendekatan Domain Adaptation".
+   - URL Repositori: https://github.com/Raflyf/Spam-Email
+   - Karakteristik Masalah (Concept Drift / Covariate Shift): Fenomena yang diteliti adalah **Covariate Shift** (pergeseran distribusi statistik fitur input antar era). Data latih historis adalah dataset Kaggle era 2000-an ('emails.csv'), sedangkan data uji target adalah email pribadi kontemporer modern ('data_test_berlabel_awal.csv').
+   - KOMPARASI DUA MODEL TERPISAH (BUKAN ENSEMBLE!):
+     * Model yang diteliti dan dibandingkan adalah **Complement Naive Bayes (CNB)** vs **XGBoost (Extreme Gradient Boosting)**.
+     * DILARANG KERAS menyebut model ini sebagai "Ensemble", "Model Gabungan", "Voting Classifier", atau "Stacking". Keduanya adalah dua model terpisah yang dikomparasikan.
+     * Alasan Pemilihan CNB: Complement Naive Bayes dipilih secara ilmiah karena secara matematis dirancang khusus untuk menangani korpus teks dengan ketidakseimbangan kelas (imbalanced text datasets).
+   - DATASET ASLI & DISTRIBUSI DATA (DILARANG MENGARANG SPLIT 70/15/15!):
+     * Dataset Training Utama: 'emails.csv' (Kaggle era 2000-an, total 5.728 email).
+     * Dataset Uji Target Modern: 'data_test_berlabel_awal.csv' (1.000 email pribadi modern seimbang: 500 spam + 500 non-spam).
+     * DILARANG KERAS mengklaim ada rasio split data acak 70/15/15 atau 80/20!
+   - DUA METODE PENELITIAN & HASIL EVALUASI FAKTUAL:
+     * **Metode 1 (Baseline / Tanpa Adaptasi - NB_XGB_PURE.py)**: Model dilatih murni pada 5.728 email Kaggle era 2000-an, lalu langsung diuji ke 1.000 email modern tanpa adaptasi. Hasil performa anjlok drastis akibat domain gap: Naive Bayes Akurasi ~51.5% (F1 43.26%), XGBoost Akurasi ~48% (F1 47.19%).
+     * **Metode 2 (Metode Utama / Domain Adaptation 30% - NB_XGB_MIX_IMPROVED.py)**: Mengambil 30% (300 email) dari 1.000 email modern untuk dimasukkan ke data training dengan **Instance Weighting 8×** (pembobotan 8 kali lipat), dan sisa 70% (700 email) diuji secara independen. Hasil melonjak drastis: Complement Naive Bayes Akurasi 77% (F1 76.17%), XGBoost Akurasi 93% (F1 93%). Confusion matrix XGBoost: True Negative (TN)=333, False Positive (FP)=17, False Negative (FN)=32, True Positive (TP)=318.
+   - LARANGAN HALUSINASI SPESIFIK PROYEK SPAM EMAIL:
+     * DILARANG mengklaim menggunakan **Oversampling** (SMOTE / RandomOverSampler). Ketidakseimbangan kelas ditangani oleh arsitektur Complement Naive Bayes, parameter 'scale_pos_weight' pada XGBoost, serta instance weighting 8× pada adaptasi.
+     * DILARANG mengklaim menggunakan **Stemming Bahasa Indonesia** atau SBERT. Teks dataset email adalah bahasa Inggris / general.
+     * DILARANG mengklaim ada data streaming real-time, retraining otomatis online, deep learning transformer (BERT/DistilBERT), atau runtime ONNX.
+   - PIPELINE PREPROCESSING & EKSTRAKSI FITUR:
+     * Preprocessing: lowercase -> urltoken -> emailtoken -> pricetoken -> longnum -> numtoken -> pembersihan simbol.
+     * TF-IDF Word (unigram+bigram, 20.000 fitur, sublinear TF) + TF-IDF Char n-gram (range 3-5 gram, 8.000 fitur).
+     * 13 Fitur Struktural (panjang email, kepadatan tanda seru, simbol $, rasio huruf kapital, rasio all-caps, URL density, email density, HTML tag density, dll.).
+     * 35 Keyword Spam biner (urgent, free, winner, cash, prize, guarantee, account, verify, discount, dll.).
+     * Seleksi Fitur untuk NB: SelectKBest Chi-Square (k=12.000). Total fitur: CNB = 12.000 fitur; XGBoost = ~28.051 fitur.
+   - FITUR APLIKASI WEB (FLASK):
+     * Dibangun dengan Python 3, Flask, Scikit-Learn, XGBoost (GPU CUDA RTX 3050 saat riset), Pandas, HTML5, CSS3, JS murni, Chart.js.
+     * Mode Pengujian Teks Langsung (Real-time Testing) dengan Quick Examples instan.
+     * Mode Evaluasi Batch via file '.csv' massal.
+     * Slider Balancing Dataset: Pengaturan proporsi rasio kelas data (10:90 hingga 90:10) untuk pengujian.
+     * Riwayat Eksperimen interaktif (Pinning, visual feedback data terpilih, batch delete, catatan kustom).
+     * Visualisasi grafik bar perbandingan model dan Confusion Matrix interaktif.`;
+
+  const plagiarismSection = `2. **OpenPlagiarismChecker (Riset Plagiarisme Mandiri)**:
+   - URL Repositori: https://github.com/Raflyf/OpenPlagiarismChecker
+   - Mesin riset pengecek kesamaan teks akademik lokal mengutamakan privasi 100% offline (tanpa kirim file ke cloud).
+   - Dual-Engine NLP: (1) Exact Text Matching via 5-Word N-Gram Shingling; (2) Semantic Similarity via Multilingual Sentence Transformers (SBERT 384-dim Cosine Similarity) untuk mendeteksi parafrasa.
+   - Ekstraksi teks otomatis dari file PDF, DOCX, dan TXT secara lokal terisolasi.
+   - Rujukan silang konkuren ke 15+ pangkalan data akademik terbuka (GARUDA, Indonesia OneSearch/Neliti, BASE, OpenAlex, Semantic Scholar, e-thesis kampus).
+   - Tech Stack: Python, Flask, PyTorch, Sentence-Transformers, N-Gram.`;
+
+  const laserPointerSection = `3. **laser_pointer_PPT**:
+   - URL Repositori: https://github.com/Raflyf/laser_pointer_PPT
+   - Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan touchpad web via WebSocket (Flask-SocketIO) dan PyAutoGUI.
+   - Pairing cepat via pemindaian QR-code lokal dan token dinamis (secrets.token_urlsafe). Tanpa perlu menginstal aplikasi tambahan di HP.`;
+
+  const fotoKitaSection = `4. **FotoKitaBlur**:
+   - URL Repositori: https://github.com/FotoKitaBlur/FotoKitaBlur
+   - Edge AI Computer Vision di browser berbasis MediaPipe Tasks Vision dan OpenCV.
+   - Preservasi privasi wajah saat streaming via gestur dua jari (V-Sign). Frame kamera diproses secara lokal di sisi klien.`;
+
+  const webPortofolioSection = `5. **web-portofolio**:
+   - URL Repositori: https://github.com/Raflyf/web-portofolio
+   - Platform portofolio web modern React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions, Supabase PostgreSQL.
+   - Terminal AI interaktif dengan Auto Router Gateway dan Continuous RAG Memory.`;
+
+  const certSection = `[SERTIFIKASI KOMPETENSI RESMI RAFLY FIRMANSYAH]:
+- BNSP Analis Program (Program Analyst) - 2025: No. Reg TIK.1241.04242 2025 (Kualifikasi LSP UBSI, 10 unit kompetensi software engineering, SQL, arsitektur basis data, algoritma, code review, unit/integration testing).
+- MikroTik Certified Network Associate (MTCNA) - 2025: No. 2502NA6383 (Routing statik/dinamis, firewall filtering, NAT, mangle, queue bandwidth management, wireless, VPN tunnel).
+- Cisco PCAP (Certified Associate in Python Programming) - 2024: Python Institute / Cisco Networking Academy.`;
+
+  const contactSection = `[KONTAK RESMI]:
+- GitHub: https://github.com/Raflyf
+- Email: mailto:raflyfirmansyah02@gmail.com
+- WhatsApp: https://wa.me/628991333323`;
+
+  const matchedSections = [];
+  if (/(?:spam|email|cnb|xgboost|skripsi|covariate|concept[-_ ]?drift|instance[-_ ]?weighting|emails\.csv|f1|akurasi.*model)/i.test(q)) {
+    matchedSections.push(spamEmailSection);
+  }
+  if (/(?:plagia|openplagiarism|shingling|sbert|kesamaan.*teks|kemiripan)/i.test(q)) {
+    matchedSections.push(plagiarismSection);
+  }
+  if (/(?:laser|pointer|gyroscope|powerpoint|ppt|presentasi|nirsentuh)/i.test(q)) {
+    matchedSections.push(laserPointerSection);
+  }
+  if (/(?:fotokita|blur|mediapipe|v-sign|gestur|kamera.*privasi)/i.test(q)) {
+    matchedSections.push(fotoKitaSection);
+  }
+  if (/(?:web[-_ ]?portofolio|arsitektur.*portofolio|liquid.*glass|terminal.*ai)/i.test(q)) {
+    matchedSections.push(webPortofolioSection);
+  }
+  if (/(?:sertifik|bnsp|analis.*program|mtcna|mikrotik|cisco|pcap|lisensi|kompetensi)/i.test(q)) {
+    matchedSections.push(certSection);
+  }
+  if (/(?:kontak|contact|hubungi|email.*rafly|whatsapp|wa.*rafly|github)/i.test(q)) {
+    matchedSections.push(contactSection);
+  }
+
+  // Jika pertanyaan menyasar proyek/sertifikasi tertentu, suntikkan segmen terkait saja
+  if (matchedSections.length > 0) {
+    return `${batasanTeknologi}\n\n${groundTruthHeader}\n\n${matchedSections.join('\n\n')}\n\n${contactSection}`;
+  }
+
+  // Kueri umum tentang portofolio/profil Rafly: berikan seluruh fakta proyek lengkap
+  return `${batasanTeknologi}\n\n${groundTruthHeader}\n\n${spamEmailSection}\n\n${plagiarismSection}\n\n${laserPointerSection}\n\n${fotoKitaSection}\n\n${webPortofolioSection}\n\n${certSection}\n\n${contactSection}`;
+}
+
+function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', activeModelName = 'Nemotron-3-Nano-30B', includeDetailedPortfolio = false, userQuery = '') {
   const isEnglish = sessionLanguage === 'en';
 
   const effortDirective = reasoningEffort === 'low'
@@ -153,80 +266,8 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
     return basePrompt;
   }
 
-  return `${basePrompt}
-
-[BATASAN TEKNOLOGI PORTOFOLIO RAFLY FIRMANSYAH]:
-- Proyek **web-portofolio** dibangun menggunakan **React 19, Vite, Tailwind CSS, Framer Motion, Vercel Serverless Functions, dan Supabase PostgreSQL**.
-- DILARANG mengklaim portofolio ini menggunakan Vanilla JS.
-
-[GROUND TRUTH UTUH REPOSITORI & RISET RESMI RAFLY FIRMANSYAH (@Raflyf)]:
-Wajib jadikan seluruh rincian faktual berikut sebagai SATU-SATUNYA SUMBER KEBENARAN. Dilarang keras berasumsi, mengarang angka/metrik palsu, atau menambahkan teknik generic ML yang tidak ada di sini:
-
-1. **Spam-Email Detection System (Skripsi S1 Informatika UBSI - Rafly Firmansyah)**:
-   - Judul Skripsi Resmi: "Analisis Performa Complement Naive Bayes dan XGBoost dalam Mengatasi Concept Drift pada Klasifikasi Spam Email Menggunakan Pendekatan Domain Adaptation".
-   - URL Repositori: https://github.com/Raflyf/Spam-Email
-   - Karakteristik Masalah (Concept Drift / Covariate Shift): Fenomena yang diteliti adalah **Covariate Shift** (pergeseran distribusi statistik fitur input antar era). Data latih historis adalah dataset Kaggle era 2000-an ('emails.csv'), sedangkan data uji target adalah email pribadi kontemporer modern ('data_test_berlabel_awal.csv').
-   - KOMPARASI DUA MODEL TERPISAH (BUKAN ENSEMBLE!):
-     * Model yang diteliti dan dibandingkan adalah **Complement Naive Bayes (CNB)** vs **XGBoost (Extreme Gradient Boosting)**.
-     * DILARANG KERAS menyebut model ini sebagai "Ensemble", "Model Gabungan", "Voting Classifier", atau "Stacking". Keduanya adalah dua model terpisah yang dikomparasikan.
-     * Alasan Pemilihan CNB: Complement Naive Bayes dipilih secara ilmiah karena secara matematis dirancang khusus untuk menangani korpus teks dengan ketidakseimbangan kelas (imbalanced text datasets).
-   - DATASET ASLI & DISTRIBUSI DATA (DILARANG MENGARANG SPLIT 70/15/15!):
-     * Dataset Training Utama: 'emails.csv' (Kaggle era 2000-an, total 5.728 email).
-     * Dataset Uji Target Modern: 'data_test_berlabel_awal.csv' (1.000 email pribadi modern seimbang: 500 spam + 500 non-spam).
-     * DILARANG KERAS mengklaim ada rasio split data acak 70/15/15 atau 80/20!
-   - DUA METODE PENELITIAN & HASIL EVALUASI FAKTUAL:
-     * **Metode 1 (Baseline / Tanpa Adaptasi - NB_XGB_PURE.py)**: Model dilatih murni pada 5.728 email Kaggle era 2000-an, lalu langsung diuji ke 1.000 email modern tanpa adaptasi. Hasil performa anjlok drastis akibat domain gap: Naive Bayes Akurasi ~51.5% (F1 43.26%), XGBoost Akurasi ~48% (F1 47.19%).
-     * **Metode 2 (Metode Utama / Domain Adaptation 30% - NB_XGB_MIX_IMPROVED.py)**: Mengambil 30% (300 email) dari 1.000 email modern untuk dimasukkan ke data training dengan **Instance Weighting 8×** (pembobotan 8 kali lipat), dan sisa 70% (700 email) diuji secara independen. Hasil melonjak drastis: Complement Naive Bayes Akurasi 77% (F1 76.17%), XGBoost Akurasi 93% (F1 93%). Confusion matrix XGBoost: True Negative (TN)=333, False Positive (FP)=17, False Negative (FN)=32, True Positive (TP)=318.
-   - LARANGAN HALUSINASI SPESIFIK PROYEK SPAM EMAIL:
-     * DILARANG mengklaim menggunakan **Oversampling** (SMOTE / RandomOverSampler). Ketidakseimbangan kelas ditangani oleh arsitektur Complement Naive Bayes, parameter 'scale_pos_weight' pada XGBoost, serta instance weighting 8× pada adaptasi.
-     * DILARANG mengklaim menggunakan **Stemming Bahasa Indonesia** atau SBERT. Teks dataset email adalah bahasa Inggris / general.
-     * DILARANG mengklaim ada data streaming real-time, retraining otomatis online, deep learning transformer (BERT/DistilBERT), atau runtime ONNX.
-   - PIPELINE PREPROCESSING & EKSTRAKSI FITUR:
-     * Preprocessing: lowercase -> urltoken -> emailtoken -> pricetoken -> longnum -> numtoken -> pembersihan simbol.
-     * TF-IDF Word (unigram+bigram, 20.000 fitur, sublinear TF) + TF-IDF Char n-gram (range 3-5 gram, 8.000 fitur).
-     * 13 Fitur Struktural (panjang email, kepadatan tanda seru, simbol $, rasio huruf kapital, rasio all-caps, URL density, email density, HTML tag density, dll.).
-     * 35 Keyword Spam biner (urgent, free, winner, cash, prize, guarantee, account, verify, discount, dll.).
-     * Seleksi Fitur untuk NB: SelectKBest Chi-Square (k=12.000). Total fitur: CNB = 12.000 fitur; XGBoost = ~28.051 fitur.
-   - FITUR APLIKASI WEB (FLASK):
-     * Dibangun dengan Python 3, Flask, Scikit-Learn, XGBoost (GPU CUDA RTX 3050 saat riset), Pandas, HTML5, CSS3, JS murni, Chart.js.
-     * Mode Pengujian Teks Langsung (Real-time Testing) dengan Quick Examples instan.
-     * Mode Evaluasi Batch via file '.csv' massal.
-     * Slider Balancing Dataset: Pengaturan proporsi rasio kelas data (10:90 hingga 90:10) untuk pengujian.
-     * Riwayat Eksperimen interaktif (Pinning, visual feedback data terpilih, batch delete, catatan kustom).
-     * Visualisasi grafik bar perbandingan model dan Confusion Matrix interaktif.
-
-2. **OpenPlagiarismChecker (Riset Plagiarisme Mandiri)**:
-   - URL Repositori: https://github.com/Raflyf/OpenPlagiarismChecker
-   - Mesin riset pengecek kesamaan teks akademik lokal mengutamakan privasi 100% offline (tanpa kirim file ke cloud).
-   - Dual-Engine NLP: (1) Exact Text Matching via 5-Word N-Gram Shingling; (2) Semantic Similarity via Multilingual Sentence Transformers (SBERT 384-dim Cosine Similarity) untuk mendeteksi parafrasa.
-   - Ekstraksi teks otomatis dari file PDF, DOCX, dan TXT secara lokal terisolasi.
-   - Rujukan silang konkuren ke 15+ pangkalan data akademik terbuka (GARUDA, Indonesia OneSearch/Neliti, BASE, OpenAlex, Semantic Scholar, e-thesis kampus).
-   - Tech Stack: Python, Flask, PyTorch, Sentence-Transformers, N-Gram.
-
-3. **laser_pointer_PPT**:
-   - URL Repositori: https://github.com/Raflyf/laser_pointer_PPT
-   - Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan touchpad web via WebSocket (Flask-SocketIO) dan PyAutoGUI.
-   - Pairing cepat via pemindaian QR-code lokal dan token dinamis (secrets.token_urlsafe). Tanpa perlu menginstal aplikasi tambahan di HP.
-
-4. **FotoKitaBlur**:
-   - URL Repositori: https://github.com/FotoKitaBlur/FotoKitaBlur
-   - Edge AI Computer Vision di browser berbasis MediaPipe Tasks Vision dan OpenCV.
-   - Preservasi privasi wajah saat streaming via gestur dua jari (V-Sign). Frame kamera diproses secara lokal di sisi klien.
-
-5. **web-portofolio**:
-   - URL Repositori: https://github.com/Raflyf/web-portofolio
-   - Platform portofolio web modern React 19, Vite, Tailwind CSS, Framer Motion (Liquid Glassmorphism), Vercel Serverless Functions, Supabase PostgreSQL.
-   - Terminal AI interaktif dengan Auto Router Gateway dan Continuous RAG Memory.
-
-[SERTIFIKASI KOMPETENSI RESMI RAFLY FIRMANSYAH]:
-- BNSP Analis Program (Program Analyst) - 2025: No. Reg TIK.1241.04242 2025 (Kualifikasi LSP UBSI, 10 unit kompetensi software engineering, SQL, arsitektur basis data, algoritma, code review, unit/integration testing).
-- MikroTik Certified Network Associate (MTCNA) - 2025: No. 2502NA6383 (Routing statik/dinamis, firewall filtering, NAT, mangle, queue bandwidth management, wireless, VPN tunnel).
-- Cisco PCAP (Certified Associate in Python Programming) - 2024: Python Institute / Cisco Networking Academy.
-
-[KONTAK RESMI]:
-- GitHub: https://github.com/Raflyf
-- Email: mailto:raflyfirmansyah02@gmail.com
-- WhatsApp: https://wa.me/628991333323`;
+  const surgicalPortfolioContext = getSurgicalPortfolioContext(userQuery, sessionLanguage);
+  return `${basePrompt}\n\n${surgicalPortfolioContext}`;
 }
 
 async function fetchJsonWithTimeout(url, options, timeoutConfig = 25000) {
@@ -378,6 +419,19 @@ function formulateSmartSearchQueries(query, history = []) {
       queries.push(`${targetSubject} benchmark leaderboard evaluation results`);
     } else if (/\b(rilis|release|kapan|jadwal|schedule|tanggal|trailer|launch)\b/i.test(qNorm)) {
       queries.push(`${targetSubject} official release date announcement`);
+    }
+
+    // 2b. Sub-Query Decomposition for Comparative Queries (e.g. "X vs Y", "bandingkan X dengan Y")
+    const compareMatch = qNorm.match(/(?:bandingkan|perbedaan|beda|komparasi|antara)\s+(.+?)\s+(?:dengan|dan|versus|vs)\s+(.+)/i) ||
+                         qNorm.match(/(.+?)\s+(?:vs|versus|dibandingkan dengan|dibanding)\s+(.+)/i);
+    if (compareMatch) {
+      const entA = stripFillers(compareMatch[1]).trim();
+      const entB = stripFillers(compareMatch[2]).trim();
+      if (entA.length >= 2 && entB.length >= 2) {
+        queries.push(`${entA} latest benchmark features`);
+        queries.push(`${entB} latest benchmark features`);
+        queries.push(`${entA} vs ${entB} comparison`);
+      }
     }
   }
 
@@ -776,6 +830,7 @@ async function searchWebContext(query, history = []) {
     const structuredSnippets = [];
     const rawSnippets = [];
     const agentToolsUsed = [];
+    const candidateArticles = [];
 
     // Helper to sanitize XML / HTML entities
     const cleanStr = (str) => {
@@ -1103,6 +1158,9 @@ async function searchWebContext(query, history = []) {
               parsed.hits.slice(0, 3).forEach(hit => {
                 const title = cleanStr(hit.title || hit.story_title || '');
                 if (title && !isJunkArticle(title)) {
+                  if (hit.url && isSafePublicUrl(hit.url)) {
+                    candidateArticles.push({ url: hit.url, score: 8, title });
+                  }
                   const hnDate = hit.created_at ? ` (${String(hit.created_at).slice(0, 10)})` : '';
                   const hnPoints = Number.isFinite(hit.points) ? ` - ${hit.points} poin` : '';
                   structuredSnippets.push({
@@ -1139,9 +1197,11 @@ async function searchWebContext(query, history = []) {
             const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/i);
             const descMatch = item.match(/<description>([\s\S]*?)<\/description>/i);
             const dateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
+            const linkMatch = item.match(/<link>([\s\S]*?)<\/link>/i);
             const title = cleanStr(titleMatch ? titleMatch[1] : '');
             const desc = cleanStr(descMatch ? descMatch[1] : '');
             const pubDate = cleanStr(dateMatch ? dateMatch[1] : '');
+            const itemLink = cleanStr(linkMatch ? linkMatch[1] : '');
             if (title && !isJunkArticle(title)) {
               // Lewati cerita kembar lintas feed (Google News ID/Global/Bing) yang judulnya nyaris identik
               const dedupeKey = titleDedupeKey(title);
@@ -1167,6 +1227,9 @@ async function searchWebContext(query, history = []) {
                 }
               }
               const relScore = calcScore(title + ' ' + desc) + recencyBonus;
+              if (itemLink && isSafePublicUrl(itemLink) && !itemLink.includes('news.google.com') && !itemLink.includes('bing.com/news')) {
+                candidateArticles.push({ url: itemLink, score: relScore, title });
+              }
               if (searchKeywords.length === 0 || relScore > 0) {
                 const fullText = desc && desc.length > 20 ? `${title} — ${desc.slice(0, 150)}` : title;
                 const entry = pubDate ? `[Global Live Web/News (${pubDate})]: ${fullText}` : `[Global Live Web/News]: ${fullText}`;
@@ -1187,6 +1250,36 @@ async function searchWebContext(query, history = []) {
         sourcesCount: newsItemsCount,
         sources: rawSnippets.filter(r => !r.startsWith('[Wikipedia]') && !r.startsWith('[GitHub')).slice(0, 4)
       });
+    }
+
+    // 2b. Autonomous 2nd-Hop Deep Reader (Fast, Non-Blocking, 2.5s Timeout Guard)
+    // If the user did not supply an explicit URL and we found authoritative candidate articles,
+    // autonomously fetch and parse the #1 most relevant article into clean LLM-ready Fit-Markdown.
+    if (scrapeQueue.length === 0 && candidateArticles.length > 0) {
+      candidateArticles.sort((a, b) => b.score - a.score);
+      const topArticle = candidateArticles.find(c => c.url && isSafePublicUrl(c.url));
+      if (topArticle && topArticle.url && topArticle.score > 2) {
+        try {
+          const hopPromise = scrapeDirectWebpageContent(topArticle.url);
+          const hopTimeout = new Promise((resolve) => setTimeout(() => resolve(''), 2500));
+          const deepArticleText = await Promise.race([hopPromise, hopTimeout]);
+          if (deepArticleText && deepArticleText.length > 120) {
+            let host = topArticle.url;
+            try { host = new URL(topArticle.url).hostname; } catch (_) {}
+            structuredSnippets.unshift({
+              text: `[Live Deep Web Article (${host})]:\n${deepArticleText.slice(0, 3000)}`,
+              timestamp: Date.now() + 500000000,
+              score: 95
+            });
+            agentToolsUsed.push({
+              tool: 'deep_article_reader',
+              label: `Autonomous 2nd-Hop Reader (${host})`,
+              url: topArticle.url
+            });
+            rawSnippets.push(`[Deep Article]: ${host}`);
+          }
+        } catch (_) {}
+      }
     }
 
     // Sort all snippets: For breaking/latest queries, strictly sort newest publication timestamp first
@@ -1497,9 +1590,9 @@ async function fetchServerMemories(limit = 15) {
 }
 
 /**
- * Semantic Relevance Gate for RAG Long-Term Memories (Anti-Memory Contamination)
- * Strictly matches memory entries against topical subject keywords of the current query.
- * If there is NO direct topical connection, returns an empty array to keep context 100% pristine.
+ * Hybrid Re-Ranking & Semantic Relevance Gate for RAG Long-Term Memories
+ * Uses BM25-lite weighted scoring, exact phrase matching, context tag boosts,
+ * and recency decay to strictly isolate relevant memories and eliminate noise.
  */
 function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) {
   if (isSpecialQuery || !allMemories || allMemories.length === 0 || !userQuery) return [];
@@ -1510,16 +1603,39 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
     'itu', 'saya', 'kamu', 'anda', 'kita', 'mereka', 'bisa', 'tolong', 'coba', 'buat', 'bikin',
     'halo', 'hai', 'tes', 'test', 'ada', 'tidak', 'nggak', 'gak', 'mau', 'dong', 'sih', 'kah',
     'model', 'ai', 'assistant', 'terbaru', 'info', 'tentang', 'soal', 'seperti', 'kayak', 'akan',
-    'tau', 'tahu', 'kasih', 'beri', 'tolong', 'mohon', 'punya', 'ada', 'bisa', 'dapat'
+    'tau', 'tahu', 'kasih', 'beri', 'tolong', 'mohon', 'punya', 'ada', 'bisa', 'dapat',
+    'the', 'is', 'at', 'which', 'on', 'in', 'a', 'an', 'to', 'for', 'of', 'and', 'or', 'by'
   ]);
 
-  const tokens = String(userQuery)
+  const rawTokens = String(userQuery)
     .toLowerCase()
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
-    .filter(t => t.length >= 3 && !stopWords.has(t));
+    .filter(t => t.length >= 2 && !stopWords.has(t));
 
-  if (tokens.length === 0) return [];
+  if (rawTokens.length === 0) return [];
+
+  // IDF Specificity weighting: rare domain terms have higher discriminative power
+  const highSpecificityTerms = new Set([
+    'cnb', 'xgboost', 'sbert', 'shingling', 'mediapipe', 'mtcna', 'bnsp', 'cisco', 'pcap',
+    'plagiarism', 'plagiarisme', 'covariate', 'drift', 'benchmark', 'weights', 'confusion',
+    'matrix', 'claude', 'gemini', 'deepseek', 'nemotron', 'gemma', 'openai', 'anthropic',
+    'llama', 'qwen', 'mistral', 'flask', 'pytorch', 'scikit', 'supabase', 'vercel'
+  ]);
+
+  const tokenWeights = rawTokens.map(tok => {
+    let weight = 1.0;
+    if (highSpecificityTerms.has(tok)) weight = 3.5;
+    else if (tok.length >= 6) weight = 2.0;
+    else if (tok.length >= 4) weight = 1.5;
+    return { token: tok, weight };
+  });
+
+  // Extract 2-gram phrases for exact collocation matching
+  const phrases = [];
+  for (let i = 0; i < rawTokens.length - 1; i++) {
+    phrases.push(`${rawTokens[i]} ${rawTokens[i + 1]}`);
+  }
 
   const cleanRows = allMemories.filter(m => {
     const txt = String(m || '').trim();
@@ -1528,13 +1644,78 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
     return true;
   });
 
-  const matched = cleanRows.filter(mem => {
-    const lowMem = mem.toLowerCase();
-    // Memori harus memuat minimal salah satu token kata kunci subjek pertanyaan
-    return tokens.some(tok => lowMem.includes(tok));
-  });
+  const scored = [];
+  const totalRows = cleanRows.length;
 
-  return matched.slice(0, 4);
+  for (let idx = 0; idx < totalRows; idx++) {
+    const mem = cleanRows[idx];
+    const lowMem = mem.toLowerCase();
+    let score = 0;
+
+    // 1. BM25-lite Term Frequency weighting
+    for (const { token, weight } of tokenWeights) {
+      if (lowMem.includes(token)) {
+        let count = 0;
+        let pos = lowMem.indexOf(token);
+        while (pos !== -1) {
+          count++;
+          pos = lowMem.indexOf(token, pos + token.length);
+        }
+        score += weight * (1 + Math.log(count));
+      }
+    }
+
+    if (score === 0) continue;
+
+    // 2. Exact Phrase Boost
+    for (const phrase of phrases) {
+      if (lowMem.includes(phrase)) {
+        score += 5.0;
+      }
+    }
+
+    // 3. Structure-Aware Context Tag Match
+    const contextMatch = mem.match(/\[Context:\s*([^\]]+)\]/i);
+    if (contextMatch) {
+      const tagContent = contextMatch[1].toLowerCase();
+      for (const { token } of tokenWeights) {
+        if (tagContent.includes(token)) {
+          score += 3.5;
+        }
+      }
+    }
+
+    // 4. Recency Decay (newer memories have small advantage for latest tech updates)
+    const recencyBonus = 2.0 * Math.exp(-idx / 12);
+    score += recencyBonus;
+
+    if (score >= 3.0) {
+      scored.push({ mem, score });
+    }
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 3).map(s => s.mem);
+}
+
+/**
+ * Structure-Aware Context Injection: ensure memories possess hierarchical metadata
+ */
+function enrichFactWithContext(fact) {
+  const trimmed = String(fact || '').trim();
+  if (trimmed.startsWith('[Context:')) return trimmed;
+  const low = trimmed.toLowerCase();
+  let category = 'Technology > General';
+  if (/\b(llm|model|ai|gpt|claude|gemini|deepseek|nemotron|gemma|qwen|transformer|inference|prompt|rag)\b/i.test(low)) {
+    category = 'AI Systems > LLM Intelligence';
+  } else if (/\b(react|next|vite|tailwind|javascript|typescript|python|flask|api|serverless|docker|frontend|backend)\b/i.test(low)) {
+    category = 'Software Engineering > Development';
+  } else if (/\b(gpu|cuda|rtx|server|network|mikrotik|cisco|supabase|database|postgres|sql)\b/i.test(low)) {
+    category = 'Infrastructure > Systems & Networks';
+  } else if (/\b(skripsi|paper|jurnal|penelitian|akurasi|f1|dataset|covariate|drift|shingling|sbert)\b/i.test(low)) {
+    category = 'Research & Science > Academic';
+  }
+  return `[Context: ${category}] ${trimmed}`;
 }
 
 /**
@@ -1545,12 +1726,14 @@ async function saveServerMemory(factText, sessionId = null) {
   const supabaseUrl = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
   const supabaseKey = getSupabaseKey();
   if (!supabaseUrl || !supabaseKey || !factText) return;
-  const trimmedFact = String(factText).trim();
-  if (trimmedFact.length < 5 || trimmedFact.length > 1000) return;
-  if (/\b(ignore|override|disregard|abaikan)\b/i.test(trimmedFact)) return;
+  const rawFact = String(factText).trim();
+  if (rawFact.length < 5 || rawFact.length > 1000) return;
+  if (/\b(ignore|override|disregard|abaikan)\b/i.test(rawFact)) return;
   // Tolak placeholder kosong yang disalin model mentah dari instruksi (mis. "Fakta ringkas
   // terkonfirmasi" tanpa isi) agar tidak membanjiri tabel dengan entri tak bermakna.
-  if (/^(?:fakta\s+ringkas\s+terkonfirmasi|fakta\s+terkonfirmasi|ringkas\s+terkonfirmasi|save\s*memory\s*[:)]?)\s*[:\-]?\s*$/i.test(trimmedFact)) return;
+  if (/^(?:fakta\s+ringkas\s+terkonfirmasi|fakta\s+terkonfirmasi|ringkas\s+terkonfirmasi|save\s*memory\s*[:)]?)\s*[:\-]?\s*$/i.test(rawFact)) return;
+  
+  const structuredFact = enrichFactWithContext(rawFact).slice(0, 1000);
   try {
     await fetchWithHardTimeout(`${supabaseUrl}/rest/v1/ai_memories`, {
       method: 'POST',
@@ -1561,7 +1744,7 @@ async function saveServerMemory(factText, sessionId = null) {
         'Prefer': 'return=minimal'
       },
       body: JSON.stringify({
-        fact_text: trimmedFact,
+        fact_text: structuredFact,
         session_id: sessionId || null,
         created_at: new Date().toISOString()
       })
@@ -2387,10 +2570,10 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
 
     // Hanya aktifkan instruksi simpan memori jika sedang ada pencarian web aktif dan fakta teknologi baru ditemukan
     const memoryInstruction = (!isSkipSearch && searchResult.rawSnippets && searchResult.rawSnippets.length > 0)
-      ? `\n\n[INSTRUKSI PENYIMPANAN FAKTA BARU]:\nJika respons Anda memuat rilis teknologi baru terkonfirmasi yang valid dari Konteks Pencarian Web di atas, sertakan tag di baris paling akhir:\n\`[SAVE_MEMORY: Fakta ringkas terkonfirmasi]\``
+      ? `\n\n[INSTRUKSI PENYIMPANAN FAKTA BARU (STRUCTURE-AWARE)]:\nJika respons Anda memuat rilis teknologi baru terkonfirmasi yang valid dari Konteks Pencarian Web di atas, sertakan tag di baris paling akhir dengan format hierarkis:\n\`[SAVE_MEMORY: [Context: Kategori > Topik] Fakta ringkas terkonfirmasi]\``
       : '';
 
-    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort, targetModel, isInternalPortfolioQuery)}${freshFactsIntegrityBlock}${webContext}${serverMemoryBlock}${memoryInstruction}`;
+    const systemPromptWithSearch = `${buildSystemPrompt(sessionLanguage, effectiveEffort, targetModel, isInternalPortfolioQuery, query)}${freshFactsIntegrityBlock}${webContext}${serverMemoryBlock}${memoryInstruction}`;
 
     // Calibrated Dynamic Rolling History Assembler (7,500 chars / ~1.8k tokens - Ultra-Fast Prefill & Sub-10s Latency)
     function assembleDynamicMessages(systemPrompt, historyList = [], userContent = '', maxTotalChars = 7500) {
