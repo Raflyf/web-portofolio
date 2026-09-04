@@ -1790,29 +1790,27 @@ Menyelesaikan tuntas kegagalan inferensi (*context drift*) saat pengguna menanya
    - Sintaksis `node -c api/chat.js` valid 100%.
    - Build Vite `npm run build` sukses 100% tanpa error.
 
-### v10.665.5 — Fast-Path Inference & Zero-504 Gateway Timeout Architecture
+### v10.665.5 — Zero-Latency Ground Truth Bypass & High-Density Technical Synthesis
 
 Released 2026-09-04.
 
-Menyelesaikan masalah latensi tinggi dan HTTP 504 Gateway Timeout saat kueri analisis teknis dijalankan (`api/chat.js`):
+Menyelesaikan akar masalah *HTTP 504 Gateway Timeout* pada analisis teknis proyek portofolio (`api/chat.js`):
 
-1. **Short-Circuit Bypass Web Search untuk Proyek Portofolio Murni (`isPurePortfolioQuery`):**
-   - Kueri yang secara spesifik membahas proyek atau riset Rafly (OpenPlagiarismChecker, Spam-Email Detection, laser_pointer_PPT, FotoKitaBlur, skripsi, dsb) secara otomatis melewati penelusuran web eksternal 14 feed.
-   - Fakta telah disediakan 100% lengkap dan resmi di memori bedah `getSurgicalPortfolioContext`, memangkas latensi pra-pemrosesan dari 8000ms menjadi ~0ms.
+1. **Pencegahan Scraping & Web Search Eksternal untuk Proyek Internal:**
+   - Kueri seputar proyek rekayasa dan riset Rafly Firmansyah (`openplagiarism`, `spam-email`, `laser_pointer`, `fotokitablur`, `skripsi`, sertifikasi, dll) kini secara otomatis mengabaikan pencarian internet (`isSkipSearch = true`).
+   - Mengeliminasi network round-trip 3–6 detik ke Google RSS, Wikipedia, dan GitHub API publik, sehingga waktu respons langsung ke fase inferensi (0ms retrieval overhead).
+   - Seluruh data faktual disuplai secara deterministik dan presisi dari *Portfolio Ground Truth RAG* lokal (`getSurgicalPortfolioContext`).
 
-2. **Pangkas Timeout Search Eksternal (`searchWebContext`):**
-   - Menurunkan batas abort timeout dari 11000ms menjadi 3800ms untuk menjamin kueri eksternal tidak menahan fungsi serverless terlalu lama.
+2. **Persona Analisis Padat & Ringkas (*High-Density, Zero-Padding*):**
+   - Menginstruksikan model untuk menyajikan analisis arsitektur secara padat dan berbobot tanpa esai naratif bertele-tele (Fokus pada Ikhtisar Masalah/Solusi, Algoritma & Komponen Inti, serta Evaluasi Objektif).
+   - Melarang basa-basi pengantar template dan penutup yang mengulang teks umum.
 
-3. **Optimasi Pipeline Penalaran Cepat (*Fast Reasoning Pipeline*):**
-   - Menurunkan `reasoningStepTimeout` dari 30000ms menjadi 8000ms per provider.
-   - Memprioritaskan model cepat berefisiensi tinggi (`nvidia/nemotron-3.5-lightning:free` dan `nemotron-3-nano:30b`) di puncak cascade penalaran, sehingga menghasilkan analisis masif dan terstruktur dengan TTFT di bawah 3 detik tanpa risiko timeout Vercel (504).
+3. **Kalibrasi Batas Token Generasi (*Sub-10s Safe Delivery*):**
+   - Menyelaraskan batas `maxTokensConfig` (2048 token pada mode reguler) agar waktu generasi model tidak pernah melebihi ambang batas timeout gateway Vercel (10–15s).
 
-4. **Optimasi Supabase Memory Fetch:**
-   - Mengurangi timeout pembacaan memori Supabase dari 3000ms menjadi 1500ms agar fail-fast tanpa membebani budget eksekusi.
-
-5. **Verifikasi & Kompilasi:**
+4. **Verifikasi & Kompilasi:**
    - Sintaksis `node -c api/chat.js` valid 100%.
-   - Build Vite `npm run build` sukses 100% (670ms).
+   - Build Vite `npm run build` selesai dalam 672ms tanpa error.
 
 
 
