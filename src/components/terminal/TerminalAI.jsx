@@ -526,6 +526,38 @@ export default function TerminalAI({ onClose } = {}) {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [isTerminalPopupOpen, showHistoryModal, setIsTerminalPopupOpen]);
 
+  // Helper mengekstrak judul cerdas berbasis pertanyaan pertama pengguna
+  const getSessionTitle = (msgs) => {
+    if (!msgs || !Array.isArray(msgs) || msgs.length === 0) return "Percakapan Baru";
+    const firstUserMsg = msgs.find(m => m.role === 'user' && typeof m.content === 'string' && m.content.trim());
+    if (firstUserMsg) {
+      const cleanText = firstUserMsg.content.trim().replace(/^['"`]+|['"`]+$/g, '');
+      if (cleanText.length > 55) {
+        return cleanText.substring(0, 55) + "...";
+      }
+      return cleanText.charAt(0).toUpperCase() + cleanText.slice(1);
+    }
+    return "Percakapan Baru";
+  };
+
+  // Helper mengekstrak ringkasan isi chat dari respons asisten / pesan pengguna
+  const getSessionSnippet = (msgs) => {
+    if (!msgs || !Array.isArray(msgs) || msgs.length === 0) return "Belum ada interaksi...";
+    const assistantMsg = msgs.find(m => (m.role === 'ai' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim());
+    if (assistantMsg) {
+      const clean = assistantMsg.content
+        .replace(/[#*`_~\[\]]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return clean.length > 95 ? clean.substring(0, 95) + "..." : clean;
+    }
+    const userMsg = msgs.find(m => m.role === 'user' && typeof m.content === 'string' && m.content.trim());
+    if (userMsg) {
+      return userMsg.content.trim();
+    }
+    return "Menunggu respons asisten...";
+  };
+
   const handleNewChat = () => {
     if (messages.length > 1) {
       setHistoryList(prev => [{ id: Date.now(), messages: [...messages], timestamp: new Date().toLocaleTimeString() }, ...prev].slice(0, 50));
@@ -1194,50 +1226,66 @@ export default function TerminalAI({ onClose } = {}) {
               onWheel={(e) => e.stopPropagation()}
               onTouchMove={(e) => e.stopPropagation()}
             >
-               <div className="p-4 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition group relative">
-                 <div className="flex items-center justify-between mb-1">
-                   <span className="text-cyan-400 font-medium group-hover:text-cyan-300 text-sm">Sesi Aktif</span>
-                   <span className="text-[10px] text-zinc-500">Sekarang</span>
-                 </div>
-               <p className="text-xs text-zinc-400 truncate">
-                 {messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
-               </p>
-             </div>
-             {historyList.map((hist, idx) => (
-               <div 
-                 key={hist.id} 
-                 onClick={() => {
-                   setMessages(hist.messages);
-                   setShowHistoryModal(false);
-                 }} 
-                 className="p-4 bg-white/2 backdrop-blur-2xl border border-white/10 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between"
-               >
-                 <div className="flex-1 min-w-0 pr-3">
-                   <div className="flex items-center justify-between mb-1">
-                     <span className="text-zinc-300 font-medium group-hover:text-white text-sm">Sesi Terdahulu {historyList.length - idx}</span>
-                     <span className="text-[10px] text-zinc-500">{new Date(hist.id).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})}</span>
+               {/* Sesi Aktif */}
+               <div className="p-4 bg-white/5 backdrop-blur-2xl border border-cyan-500/35 hover:border-cyan-400/60 rounded-xl cursor-pointer hover:bg-white/10 transition group relative shadow-sm">
+                 <div className="flex items-center justify-between gap-2 mb-1.5">
+                   <div className="flex items-center gap-2 min-w-0">
+                     <span className="px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase rounded bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 shrink-0">
+                       Sesi Aktif
+                     </span>
+                     <h4 className="text-white font-semibold text-sm sm:text-base truncate group-hover:text-cyan-300 transition-colors drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+                       {getSessionTitle(messages)}
+                     </h4>
                    </div>
-                   <p className="text-xs text-zinc-500 truncate">
-                     {hist.messages.find(m => m.role === 'user')?.content.substring(0, 45) || "Belum ada interaksi..."}
-                   </p>
+                   <span className="text-[11px] font-mono font-medium text-zinc-300 bg-white/10 px-2 py-0.5 rounded border border-white/15 shrink-0 drop-shadow-sm">
+                     Sekarang
+                   </span>
                  </div>
-                 <button
-                   type="button"
-                   onClick={(e) => handleDeleteHistoryItem(hist.id, e)}
-                   title="Hapus sesi ini"
-                   className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 hover:text-red-300 border border-transparent hover:border-red-500/30 transition opacity-80 group-hover:opacity-100 cursor-pointer shrink-0"
-                 >
-                   <Trash2 className="w-3.5 h-3.5" />
-                 </button>
+                 <p className="text-zinc-200 text-xs sm:text-[13px] leading-relaxed line-clamp-2 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                   {getSessionSnippet(messages)}
+                 </p>
                </div>
-             ))}
 
-             {historyList.length === 0 && (
-               <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-xl">
-                  <p className="text-sm text-zinc-500">Belum ada riwayat sesi terdahulu tersimpan.</p>
-               </div>
-             )}
-          </div>
+               {/* Daftar Sesi Terdahulu Berbasis Pertanyaan / Rangkuman Chat */}
+               {historyList.map((hist) => (
+                 <div 
+                   key={hist.id} 
+                   onClick={() => {
+                     setMessages(hist.messages);
+                     setShowHistoryModal(false);
+                   }} 
+                   className="p-4 bg-white/2 backdrop-blur-2xl border border-white/10 hover:border-white/25 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between shadow-sm"
+                 >
+                   <div className="flex-1 min-w-0 pr-3">
+                     <div className="flex items-center justify-between gap-2 mb-1.5">
+                       <h4 className="text-white font-semibold text-sm sm:text-base truncate group-hover:text-cyan-300 transition-colors drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+                         {getSessionTitle(hist.messages)}
+                       </h4>
+                       <span className="text-[11px] font-mono font-medium text-zinc-300 bg-white/10 px-2 py-0.5 rounded border border-white/15 shrink-0 drop-shadow-sm">
+                         {new Date(hist.id).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                       </span>
+                     </div>
+                     <p className="text-zinc-200 text-xs sm:text-[13px] leading-relaxed line-clamp-2 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                       {getSessionSnippet(hist.messages)}
+                     </p>
+                   </div>
+                   <button
+                     type="button"
+                     onClick={(e) => handleDeleteHistoryItem(hist.id, e)}
+                     title="Hapus sesi ini"
+                     className="p-2.5 rounded-lg bg-red-500/15 hover:bg-red-500/30 text-red-300 hover:text-red-100 border border-red-500/30 hover:border-red-500/50 transition opacity-85 group-hover:opacity-100 cursor-pointer shrink-0 ml-2"
+                   >
+                     <Trash2 className="w-4 h-4" />
+                   </button>
+                 </div>
+               ))}
+
+               {historyList.length === 0 && (
+                 <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-xl">
+                    <p className="text-sm text-zinc-300 font-medium">Belum ada riwayat sesi terdahulu tersimpan.</p>
+                 </div>
+               )}
+            </div>
         </div>
       </div>
     )}
