@@ -1,9 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
-import { TIMELINE_DATA } from '../../data';
+import { getTimelineData } from '../../data';
+import { useLanguage } from '../../context/LanguageContext';
 import { Briefcase, GraduationCap } from 'lucide-react';
 
 export default function ExperienceTimeline() {
+  const { language, t } = useLanguage();
+  const timelineData = useMemo(() => getTimelineData(language), [language]);
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -26,13 +29,13 @@ export default function ExperienceTimeline() {
         className="text-center space-y-4 mb-16"
       >
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Rekam Jejak</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('timeline.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
-          Pengalaman Akademik & Profesional
+          {t('timeline.title')}
         </h2>
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-          Perjalanan pengembangan karir, mulai dari edukasi formal, sertifikasi intensif, hingga simulasi kerja praktikal.
+          {t('timeline.subtitle')}
         </p>
       </motion.div>
 
@@ -47,7 +50,7 @@ export default function ExperienceTimeline() {
         />
 
         <div className="space-y-12">
-          {TIMELINE_DATA.map((item, index) => {
+          {timelineData.map((item, index) => {
             const isLeft = index % 2 === 0;
             const isEducation = item.type === 'education';
 

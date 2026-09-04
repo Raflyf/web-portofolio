@@ -16,44 +16,84 @@ import {
   Sparkles,
   Clock
 } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext.jsx";
 
-const HERO_SHOWCASE_PROJECTS = [
-  {
-    id: "open-plagiarism-checker",
-    tag: "NLP · Skripsi S1",
-    title: "OpenPlagiarismChecker",
-    desc: "Mesin riset pemeriksa dokumen akademik lokal berbasis N-Gram Shingling dan Sentence Transformers.",
-    spec: "IndoBERT & N-Gram"
-  },
-  {
-    id: "spam-email-classifier",
-    tag: "Machine Learning · Riset",
-    title: "Spam-Email Detection System",
-    desc: "Evaluasi komparatif Complement Naive Bayes (CNB) vs XGBoost dengan mitigasi Concept Drift.",
-    spec: "CNB vs XGBoost"
-  },
-  {
-    id: "laser-pointer-ppt",
-    tag: "Computer Vision / IoT",
-    title: "laser_pointer_PPT",
-    desc: "Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan WebSocket.",
-    spec: "Gyroscope & WebSockets"
-  },
-  {
-    id: "fotokita-blur",
-    tag: "Edge AI / Vision",
-    title: "FotoKitaBlur",
-    desc: "Deteksi gestur tangan realtime berbasis browser menggunakan MediaPipe Tasks Vision dan OpenCV.",
-    spec: "MediaPipe & OpenCV"
-  },
-  {
-    id: "web-portofolio",
-    tag: "Frontend & Systems",
-    title: "Web Portofolio & AI Platform",
-    desc: "Arsitektur antarmuka web modern Vanilla JS/CSS, observabilitas telemetri, dan integrasi AI.",
-    spec: "Vanilla Architecture"
-  }
-];
+const HERO_SHOWCASE_PROJECTS_I18N = {
+  id: [
+    {
+      id: "open-plagiarism-checker",
+      tag: "NLP · Skripsi S1",
+      title: "OpenPlagiarismChecker",
+      desc: "Mesin riset pemeriksa dokumen akademik lokal berbasis N-Gram Shingling dan Sentence Transformers.",
+      spec: "IndoBERT & N-Gram"
+    },
+    {
+      id: "spam-email-classifier",
+      tag: "Machine Learning · Riset",
+      title: "Spam-Email Detection System",
+      desc: "Evaluasi komparatif Complement Naive Bayes (CNB) vs XGBoost dengan mitigasi Concept Drift.",
+      spec: "CNB vs XGBoost"
+    },
+    {
+      id: "laser-pointer-ppt",
+      tag: "Computer Vision / IoT",
+      title: "laser_pointer_PPT",
+      desc: "Pengendali presentasi PowerPoint nirsentuh dari smartphone menggunakan sensor gyroscope dan WebSocket.",
+      spec: "Gyroscope & WebSockets"
+    },
+    {
+      id: "fotokita-blur",
+      tag: "Edge AI / Vision",
+      title: "FotoKitaBlur",
+      desc: "Deteksi gestur tangan realtime berbasis browser menggunakan MediaPipe Tasks Vision dan OpenCV.",
+      spec: "MediaPipe & OpenCV"
+    },
+    {
+      id: "web-portofolio",
+      tag: "Frontend & Systems",
+      title: "Web Portofolio & AI Platform",
+      desc: "Arsitektur antarmuka web modern Vanilla JS/CSS, observabilitas telemetri, dan integrasi AI.",
+      spec: "Vanilla Architecture"
+    }
+  ],
+  en: [
+    {
+      id: "open-plagiarism-checker",
+      tag: "NLP · Academic Thesis",
+      title: "OpenPlagiarismChecker",
+      desc: "Local research document similarity engine powered by 5-word N-Gram Shingling and Sentence Transformers.",
+      spec: "IndoBERT & N-Gram"
+    },
+    {
+      id: "spam-email-classifier",
+      tag: "Machine Learning · Research",
+      title: "Spam-Email Detection System",
+      desc: "Comparative benchmark of Complement Naive Bayes vs XGBoost with Concept Drift Domain Adaptation.",
+      spec: "CNB vs XGBoost"
+    },
+    {
+      id: "laser-pointer-ppt",
+      tag: "Computer Vision / IoT",
+      title: "laser_pointer_PPT",
+      desc: "Contactless presentation remote using mobile gyroscope orientation and WebSockets.",
+      spec: "Gyroscope & WebSockets"
+    },
+    {
+      id: "fotokita-blur",
+      tag: "Edge AI / Vision",
+      title: "FotoKitaBlur",
+      desc: "Real-time client-side hand gesture and facial tracking via MediaPipe Tasks Vision & OpenCV.",
+      spec: "MediaPipe & OpenCV"
+    },
+    {
+      id: "web-portofolio",
+      tag: "Frontend & Systems",
+      title: "Web Portfolio & AI Platform",
+      desc: "Modern bespoke web architecture with integrated AI lab and real-time telemetry observability.",
+      spec: "Vanilla Architecture"
+    }
+  ]
+};
 
 const STACK_BADGES = [
   { name: "PyTorch", icon: Hexagon },
@@ -67,23 +107,27 @@ const STACK_BADGES = [
 ];
 
 export default function HorizonHero() {
+  const { language, t } = useLanguage();
   const containerRef = useRef(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [clockTime, setClockTime] = useState('');
 
+  const showcaseProjects = HERO_SHOWCASE_PROJECTS_I18N[language] || HERO_SHOWCASE_PROJECTS_I18N.id;
+
   // Live WIB clock (UTC+7), paused when the tab is hidden
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
-      const timeStr = new Intl.DateTimeFormat('id-ID', {
+      const timeStr = new Intl.DateTimeFormat(language === 'id' ? 'id-ID' : 'en-US', {
         timeZone: 'Asia/Bangkok',
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
       }).format(now);
-      setClockTime(`WIB (UTC+7) · ${timeStr}`);
+      const tzLabel = language === 'id' ? 'WIB (UTC+7)' : 'UTC+7 (WIB)';
+      setClockTime(`${tzLabel} · ${timeStr}`);
     };
     updateClock();
     const timer = setInterval(updateClock, 1000);
@@ -99,7 +143,7 @@ export default function HorizonHero() {
       clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, []);
+  }, [language]);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -117,20 +161,20 @@ export default function HorizonHero() {
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SHOWCASE_PROJECTS.length);
+      setCurrentSlide((prev) => (prev + 1) % showcaseProjects.length);
     }, 4500);
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, showcaseProjects.length]);
 
   const handlePrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? HERO_SHOWCASE_PROJECTS.length - 1 : prev - 1));
+    setCurrentSlide((prev) => (prev === 0 ? showcaseProjects.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_SHOWCASE_PROJECTS.length);
+    setCurrentSlide((prev) => (prev + 1) % showcaseProjects.length);
   };
 
-  const activeProject = HERO_SHOWCASE_PROJECTS[currentSlide];
+  const activeProject = showcaseProjects[currentSlide] || showcaseProjects[0];
 
   return (
     <div 
@@ -157,7 +201,7 @@ export default function HorizonHero() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl transition-colors hover:bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
                 <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-                  Portofolio Pribadi & Developer Lab
+                  {t('hero.badge')}
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
                 </span>
               </div>
@@ -179,7 +223,7 @@ export default function HorizonHero() {
             </h1>
 
             <p className="max-w-xl text-base sm:text-lg text-zinc-300 leading-relaxed font-normal">
-              Fokus mengembangkan aplikasi web modern dan sistem kecerdasan buatan yang praktis, aman, serta menghormati privasi pengguna.
+              {t('hero.tagline')}
             </p>
 
             {/* Pristine iOS Liquid Glass Buttons */}
@@ -188,7 +232,7 @@ export default function HorizonHero() {
                 href="#projects"
                 className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 hover:from-cyan-300 hover:to-cyan-500 border border-cyan-300/60 text-white font-semibold tracking-wide text-sm shadow-[0_8px_24px_rgba(6,182,212,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-[1.03] group"
               >
-                <span>Jelajahi Karya</span>
+                <span>{t('hero.exploreBtn')}</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </a>
               
@@ -197,7 +241,7 @@ export default function HorizonHero() {
                 className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full liquid-glass-inset liquid-glass-pill liquid-press text-slate-200 font-semibold tracking-wide text-sm transition-all hover:scale-[1.03] group"
               >
                 <Terminal className="w-4 h-4 text-cyan-400 transition-transform group-hover:scale-110" />
-                <span>Uji Terminal AI Lab</span>
+                <span>{t('hero.terminalBtn')}</span>
               </a>
             </div>
           </motion.div>
@@ -230,12 +274,10 @@ export default function HorizonHero() {
 
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400 font-medium">
-                    0{currentSlide + 1} / 0{HERO_SHOWCASE_PROJECTS.length}
+                    0{currentSlide + 1} / 0{showcaseProjects.length}
                   </span>
                   <div className="flex gap-1">
-                    {/* FIX M6: visible pause/play control for the auto-slide
-                        (WCAG 2.2.2 — auto-rotating content must be pausable by
-                        the user; this is user control, not a reduced-motion kill). */}
+                    {/* Visible pause/play control for the auto-slide */}
                     <button
                       type="button"
                       onClick={() => setIsPaused(prev => !prev)}
@@ -244,8 +286,8 @@ export default function HorizonHero() {
                           ? "bg-cyan-500/25 border-cyan-500/40 text-cyan-300"
                           : "bg-white/5 border-white/10 text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40"
                       }`}
-                      title={isPaused ? "Lanjutkan putar otomatis" : "Jeda putar otomatis"}
-                      aria-label={isPaused ? "Lanjutkan putar otomatis" : "Jeda putar otomatis"}
+                      title={isPaused ? t('hero.resumeAuto') : t('hero.pauseAuto')}
+                      aria-label={isPaused ? t('hero.resumeAuto') : t('hero.pauseAuto')}
                       aria-pressed={isPaused}
                     >
                       {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
@@ -253,16 +295,16 @@ export default function HorizonHero() {
                     <button
                       onClick={handlePrev}
                       className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
-                      title="Proyek Sebelumnya"
-                      aria-label="Proyek Sebelumnya"
+                      title={t('hero.prevProject')}
+                      aria-label={t('hero.prevProject')}
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
                       onClick={handleNext}
                       className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
-                      title="Proyek Berikutnya"
-                      aria-label="Proyek Berikutnya"
+                      title={t('hero.nextProject')}
+                      aria-label={t('hero.nextProject')}
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>

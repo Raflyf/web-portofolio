@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useScroll } from 'framer-motion';
+import { useLanguage } from '../../context/LanguageContext.jsx';
 
-const SECTIONS = [
-  { id: 'hero', label: 'Overview' },
-  { id: 'about', label: 'Profil' },
-  { id: 'skills', label: 'Keahlian' },
-  { id: 'projects', label: 'Karya' },
-  { id: 'certificates', label: 'Sertifikat' },
-  { id: 'timeline', label: 'Riwayat' },
-  { id: 'lab', label: 'AI Lab' },
-  { id: 'contact', label: 'Kontak' },
+const SECTION_IDS = [
+  'hero',
+  'about',
+  'skills',
+  'projects',
+  'certificates',
+  'timeline',
+  'lab',
+  'contact',
 ];
 
 export default function ScrollStoryline() {
+  const { t } = useLanguage();
   const [activeSection, setActiveSection] = useState('hero');
   const [percent, setPercent] = useState(0);
   const { scrollYProgress } = useScroll();
+
+  const sections = SECTION_IDS.map(id => ({
+    id,
+    label: t(`storyline.${id}`)
+  }));
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (latest) => {
@@ -31,7 +38,7 @@ export default function ScrollStoryline() {
         requestAnimationFrame(() => {
           const scrollPosition = window.scrollY + window.innerHeight / 3;
 
-          for (const section of SECTIONS) {
+          for (const section of sections) {
             const el = document.getElementById(section.id);
             if (el) {
               const top = el.offsetTop;
@@ -50,7 +57,7 @@ export default function ScrollStoryline() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sections]);
 
   const scrollTo = (id) => {
     const el = document.getElementById(id);
@@ -69,14 +76,14 @@ export default function ScrollStoryline() {
       {/* Floating Scrollytelling Sidebar Navigation */}
       <aside className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col items-end gap-3 pointer-events-auto select-none" aria-label="Navigasi Cerita">
         <div className="flex flex-col items-center gap-3 p-2.5 liquid-glass-inset liquid-glass-pill">
-          {SECTIONS.map((sec) => {
+          {sections.map((sec) => {
             const isActive = activeSection === sec.id;
             return (
               <button
                 key={sec.id}
                 onClick={() => scrollTo(sec.id)}
                 className="group relative flex items-center justify-center p-1.5 focus:outline-none cursor-pointer"
-                aria-label={`Scroll ke bagian ${sec.label}`}
+                aria-label={`${t('storyline.scrollTo')} ${sec.label}`}
               >
                 {/* Hover / Active Tooltip */}
                 <span className={`absolute right-8 px-2.5 py-1 rounded-md text-[11px] font-medium tracking-wide uppercase whitespace-nowrap transition-all duration-200 pointer-events-none border ${

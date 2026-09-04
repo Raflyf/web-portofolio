@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, MessageSquare, Copy, Check, Send, AlertCircle, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
+import { useLanguage } from '../../context/LanguageContext';
 import { telemetry } from '../../lib/telemetry';
 
 export default function ContactSection() {
+  const { language, t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [formState, setFormState] = useState({
     name: '',
@@ -42,7 +44,7 @@ export default function ContactSection() {
     if (!name.trim() || !email.trim() || !message.trim()) {
       setStatus({
         type: 'error',
-        message: 'Harap lengkapi semua kolom nama, email, dan pesan dengan benar.'
+        message: t('contact.errorRequired')
       });
       return;
     }
@@ -50,7 +52,7 @@ export default function ContactSection() {
     if (!emailPattern.test(email.trim())) {
       setStatus({
         type: 'error',
-        message: 'Format alamat email tidak valid. Harap periksa kembali.'
+        message: t('contact.errorEmail')
       });
       return;
     }
@@ -62,7 +64,9 @@ export default function ContactSection() {
       const remainingSec = Math.ceil((30000 - (now - parseInt(lastSubmit, 10))) / 1000);
       setStatus({
         type: 'error',
-        message: `Mohon menunggu ${remainingSec} detik sebelum mengirimkan pesan kembali demi mencegah spam.`
+        message: language === 'id' 
+          ? `Mohon menunggu ${remainingSec} detik sebelum mengirimkan pesan kembali demi mencegah spam.`
+          : `Please wait ${remainingSec} seconds before sending another message to prevent spam.`
       });
       return;
     }
@@ -94,26 +98,30 @@ export default function ContactSection() {
       if (response.ok || data.success === 'true' || data.success === true) {
         localStorage.setItem('portfolio_last_submit', Date.now().toString());
         telemetry.logEvent('contact_submit', 'contact_form', 'Kirim Formulir Pesan Kontak');
-        const waText = encodeURIComponent(`Halo Rafly, saya ${name.trim()} (${email.trim()}). Pesan: ${message.trim()}`);
+        const waGreeting = language === 'id' ? 'Halo Rafly, saya' : 'Hello Rafly, I am';
+        const waText = encodeURIComponent(`${waGreeting} ${name.trim()} (${email.trim()}). ${language === 'id' ? 'Pesan:' : 'Message:'} ${message.trim()}`);
         const waUrl = `${DEVELOPER_PROFILE.whatsappUrl}?text=${waText}`;
 
         setStatus({
           type: 'success',
-          message: 'Pesan Anda berhasil dikirim ke kotak masuk email! Anda juga dapat melanjutkan komunikasi langsung melalui WhatsApp.',
+          message: t('contact.successMsg'),
           waUrl
         });
 
         setFormState({ name: '', email: '', message: '', _honeypot: '' });
       } else {
-        throw new Error(data.message || 'Gagal mengirimkan pesan');
+        throw new Error(data.message || (language === 'id' ? 'Gagal mengirimkan pesan' : 'Failed to send message'));
       }
     } catch {
       // Fallback message with direct WA backup
-      const waText = encodeURIComponent(`Halo Rafly, saya ${name.trim()} (${email.trim()}). Pesan: ${message.trim()}`);
+      const waGreeting = language === 'id' ? 'Halo Rafly, saya' : 'Hello Rafly, I am';
+      const waText = encodeURIComponent(`${waGreeting} ${name.trim()} (${email.trim()}). ${language === 'id' ? 'Pesan:' : 'Message:'} ${message.trim()}`);
       const waUrl = `${DEVELOPER_PROFILE.whatsappUrl}?text=${waText}`;
       setStatus({
         type: 'error',
-        message: 'Pengiriman formulir email mengalami kendala jaringan. Anda dapat mengirimkan pesan secara instan via WhatsApp berikut.',
+        message: language === 'id'
+          ? 'Pengiriman formulir email mengalami kendala jaringan. Anda dapat mengirimkan pesan secara instan via WhatsApp berikut.'
+          : 'Email form submission encountered a network issue. You can send your message directly via WhatsApp below.',
         waUrl
       });
     } finally {
@@ -132,13 +140,13 @@ export default function ContactSection() {
         className="text-center space-y-4 mb-16"
       >
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Terhubung</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('contact.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
-          Hubungi & Diskusikan Peluang
+          {t('contact.title')}
         </h2>
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
-          Terbuka untuk diskusi proyek rekayasa perangkat lunak, kolaborasi riset model AI/ML, dan peluang profesional.
+          {t('contact.subtitle')}
         </p>
       </motion.div>
 
@@ -160,11 +168,11 @@ export default function ContactSection() {
                 <Mail className="w-5 h-5" />
               </div>
               <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
-                Respon Cepat
+                {language === 'id' ? 'Respon Cepat' : 'Fast Response'}
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Email Langsung</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{t('contact.emailDirect')}</span>
               <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5 group-hover:text-cyan-300 transition-colors break-all">
                 {DEVELOPER_PROFILE.email}
               </p>
@@ -176,12 +184,12 @@ export default function ContactSection() {
               {copied ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-300">Tersalin ke Clipboard!</span>
+                  <span className="text-emerald-300">{language === 'id' ? 'Tersalin ke Clipboard!' : 'Copied to Clipboard!'}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Salin Alamat Email</span>
+                  <span>{t('contact.copyEmail')}</span>
                 </>
               )}
             </button>
@@ -208,13 +216,13 @@ export default function ContactSection() {
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Pesan Instan</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{t('contact.whatsappDirect')}</span>
               <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5 group-hover:text-emerald-300 transition-colors">
                 {DEVELOPER_PROFILE.whatsapp}
               </p>
             </div>
             <div className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-[11px] font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-all">
-              <span>Buka Chat WhatsApp</span>
+              <span>{t('contact.openWhatsapp')}</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
           </motion.a>
@@ -238,17 +246,17 @@ export default function ContactSection() {
                 </svg>
               </div>
               <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-400/80 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
-                Repositori Publik
+                {language === 'id' ? 'Repositori Publik' : 'Public Repositories'}
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">Profil Developer</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">{language === 'id' ? 'Profil Developer' : 'Developer Profile'}</span>
               <p className="text-sm sm:text-base font-bold text-white font-mono mt-0.5 group-hover:text-indigo-300 transition-colors">
                 github.com/Raflyf
               </p>
             </div>
             <div className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-[11px] font-semibold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all">
-              <span>Kunjungi Profil GitHub</span>
+              <span>{language === 'id' ? 'Kunjungi Profil GitHub' : 'Visit GitHub Profile'}</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
           </motion.a>
@@ -266,10 +274,12 @@ export default function ContactSection() {
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-            Kirimkan Pesan Langsung
+            {language === 'id' ? 'Kirimkan Pesan Langsung' : 'Send a Direct Message'}
           </h3>
           <p className="text-xs sm:text-sm text-zinc-400 mb-8 leading-relaxed">
-            Formulir akan dikirimkan secara langsung ke kotak masuk email saya melalui integrasi API aman.
+            {language === 'id' 
+              ? 'Formulir akan dikirimkan secara langsung ke kotak masuk email saya melalui integrasi API aman.'
+              : 'Messages are transmitted directly to my email inbox via secure API integration.'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -286,7 +296,7 @@ export default function ContactSection() {
 
             <div className="space-y-2">
               <label htmlFor="form-name" className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Nama Lengkap
+                {t('contact.formName')}
               </label>
               <input
                 id="form-name"
@@ -294,7 +304,7 @@ export default function ContactSection() {
                 name="name"
                 value={formState.name}
                 onChange={handleChange}
-                placeholder="Masukkan nama Anda..."
+                placeholder={t('contact.formNamePlaceholder')}
                 required
                 className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
               />
@@ -302,7 +312,7 @@ export default function ContactSection() {
 
             <div className="space-y-2">
               <label htmlFor="form-email" className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Alamat Email
+                {t('contact.formEmail')}
               </label>
               <input
                 id="form-email"
@@ -310,7 +320,7 @@ export default function ContactSection() {
                 name="email"
                 value={formState.email}
                 onChange={handleChange}
-                placeholder="nama@instansi.com..."
+                placeholder={t('contact.formEmailPlaceholder')}
                 required
                 className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
               />
@@ -318,7 +328,7 @@ export default function ContactSection() {
 
             <div className="space-y-2">
               <label htmlFor="form-message" className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Pesan atau Diskusi Proyek
+                {t('contact.formMessage')}
               </label>
               <textarea
                 id="form-message"
@@ -326,7 +336,7 @@ export default function ContactSection() {
                 value={formState.message}
                 onChange={handleChange}
                 rows={5}
-                placeholder="Tuliskan detail pertanyaan atau tawaran kolaborasi riset/proyek..."
+                placeholder={t('contact.formMessagePlaceholder')}
                 required
                 className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all resize-none"
               />
@@ -361,7 +371,7 @@ export default function ContactSection() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 font-semibold text-white underline underline-offset-4 hover:text-cyan-300 transition-colors ml-7 text-xs"
                     >
-                      Buka Pesan di WhatsApp &rarr;
+                      {language === 'id' ? 'Buka Pesan di WhatsApp →' : 'Open Message in WhatsApp →'}
                     </a>
                   )}
                 </motion.div>
@@ -377,11 +387,11 @@ export default function ContactSection() {
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  <span>Mengirimkan Pesan...</span>
+                  <span>{t('contact.sending')}</span>
                 </>
               ) : (
                 <>
-                  <span>Kirim Pesan Sekarang</span>
+                  <span>{t('contact.sendBtn')}</span>
                   <Send className="w-4 h-4" />
                 </>
               )}

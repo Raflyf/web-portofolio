@@ -3,14 +3,16 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { MotionConfig, motion, useScroll, useSpring } from 'framer-motion';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
-import { Shield, Menu, X, Terminal, Sun, Moon } from 'lucide-react';
+import { Shield, Menu, X, Terminal, Sun, Moon, Globe } from 'lucide-react';
 import Home from './pages/Home';
 // Dashboard is heavy (Chart.js) — code-split so the landing bundle stays light.
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 import { useTerminal } from './context/TerminalContext.jsx';
+import { useLanguage } from './context/LanguageContext.jsx';
 import { telemetry } from './lib/telemetry';
 
 function FloatingNavbar() {
+  const { language, toggleLanguage, t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
   const lastScrollY = useRef(0);
@@ -107,13 +109,13 @@ function FloatingNavbar() {
   };
 
   const navLinks = [
-    { name: 'Tentang', href: '/#about' },
-    { name: 'Keahlian', href: '/#skills' },
-    { name: 'Proyek', href: '/#projects' },
-    { name: 'Sertifikat', href: '/#certificates' },
-    { name: 'Riwayat', href: '/#timeline' },
-    { name: 'Lab AI', href: '/#lab' },
-    { name: 'Kontak', href: '/#contact' },
+    { name: t('nav.about'), href: '/#about' },
+    { name: t('nav.skills'), href: '/#skills' },
+    { name: t('nav.projects'), href: '/#projects' },
+    { name: t('nav.certificates'), href: '/#certificates' },
+    { name: t('nav.timeline'), href: '/#timeline' },
+    { name: t('nav.lab'), href: '/#lab' },
+    { name: t('nav.contact'), href: '/#contact' },
   ];
 
   return (
@@ -126,7 +128,7 @@ function FloatingNavbar() {
           : 'bg-transparent border-b border-transparent'
       }`}>
         {/* Brand / Logo - Clicking smoothly scrolls to the very top */}
-        <Link to="/" onClick={handleBrandClick} className="flex items-center gap-3 group cursor-pointer" title="Kembali ke Paling Atas">
+        <Link to="/" onClick={handleBrandClick} className="flex items-center gap-3 group cursor-pointer" title={t('nav.returnTopTitle')}>
           <div className="w-9 h-9 rounded-full bg-linear-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] group-hover:scale-105 transition-transform">
             <span className="text-sm font-bold text-zinc-900 dark:text-white tracking-tight">RF</span>
           </div>
@@ -136,7 +138,7 @@ function FloatingNavbar() {
             </span>
             <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 leading-none flex items-center gap-1.5 mt-0.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-              Online
+              {t('nav.onlineStatus')}
             </span>
           </div>
         </Link>
@@ -158,13 +160,25 @@ function FloatingNavbar() {
           ))}
         </nav>
 
-        {/* Right CTA Actions: Theme Toggle + Dashboard Badge */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Right CTA Actions: Language Switcher + Theme Toggle + Dashboard Badge */}
+        <div className="hidden md:flex items-center gap-2.5">
+          <button
+            onClick={toggleLanguage}
+            className="px-3 py-1.5 rounded-full liquid-glass-inset liquid-glass-pill liquid-press text-xs font-mono font-bold text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer transition-all flex items-center gap-1.5"
+            aria-label={t('nav.switchLanguage')}
+            title={language === 'id' ? 'Switch language to English' : 'Ganti bahasa ke Bahasa Indonesia'}
+          >
+            <Globe className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+            <span className={language === 'id' ? 'text-cyan-600 dark:text-cyan-300 font-extrabold' : 'opacity-60'}>ID</span>
+            <span className="opacity-30">/</span>
+            <span className={language === 'en' ? 'text-cyan-600 dark:text-cyan-300 font-extrabold' : 'opacity-60'}>EN</span>
+          </button>
+
           <button
             onClick={handleThemeToggle}
             className="w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
-            aria-label="Ubah Mode Tema"
-            title="Ubah Mode Tema (Terang/Gelap)"
+            aria-label={t('nav.themeToggle')}
+            title={`${t('nav.themeToggle')} (${isDark ? t('nav.lightMode') : t('nav.darkMode')})`}
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -173,7 +187,7 @@ function FloatingNavbar() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 liquid-press transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)]"
           >
             <Shield className="w-4 h-4" />
-            <span>Dashboard</span>
+            <span>{t('nav.dashboard')}</span>
           </Link>
         </div>
 
@@ -190,7 +204,7 @@ function FloatingNavbar() {
       {/* Mobile Menu Dropdown with Liquid Glass & Soft Frosted Dimmer */}
       {mobileMenuOpen && (
         <>
-          {/* Soft Frosted Backdrop Dimmer: Menghilangkan tabrakan teks tanpa merusak estetika kaca cair */}
+          {/* Soft Frosted Backdrop Dimmer */}
           <div 
             onClick={() => setMobileMenuOpen(false)}
             className="fixed inset-0 bg-black/35 dark:bg-black/50 backdrop-blur-sm z-[-1] pointer-events-auto transition-opacity"
@@ -219,6 +233,23 @@ function FloatingNavbar() {
 
             <div className="h-px bg-zinc-300/40 dark:bg-white/10 my-1 mx-2" />
 
+            {/* Mobile Language Toggle */}
+            <button
+              onClick={() => {
+                toggleLanguage();
+                setMobileMenuOpen(false);
+              }}
+              className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold liquid-glass-inset text-zinc-800 dark:text-zinc-200 hover:bg-white/30 dark:hover:bg-white/10 active:bg-white/40 dark:active:bg-white/15 liquid-press transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Globe className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                <span>{t('nav.switchLanguage')}</span>
+              </div>
+              <span className="text-xs font-mono font-bold text-cyan-600 dark:text-cyan-300">
+                {language === 'id' ? 'Bahasa Indonesia (ID)' : 'English (EN)'}
+              </span>
+            </button>
+
             <button
               onClick={() => {
                 handleThemeToggle();
@@ -228,10 +259,10 @@ function FloatingNavbar() {
             >
               <div className="flex items-center gap-2.5">
                 {isDark ? <Sun className="w-4 h-4 text-amber-500 dark:text-cyan-400" /> : <Moon className="w-4 h-4 text-indigo-600 dark:text-cyan-400" />}
-                <span>Ubah Mode Tema</span>
+                <span>{t('nav.themeToggle')}</span>
               </div>
               <span className="text-xs font-mono font-medium text-zinc-600 dark:text-zinc-400">
-                {isDark ? 'Mode Gelap' : 'Mode Terang'}
+                {isDark ? t('nav.darkMode') : t('nav.lightMode')}
               </span>
             </button>
 
@@ -242,7 +273,7 @@ function FloatingNavbar() {
             >
               <div className="flex items-center gap-2.5">
                 <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Dashboard Observabilitas</span>
+                <span>{t('nav.dashboardFull')}</span>
               </div>
               <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">LIVE</span>
             </Link>
@@ -271,6 +302,7 @@ function GlobalScrollProgressBar() {
 
 export default function App() {
   const { setIsTerminalPopupOpen } = useTerminal();
+  const { t } = useLanguage();
   const location = useLocation();
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
@@ -351,8 +383,8 @@ export default function App() {
                 }
               }}
               className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-1"
-              aria-label="Back to top"
-              title="Kembali ke Atas"
+              aria-label={t('nav.backToTop')}
+              title={t('nav.backToTop')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
             </button>
@@ -363,8 +395,8 @@ export default function App() {
                 setIsTerminalPopupOpen(true);
               }}
               className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow"
-              aria-label="Open Terminal"
-              title="Buka Terminal AI"
+              aria-label={t('nav.openTerminal')}
+              title={t('nav.openTerminal')}
             >
               <Terminal className="w-5 h-5" />
             </button>

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
+import { useLanguage } from '../../context/LanguageContext';
 import { telemetry } from '../../lib/telemetry';
 
 const socialLinks = [
@@ -20,6 +21,7 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const { t } = useLanguage();
   const year = new Date().getFullYear();
 
   return (
@@ -48,7 +50,7 @@ export default function Footer() {
                 </p>
                 <p className="text-[11px] text-zinc-400 font-mono flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]" />
-                  Tersedia untuk kolaborasi
+                  {t('footer.available')}
                 </p>
               </div>
             </div>
@@ -88,7 +90,7 @@ export default function Footer() {
           className="mt-6 pt-6 border-t border-white/5 flex justify-center"
         >
           <p className="text-xs text-zinc-500 font-mono text-center">
-            &copy; {year} Rafly Firmansyah. Seluruh hak cipta dilindungi.
+            &copy; {year} Rafly Firmansyah. {t('footer.rights')}
           </p>
         </motion.div>
       </div>

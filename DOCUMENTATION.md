@@ -1552,3 +1552,51 @@ Memenuhi kepatuhan mutlak terhadap aturan `AGENTS.md` Bagian 2 (Anti-Asumsi & Va
    - Kueri peringkat live: Menghasilkan nama model, developer, dan skor numerik resmi tanpa embel-embel kalimat template.
    - Kueri URL umum dan domain mandiri: Terbuka dan ter-scrape secara otonom tanpa batasan platform.
    - Kompilasi `npm run build` sukses bersih.
+
+### v10.662.0 — Full Bilingual Localization Architecture (ID/EN) & Admin Observability Dashboard Multi-Language Integration
+
+Released 2026-09-04.
+
+Implementasi menyeluruh sistem multi-bahasa dwibahasa (Bahasa Indonesia `id` dan English `en`) pada seluruh antarmuka publik portofolio dan panel observabilitas admin internal (`Dashboard.jsx`), tanpa kompromi estetika, performa, atau aksesibilitas:
+
+1. **Infrastruktur Reaktif LanguageContext (`src/context/LanguageContext.jsx`):**
+   - Mengembangkan `LanguageProvider` dan hook `useLanguage()` berbasis React Context dengan persistensi state di `localStorage` (`portfolio_lang`).
+   - Kamus data modular (`DICTIONARY`) komprehensif mencakup ribuan token teks dari beranda hingga panel telemetri terdalam.
+   - Sinkronisasi otomatis atribut HTML root (`document.documentElement.lang = language`) untuk kompatibilitas assistive technology (screen reader) dan SEO.
+   - Logging telemetri terintegrasi (`telemetry.logEvent('language_toggle', nextLang)`).
+   - Helper `t(key, params)` dengan fallback hierarkis cerdas ke Bahasa Indonesia jika terjadi missing key, serta interpolasi dinamis `{param}`.
+
+2. **Penyelarasan Data Dinamis (`src/data.js`):**
+   - Menyediakan getter dinamis berbasis bahasa: `getDeveloperProfile(lang)`, `getProjectsData(lang)`, `getCertificatesData(lang)`, dan `getTimelineData(lang)`.
+   - Menjaga backwards-compatibility penuh dengan tetap mengekspor struktur statis default agar modul lain yang bergantung tidak mengalami regresi.
+
+3. **Lokalisasi Seluruh Komponen Antarmuka Landing Page:**
+   - **Navigasi & Header (`src/App.jsx`):** Switcher pill liquid-glass dwibahasa (`ID / EN`) pada navbar desktop dan mobile drawer drawer, tooltip floating actions yang terlokalisasi.
+   - **Hero Section (`src/components/ui/horizon-hero.jsx`):** Badge, sub-headline editorial, tombol CTA explore/lab, jam live WIB / UTC+7, dan kartu mini-proyek interaktif.
+   - **About Section (`src/components/sections/AboutSection.jsx`):** Bio akademik, visi rekayasa, dan 4 kartu pilar teknis (Machine Learning, Network, Vision, Full-Stack).
+   - **Skills Bento (`src/components/sections/SkillsBento.jsx`):** Badge, judul, subjudul, dan 4 kategori domain teknologi.
+   - **Projects Grid (`src/components/sections/ProjectsGrid.jsx`):** Tab filter kategori, deskripsi proyek, kartu unggulan, dan tautan aksi repositori/demo.
+   - **Certificates Grid (`src/components/sections/CertificatesGrid.jsx`):** Tab filter kredensial, modal penampil dokumen PDF dengan kontrol halaman terlokalisasi, serta verifikasi BNSP/MikroTik/Cisco.
+   - **Experience Timeline (`src/components/sections/ExperienceTimeline.jsx`):** Judul seksi, badge, serta pencapaian milestone akademik dan profesional.
+   - **Developer Terminal Lab (`src/pages/Home.jsx`):** Badge, heading, dan deskripsi pengantar Terminal CLI AI.
+   - **Contact Section (`src/components/sections/ContactSection.jsx`):** Formulir kontak, label input, placeholder, pesan validasi interaktif, indikator honeypot keamanan, dan notifikasi anti-spam.
+   - **Storyline HUD (`src/components/ui/scroll-storyline.jsx`):** Label navigasi floating indicator per seksi.
+   - **Footer (`src/components/layout/Footer.jsx`):** Keterangan ketersediaan kolaborasi dan hak cipta.
+
+4. **Lokalisasi Menyeluruh Admin Observability Dashboard (`src/pages/Dashboard.jsx`):**
+   - **Layar Gateway PIN (Unauthenticated):** Switcher bahasa terpasang langsung pada kartu liquid-glass gateway PIN, pesan keamanan, placeholder PIN, indikator lockout timer, dan formulir recovery email OTP.
+   - **Top Header Bar (Authenticated):** Tombol switcher bahasa terintegrasi di samping tema gelap/terang, badge status live Supabase vs cache lokal, serta tombol aksi audit.
+   - **5 Bento KPI Cards:** Metrik utama (Page Views, Unique Visitors, Clicks, AI Queries, Inquiries) dan tab filter rentang waktu (`Hari Ini` / `Today`, `7 Hari` / `7 Days`, `14 Hari` / `14 Days`, `30 Hari` / `30 Days`, `Semua` / `All Time`).
+   - **Grafik Tren Trafik & Interaksi:** Label dataset Chart.js dinamis, formatting tanggal lokal (`id-ID` vs `en-US`), dan subjudul analitis.
+   - **4-Card Intelligence Grid:** Distribusi perangkat, proyek terpopuler, sertifikat paling sering diakses, dan domain rujukan traffic.
+   - **AI Models Execution Monitoring:** Matriks 16 model AI, counter inferensi, label status aktif/standby, kotak pencarian model, dan status auto-router.
+   - **Continuous RAG Memory Explorer:** Kotak pencarian memori, counter memori terindeks, formatting timestamp, badge role (Pengguna/User vs Asisten AI/AI Assistant), serta kontrol paginasi.
+   - **Aliran Aktivitas Telemetri Real-Time (Section 6 Table):** Judul tabel, tombol ekspor CSV/JSON, pencarian target/sesi, filter tipe event, header kolom (`Waktu (WIB)` / `Timestamp (UTC+7)`, `Tipe Event` / `Event Type`, `Aksi / Target Interaksi` / `Target / Details`, `Perangkat` / `Device`, `Sesi ID` / `Session ID`), status data kosong, dan paginasi interaktif.
+   - **Modal Ubah Master PIN:** Judul modal, label input, placeholder, tombol batal dan simpan.
+   - **Floating Back To Top Button:** Tooltip dan atribut aksesibilitas `aria-label`.
+
+5. **Kepatuhan Mutlak Aksesibilitas (WCAG 2.2 AA) & Bebas Kesalahan:**
+   - Seluruh elemen switcher bahasa memiliki atribut `aria-label`, kontras rasio di atas 4.5:1, dan outline fokus yang tegas.
+   - Bebas dari glitch visual atau layout shift saat transisi bahasa berlangsung.
+   - Kompilasi produksi `npm run build` sukses 100% tanpa peringatan sintaksis.
+
