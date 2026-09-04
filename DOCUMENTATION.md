@@ -1730,6 +1730,26 @@ Menyempurnakan persona asisten AI agar lebih ringkas, padat, alami, dan bebas da
    - Sintaksis `node -c api/chat.js` lolos 100%.
    - Kompilasi produksi Vite `npm run build` sukses 100% tanpa error.
 
+### v10.665.2 — Strict Anti-Sprawl Identity Directives & Dynamic 1-2 Sentence Guard
+
+Released 2026-09-04.
+
+Menyelesaikan tuntas keluhan jawaban identitas yang melebar dan bertele-tele (`api/chat.js`):
+
+1. **Isolasi Penuh Pertanyaan Identitas Diri (`isIdentity`):**
+   - Mendeteksi kueri identitas secara dinamis di dalam `buildSystemPrompt` (`kamu siapa`, `siapa kamu`, `kamu model apa`, dsb).
+   - Menghapus seluruh instruksi yang menyuruh model menyebut proyek, riset ML, skripsi, IoT, atau sertifikasi saat pengguna HANYA menanyakan identitas diri/model.
+   - Menginstruksikan model untuk menjawab super singkat (1–2 kalimat saja) secara dinamis, ramah, dan percaya diri tanpa teks template kaku.
+
+2. **Pembersihan Pelebaran Katalog Proyek Pasca-Inferensi:**
+   - Menambahkan filter bedah yang memangkas secara otomatis jika model mulai merembet mendaftar nama-nama proyek (*"seperti deteksi spam email..."*, *"Saya juga siap membantu verifikasi..."*, dsb).
+   - Membatasi keluaran identitas maksimal 2 kalimat dinamis langsung dari model LLM.
+
+3. **Verifikasi & Kompilasi:**
+   - Sintaksis `node -c api/chat.js` valid 100%.
+   - Build Vite `npm run build` sukses 100% tanpa error.
+
+
 
 
 
