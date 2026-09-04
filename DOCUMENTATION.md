@@ -1855,6 +1855,26 @@ Menerapkan indikator status interaktif yang dinamis dan mencerminkan fase-fase r
 3. **Verifikasi & Kompilasi:**
    - Build Vite `npm run build` sukses 100% dalam 718ms.
 
+### v10.665.8 — API Key Response Calibration & Uncapped Thinking Time Architecture
+
+Released 2026-09-04.
+
+Memperbaiki arsitektur pembagian waktu antara respon koneksi API gateway dan waktu berpikir model AI (`api/chat.js`):
+
+1. **Kalibrasi Waktu AI Merespons dari API Key (`connectTimeoutMs`):**
+   - Menyelaraskan ambang batas koneksi awal (`connectTimeoutMs`) ke rata-rata response time nyata server provider (7.5 detik / 7500ms).
+   - Menjamin model prioritas #1 (Ollama Cloud Nemotron 3 Nano) tidak terputus secara prematur saat server API memverifikasi kredensial dan mengirim headers.
+
+2. **Waktu AI Berpikir & Bernalar Tanpa Batas Prematur (`activeTimeoutMs`):**
+   - Menghilangkan batasan kaku 4.5 detik pada fase berpikir model.
+   - Memberikan waktu berpikir seluas mungkin (`Math.max(15000, remainingMs - 2000)` hingga ~55 detik penuh sesuai budget runtime serverless) begitu koneksi API berhasil diverifikasi.
+   - Model memiliki waktu yang leluasa untuk melakukan penalaran mendalam (*deep reasoning*), analisis konteks, dan penyusunan jawaban berbobot.
+
+3. **Verifikasi & Kompilasi:**
+   - Sintaksis `node -c api/chat.js` valid 100%.
+   - Build Vite `npm run build` sukses dalam 729ms.
+
+
 
 
 

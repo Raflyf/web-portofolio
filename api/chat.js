@@ -3318,9 +3318,11 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
         // === Langkah 0: Prioritas #1 dicoba sendiri (hormati urutan user) ===
         const firstStep = pipeline[0];
         if (firstStep) {
+          // Waktu AI merespons dari API key: sesuaikan dengan rata-rata respon time provider (~7.5 detik)
+          // Waktu AI berpikir: berikan selama mungkin memanfaatkan seluruh sisa budget waktu runtime
           const firstR = await executeStep(firstStep, {
-            connectTimeoutMs: Math.min(firstStep.timeout || 15000, 2500),
-            activeTimeoutMs: Math.min(firstStep.timeout || 15000, 4500)
+            connectTimeoutMs: Math.min(firstStep.timeout || 15000, 7500),
+            activeTimeoutMs: Math.max(15000, remainingMs - 2000)
           }).catch(() => null);
           if (firstR) return firstR;
         }
