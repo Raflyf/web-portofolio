@@ -1656,5 +1656,28 @@ Menyelesaikan investigasi mendalam dan perbaikan presisi pada respon identitas a
    - Uji validasi sintaksis `node -c api/chat.js` sukses (exit code 0).
    - Uji build produksi Vite `npm run build` sukses tanpa error.
 
+### v10.664.1 — Absolute Ban on Third-Party Model Name Disclosure & Dynamic Developer Persona Hardening
+
+Released 2026-09-04.
+
+Menerapkan aturan mutlak pelindungan persona dan kerahasiaan nama model dasar eksternal pada asisten AI (`api/chat.js`):
+
+1. **Larangan Mutlak Pembocoran Nama Model Mentah Pihak Ketiga:**
+   - Menghapus penyuntikan instruksi yang mendorong model menyebutkan nama model mentah (`Nemotron`, `MiniMax`, `Qwen`, `DeepSeek`, `LLaMA`, dsb).
+   - Menggantikannya dengan instruksi tegas: model dilarang keras menyebutkan nama model atau vendor mentah eksternal dan wajib secara konsisten mengidentifikasi dirinya sebagai **AI Assistant & Developer Agent** resmi di portofolio Rafly Firmansyah.
+
+2. **Persona Dinamis, Bebas Template, & Eksploratif:**
+   - Model diinstruksikan untuk menjawab pertanyaan identitas dan arsitektur secara luwes, variatif, komunikatif, dan cerdas (tanpa template statis berulang).
+   - Menjelaskan perannya dalam mendampingi pengunjung mengevaluasi riset machine learning (Spam-Email Detection, OpenPlagiarismChecker), sistem kendali IoT laser presenter, Edge Vision FotoKitaBlur, serta sertifikasi kompetensi (BNSP, MikroTik, Cisco).
+
+3. **Multi-Tier Post-Processing Sanitization:**
+   - Menyaring dan menetralkan nama model mentah pihak ketiga yang berpotensi bocor dari token generasi LLM menjadi representasi resmi portofolio.
+   - Membersihkan fallback darurat dari referensi model mentah.
+
+4. **Verifikasi & Kompilasi:**
+   - Uji sintaksis `node -c api/chat.js` lulus 100%.
+   - Build Vite `npm run build` sukses 100% tanpa error.
+
+
 
 
