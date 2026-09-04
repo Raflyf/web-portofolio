@@ -113,12 +113,32 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, message: 'Payload tidak valid.' });
   }
 
-  const factText = String(body.fact_text || '').trim();
+  const rawFact = String(body.fact_text || '').trim();
   const sessionId = String(body.session_id || '').trim();
 
+  // Structure-Aware Context Injection: ensure memories possess hierarchical metadata
+  function enrichFactWithContext(fact) {
+    const trimmed = String(fact || '').trim();
+    if (trimmed.startsWith('[Context:')) return trimmed;
+    const low = trimmed.toLowerCase();
+    let category = 'Technology > General';
+    if (/\b(llm|model|ai|gpt|claude|gemini|deepseek|nemotron|gemma|qwen|transformer|inference|prompt|rag)\b/i.test(low)) {
+      category = 'AI Systems > LLM Intelligence';
+    } else if (/\b(react|next|vite|tailwind|javascript|typescript|python|flask|api|serverless|docker|frontend|backend)\b/i.test(low)) {
+      category = 'Software Engineering > Development';
+    } else if (/\b(gpu|cuda|rtx|server|network|mikrotik|cisco|supabase|database|postgres|sql)\b/i.test(low)) {
+      category = 'Infrastructure > Systems & Networks';
+    } else if (/\b(skripsi|paper|jurnal|penelitian|akurasi|f1|dataset|covariate|drift|shingling|sbert)\b/i.test(low)) {
+      category = 'Research & Science > Academic';
+    }
+    return `[Context: ${category}] ${trimmed}`;
+  }
+
+  const factText = enrichFactWithContext(rawFact).slice(0, 1000);
+
   // Hard bounds mirror the schema RLS guard: fact_text <= 1000, session_id <= 64.
-  if (!factText || factText.length > 1000) {
-    return res.status(400).json({ success: false, message: 'Fakta memori harus 1-1000 karakter.' });
+  if (!factText || factText.length < 5 || factText.length > 1000) {
+    return res.status(400).json({ success: false, message: 'Fakta memori harus 5-1000 karakter.' });
   }
   if (sessionId.length > 64) {
     return res.status(400).json({ success: false, message: 'session_id terlalu panjang.' });
