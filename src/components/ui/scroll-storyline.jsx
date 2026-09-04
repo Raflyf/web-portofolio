@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useScroll } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
@@ -17,12 +17,27 @@ export default function ScrollStoryline() {
   const { t } = useLanguage();
   const [activeSection, setActiveSection] = useState('hero');
   const [percent, setPercent] = useState(0);
+  const [showActiveLabel, setShowActiveLabel] = useState(false);
+  const prevSectionRef = useRef(null);
   const { scrollYProgress } = useScroll();
 
   const sections = SECTION_IDS.map(id => ({
     id,
     label: t(`storyline.${id}`)
   }));
+
+  // Auto-hide label seksi: hanya tampil sejenak (1.8s) saat ada perpindahan seksi, lalu otomatis disembunyikan
+  useEffect(() => {
+    if (prevSectionRef.current !== null && prevSectionRef.current !== activeSection) {
+      setShowActiveLabel(true);
+      const timer = setTimeout(() => {
+        setShowActiveLabel(false);
+      }, 1800);
+      prevSectionRef.current = activeSection;
+      return () => clearTimeout(timer);
+    }
+    prevSectionRef.current = activeSection;
+  }, [activeSection]);
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (latest) => {
@@ -85,11 +100,11 @@ export default function ScrollStoryline() {
                 className="group relative flex items-center justify-center p-1.5 focus:outline-none cursor-pointer"
                 aria-label={`${t('storyline.scrollTo')} ${sec.label}`}
               >
-                {/* Hover / Active Tooltip */}
-                <span className={`absolute right-8 px-2.5 py-1 rounded-md text-[11px] font-medium tracking-wide uppercase whitespace-nowrap transition-all duration-200 pointer-events-none border ${
-                  isActive 
+                {/* Hover / Active Tooltip with Transient Auto-Hide */}
+                <span className={`absolute right-8 px-2.5 py-1 rounded-md text-[11px] font-medium tracking-wide uppercase whitespace-nowrap transition-all duration-300 pointer-events-none border ${
+                  isActive && showActiveLabel
                     ? 'opacity-100 bg-white/10 text-white border-white/20 backdrop-blur-md translate-x-0' 
-                    : 'opacity-0 group-hover:opacity-100 bg-black/80 text-zinc-400 border-white/10 translate-x-2'
+                    : 'opacity-0 group-hover:opacity-100 bg-black/80 text-zinc-300 border-white/10 translate-x-2 group-hover:translate-x-0'
                 }`}>
                   {sec.label}
                 </span>
