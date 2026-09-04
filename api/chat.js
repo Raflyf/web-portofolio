@@ -2789,14 +2789,14 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       }
     }
 
-    // Maximum token limits: Balanced for blazing fast first-token latency and concise high-density answers (Anti-Timeout)
+    // Maximum token limits: Balanced for blazing fast first-token latency and complete answers
     const maxTokensConfig = (effectiveEffort === 'thinking')
-      ? 1536
+      ? 8192
       : (effectiveEffort === 'high'
-          ? 1024
+          ? 4096
           : (effectiveEffort === 'medium'
-              ? 512
-              : (effectiveEffort === 'low' ? 300 : 512)));
+              ? 2048
+              : (effectiveEffort === 'low' ? 1024 : 2048)));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.35 : 0.25);
 
     // ========================================================================
