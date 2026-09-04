@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { MotionConfig, motion, useScroll, useSpring } from 'framer-motion';
+import { MotionConfig, motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 import { Shield, Menu, X, Terminal, Sun, Moon, Globe } from 'lucide-react';
@@ -313,7 +313,7 @@ export default function App() {
       if (!ticking) {
         requestAnimationFrame(() => {
           const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
-          setShowBackToTop(scrollPos > 250);
+          setShowBackToTop(scrollPos > 180);
           ticking = false;
         });
         ticking = true;
@@ -395,32 +395,39 @@ export default function App() {
       
         {/* Floating Action Buttons */}
         {location.pathname !== '/dashboard' && (
-          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3 pointer-events-none">
-            <button 
-              onClick={() => {
-                if (window.__lenis) {
-                  window.__lenis.scrollTo(0, { duration: 1.2 });
-                } else {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              className={`w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all duration-300 ${
-                showBackToTop 
-                  ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto cursor-pointer shadow-lg' 
-                  : 'opacity-0 scale-75 translate-y-4 pointer-events-none'
-              }`}
-              aria-label={t('nav.backToTop')}
-              title={t('nav.backToTop')}
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-            </button>
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+            <AnimatePresence>
+              {showBackToTop && (
+                <motion.button 
+                  key="back-to-top"
+                  initial={{ opacity: 0, scale: 0.6, y: 16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.6, y: 16 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={() => {
+                    if (window.__lenis) {
+                      window.__lenis.scrollTo(0, { duration: 1.2 });
+                    } else {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center cursor-pointer shadow-lg select-none"
+                  aria-label={t('nav.backToTop')}
+                  title={t('nav.backToTop')}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                </motion.button>
+              )}
+            </AnimatePresence>
             
             <button
               onClick={() => {
                 telemetry.logEvent('terminal_open', 'terminal_modal', 'Buka Jendela Terminal AI Modal');
                 setIsTerminalPopupOpen(true);
               }}
-              className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow pointer-events-auto cursor-pointer"
+              className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow cursor-pointer select-none"
               aria-label={t('nav.openTerminal')}
               title={t('nav.openTerminal')}
             >
