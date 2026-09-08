@@ -841,14 +841,14 @@ async function scrapeDirectWebpageContent(url) {
           // Primary: contenderName-based pattern (arena.ai leaderboard as of Sep 2026)
           const arenaPattern = /"rank"\s*:\s*(\d+)\s*,\s*"contenderName"\s*:\s*"[^"]*"\s*,\s*"model"\s*:\s*"([^"]+)"\s*,\s*"modelOrganization"\s*:\s*"([^"]*)"(?:[^{}]{0,400}?"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
           let am;
-          while ((am = arenaPattern.exec(combinedPayload)) !== null && entries.length < 15) {
+          while ((am = arenaPattern.exec(combinedPayload)) !== null && entries.length < 25) {
             entries.push({ rank: parseInt(am[1], 10), name: am[2], org: am[3] || '', metric: am[4] != null ? parseFloat(am[4]) : null });
           }
           // Fallback: generic rank+name+org pattern (covers other leaderboard sites)
           if (entries.length === 0) {
             const genericPattern = /"rank"\s*:\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName|model)"\s*:\s*"([^"]+)"[^{}]*?(?:"(?:modelOrganization|organization|provider|author)"\s*:\s*"([^"]+)")?[^{}]*?(?:"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
             let gm;
-            while ((gm = genericPattern.exec(combinedPayload)) !== null && entries.length < 15) {
+            while ((gm = genericPattern.exec(combinedPayload)) !== null && entries.length < 25) {
               entries.push({ rank: parseInt(gm[1], 10), name: gm[2], org: gm[3] || '', metric: gm[4] != null ? parseFloat(gm[4]) : null });
             }
           }
@@ -893,13 +893,13 @@ async function scrapeDirectWebpageContent(url) {
                 const subEntries = [];
                 const subArenaPattern = /"rank"\s*:\s*(\d+)\s*,\s*"contenderName"\s*:\s*"[^"]*"\s*,\s*"model"\s*:\s*"([^"]+)"\s*,\s*"modelOrganization"\s*:\s*"([^"]*)"(?:[^{}]{0,400}?"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
                 let sam;
-                while ((sam = subArenaPattern.exec(subPayload)) !== null && subEntries.length < 15) {
+                while ((sam = subArenaPattern.exec(subPayload)) !== null && subEntries.length < 25) {
                   subEntries.push({ rank: parseInt(sam[1], 10), name: sam[2], org: sam[3] || '', metric: sam[4] != null ? parseFloat(sam[4]) : null });
                 }
                 if (subEntries.length === 0) {
                   const subGenericPattern = /"rank"\s*:\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName|model)"\s*:\s*"([^"]+)"[^{}]*?(?:"(?:modelOrganization|organization|provider|author)"\s*:\s*"([^"]+)")?[^{}]*?(?:"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
                   let sgm;
-                  while ((sgm = subGenericPattern.exec(subPayload)) !== null && subEntries.length < 15) {
+                  while ((sgm = subGenericPattern.exec(subPayload)) !== null && subEntries.length < 25) {
                     subEntries.push({ rank: parseInt(sgm[1], 10), name: sgm[2], org: sgm[3] || '', metric: sgm[4] != null ? parseFloat(sgm[4]) : null });
                   }
                 }
@@ -2289,6 +2289,17 @@ function normalizeStructuredMarkdown(str) {
   if (!str) return str;
   let out = str;
 
+  // GUARD: Lindungi markdown links [text](url) dari semua transformasi regex di bawah ini.
+  // arXiv IDs (misal 2403.05678v1) di dalam URL bisa salah terdeteksi sebagai numbered list
+  // dan mendapat \n\n disisipkan, sehingga URL terpecah dan tidak bisa di-render.
+  const _urlGuards = [];
+  out = out.replace(/\[([^\]\n]{1,200})\]\((https?:\/\/[^)\n]{1,500})\)/g, (m) => {
+    const idx = _urlGuards.length;
+    _urlGuards.push(m);
+    return `\u0000LNK${idx}\u0000`;
+  });
+
+
   // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" atau "ringan. 2.\n**Inference**:")
   out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '$1\n\n$2. $3');
 
@@ -2312,6 +2323,16 @@ function normalizeStructuredMarkdown(str) {
     });
     // b. Pisahkan nomor urut baru yang langsung disambung setelah kalimat (spasi + angka + titik)
     out = out.replace(/(\w[^\n]*)\s+(\d{1,2})\.\s+(?=[A-Za-z\*])/g, '$1\n$2. ');
+  }
+
+  // 1.46 Pisahkan pure inline numbered list tanpa bullet sama sekali.
+  // Misal: "1. Claude Fable 5.1 (Max) (Anthropic) 2. Claude Opus 5 (High) (Anthropic) 3. ..."
+  // Step 1.45 tidak aktif karena tidak ada bullet. Deteksi: pola `) N.` atau `kata N.` diikuti huruf kapital.
+  if (/[)\w]\s+\d{1,2}\.\s+[A-Z*]/.test(out)) {
+    // Pisahkan setiap transisi "...) N. Teks" atau "...kata N. Teks" menjadi baris baru
+    out = out.replace(/([)\w])\s+(\d{1,2})\.\s+(?=[A-Z*\u00C0-\u017E])/g, (m, before, num) => {
+      return `${before}\n${num}. `;
+    });
   }
 
   // 1.5 Format bullet items starting with bold label: e.g. "**Kemampuan Multimodal**: ..." -> "- **Kemampuan Multimodal**: ..."
@@ -2439,6 +2460,11 @@ function normalizeStructuredMarkdown(str) {
 
   // 15. Normalisasi newline ganda berlebih
   out = out.replace(/\n{3,}/g, '\n\n').trim();
+
+  // RESTORE: Kembalikan markdown links yang dilindungi di awal fungsi
+  if (_urlGuards.length > 0) {
+    out = out.replace(/\u0000LNK(\d+)\u0000/g, (_, i) => _urlGuards[parseInt(i, 10)]);
+  }
 
   return out;
 }
