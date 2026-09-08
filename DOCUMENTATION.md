@@ -2234,6 +2234,37 @@ Perbaikan kritis formatting daftar/peringkat model AI (seperti arena.ai atau top
    - Sintaksis backend `api/chat.js` diverifikasi lolos via `node -c`.
    - Build Vite `npm run build` sukses tanpa galat dalam 1.15 detik.
 
+### v10.674.0 — Empirical Multimodal & Vision Architecture Overhaul
+
+Released 2026-09-08.
+
+Audit menyeluruh dan pembaruan arsitektur multimodal vision berdasarkan pengujian langsung (*live probe*) terhadap seluruh API key yang dimiliki pengguna:
+
+1. **Hasil Audit Empiris Multimodal per API Key:**
+   - **OpenRouter (5 Keys Pool):**
+     - `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`: **AKTIF & SUKSES 100%** (berhasil menganalisis gambar dan merespons secara akurat).
+     - `dots-studio/dots-3-note-preview:free`: **AKTIF** (HTTP 200 OK vision support).
+     - `google/gemma-4-31b-it:free` & `google/gemma-4-26b-a4b-it:free`: Tercatat di OpenRouter dengan arsitektur multimodal (`image, text, video`), disiapkan sebagai cadangan.
+     - Model usang yang dieliminasi: `google/gemini-2.0-flash-exp:free` (404), `meta-llama/llama-3.2-11b-vision-instruct:free` (404), `qwen/qwen-2-vl-72b-instruct:free` (404), dan `minimax/minimax-m3:free` (404 - berbayar).
+   - **Ollama Cloud:**
+     - Model teks `nemotron-3-nano:30b` menolak gambar (`HTTP 400: this model does not support image input`). Dialihkan ke fallback teks jika seluruh vision provider offline.
+   - **OpenCode Zen (4 Keys Pool):**
+     - Seluruh model vision non-free memerlukan metode pembayaran (`HTTP 401: No payment method`), sedangkan free tier dibatasi hanya untuk aplikasi OpenCode. Dikecualikan dari pipeline vision.
+   - **MiniMax Direct & OmniRoute:**
+     - Kunci MiniMax Direct mengembalikan kode 2049 (*invalid key* untuk direct endpoint), dan OmniRoute ngrok saat ini offline. Dikeluarkan dari rantai multimodal.
+
+2. **Rekonfigurasi Pipeline Multimodal (`api/chat.js`):**
+   - Tier 1: `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` (Prioritas Utama, responsif <3s).
+   - Tier 2: `dots-studio/dots-3-note-preview:free`.
+   - Tier 3: `google/gemma-4-31b-it:free` & `google/gemma-4-26b-a4b-it:free`.
+   - Tier 4: `openrouter/free` (Auto router).
+   - Tier 5: Fallback teks ke Ollama Cloud `nemotron-3-nano:30b` & OpenRouter `nemotron-3.5-lightning:free` agar permintaan pengguna tidak pernah gagal dengan 502/timeout saat gambar dikirim.
+
+3. **Verifikasi:**
+   - Tes live local handler via `node` terbukti mengembalikan HTTP 200 OK dari OpenRouter dengan model multimodal terverifikasi.
+   - Build Vite `npm run build` sukses tanpa galat dalam 1.08 detik.
+
+
 
 
 
