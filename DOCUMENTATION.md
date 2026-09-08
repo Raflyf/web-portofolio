@@ -2196,6 +2196,27 @@ Pembaruan komprehensif penanganan pengiriman gambar multimodal, pembatalan reque
    - Sintaksis backend `api/chat.js` lolos 100% via `node -c`.
    - Build Vite `npm run build` sukses 100% tanpa galat dalam 966 ms.
 
+### v10.672.0 — Input Text Restoration & Clean Chat Removal on Rollback
+
+Released 2026-09-08.
+
+Penyempurnaan mekanisme tombol **Rollback** pada antarmuka terminal:
+
+1. **Restorasi Otomatis ke Kotak Ketikan (Input Box Restoration):**
+   - Saat tombol Rollback diklik pada balon pesan pengguna (`You (Pengunjung)`), isi teks kueri dan seluruh lampiran yang sebelumnya dikirimkan langsung dikembalikan secara utuh ke kotak ketikan bawah (`input`), memungkinkan pengguna mengedit kembali kalimatnya tanpa perlu mengetik ulang dari awal.
+   - Saat tombol Rollback diklik pada balon jawaban AI, sistem secara cerdas melacak pesan pengguna pasangan yang memicu jawaban tersebut dan mengembalikan teks kueri pengguna tersebut ke kotak ketikan.
+
+2. **Pembersihan Bersih Pesan yang Di-Rollback (Clean Truncation):**
+   - Pesan yang di-rollback beserta seluruh pesan dan respons yang terjadi sesudahnya langsung dihapus dari tampilan obrolan aktif di layar (`messages.slice(0, sliceIndex)`).
+   - Menghilangkan kebingungan di mana pesan yang di-rollback sebelumnya tetap tertinggal di layar.
+
+3. **Auto-Focus ke Elemen Input:**
+   - Setelah eksekusi rollback, kursor teks secara otomatis difokuskan kembali ke input field (`textInputRef.current?.focus()`) sehingga pengguna dapat langsung menekan tombol kirim atau memodifikasi teks secara instan.
+
+4. **Verifikasi:**
+   - Build Vite `npm run build` sukses dalam 1.52 detik tanpa galat.
+
+
 
 
 
