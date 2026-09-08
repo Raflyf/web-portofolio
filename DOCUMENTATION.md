@@ -2115,6 +2115,33 @@ Menyelesaikan kendala *Serverless Gateway Exception* dan meningkatkan struktur o
    - `node -c api/chat.js` tuntas dengan kode keluar 0.
    - Build Vite `npm run build` sukses dalam 1.10s.
 
+### v10.669.0 — Fix Model Name Distortion, Absolute Asterisk Sanitizer & News History Isolation
+
+Released 2026-09-08.
+
+Tuning menyeluruh pada engine asisten AI berdasarkan evaluasi langsung percakapan pengguna:
+
+1. **Pemulihan Integritas Nama Model AI Eksternal (Resolusi Distorsi DeepSeek):**
+   - Menghapus regex global usang di post-processing yang sebelumnya mengganti paksa nama model pihak ketiga (`DeepSeek`, `Llama`, `Qwen`, `Mistral`, `Nemotron`) menjadi "AI Developer Agent".
+   - Model kini bebas dan akurat mendiskusikan entitas model AI dunia nyata (seperti DeepSeek V4 Flash, Llama 3, Gemini Flash) tanpa sensor teks yang mendistorsi fakta.
+
+2. **Pembersih Asterisk Absolut (Resolusi `kata*` dan `teks**.` Yatim):**
+   - Mengeliminasi asterisk tunggal yatim di ujung kata (`(?<=[a-zA-Z0-9])\*(?!\*)`) tanpa terkecoh jumlah genap pada baris.
+   - Mendeteksi dan membersihkan double asterisk ganjil yang tidak memiliki pasangan pembuka/penutup pada kalimat.
+
+3. **Isolasi Konteks Riwayat Percakapan pada Kueri Berita Terkini:**
+   - Menambahkan filter `isNewsOverviewQuery` pada perakitan `validHistory` di `assembleDynamicMessages`.
+   - Menjamin bahwa saat pengguna menanyakan "infokan berita hari ini", riwayat teknis turn sebelumnya (seperti rilis HyperOS Poco X7) tidak bocor masuk ke dalam rangkuman berita umum hari ini.
+
+4. **Auto-Bulleting Baris Bertopik & Sanitasi Repetisi Saran Resmi:**
+   - Mengonversi baris tanpa bullet yang diawali `Kategori: Ulasan...` menjadi format CommonMark berbutir `- **Kategori**: Ulasan...` secara seragam.
+   - Menyaring dan memangkas paragraf saran penutup repetitif berturut-turut yang mengulang imbauan memeriksa website/kanal resmi.
+
+5. **Verifikasi:**
+   - `node -c api/chat.js` lolos tanpa eror sintaksis.
+   - Vite `npm run build` sukses dalam 1.16 detik.
+
+
 
 
 

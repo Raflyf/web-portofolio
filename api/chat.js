@@ -2053,6 +2053,13 @@ function normalizeStructuredMarkdown(str) {
     return `\n${cleanBullet} **${title.trim()}**: ${desc.trim()}`;
   });
 
+  // 1.7 Konversi baris tanpa bullet yang diawali label judul dan titik dua menjadi bullet list terformat
+  // Contoh: "Transfer pemain: Borussia Dortmund..." -> "- **Transfer Pemain**: Borussia Dortmund..."
+  out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•|])([A-Z][\w\s/&._\-]{1,35}?):\s+([^\n]+)/g, (match, title, desc) => {
+    if (/^(?:http|https|note|catatan|peringatan|nb|ps)\b/i.test(title.trim())) return match;
+    return `\n- **${title.trim()}**: ${desc.trim()}`;
+  });
+
   // 2. Konversi judul bagian mandiri (akhiran titik dua tanpa isi kalimat) menjadi Heading Markdown (### Judul)
   // Mencegah judul bagian (seperti Komponen Utama:, Alur Kerja:, Keunggulan:, Manfaat:) berubah menjadi butir poin (- )
   out = out.replace(/(?:^|\n)\s*(?:[-*•]\s*)?([A-Z][a-zA-Z0-9\s/&-]{2,35}):\s*(?=\n|$)/g, (match, title) => {
@@ -2358,6 +2365,8 @@ export default async function handler(req, res) {
     const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda|kamu itu siapa|kamu itu model apa|model apa yang kamu gunakan|apa modelmu|kamu menggunakan model apa)$/i.test(qNormalized);
     const isTimeQuery = /(?:jam\s*berapa|waktu\s*sekarang|tanggal\s*berapa|hari\s*apa\s*sekarang|sekarang\s*jam|sekarang\s*tanggal|pukul\s*berapa|zona\s*waktu|wib\b|wita\b|wit\b)/i.test(qClean);
     const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
+    const isNewsOverviewQuery = /^(?:infokan|tampilkan|berikan|cari|carikan|apa|ada)?\s*(?:berita|kabar|news|headline|peristiwa)\s*(?:hari\s*ini|terkini|terbaru|pagi\s*ini|siang\s*ini|sore\s*ini|malam\s*ini|saat\s*ini|update)?$/i.test(qClean.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim()) ||
+      /^(?:berita|kabar|news|headline)\s*(?:hari\s*ini|terkini|terbaru)$/i.test(qClean.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim());
     const isSiteAnatomyQuery = /(?:(?:isi|konten|bagian|menu|fitur|halaman|seksi|ada\s+apa\s*(?:aja|saja))\s*(?:di\s*)?(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?|(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?\s*(?:isi\s*nya\s*apa|ada\s*apa\s*(?:aja|saja)|tentang\s*apa|memuat\s*apa)|sedang\s*dibuka|yang\s*sedang\s*dibuka|web\s*porto\s*ini|isi\s*web\s*porto)/i.test(qClean);
     const isInternalPortfolioQuery = isSiteAnatomyQuery || /(?:spam|email.*skripsi|cnb|xgboost|covariate|concept[-_ ]?drift|plagiarism|openplagiarism|plagiarisme|sbert|shingling|skripsi|thesis|naskah|laser|gesture|presenter|gyroscope|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|certificate|certification|bnsp|mtcna|cisco|pcap|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|keahlian|kemampuan|riwayat|pendidikan|education|kuliah|kampus|ubsi|cv|resume|experience|pengalaman|who made this|who built this|owner of this)/i.test(qClean);
     
@@ -2536,10 +2545,6 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/<[^>]+>/g, '');
       cleaned = cleaned.replace(/\s*Baca selengkapnya\b/gi, '');
 
-      // 3.65. Sanitasi Nama Model / Gateway Pihak Ketiga (Mencegah Kebocoran Nama Model Mentah)
-      cleaned = cleaned.replace(/\b(?:Nemotron[-3\w:]*|MiniMax[-0-9a-zA-Z]*|Qwen[-0-9a-zA-Z]*|DeepSeek[-0-9a-zA-Z]*|Llama[-0-9a-zA-Z]*|Mistral[-0-9a-zA-Z]*|Ollama(?:\s+Cloud)?|OpenRouter(?:\s+API)?|NVIDIA\s+NIM(?:\s+API)?)\b/gi, 'AI Developer Agent');
-      cleaned = cleaned.replace(/(?:model|arsitektur)\s+(?:AI\s+Developer\s+Agent)\b/gi, 'AI Developer Agent');
-      cleaned = cleaned.replace(/(?:didukung|ditenagai|menggunakan|berbasis)\s+(?:model\s+)?(?:AI\s+Developer\s+Agent)/gi, 'berperan sebagai AI Developer Agent');
 
       // 3.65b. Sanitasi Handle Username: Hapus (@Raflyf) atau @Raflyf sesuai instruksi pengguna
       cleaned = cleaned.replace(/\s*\(@?Raflyf\)/gi, '');
@@ -2775,32 +2780,62 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       cleaned = cleaned.replace(/[^\S\r\n]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 
       // DETERMINISTIC FINAL ASTERISK SANITIZER:
-      // Model kecil kadang meninggalkan bold TIDAK seimbang sehingga `**`/`*` mentah bocor.
-      // Strategi per baris: (a) hitung asterisk; (b) GENAP -> biarkan (dianggap seimbang);
-      // (c) GANJIL -> buang asterisk tunggal yang tak berpasangan; bila masih ganjil,
-      // buang SEMUA asterisk baris itu (lebih baik teks polos daripada simbol bocor).
+      // Membersihkan asterisk tunggal yatim di akhir kata (misal: "Flash*", "Krakatau*")
+      // dan double asterisks tanpa pasangan (misal: "hingga kini**.")
       cleaned = cleaned.split('\n').map((lineRaw) => {
         let line = lineRaw;
-        // 0) Penutup-bold yatim di akhir label, mis. "Biaya (Cost-Effectiveness)**: - teks".
-        //    Cek "pembuka sejati" = `**` yang diikuti HURUF (bukan asterisk/spasi/tanda baca).
-        //    Bila tidak ada pembuka sejati dan ada `**` menjelang colon/dash/akhir, buang semua `**`.
+
+        // 1) Hapus SELURUH asterisk tunggal yang menempel di ujung kata sebelum spasi/tanda baca/akhir baris
+        // Contoh: "Gemini 3.8 Flash* mencetak" -> "Gemini 3.8 Flash mencetak"
+        line = line.replace(/(?<=[a-zA-Z0-9])\*(?!\*)/g, '');
+        // Hapus asterisk tunggal di awal kata yang tidak punya pasangan penutup di baris ini
+        line = line.replace(/(?<!\*)\*(?=[a-zA-Z0-9])(?![^*]*\*)/g, '');
+
+        // 2) Deteksi kemunculan double asterisks (**)
+        const doubleAstMatches = line.match(/\*\*/g) || [];
+        if (doubleAstMatches.length === 1) {
+          // Hanya ada 1 kali ** di baris ini (pembuka atau penutup saja) -> PASTI YATIM
+          line = line.replace(/\*\*/g, '');
+        } else if (doubleAstMatches.length % 2 !== 0) {
+          // Ganjil > 1: Bersihkan ** yang menempel di tanda baca/ujung kata tanpa pembuka
+          line = line.replace(/(\w)\*\*([.,:;?!]|\s|$)/, '$1$2');
+          if ((line.match(/\*\*/g) || []).length % 2 !== 0) {
+            line = line.replace(/\*\*/g, '');
+          }
+        }
+
+        // 3) Penutup-bold yatim di akhir label yang tidak memiliki pembuka sejati
         const hasRealOpener = /\*\*[A-Za-z0-9\u00C0-\u024F]/.test(line);
         const hasOrphanClose = /\)\*\*\s*[:,\-–—\s]/.test(line) || /\*\*\s*[:,\-–—\s]/.test(line);
         if (!hasRealOpener && hasOrphanClose) {
           line = line.replace(/\*\*/g, '');
         }
-        const astCount = (line.match(/\*/g) || []).length;
-        if (astCount % 2 === 0) return line;
-        // 1) Hapus asterisk tunggal (bukan bagian **) di ujung kata / menjelang spasi-akhir
-        let l = line.replace(/(?<=\w)\*(?!\*)/g, '').replace(/\*(?!\*)(?=\s|$)/g, '');
-        // 2) Penutup `**` tanpa pembuka di baris yang sama (jika masih tersisa)
-        const hasOpener = /\*\*[^*]/.test(l);
-        if (!hasOpener) l = l.replace(/\*\*/g, '');
-        // 3) Jika masih ganjil, bersihkan total
-        const left = (l.match(/\*/g) || []).length;
-        if (left % 2 !== 0) l = l.replace(/\*/g, '');
-        return l;
+
+        // 4) Jika total asterisk masih ganjil, bersihkan sisa asterisk yang bocor
+        const totalAst = (line.match(/\*/g) || []).length;
+        if (totalAst % 2 !== 0) {
+          line = line.replace(/\*/g, '');
+        }
+
+        return line;
       }).join('\n');
+
+      // 4.5. Sanitasi Repetisi Saran Boilerplate Penutup (Stop-Slop & Anti-Repetitive Advice)
+      // Menghilangkan duplikasi imbauan cek kanal/website resmi jika muncul berturut-turut
+      const advisoryParagraphs = cleaned.split('\n\n');
+      const seenAdvisoryType = new Set();
+      const filteredParagraphs = advisoryParagraphs.filter((para) => {
+        const pTrim = para.trim().toLowerCase();
+        if (/^(?:xiaomi|poco|untuk|jika|disarankan|sebaiknya|silakan)\b/i.test(pTrim) &&
+            /(?:website\s+resmi|kanal\s+resmi|blog\s+resmi|media\s+sosial|forum\s+developer|akun\s+resmi|cek\s+kanal)/i.test(pTrim)) {
+          if (seenAdvisoryType.has('check_official_channels')) {
+            return false; // Buang paragraf saran duplikat
+          }
+          seenAdvisoryType.add('check_official_channels');
+        }
+        return true;
+      });
+      cleaned = filteredParagraphs.join('\n\n').trim();
 
       if (!cleaned || cleaned.trim().length === 0) {
         cleaned = 'Maaf, saya tidak dapat menyusun jawaban saat ini.';
@@ -2850,7 +2885,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       let currentBudget = maxTotalChars - (systemStr.length + userStr.length);
       if (currentBudget < 1500) currentBudget = 1500;
 
-      const validHistory = ((isIdentityQuery || isTimeQuery) ? [] : (Array.isArray(historyList) ? historyList : [])).filter(item => {
+      const validHistory = ((isIdentityQuery || isTimeQuery || isNewsOverviewQuery) ? [] : (Array.isArray(historyList) ? historyList : [])).filter(item => {
         if (!item || !item.content) return false;
         const c = typeof item.content === 'string' ? item.content : JSON.stringify(item.content);
         return !c.includes('antrean seluruh provider AI sedang penuh') && !c.includes('kendala jaringan') && !c.includes('[AI Fallback]');
