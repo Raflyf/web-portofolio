@@ -2165,6 +2165,37 @@ Tuning menyeluruh penanganan kegagalan penalaran model (CoT leak) dan perulangan
    - `node -c api/chat.js` lolos dengan kode keluar 0.
    - Vite `npm run build` sukses dalam 1.31 detik.
 
+### v10.671.0 — Multimodal Vision Rendering, Real-Time Image Downscaling, Cancel Button & Chat Checkpoint/Restore
+
+Released 2026-09-08.
+
+Pembaruan komprehensif penanganan pengiriman gambar multimodal, pembatalan request aktif, sistem checkpoint riwayat chat, dan perbaikan penjelajahan leaderboard SPA:
+
+1. **Perombakan Pengiriman Lampiran Gambar & UI Bubble Chat Terminal:**
+   - **Tampilan Balon Pengunjung:** Lampiran gambar (`attachments`) kini secara resmi direkam ke dalam objek pesan riwayat chat dan dirender secara visual di dalam balon pengguna (`You (Pengunjung)`), lengkap dengan pratinjau thumbnail responsif, penanda nama berkas, dan modal zoom gambar layar penuh saat diklik.
+   - **Transmisi Instan Tanpa Delay Kotak Input:** Thumbnail lampiran pada kotak input bawah langsung bersih seketika begitu tombol kirim ditekan, memberikan umpan balik visual yang langsung responsif.
+   - **Kompresi & Downscaling Sisi Klien (HTML5 Canvas Engine):** Berkas gambar resolusi tinggi (seperti screenshot layar 1080p/4K) secara otomatis di-downscale ke dimensi maksimal 1280px dan dikompresi ke format JPEG 82% quality sebelum dikirimkan. Ukuran muatan payload menyusut drastis dari 3–5 MB menjadi hanya ~100–180 KB, mencegah limit request body Vercel (4.5 MB) dan mengeliminasi keterlambatan transmisi jaringan.
+
+2. **Tombol Batal Mengirim (Abort Controller & Generation Cancel):**
+   - **Batal Seketika:** Dilengkapi `AbortController` yang terhubung langsung ke pemanggilan `fetch('/api/chat')`.
+   - **Dua Titik Akses Pembatalan:** Saat status `isLoading` aktif, tombol kirim otomatis bertransformasi menjadi tombol **Batal** berwarna merah dengan ikon stop/square berdenyut, disertai tombol batal cepat pada bilah status progres prosesor.
+   - **Pembatalan Bersih:** Menghentikan timer simulasi tahapan, memutus koneksi serverless, dan menampilkan notifikasi pembatalan bersih tanpa memunculkan eror gateway merah yang membingungkan pengguna.
+
+3. **Sistem Checkpoint Obrolan & Pemulihan Riwayat (Restore State & Rollback):**
+   - **Pencatatan Otomatis Checkpoint:** Setiap interaksi berhasil disimpan sebagai snapshot terpisah pada `localStorage` (`terminal_checkpoints`).
+   - **Modal Checkpoint & Restore:** Menambahkan tombol **Checkpoint** di bilah atas terminal yang membuka modal daftar checkpoint tersimpan untuk memulihkan percakapan ke sesi mana pun dalam satu klik.
+   - **Tombol Rollback Cepat per Pesan:** Setiap balon pesan pengguna dan AI dilengkapi tombol aksi **Rollback** (`RotateCcw`) yang memungkinkan pengguna memundurkan percakapan ke titik tepat sebelum pesan tersebut jika respons model keliru atau perlu diulang.
+
+4. **Penguatan Pipeline Vision & Ekstraksi Dinamis Subkategori Leaderboard:**
+   - **SOTA Vision Cluster:** Memperkuat alur vision dengan model multimodal gratis terdepan (`google/gemini-2.0-flash-exp:free`, `meta-llama/llama-3.2-11b-vision-instruct:free`, `qwen/qwen-2-vl-72b-instruct:free`, `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`, `minimax/minimax-m3:free`).
+   - **Fallback Teks Bebas Error:** Model teks Ollama Cloud secara otomatis dialihkan ke muatan pesan teks murni jika provider vision mengalami hambatan antrean, mencegah galat HTTP 400.
+   - **Pewarisan Domain Riwayat & Subpath Leaderboard:** Kueri lanjutan (seperti *"pada kategori agent?"*) kini secara otomatis mewarisi domain dari riwayat percakapan sebelumnya dan diarahkan ke subpath yang presisi (`https://arena.ai/leaderboard/agent`).
+   - **Ekstraksi Metrik Modern:** Parser RSC Next.js diperbarui untuk mengekstrak metrik evaluasi model modern (*Net Improvement*, *Confirmed Success*, dsb.) secara dinamis tanpa terjebak pada skor Elo lama yang usang.
+
+5. **Verifikasi:**
+   - Sintaksis backend `api/chat.js` lolos 100% via `node -c`.
+   - Build Vite `npm run build` sukses 100% tanpa galat dalam 966 ms.
+
 
 
 
