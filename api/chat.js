@@ -249,7 +249,12 @@ ${effortDirective}
    - Ketika menjabarkan fitur, keunggulan, atau poin-poin utama, gunakan format butir poin Markdown standar:
      - **Nama Poin**: Penjelasan ringkas dan padat.
      DILARANG mengganti tanda butir poin (-) dengan koma atau tanda baca aneh lainnya.
-   - Untuk alur kerja atau tahapan langkah demi langkah, gunakan numbered list resmi (1., 2., 3.).
+   - Untuk alur kerja, tahapan, atau DAFTAR PERINGKAT/RANKING (10 besar, top model, dsb):
+     WAJIB gunakan numbered list resmi dan tulis SETIAP nomor di baris baru tersendiri (contoh:
+     1. **Nama Item/Model**
+     2. **Nama Item/Model**
+     3. **Nama Item/Model**
+     DILARANG KERAS menggabungkan nomor 1, 2, 3 ke dalam satu baris datar atau menggunakan pemisah strip di satu baris).
 [ATURAN UNIVERSAL: KEPADATAN MAKSIMAL & INTI JAWABAN (CORE-ONLY & ANTI-WALL-OF-TEXT)]:
 Aturan ini BERLAKU MUTLAK untuk SEMUA TOPIK & SELURUH PERTANYAAN tanpa kecuali (proyek, coding, teknologi, sains, berita, karier, maupun obrolan umum):
 1. Pengunjung Malas Membaca Teks Panjang (Anti Wall-of-Text):
@@ -262,8 +267,9 @@ Aturan ini BERLAKU MUTLAK untuk SEMUA TOPIK & SELURUH PERTANYAAN tanpa kecuali (
    - Awali dengan 1 kalimat langsung ke inti jawaban (tanpa basa-basi pengantar seperti "Tentu", "Senang bisa membahas...", "Berikut adalah...").
    - Jika membutuhkan rincian, gunakan butir poin Markdown (- **Poin Inti**: Penjelasan ringkas 1-2 baris). Maksimal 3-5 butir poin saja.
    - DILARANG menyusun penutup bertele-tele (seperti saran filosofis, kesimpulan panjang, atau tawaran berulang).
-4. Pengecualian Khusus:
-   - Penjelasan panjang HANYA diizinkan jika pengguna secara eksplisit meminta: "jelaskan secara sangat mendalam", "tulis kode lengkap dari awal sampai akhir", atau "buatkan esai". Jika tidak diminta secara eksplisit, WAJIB SELALU RINGKAS & PADAT.
+4. Pengecualian Khusus Daftar Peringkat & Komparasi:
+   - Jika pengguna meminta daftar peringkat (misal "10 besar", "top 5", "ranking", dsb), sajikan seluruh nomor yang diminta (1 sampai 10) secara lengkap dengan masing-masing nomor berada di baris baru Markdown. DILARANG memotong atau memadatkan nomor menjadi satu baris datar.
+5. Penjelasan panjang HANYA diizinkan jika pengguna secara eksplisit meminta: "jelaskan secara sangat mendalam", "tulis kode lengkap dari awal sampai akhir", atau "buatkan esai". Jika tidak diminta secara eksplisit, WAJIB SELALU RINGKAS & PADAT.
 
 [PROTOKOL MUTLAK ANTI-HALUSINASI, ANTI-OVERCLAIM & GROUNDING FAKTUAL UNIVERSAL]:
 Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Dunia, Perkembangan Teknologi Global, Rilis Model AI, Sains, Sejarah, Pemrograman, Rekayasa Perangkat Lunak, Proyek Portofolio, maupun Obrolan Umum):
@@ -2579,6 +2585,47 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
         }).trim();
       }
 
+      // 3.48. Restrukturisasi Daftar Nomor/Peringkat Inline yang Tergabung di Satu Baris (Anti-Broken List)
+      if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*\d{1,2}\.\s/i.test(cleaned) || /\s+[-–—]\s*\*?\d{1,2}\.\s/i.test(cleaned)) {
+        // a. Intro yang diakhiri titik dua dan diikuti bullet/nomor 1
+        cleaned = cleaned.replace(/(:\s*)(?:[•\-\*]\s*\*?)+\s*(?=1\.\s)/g, ':\n\n');
+        // b. Normalisasi nomor pertama yang diawali bullet/asterisk liar di awal baris
+        cleaned = cleaned.replace(/^[•\-\*]\s*\*?\s*(?=\d{1,2}\.\s)/gm, '');
+        // c. Pisahkan item nomor 2..99 yang digabung inline dengan pemisah '-' atau ';' atau bullet
+        cleaned = cleaned.replace(/(?::\s*)?(?:\s+(?:[-–—]|;)\s*|\s*[;•]\s*)\*?(\d{1,2})\.\s*\*?\s*/g, '\n$1. ');
+        // d. Bersihkan sisa asterisk liar di sekitar angka nomor urut di awal baris
+        cleaned = cleaned.replace(/(?:^|\n)\s*\*+(\d{1,2})\.\s*\*?/g, '\n$1. ');
+
+        // e. Format setiap item nomor menjadi Markdown list yang rapi
+        const itemLines = cleaned.split('\n');
+        const formattedItems = [];
+        for (let i = 0; i < itemLines.length; i++) {
+          let line = itemLines[i].trim();
+          if (!line) {
+            if (formattedItems.length > 0 && formattedItems[formattedItems.length - 1] !== '') formattedItems.push('');
+            continue;
+          }
+          const numMatch = line.match(/^(\d{1,2})\.\s*(.+)$/);
+          if (numMatch) {
+            const num = numMatch[1];
+            let rest = numMatch[2].trim().replace(/:\s*$/, '').replace(/^\*+|\*+$/g, '').trim();
+            if (!rest.startsWith('**')) {
+              const descMatch = rest.match(/^([^-–—:]+?)\s*[-–—:]\s+(.+)$/);
+              if (descMatch) {
+                formattedItems.push(`${num}. **${descMatch[1].trim()}** — ${descMatch[2].trim()}`);
+              } else {
+                formattedItems.push(`${num}. **${rest}**`);
+              }
+            } else {
+              formattedItems.push(`${num}. ${rest}`);
+            }
+          } else {
+            formattedItems.push(line);
+          }
+        }
+        cleaned = formattedItems.join('\n');
+      }
+
       // 3.5. Ensure distinct line breaks for inline sub-sections and bullet points
       cleaned = cleaned.replace(/([.!?])\s*[-*•]\s*([A-Za-z0-9\s/&—–,]+?)(?:\*+|\*\*|:)?\s*[-–—:]\s*/g, '$1\n\n- **$2**: ');
       cleaned = cleaned.replace(/\s+[-*•]\s+\*\*([^*:\n]+)\*\*:\s*/g, '\n- **$1**: ');
@@ -2590,11 +2637,6 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       cleaned = cleaned.replace(/(?:^|\n)\s*:\s*/g, '\n- ');
       cleaned = cleaned.replace(/:\s*:\s*/g, ': ');
       cleaned = cleaned.replace(/\*\*:\s*/g, '**: ');
-      cleaned = cleaned.replace(/(?<!\*)\s*\*(?!\*)\s*-\s*/g, ' - ');
-
-      // 3.62. Clean rogue unclosed asterisks on isolated words without destroying markdown bold
-      cleaned = cleaned.replace(/(?<=\w)\*(?!\*|\w)/g, '');
-      cleaned = cleaned.replace(/(?<!\*|\w)\*(?=\w)/g, '');
 
       // 3.63. Clean rogue HTML tags and RSS link artifacts
       cleaned = cleaned.replace(/<a\s+[^>]*>.*?<\/a>/gi, '');

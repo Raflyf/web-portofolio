@@ -423,6 +423,49 @@ function getDynamicLoadingPipeline(query) {
   ];
 }
 
+function formatMessageContent(content) {
+  if (!content || typeof content !== 'string') return '';
+  let text = content;
+
+  // Anti-Inline Broken List: Rekonstruksi daftar nomor/peringkat yang terdesak sebaris (misal '• *1. A: - *2. B')
+  if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*\d{1,2}\.\s/i.test(text) || /\s+[-–—]\s*\*?\d{1,2}\.\s/i.test(text)) {
+    text = text.replace(/(:\s*)(?:[•\-\*]\s*\*?)+\s*(?=1\.\s)/g, ':\n\n');
+    text = text.replace(/^[•\-\*]\s*\*?\s*(?=\d{1,2}\.\s)/gm, '');
+    text = text.replace(/(?::\s*)?(?:\s+(?:[-–—]|;)\s*|\s*[;•]\s*)\*?(\d{1,2})\.\s*\*?\s*/g, '\n$1. ');
+    text = text.replace(/(?:^|\n)\s*\*+(\d{1,2})\.\s*\*?/g, '\n$1. ');
+
+    const itemLines = text.split('\n');
+    const formattedItems = [];
+    for (let i = 0; i < itemLines.length; i++) {
+      let line = itemLines[i].trim();
+      if (!line) {
+        if (formattedItems.length > 0 && formattedItems[formattedItems.length - 1] !== '') formattedItems.push('');
+        continue;
+      }
+      const numMatch = line.match(/^(\d{1,2})\.\s*(.+)$/);
+      if (numMatch) {
+        const num = numMatch[1];
+        let rest = numMatch[2].trim().replace(/:\s*$/, '').replace(/^\*+|\*+$/g, '').trim();
+        if (!rest.startsWith('**')) {
+          const descMatch = rest.match(/^([^-–—:]+?)\s*[-–—:]\s+(.+)$/);
+          if (descMatch) {
+            formattedItems.push(`${num}. **${descMatch[1].trim()}** — ${descMatch[2].trim()}`);
+          } else {
+            formattedItems.push(`${num}. **${rest}**`);
+          }
+        } else {
+          formattedItems.push(`${num}. ${rest}`);
+        }
+      } else {
+        formattedItems.push(line);
+      }
+    }
+    text = formattedItems.join('\n');
+  }
+
+  return text;
+}
+
 export default function TerminalAI({ onClose } = {}) {
   const { 
     isTerminalPopupOpen, setIsTerminalPopupOpen,
@@ -1325,7 +1368,7 @@ export default function TerminalAI({ onClose } = {}) {
                 <div className="w-full liquid-glass rounded-2xl rounded-tl-sm px-4 py-4 sm:px-6 text-zinc-200">
                   <div className="markdown-body max-w-none leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {msg.content}
+                      {formatMessageContent(msg.content)}
                     </ReactMarkdown>
                     {msg.isTyping && (
                       <span className="inline-block w-2 h-4 bg-cyan-400 animate-pulse ml-1 align-middle" />
