@@ -2216,6 +2216,25 @@ Penyempurnaan mekanisme tombol **Rollback** pada antarmuka terminal:
 4. **Verifikasi:**
    - Build Vite `npm run build` sukses dalam 1.52 detik tanpa galat.
 
+### v10.673.0 — Anti-Inline Broken List Formatter & Markdown Normalization
+
+Released 2026-09-08.
+
+Perbaikan kritis formatting daftar/peringkat model AI (seperti arena.ai atau top 10 rankings) yang sebelumnya berdempetan dalam satu baris datar dengan tanda baca rusak:
+
+1. **Restrukturisasi Otomatis Daftar Bernomor Sebaris (Anti-Inline Broken List):**
+   - Mendeteksi dan memecah daftar urutan nomor yang digabungkan dalam satu baris (misal `• *1. model A: - *2. model B: - *3. model C`) menjadi baris-baris Markdown list yang bersih dan rapi (`1. **model A**`, `2. **model B**`, dst.).
+   - Menghilangkan tanda baca liar (seperti `• *`, colon liar di akhir nama model, atau asterisk unclosed) tanpa merusak penamaan versi model seperti `5.1-max`, `1.2 (xHigh)`, atau `3.8-flash-high`.
+
+2. **Perlindungan Ganda (Defense-in-Depth Frontend & Backend):**
+   - **Backend (`api/chat.js`):** Sanitizer `sendSuccess` kini merestrukturisasi daftar inline sebelum payload dikirimkan ke klien. Selain itu, aturan `buildSystemPrompt` dipertegas agar model selalu menyajikan setiap nomor peringkat di baris baru Markdown.
+   - **Frontend (`TerminalAI.jsx`):** Ditambahkan helper `formatMessageContent` tepat sebelum teks dirender oleh `<ReactMarkdown>`. Pesan dalam riwayat sesi yang sebelumnya sudah terlanjur rusak di browser pengunjung otomatis tampil rapi seketika saat dimuat ulang.
+
+3. **Verifikasi:**
+   - Sintaksis backend `api/chat.js` diverifikasi lolos via `node -c`.
+   - Build Vite `npm run build` sukses tanpa galat dalam 1.15 detik.
+
+
 
 
 
