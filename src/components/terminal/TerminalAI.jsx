@@ -484,6 +484,7 @@ export default function TerminalAI({ onClose } = {}) {
 
   // FIX M4: file attachment support (paperclip button was dead UI).
   const fileInputRef = useRef(null);
+  const textInputRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
   const [attachError, setAttachError] = useState('');
   const abortControllerRef = useRef(null);
@@ -634,8 +635,51 @@ export default function TerminalAI({ onClose } = {}) {
     setIsLoading(false);
     setLoadingStatus(null);
     saveCheckpoint(messages, 'Sebelum Rollback');
-    const nextMsgs = messages.slice(0, index + 1);
+
+    const target = messages[index];
+    let sliceIndex = index;
+    let textToRestore = '';
+    let attachmentsToRestore = [];
+
+    if (target.role === 'user') {
+      textToRestore = target.content || '';
+      attachmentsToRestore = Array.isArray(target.attachments) ? target.attachments : [];
+      sliceIndex = index; // Potong sebelum pesan user ini agar pesan ini hilang dari obrolan
+    } else if (target.role === 'ai') {
+      // Jika tombol rollback diklik pada bubble AI, cari pesan user yang memicu jawaban AI ini
+      let userIdx = -1;
+      for (let i = index - 1; i >= 0; i--) {
+        if (messages[i].role === 'user') {
+          userIdx = i;
+          break;
+        }
+      }
+      if (userIdx !== -1) {
+        textToRestore = messages[userIdx].content || '';
+        attachmentsToRestore = Array.isArray(messages[userIdx].attachments) ? messages[userIdx].attachments : [];
+        sliceIndex = userIdx; // Potong sebelum pesan user tersebut
+      } else {
+        sliceIndex = index;
+      }
+    }
+
+    // Kembalikan teks dan lampiran ke kotak input
+    if (textToRestore) {
+      setInput(textToRestore);
+      draftInputRef.current = textToRestore;
+    }
+    if (attachmentsToRestore.length > 0) {
+      setAttachments([...attachmentsToRestore]);
+    }
+
+    // Hapus seluruh chat mulai dari pesan yang di-rollback ke bawah
+    const nextMsgs = messages.slice(0, sliceIndex);
     setMessages(nextMsgs.length > 0 ? nextMsgs : [initialMsg]);
+
+    // Langsung arahkan kursor fokus kembali ke kotak ketikan
+    setTimeout(() => {
+      textInputRef.current?.focus();
+    }, 50);
   };
 
   const cancelGeneration = () => {
@@ -1229,8 +1273,8 @@ export default function TerminalAI({ onClose } = {}) {
                   
                   <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
                     <button 
-                      onClick={() => rollbackToMessage(idx - 1)}
-                      title="Kembalikan chat ke sebelum jawaban ini (Rollback)"
+                      onClick={() => rollbackToMessage(idx)}
+                      title="Kembalikan pertanyaan ke kotak ketikan dan hapus jawaban ini (Rollback)"
                       className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-amber-300 px-2 py-1 rounded bg-white/5 border border-white/10 transition cursor-pointer"
                     >
                       <RotateCcw className="w-3 h-3" /> <span className="hidden sm:inline">Rollback</span>
@@ -1650,6 +1694,7 @@ export default function TerminalAI({ onClose } = {}) {
                 tabIndex={-1}
               />
               <input
+                ref={textInputRef}
                 type="text"
                 value={input}
                 onChange={handleInputChange}
