@@ -3060,14 +3060,22 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       cleaned = cleaned.replace(/https?:\/\/(?:news\.google\.com|www\.bing\.com\/news)[^\s)"'>]+/gi, '');
       cleaned = cleaned.replace(/(?:^|\n)\s*[-*•]?\s*(?:\*\*)?Tautan Terkait(?:\*\*)?:?\s*$/gim, '');
 
-      // 7. Relocate inline links from the middle of prose paragraphs to the bottom
-      const hasInlineLinksInProse = /([a-zA-Z0-9\.\,\)])\s*(\[[^\]]+\]\(https?:\/\/[^)]+\))\s*([a-zA-Z0-9])/i.test(cleaned);
+      // 7. Relocate inline links — HANYA jika link benar-benar menempel di tengah kalimat
+      //    (karakter kata langsung sebelum DAN sesudah link, tanpa \\n di sekitarnya).
+      //    Link akademik (doi/arxiv/openalex/semanticscholar/pubmed) TIDAK PERNAH direlokasi
+      //    agar selalu tampil in-place sebagai referensi yang bisa diklik.
+      const ACADEMIC_DOMAINS = /doi\.org|arxiv\.org|openalex\.org|semanticscholar\.org|crossref\.org|ncbi\.nlm\.nih\.gov|pubmed|researchgate\.net|springer\.com|sciencedirect\.com|ieeexplore\.ieee\.org/i;
+      const hasInlineLinksInProse = /[a-zA-Z0-9,)]\s*\[[^\]\n]+\]\(https?:\/\/[^)\n]+\)\s*[a-zA-Z0-9]/.test(cleaned);
       if (hasInlineLinksInProse && !cleaned.includes('Tautan Terkait:') && !cleaned.includes('Tautan Proyek:')) {
         const extractedLinks = [];
-        cleaned = cleaned.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, (m, label, linkUrl) => {
-          extractedLinks.push(`- ${label}: [${linkUrl}](${linkUrl})`);
-          return ''; // Strip from the middle of sentence
-        });
+        cleaned = cleaned.replace(/([a-zA-Z0-9,)])(\s*)\[([^\]\n]+)\]\((https?:\/\/[^)\n]+)\)(\s*)([a-zA-Z0-9])/g,
+          (m, before, sp1, label, linkUrl, sp2, after) => {
+            // Skip academic links — pertahankan in-place
+            if (ACADEMIC_DOMAINS.test(linkUrl)) return m;
+            extractedLinks.push(`- ${label}: [${linkUrl}](${linkUrl})`);
+            return `${before}${sp1}${sp2}${after}`;
+          }
+        );
         cleaned = cleaned.replace(/[ \t]{2,}/g, ' ').replace(/\s*\.\s*\./g, '.').trim();
         if (extractedLinks.length > 0) {
           const uniqueLinks = Array.from(new Set(extractedLinks));
