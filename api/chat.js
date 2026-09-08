@@ -789,20 +789,25 @@ async function scrapeDirectWebpageContent(url) {
           combinedPayload += '\n' + m[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
         }
         if (combinedPayload.length > 100) {
-          const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:rating|elo|score)":\s*([\d.]+)[^{}]*?(?:modelOrganization|organization|provider|author)":\s*"([^"]+)"[^{}]*?\}/g;
+          const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:(?:rating|elo|score)":\s*([\d.]+)|(?:netImprovement)":\s*([-\d.]+)|(?:confirmedSuccess)":\s*([-\d.]+))?[^{}]*?(?:(?:modelOrganization|organization|provider|author)":\s*"([^"]+)")?[^{}]*?\}/g;
           const entries = [];
           let em;
           while ((em = entryPattern.exec(combinedPayload)) !== null && entries.length < 15) {
-            entries.push({
-              rank: parseInt(em[1], 10),
-              name: em[2],
-              score: Math.round(parseFloat(em[3])),
-              org: em[4]
-            });
+            const rank = parseInt(em[1], 10);
+            const name = em[2];
+            const elo = em[3] ? Math.round(parseFloat(em[3])) : null;
+            const netImp = em[4] ? parseFloat(em[4]) : null;
+            const org = em[6] || '';
+            entries.push({ rank, name, elo, netImp, org });
           }
           if (entries.length > 0) {
             return `### Data Terverifikasi dari Halaman:\n` +
-              entries.map(e => `- Rank #${e.rank}: ${e.name} (${e.org}) — Score/Rating: ${e.score}`).join('\n');
+              entries.map(e => {
+                const metricStr = e.netImp !== null 
+                  ? `Net Improvement: ${e.netImp > 0 ? '+' : ''}${e.netImp}%` 
+                  : (e.elo !== null ? `Score: ${e.elo}` : '');
+                return `- Rank #${e.rank}: ${e.name}${e.org ? ` (${e.org})` : ''}${metricStr ? ` — ${metricStr}` : ''}`;
+              }).join('\n');
           }
         }
       }
@@ -828,20 +833,25 @@ async function scrapeDirectWebpageContent(url) {
                 subPayload += '\n' + sm[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
               }
               if (subPayload.length > 100) {
-                const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:rating|elo|score)":\s*([\d.]+)[^{}]*?(?:modelOrganization|organization|provider|author)":\s*"([^"]+)"[^{}]*?\}/g;
+                const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:(?:rating|elo|score)":\s*([\d.]+)|(?:netImprovement)":\s*([-\d.]+)|(?:confirmedSuccess)":\s*([-\d.]+))?[^{}]*?(?:(?:modelOrganization|organization|provider|author)":\s*"([^"]+)")?[^{}]*?\}/g;
                 const entries = [];
                 let em;
                 while ((em = entryPattern.exec(subPayload)) !== null && entries.length < 15) {
-                  entries.push({
-                    rank: parseInt(em[1], 10),
-                    name: em[2],
-                    score: Math.round(parseFloat(em[3])),
-                    org: em[4]
-                  });
+                  const rank = parseInt(em[1], 10);
+                  const name = em[2];
+                  const elo = em[3] ? Math.round(parseFloat(em[3])) : null;
+                  const netImp = em[4] ? parseFloat(em[4]) : null;
+                  const org = em[6] || '';
+                  entries.push({ rank, name, elo, netImp, org });
                 }
                 if (entries.length > 0) {
                   return `### Data Terverifikasi dari Halaman:\n` +
-                    entries.map(e => `- Rank #${e.rank}: ${e.name} (${e.org}) — Score/Rating: ${e.score}`).join('\n');
+                    entries.map(e => {
+                      const metricStr = e.netImp !== null 
+                        ? `Net Improvement: ${e.netImp > 0 ? '+' : ''}${e.netImp}%` 
+                        : (e.elo !== null ? `Score: ${e.elo}` : '');
+                      return `- Rank #${e.rank}: ${e.name}${e.org ? ` (${e.org})` : ''}${metricStr ? ` — ${metricStr}` : ''}`;
+                    }).join('\n');
                 }
               }
             }
@@ -946,6 +956,34 @@ async function searchWebContext(query, history = []) {
     for (const d of bareDomainMatches) {
       if (!Array.from(targetUrls).some(u => u.includes(d))) {
         targetUrls.add(`https://${d}`);
+      }
+    }
+
+    // 1c. Conversation Context Domain Inheritance (Follow-up Turn Resolver):
+    // Jika pertanyaan pengguna adalah kueri lanjutan (misal "pada kategori agent?"), warisi domain dari turn sebelumnya
+    if (targetUrls.size === 0 && Array.isArray(history) && history.length > 0) {
+      const recentHistoryText = history.slice(-4).map(h => typeof h.content === 'string' ? h.content : '').join(' ');
+      const histDomainMatch = recentHistoryText.match(/\b([a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ai|com|org|io|net|id|co|dev|app|gov|edu)(?:\/[^\s"'<>]*)?)\b/i);
+      if (histDomainMatch && histDomainMatch[1]) {
+        const inheritDomain = histDomainMatch[1];
+        if (/arena\.ai/i.test(inheritDomain) && /\b(?:agent|agen)\b/i.test(query)) {
+          targetUrls.add('https://arena.ai/leaderboard/agent');
+        } else if (/arena\.ai/i.test(inheritDomain) && /\b(?:code|coding)\b/i.test(query)) {
+          targetUrls.add('https://arena.ai/leaderboard/code');
+        } else {
+          targetUrls.add(inheritDomain.startsWith('http') ? inheritDomain : `https://${inheritDomain}`);
+        }
+      }
+    }
+
+    // 1d. Targeted Subpath Mapping untuk Leaderboard Arena.ai
+    for (const tu of Array.from(targetUrls)) {
+      if (/arena\.ai/i.test(tu)) {
+        if (/\b(?:agent|agen)\b/i.test(query)) {
+          targetUrls.add('https://arena.ai/leaderboard/agent');
+        } else if (/\b(?:code|coding)\b/i.test(query)) {
+          targetUrls.add('https://arena.ai/leaderboard/code');
+        }
       }
     }
 
@@ -3199,7 +3237,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
             },
             body: JSON.stringify({
               model: cleanModelName,
-              messages: ollamaMessages,
+              messages: (hasImages && /vision|llava|moondream/i.test(cleanModelName)) ? ollamaMessages : baseTextMessages,
               stream: false,
               options: {
                 num_predict: maxTokensConfig,
@@ -3294,14 +3332,20 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       // & direct), dan Ollama Nano (fallback). OpenCode mimo-v2.5-free rawan 429 -> tidak diprioritaskan.
       if (hasImages || (model && model.toLowerCase().includes('vision')) || queryIntent.category === 'vision') {
         return [
-          // Tier 1: Nemotron Nano Omni (OpenRouter - Multimodal Omni Reasoning)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 25000 },
-          // Tier 2: MiniMax M3 (OpenRouter - Multimodal Vision, terverifikasi OK)
-          { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 25000 },
-          // Tier 3: Ollama Nano Multimodal (cadangan)
-          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 25000 },
-          // Tier 4: Cadangan lain yang aktif
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 20000 }
+          // Tier 1: Gemini 2.0 Flash (OpenRouter SOTA Multimodal Vision & OCR super cepat <2s)
+          { provider: 'openrouter', model: 'google/gemini-2.0-flash-exp:free', timeout: 18000 },
+          // Tier 2: Llama 3.2 Vision 11B (OpenRouter - Multimodal Vision stabil)
+          { provider: 'openrouter', model: 'meta-llama/llama-3.2-11b-vision-instruct:free', timeout: 18000 },
+          // Tier 3: Qwen 2 VL 72B (OpenRouter - High-Precision Visual Understanding)
+          { provider: 'openrouter', model: 'qwen/qwen-2-vl-72b-instruct:free', timeout: 20000 },
+          // Tier 4: Nemotron Nano Omni (OpenRouter - Multimodal Omni Reasoning)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 20000 },
+          // Tier 5: MiniMax M3 (OpenRouter - Multimodal Vision)
+          { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 20000 },
+          // Tier 6: Ollama Cloud Nano Text Fallback (Bila vision provider offline, jawab teksnya secara cerdas)
+          { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
+          // Tier 7: OpenRouter Free Pool
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 18000 }
         ];
       }
 

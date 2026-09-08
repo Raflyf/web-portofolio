@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles, Globe, BookOpen, ShieldCheck, Code, ExternalLink, Search, Database } from 'lucide-react';
+import { Send, Loader2, X, Clock, Plus, ChevronDown, Copy, Download, Paperclip, User, Cpu, Maximize2, Check, Trash2, Radio, Sparkles, Globe, BookOpen, ShieldCheck, Code, ExternalLink, Search, Database, Square, RotateCcw, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTerminal } from '../../context/TerminalContext.jsx';
 import { DEVELOPER_PROFILE, CERTIFICATES_DATA } from '../../data';
@@ -486,6 +486,16 @@ export default function TerminalAI({ onClose } = {}) {
   const fileInputRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
   const [attachError, setAttachError] = useState('');
+  const abortControllerRef = useRef(null);
+  const [selectedImagePreview, setSelectedImagePreview] = useState(null);
+  const [showCheckpointModal, setShowCheckpointModal] = useState(false);
+  const [checkpoints, setCheckpoints] = useState(() => {
+    try {
+      const saved = localStorage.getItem('terminal_checkpoints');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
 
   // Terminal Command History Navigation (ArrowUp / ArrowDown like Bash / PowerShell)
   const [commandHistory, setCommandHistory] = useState(() => {
@@ -580,6 +590,69 @@ export default function TerminalAI({ onClose } = {}) {
     localStorage.removeItem('terminal_history_list');
   };
 
+  const saveCheckpoint = (currentMessages, customLabel = '') => {
+    if (!currentMessages || currentMessages.length <= 1) return;
+    const lastUserMsg = [...currentMessages].reverse().find(m => m.role === 'user');
+    const label = customLabel || (lastUserMsg ? (lastUserMsg.content || 'Pesan Lampiran').slice(0, 35) : `Checkpoint ${getCurrentTime()}`);
+    const newCp = {
+      id: 'cp_' + Date.now(),
+      time: getCurrentTime(),
+      timestamp: Date.now(),
+      label: label || 'Titik Percakapan',
+      messageCount: currentMessages.length,
+      messages: currentMessages.map(m => ({ ...m }))
+    };
+    setCheckpoints(prev => {
+      const updated = [newCp, ...prev.filter(c => c.label !== label)].slice(0, 20);
+      try { localStorage.setItem('terminal_checkpoints', JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
+  const restoreCheckpoint = (cp) => {
+    if (!cp || !Array.isArray(cp.messages)) return;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    phaseTimersRef.current.forEach(t => clearTimeout(t));
+    phaseTimersRef.current = [];
+    setIsLoading(false);
+    setLoadingStatus(null);
+    setMessages(cp.messages.map(m => ({ ...m })));
+    setShowCheckpointModal(false);
+  };
+
+  const rollbackToMessage = (index) => {
+    if (index < 0 || index >= messages.length) return;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    phaseTimersRef.current.forEach(t => clearTimeout(t));
+    phaseTimersRef.current = [];
+    setIsLoading(false);
+    setLoadingStatus(null);
+    saveCheckpoint(messages, 'Sebelum Rollback');
+    const nextMsgs = messages.slice(0, index + 1);
+    setMessages(nextMsgs.length > 0 ? nextMsgs : [initialMsg]);
+  };
+
+  const cancelGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    phaseTimersRef.current.forEach(t => clearTimeout(t));
+    phaseTimersRef.current = [];
+    setIsLoading(false);
+    setLoadingStatus(null);
+    setMessages(prev => [
+      ...prev,
+      { role: 'system', content: 'Permintaan pengiriman dibatalkan oleh pengguna.', time: getCurrentTime() }
+    ]);
+  };
+
   const sendMessage = async (text) => {
     // FIX M4: allow sending when only attachments are present (server accepts
     // attachments-only requests).
@@ -633,7 +706,22 @@ export default function TerminalAI({ onClose } = {}) {
       return;
     }
 
-    setMessages(prev => [...prev, { role: 'user', content: userQuery, time: getCurrentTime() }]);
+    // Capture snapshot lampiran dan langsung kosongkan kotak input
+    const currentAttachments = [...attachments];
+    const payloadAttachments = currentAttachments.map(({ _bytes, ...att }) => att);
+    setAttachments([]);
+    setAttachError('');
+
+    const newUserMsg = { 
+      role: 'user', 
+      content: userQuery, 
+      attachments: currentAttachments, 
+      time: getCurrentTime() 
+    };
+
+    const updatedMessages = [...messages, newUserMsg];
+    setMessages(updatedMessages);
+    saveCheckpoint(updatedMessages, (userQuery || 'Lampiran Gambar/Berkas').slice(0, 35));
     
     // Dynamic Multi-Stage Backend Progress Pipeline
     const pipeline = getDynamicLoadingPipeline(userQuery);
@@ -649,16 +737,17 @@ export default function TerminalAI({ onClose } = {}) {
       phaseTimersRef.current.push(timer);
     });
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     try {
-      // FIX M4: forward attachments ({name,type,data}; images carry a data URL
-      // plus isImage:true — matches /api/chat consumption). _bytes is client-only.
-      const payloadAttachments = Array.isArray(attachments) 
-        ? attachments.map(({ _bytes, ...att }) => att) 
-        : [];
       const rawChosen = selectedModel || localStorage.getItem('ai_selected_model') || 'auto';
       const currentChosenModel = VALID_MODELS.includes(rawChosen) ? rawChosen : 'auto';
       const res = await fetch('/api/chat', {
         method: 'POST',
+        signal: abortControllerRef.current.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: userQuery,
@@ -675,10 +764,6 @@ export default function TerminalAI({ onClose } = {}) {
         const errorDetail = data?.error || data?.message || `HTTP ${res.status} Error Gateway`;
         throw new Error(errorDetail);
       }
-      
-      // Clear consumed attachments on success (keep them on error so retry is easy).
-      setAttachments([]);
-      setAttachError('');
       
       let finalResponse = data?.response || "Maaf, terjadi kesalahan atau antrean penuh.";
       // Save continuous RAG memories (explicit facts the model wants to persist)
@@ -758,7 +843,11 @@ export default function TerminalAI({ onClose } = {}) {
         charIndex += chunkSize;
         if (charIndex >= totalLen) {
           clearInterval(typeTimer);
-          setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: finalResponse, isTyping: false } : m));
+          setMessages(prev => {
+            const next = prev.map(m => m.id === aiMsgId ? { ...m, content: finalResponse, isTyping: false } : m);
+            saveCheckpoint(next);
+            return next;
+          });
           if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         } else {
           const partial = finalResponse.substring(0, charIndex);
@@ -768,6 +857,9 @@ export default function TerminalAI({ onClose } = {}) {
       }, 16);
 
     } catch (err) {
+      if (err.name === 'AbortError') {
+        return; // Dibatalkan pengguna secara eksplisit
+      }
       const errMsg = err?.message && err.message !== 'API Error' 
         ? `⚠️ ${err.message}` 
         : '⚠️ Gagal terhubung ke API Gateway. Pastikan koneksi atau server dev aktif.';
@@ -869,18 +961,49 @@ export default function TerminalAI({ onClose } = {}) {
 
   const readAttachmentFile = (file) => new Promise((resolve) => {
     const isImage = file.type.startsWith('image/');
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (isImage) {
-        resolve({ name: file.name, type: file.type || 'image/jpeg', data: reader.result, isImage: true });
-      } else {
-        resolve({ name: file.name, type: file.type || 'text/plain', data: String(reader.result || '') });
-      }
-    };
-    reader.onerror = () => resolve(null);
     if (isImage) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX_DIM = 1280;
+          let width = img.width;
+          let height = img.height;
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          resolve({
+            name: file.name,
+            type: 'image/jpeg',
+            data: compressedDataUrl,
+            isImage: true
+          });
+        };
+        img.onerror = () => {
+          resolve({ name: file.name, type: file.type || 'image/jpeg', data: reader.result, isImage: true });
+        };
+        img.src = event.target.result;
+      };
+      reader.onerror = () => resolve(null);
       reader.readAsDataURL(file);
     } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({ name: file.name, type: file.type || 'text/plain', data: String(reader.result || '') });
+      };
+      reader.onerror = () => resolve(null);
       reader.readAsText(file);
     }
   });
@@ -985,6 +1108,10 @@ export default function TerminalAI({ onClose } = {}) {
             <button onClick={() => setShowHistoryModal(true)} className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 text-[11px] shrink-0 cursor-pointer">
               <Clock className="w-3 h-3 text-cyan-600 dark:text-cyan-400" /> Riwayat
             </button>
+            <button onClick={() => setShowCheckpointModal(true)} className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-500/30 text-[11px] shrink-0 cursor-pointer" title="Pulihkan / Rollback ke Checkpoint">
+              <RotateCcw className="w-3 h-3 text-amber-600 dark:text-amber-400" /> Checkpoint
+              {checkpoints.length > 0 && <span className="text-[9px] font-mono px-1 rounded-full bg-amber-500/20 text-amber-300">{checkpoints.length}</span>}
+            </button>
             <button onClick={handleNewChat} className="flex items-center gap-1 hover:text-emerald-950 dark:hover:text-white transition px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 text-[11px] shrink-0 cursor-pointer">
               <Plus className="w-3 h-3" /> Baru
             </button>
@@ -1034,8 +1161,15 @@ export default function TerminalAI({ onClose } = {}) {
             
             {msg.role === 'user' ? (
               // User Bubble
-              <div className="flex flex-col items-end max-w-[90%] sm:max-w-3/4">
+              <div className="flex flex-col items-end max-w-[92%] sm:max-w-3/4 group">
                 <div className="flex items-center gap-2 mb-1.5">
+                  <button
+                    onClick={() => rollbackToMessage(idx)}
+                    title="Rollback percakapan ke sebelum pesan ini"
+                    className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-[10px] text-zinc-400 hover:text-amber-300 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 transition cursor-pointer"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" /> <span className="hidden sm:inline">Rollback</span>
+                  </button>
                   <span className="text-[10px] sm:text-xs text-zinc-500 font-medium">{msg.time || getCurrentTime()}</span>
                   <span className="text-xs font-semibold text-emerald-400">You (Pengunjung)</span>
                   <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
@@ -1043,7 +1177,33 @@ export default function TerminalAI({ onClose } = {}) {
                   </div>
                 </div>
                 <div className="bg-emerald-900/30 border border-emerald-500/40 rounded-2xl rounded-tr-sm px-4 py-3 text-emerald-50 shadow-[0_0_20px_rgba(16,185,129,0.15)] text-[13px] sm:text-sm">
-                  {msg.content}
+                  {/* Render attachments preview if present */}
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {msg.attachments.map((att, aIdx) => {
+                        const isImg = att.isImage || (att.type && att.type.startsWith('image/')) || (att.data && att.data.startsWith('data:image/'));
+                        return isImg ? (
+                          <div key={aIdx} className="relative group/img overflow-hidden rounded-lg border border-emerald-500/30 bg-black/40">
+                            <img
+                              src={att.data}
+                              alt={att.name || 'lampiran'}
+                              className="max-h-48 max-w-xs sm:max-w-sm rounded-lg object-contain cursor-pointer hover:scale-[1.02] transition-transform"
+                              onClick={() => setSelectedImagePreview(att.data)}
+                            />
+                            <span className="absolute bottom-1 right-1 px-1.5 py-0.5 text-[9px] font-mono bg-black/75 text-emerald-300 rounded backdrop-blur-xs">
+                              {att.name || 'Image'}
+                            </span>
+                          </div>
+                        ) : (
+                          <div key={aIdx} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/40 border border-emerald-500/30 text-xs text-emerald-200">
+                            <Paperclip className="w-3 h-3 text-emerald-400" />
+                            <span className="truncate max-w-[150px]">{att.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {msg.content && <div className="leading-relaxed whitespace-pre-wrap break-words">{msg.content}</div>}
                 </div>
               </div>
             ) : msg.role === 'system' ? (
@@ -1055,7 +1215,7 @@ export default function TerminalAI({ onClose } = {}) {
               </div>
             ) : (
               // AI Bubble
-              <div className="flex flex-col items-start w-full max-w-[95%] sm:max-w-[85%]">
+              <div className="flex flex-col items-start w-full max-w-[95%] sm:max-w-[85%] group">
                 <div className="flex flex-wrap items-center gap-2 mb-2 w-full">
                   <div className="w-5 h-5 rounded-full bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shrink-0">
                     <Cpu className="w-3 h-3 text-cyan-400" />
@@ -1068,6 +1228,13 @@ export default function TerminalAI({ onClose } = {}) {
                   <span className="text-[10px] sm:text-xs text-zinc-500 font-medium sm:ml-2">{msg.time || getCurrentTime()}</span>
                   
                   <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+                    <button 
+                      onClick={() => rollbackToMessage(idx - 1)}
+                      title="Kembalikan chat ke sebelum jawaban ini (Rollback)"
+                      className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-amber-300 px-2 py-1 rounded bg-white/5 border border-white/10 transition cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3" /> <span className="hidden sm:inline">Rollback</span>
+                    </button>
                     <button 
                       onClick={() => navigator.clipboard.writeText(msg.content)}
                       className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-400 hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 transition cursor-pointer"
@@ -1158,7 +1325,7 @@ export default function TerminalAI({ onClose } = {}) {
                   )}
                 </div>
                 <div className={cn(
-                  "flex items-center gap-2 text-xs font-semibold transition-colors duration-300",
+                  "flex items-center gap-2 text-xs font-semibold transition-colors duration-300 min-w-0 flex-1",
                   loadingStatus?.color === 'amber' && "text-amber-300",
                   loadingStatus?.color === 'violet' && "text-purple-300",
                   loadingStatus?.color === 'emerald' && "text-emerald-300",
@@ -1167,7 +1334,7 @@ export default function TerminalAI({ onClose } = {}) {
                   (!loadingStatus || loadingStatus?.color === 'cyan') && "text-cyan-300"
                 )}>
                   <span className={cn(
-                    "px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-mono border transition-all duration-300",
+                    "px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-mono border transition-all duration-300 shrink-0",
                     loadingStatus?.color === 'amber' && "bg-amber-500/15 border-amber-500/30",
                     loadingStatus?.color === 'violet' && "bg-purple-500/15 border-purple-500/30",
                     loadingStatus?.color === 'emerald' && "bg-emerald-500/15 border-emerald-500/30",
@@ -1177,8 +1344,17 @@ export default function TerminalAI({ onClose } = {}) {
                   )}>
                     {loadingStatus?.badge || 'Processing'}
                   </span>
-                  <span className="animate-pulse">{loadingStatus?.text || 'Memproses permintaan di backend...'}</span>
+                  <span className="animate-pulse truncate">{loadingStatus?.text || 'Memproses permintaan di backend...'}</span>
                 </div>
+                <button
+                  type="button"
+                  onClick={cancelGeneration}
+                  title="Batalkan pengiriman"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30 text-[11px] font-medium transition cursor-pointer shrink-0 ml-auto"
+                >
+                  <Square className="w-3 h-3 fill-red-400 animate-pulse" />
+                  <span>Batal</span>
+                </button>
              </div>
           </div>
         )}
@@ -1290,6 +1466,140 @@ export default function TerminalAI({ onClose } = {}) {
       </div>
     )}
 
+      {/* Checkpoint & Restore Modal */}
+      {showCheckpointModal && (
+        <div 
+          data-lenis-prevent="true"
+          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-2xl glass-backdrop-in p-4"
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCheckpointModal(false);
+            }
+          }}
+        >
+          <div 
+            data-lenis-prevent="true"
+            className="w-full max-w-2xl liquid-glass-strong backdrop-blur-3xl rounded-2xl overflow-hidden font-mono glass-spring-in border border-amber-500/25"
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 p-6">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <RotateCcw className="w-5 h-5 text-amber-400" /> Checkpoint & Restore State
+              </h3>
+              <div className="flex items-center gap-2">
+                {checkpoints.length > 0 && (
+                  <button 
+                    onClick={() => {
+                      setCheckpoints([]);
+                      localStorage.removeItem('terminal_checkpoints');
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 text-xs transition cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Hapus Semua</span>
+                  </button>
+                )}
+                <button onClick={() => setShowCheckpointModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition cursor-pointer">
+                  <X className="w-4 h-4 text-zinc-400 hover:text-white" />
+                </button>
+              </div>
+            </div>
+            <div 
+              data-lenis-prevent="true"
+              className="flex-1 overflow-y-auto overscroll-contain max-h-[60vh] no-scrollbar space-y-3 p-6 pt-0"
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
+              <p className="text-xs text-zinc-300 leading-relaxed mb-3">
+                Setiap interaksi obrolan dicatat sebagai checkpoint aman. Anda dapat memulihkan (restore) obrolan ke titik mana pun di bawah ini jika ingin mengulang pertanyaan atau membuang respons yang keliru.
+              </p>
+              {checkpoints.map((cp) => (
+                <div 
+                  key={cp.id} 
+                  className="p-4 bg-white/5 backdrop-blur-2xl border border-amber-500/20 hover:border-amber-400/50 rounded-xl transition group flex items-center justify-between shadow-sm"
+                >
+                  <div className="flex-1 min-w-0 pr-3">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
+                          {cp.messageCount} Pesan
+                        </span>
+                        <h4 className="text-white font-semibold text-sm truncate group-hover:text-amber-300 transition-colors">
+                          {cp.label}
+                        </h4>
+                      </div>
+                      <span className="text-[11px] font-mono font-medium text-zinc-400 bg-white/10 px-2 py-0.5 rounded shrink-0">
+                        {cp.time}
+                      </span>
+                    </div>
+                    <p className="text-zinc-400 text-xs truncate">
+                      Snapshot sesi tersimpan ({cp.messageCount} interaksi)
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => restoreCheckpoint(cp)}
+                      className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 text-amber-200 hover:text-white border border-amber-500/40 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Restore</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCheckpoints(prev => {
+                          const updated = prev.filter(c => c.id !== cp.id);
+                          try { localStorage.setItem('terminal_checkpoints', JSON.stringify(updated)); } catch {}
+                          return updated;
+                        });
+                      }}
+                      title="Hapus checkpoint ini"
+                      className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-300 border border-red-500/20 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {checkpoints.length === 0 && (
+                <div className="text-center py-10 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-xl">
+                  <p className="text-sm text-zinc-300 font-medium">Belum ada checkpoint percakapan tersimpan.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fullscreen Image Preview Modal */}
+      {selectedImagePreview && (
+        <div 
+          data-lenis-prevent="true"
+          className="fixed inset-0 z-200 flex items-center justify-center bg-black/85 backdrop-blur-2xl p-4"
+          onClick={() => setSelectedImagePreview(null)}
+        >
+          <div className="relative max-w-4xl max-h-[85vh] p-2 bg-zinc-950/90 border border-white/20 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center">
+            <button 
+              onClick={() => setSelectedImagePreview(null)}
+              className="absolute top-3 right-3 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer z-10"
+              title="Tutup Preview"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <img 
+              src={selectedImagePreview} 
+              alt="Preview Gambar Lampiran" 
+              className="max-h-[78vh] max-w-full object-contain rounded-lg shadow-md"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Terminal Input Area */}
       <div className="p-2 sm:p-2.5 px-3 sm:px-4 liquid-glass-inset border-t border-white/10 relative z-10 shrink-0">
         <form onSubmit={handleSubmit} className="flex flex-col gap-1.5">
@@ -1344,7 +1654,7 @@ export default function TerminalAI({ onClose } = {}) {
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Ketik perintah atau tanya sesuatu... (misal: 'berita terbaru apa hari ini')"
+                placeholder={attachments.length > 0 ? "Tambahkan pesan atau langsung kirim lampiran..." : "Ketik perintah atau tanya sesuatu... (misal: 'berita terbaru apa hari ini')"}
                 className="w-full liquid-glass-inset border border-indigo-500/30 text-white rounded-xl py-2 sm:py-2.5 pl-8.5 pr-11 sm:pr-12 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/50 placeholder-zinc-500 transition-all text-xs sm:text-sm"
                 disabled={isLoading}
               />
@@ -1365,13 +1675,24 @@ export default function TerminalAI({ onClose } = {}) {
                   ))}
                 </div>
               )}
-              <button
-                type="submit"
-                disabled={(!input.trim() && attachments.length === 0) || isLoading}
-                className="absolute right-1.5 p-1.5 sm:p-2 bg-linear-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-              >
-                {isLoading ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-              </button>
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={cancelGeneration}
+                  title="Batalkan pengiriman (Cancel)"
+                  className="absolute right-1.5 p-1.5 sm:p-2 bg-linear-to-r from-red-500 to-rose-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:brightness-110 transition-all cursor-pointer flex items-center justify-center"
+                >
+                  <Square className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white animate-pulse" />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={(!input.trim() && attachments.length === 0) || isLoading}
+                  className="absolute right-1.5 p-1.5 sm:p-2 bg-linear-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </button>
+              )}
             </div>
           </div>
           <p className="text-center text-[8.5px] sm:text-[9px] text-zinc-500/80 mt-0.5">
