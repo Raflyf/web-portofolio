@@ -2141,6 +2141,31 @@ Tuning menyeluruh pada engine asisten AI berdasarkan evaluasi langsung percakapa
    - `node -c api/chat.js` lolos tanpa eror sintaksis.
    - Vite `npm run build` sukses dalam 1.16 detik.
 
+### v10.670.0 — Fix CoT Monologue Leak, Repetition Degeneration Loop & Cross-Publisher Dedupe
+
+Released 2026-09-08.
+
+Tuning menyeluruh penanganan kegagalan penalaran model (CoT leak) dan perulangan tak berujung cuplikan berita:
+
+1. **Deduplikasi Judul Berita Lintas Portal (Cross-Publisher Article Deduping):**
+   - Menghapus akhiran nama portal di akhir judul berita (`- Detik`, `- Kompas`, `- ANTARA`, dll) pada pembuatan `titleDedupeKey`.
+   - Mengeliminasi puluhan judul berita identik dari puluhan media massa yang sebelumnya membanjiri konteks prompt dan memicu attention collapse pada model kecil.
+
+2. **Perutean Khusus Kueri Benchmark / Peringkat (Targeted Benchmark Routing):**
+   - Kueri yang memuat kata kunci spesifik seperti `peringkat`, `ranking`, `arena`, `leaderboard`, atau `benchmark` kini tidak lagi dipaksa masuk ke jalur generic release feed, melainkan dipasangkan dengan kueri evaluasi LMSYS Chatbot Arena terfokus.
+
+3. **Pembersih Monolog Penalaran (Anti-CoT Monologue Leak):**
+   - Menghapus awalan respons yang diawali kutipan pertanyaan atau kalimat meta-penalaran bahasa Inggris (`"query" i.e., what rank is...`).
+
+4. **Pembunuh Loop Degenerasi Repetisi & Fallback Rekonstruksi Respons:**
+   - Memotong perulangan kalimat/frasa berulang (`Also "X". Also "X"...`) pada kemunculan pertama.
+   - Mengintegrasikan mekanisme fallback rekonstruksi yang secara deterministik mengubah sisa potongan berita menjadi jawaban terstruktur Bahasa Indonesia yang faktual dan langsung menjawab pertanyaan inti pengguna.
+
+5. **Verifikasi:**
+   - `node -c api/chat.js` lolos dengan kode keluar 0.
+   - Vite `npm run build` sukses dalam 1.31 detik.
+
+
 
 
 

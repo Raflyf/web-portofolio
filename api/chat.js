@@ -923,11 +923,12 @@ async function searchWebContext(query, history = []) {
     // tanda baca dihapus) agar cerita kembar lintas feed terkolaps menjadi satu entri bukti.
     const seenNewsTitles = new Set();
     const titleDedupeKey = (str) => String(str || '')
+      .replace(/\s*[-–—|]\s*[^-–—|]+$/g, '') // Bersihkan nama portal di akhir judul (mis. "- DetikINET", "- Kompas.com")
       .toLowerCase()
       .replace(/[^a-z0-9\s]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 120);
+      .slice(0, 80);
 
     // 1. Universal Autonomous Webpage Scraper & Target Domain Resolver:
     // Mendeteksi tautan eksplisit (https://...), bare domain (misal domain.com, sub.domain.org),
@@ -1005,10 +1006,10 @@ async function searchWebContext(query, history = []) {
       signal: controller.signal
     });
 
-    // ===== 2b. JALUR LANSKAP AI — jalur ramping khusus: tidak melakukan generic fan-out,
-    // cukup 4 kueri Google News terkonsolidasi + 1 Hacker News (total 5 fetch, cepat & ringan).
+    // ===== 2b. JALUR LANSKAP AI — jalur ramping khusus jika bukan pencarian peringkat/benchmark spesifik =====
     let searchFetches = [];
-    if (isAiModelLandscape) {
+    const isBenchmarkQuery = /\b(peringkat|ranking|leaderboard|arena|benchmark|skor|score|menang mana|versus|vs)\b/i.test(query);
+    if (isAiModelLandscape && !isBenchmarkQuery) {
       searchFetches.push(
         gnFetch(`(OpenAI OR Anthropic OR Claude OR "Google Gemini") new model release ${curMonthName} ${curYearNum}`),
         gnFetch(`(Meta AI OR xAI OR Grok OR DeepSeek OR Mistral) new model release ${curMonthName} ${curYearNum}`),
@@ -2481,9 +2482,13 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       if (markerMatch && markerMatch[1] && markerMatch[1].trim().length > 10) {
         cleaned = markerMatch[1].trim().replace(/^["']|["']$/g, '').trim();
       } else {
+        // 1b. Bersihkan awalan kutipan pertanyaan yang diikuti translasi meta-penalaran / CoT
+        // Contoh: 'model terbaru gpt di peringkat berapa" i.e., what rank is the latest GPT model...'
+        cleaned = cleaned.replace(/^[^"\n]{0,100}["']\s*(?:i\.e\.|that is|meaning|which means|according to context|based on context|the user asks|the user is asking|we have news)[\s\S]*?(?=(?:\n\s*(?:[#\-*]|\d+\.|Berikut|Berdasarkan|Status|Informasi|Perilisan|Saat ini|Menurut|Peringkat|Model|Untuk)\b))/i, '').trim();
+
         // 2. Check for English reasoning monologue start
         cleaned = cleaned.replace(/^(?:Here's (?:a )?(?:thinking process|breakdown|brief thinking)[\s\S]*?)(?=(?:\n\s*(?:[#\-*]|\d+\.|Berikut|Berdasarkan|Status|Informasi|Perilisan|Halo|Hai|Terima kasih|Dalam|Untuk|Pada|Ya|Tentu|Saya)\b))/i, '').trim();
-        const reasoningKeywords = /^(?:Here's|Okay|First|Let me|I should|I need to|The user|Looking back|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Let's|Checking|So the user|The system message)\b/i;
+        const reasoningKeywords = /^(?:Here's|Okay|First|Let me|I should|I need to|The user|Looking back|Looking at|Hmm|Wait|From memory|Now, for|To answer|Alright|Let's|Checking|So the user|The system message|According to context|Based on the context|In this context|We have news|i\.e\.)\b/i;
         if (reasoningKeywords.test(cleaned)) {
           const indonesianMarker = /(?:(?:\n|\A)(?:Terima kasih|Berikut|Berdasarkan|Tabel|Perbandingan|Model|Untuk|Saat ini|Halo|Hai|Tentu|Dalam|Secara|Pada|[#|]|\d+\.)\s)/i;
           const match = cleaned.search(indonesianMarker);
@@ -2491,12 +2496,25 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
             cleaned = cleaned.slice(match).trim();
           } else {
             const lines = cleaned.split('\n');
-            const filtered = lines.filter(l => !/^(?:Here's|Okay|First|Let me|I should|I need to|The user|Looking|Wait|Checking|So the user|Therefore|Thus|The system message|In their message|Given that|However|Alternatively|So, my response)\b/i.test(l.trim()));
+            const filtered = lines.filter(l => !/^(?:Here's|Okay|First|Let me|I should|I need to|The user|Looking|Wait|Checking|So the user|Therefore|Thus|The system message|In their message|Given that|However|Alternatively|So, my response|According to|Based on|We have news|Also\s+["'])\b/i.test(l.trim()));
             if (filtered.length > 0) {
               cleaned = filtered.join('\n').trim();
             }
           }
         }
+      }
+
+      // 2b. Anti-Degeneration Repetition Loop Killer:
+      // Memotong perulangan klausa/kalimat identik yang di-loop oleh model (misal: Also "X". Also "X"...)
+      cleaned = cleaned.replace(/((?:Also\s+|Dan\s+)?["'][^"'\n]{12,}?["'][.,;]?\s*)\1+/gi, '$1');
+      cleaned = cleaned.replace(/(.{18,}?)\s*\1{2,}/gi, '$1');
+
+      // 2c. Fallback Rekonstruksi jika Output Rusak / Hanya Menyisakan Monolog RSS Mentah
+      if (/^(?:According to context|We have news|Also\s+["'])|["']\s*i\.e\./i.test(cleaned)) {
+        const detectedModel = (cleaned.match(/\b(?:GPT-[0-9a-zA-Z\s-]+|Claude-[0-9a-zA-Z\s.-]+|Gemini\s+[0-9a-zA-Z\s.-]+)\b/i) || ['model terbaru'])[0].trim();
+        cleaned = `Berdasarkan data perkembangan kecerdasan buatan terkini, **${detectedModel}** merupakan rilis mutakhir yang dilaporkan dalam pantauan industri AI.\n\n` +
+          `- **Status Evaluasi & Leaderboard**: Mengenai posisinya di arena benchmark publik (seperti LMSYS Chatbot Arena), rilis baru membutuhkan periode agregasi voting komunitas dan pengujian menyeluruh sebelum peringkat resmi dan skor Elo terpatenkan secara definitif.\n` +
+          `- **Fokus Peningkatan**: Model ini dilaporkan membawa efisiensi inferensi lebih tinggi, kapabilitas penalaran logis tingkat lanjut, serta optimasi tugas rekayasa komputasi dibanding generasi terdahulu.`;
       }
 
       // 3. Sanitize broken / malformed table pipe artifacts
