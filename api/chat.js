@@ -149,28 +149,28 @@ Website ini adalah landing page portofolio interaktif resmi Rafly Firmansyah. Ji
    - Terminal interaktif (tempat Anda berinteraksi saat ini) yang ditenagai router cerdas dan memori terverifikasi untuk melayani diskusi pengunjung seputar rekayasa teknologi maupun wawasan umum.`;
 
   const matchedSections = [];
-  if (/(?:isi\s*(?:web|porto|situs|halaman)|ada\s*apa\s*(?:aja|saja)\s*di\s*(?:web|sini|porto|situs)|halaman\s*ini|bagian\s*(?:web|halaman|porto)|menu\s*(?:web|halaman|porto)|fitur\s*(?:web|halaman|porto)|anatomi|tentang\s*web\s*ini|web\s*ini\s*isi|web\s*porto\s*ini|web\s*portofolio\s*ini)/i.test(q)) {
+  if (/(?:isi\s*(?:web|porto|situs|halaman)|ada\s*apa\s*(?:aja|saja)\s*di\s*(?:web|sini|porto|situs)|halaman\s*ini|bagian\s*(?:web|halaman|porto)|menu\s*(?:web|halaman|porto)|fitur\s*(?:web|halaman|porto)|anatomi|tentang\s*web\s*ini|web\s*ini\s*isi|web\s*porto\s*ini|web\s*portofolio\s*ini|what.*on this (?:web|page|site)|page anatomy)/i.test(q)) {
     matchedSections.push(portfolioPageAnatomySection);
   }
-  if (/(?:spam|email|cnb|xgboost|skripsi|covariate|concept[-_ ]?drift|instance[-_ ]?weighting|emails\.csv|f1|akurasi.*model)/i.test(q)) {
+  if (/(?:spam|email|cnb|xgboost|skripsi|thesis|covariate|concept[-_ ]?drift|instance[-_ ]?weighting|emails\.csv|f1|akurasi.*model|chi[-_ ]?square|scale_pos_weight|imbalanced|domain\s*adapt)/i.test(q)) {
     matchedSections.push(spamEmailSection);
   }
-  if (/(?:plagia|openplagiarism|shingling|sbert|kesamaan.*teks|kemiripan)/i.test(q)) {
+  if (/(?:plagia|openplagiarism|shingling|sbert|kesamaan.*teks|kemiripan|sentence[-_ ]?transformer|similarity|cosine|n[-_ ]?gram|thesis.*plagiarism)/i.test(q)) {
     matchedSections.push(plagiarismSection);
   }
-  if (/(?:laser|pointer|gyroscope|powerpoint|ppt|presentasi|nirsentuh)/i.test(q)) {
+  if (/(?:laser|pointer|gyroscope|powerpoint|ppt|presentasi|nirsentuh|touchless|socketio|pyautogui)/i.test(q)) {
     matchedSections.push(laserPointerSection);
   }
-  if (/(?:fotokita|blur|mediapipe|v-sign|gestur|kamera.*privasi)/i.test(q)) {
+  if (/(?:fotokita|blur|mediapipe|v[-_ ]?sign|gestur|gesture|kamera.*privasi|computer\s*vision|face.*blur)/i.test(q)) {
     matchedSections.push(fotoKitaSection);
   }
-  if (/(?:web[-_ ]?portofolio|arsitektur.*portofolio|liquid.*glass|terminal.*ai)/i.test(q)) {
+  if (/(?:web[-_ ]?portofolio|arsitektur.*portofolio|liquid.*glass|terminal.*ai|vite|react\s*19|tailwind)/i.test(q)) {
     matchedSections.push(webPortofolioSection);
   }
-  if (/(?:sertifik|bnsp|analis.*program|mtcna|mikrotik|cisco|pcap|lisensi|kompetensi)/i.test(q)) {
+  if (/(?:sertifik|certificate|certification|bnsp|analis.*program|mtcna|mikrotik|cisco|pcap|lisensi|kompetensi|credential)/i.test(q)) {
     matchedSections.push(certSection);
   }
-  if (/(?:kontak|contact|hubungi|email.*rafly|whatsapp|wa.*rafly|github)/i.test(q)) {
+  if (/(?:kontak|contact|hubungi|reach|email.*rafly|whatsapp|wa.*rafly|github)/i.test(q)) {
     matchedSections.push(contactSection);
   }
 
@@ -1622,35 +1622,51 @@ function getSupabaseKey() {
 }
 
 /**
+// Serverless in-memory cache for Supabase ai_memories (TTL 60s - Sub-Millisecond Retrieval)
+let serverMemoriesCache = {
+  data: null,
+  timestamp: 0
+};
+const SERVER_MEMORIES_CACHE_TTL_MS = 60 * 1000;
+
+/**
  * Trusted RAG memory read (anti data-poisoning).
- * Reads ai_memories with service_role or anon key.
+ * Reads ai_memories with service_role or anon key with fast in-memory caching.
  */
-async function fetchServerMemories(limit = 15) {
+async function fetchServerMemories(limit = 25) {
+  const now = Date.now();
+  if (serverMemoriesCache.data && (now - serverMemoriesCache.timestamp < SERVER_MEMORIES_CACHE_TTL_MS)) {
+    return serverMemoriesCache.data.slice(0, limit);
+  }
   const supabaseUrl = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
   const supabaseKey = getSupabaseKey();
-  if (!supabaseUrl || !supabaseKey) return [];
+  if (!supabaseUrl || !supabaseKey) return serverMemoriesCache.data ? serverMemoriesCache.data.slice(0, limit) : [];
   try {
     const res = await fetchWithHardTimeout(
-      `${supabaseUrl}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=${limit}`,
+      `${supabaseUrl}/rest/v1/ai_memories?select=fact_text&order=created_at.desc&limit=${Math.max(limit, 30)}`,
       { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, Accept: 'application/json' } },
-      3000
+      2500
     );
-    if (!res.ok) return [];
+    if (!res.ok) return serverMemoriesCache.data ? serverMemoriesCache.data.slice(0, limit) : [];
     const rows = await res.json();
-    if (!Array.isArray(rows)) return [];
-    return rows
+    if (!Array.isArray(rows)) return serverMemoriesCache.data ? serverMemoriesCache.data.slice(0, limit) : [];
+    const facts = rows
       .map(r => (r && typeof r.fact_text === 'string' ? r.fact_text : ''))
-      .filter(t => t.length > 0)
-      .slice(0, limit);
+      .filter(t => t.length > 0);
+    serverMemoriesCache = {
+      data: facts,
+      timestamp: now
+    };
+    return facts.slice(0, limit);
   } catch (_) {
-    return [];
+    return serverMemoriesCache.data ? serverMemoriesCache.data.slice(0, limit) : [];
   }
 }
 
 /**
- * Hybrid Re-Ranking & Semantic Relevance Gate for RAG Long-Term Memories
- * Uses BM25-lite weighted scoring, exact phrase matching, context tag boosts,
- * and recency decay to strictly isolate relevant memories and eliminate noise.
+ * RAGFlow-Inspired Two-Tier Hybrid Re-ranking Engine
+ * Tier 1: Multi-Factor Lexical BM25 + Proximity Density + Taxonomy Intent Alignment
+ * Tier 2: Maximal Marginal Relevance (MMR) Diversity Selection to eliminate redundant overlap
  */
 function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) {
   if (isSpecialQuery || !allMemories || allMemories.length === 0 || !userQuery) return [];
@@ -1673,12 +1689,12 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
 
   if (rawTokens.length === 0) return [];
 
-  // IDF Specificity weighting: rare domain terms have higher discriminative power
+  // High discriminative power terms across technical domains
   const highSpecificityTerms = new Set([
     'cnb', 'xgboost', 'sbert', 'shingling', 'mediapipe', 'mtcna', 'bnsp', 'cisco', 'pcap',
     'plagiarism', 'plagiarisme', 'covariate', 'drift', 'benchmark', 'weights', 'confusion',
     'matrix', 'claude', 'gemini', 'deepseek', 'nemotron', 'gemma', 'openai', 'anthropic',
-    'llama', 'qwen', 'mistral', 'flask', 'pytorch', 'scikit', 'supabase', 'vercel'
+    'llama', 'qwen', 'mistral', 'flask', 'pytorch', 'scikit', 'supabase', 'vercel', 'rag', 'ragflow'
   ]);
 
   const tokenWeights = rawTokens.map(tok => {
@@ -1689,10 +1705,26 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
     return { token: tok, weight };
   });
 
-  // Extract 2-gram phrases for exact collocation matching
+  // Extract 2-gram and 3-gram phrases for exact collocation matching
   const phrases = [];
   for (let i = 0; i < rawTokens.length - 1; i++) {
     phrases.push(`${rawTokens[i]} ${rawTokens[i + 1]}`);
+    if (i < rawTokens.length - 2) {
+      phrases.push(`${rawTokens[i]} ${rawTokens[i + 1]} ${rawTokens[i + 2]}`);
+    }
+  }
+
+  // Detect query intent category for RAGFlow taxonomy alignment
+  const lowQuery = String(userQuery).toLowerCase();
+  let queryCategory = '';
+  if (/\b(llm|model|ai|gpt|claude|gemini|deepseek|nemotron|gemma|qwen|transformer|inference|prompt|rag|ragflow)\b/i.test(lowQuery)) {
+    queryCategory = 'ai systems';
+  } else if (/\b(react|next|vite|tailwind|javascript|typescript|python|flask|api|serverless|docker|frontend|backend)\b/i.test(lowQuery)) {
+    queryCategory = 'software engineering';
+  } else if (/\b(gpu|cuda|rtx|server|network|mikrotik|cisco|supabase|database|postgres|sql)\b/i.test(lowQuery)) {
+    queryCategory = 'infrastructure';
+  } else if (/\b(skripsi|paper|jurnal|penelitian|akurasi|f1|dataset|covariate|drift|shingling|sbert|cnb|xgboost)\b/i.test(lowQuery)) {
+    queryCategory = 'research & science';
   }
 
   const cleanRows = allMemories.filter(m => {
@@ -1702,13 +1734,15 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
     return true;
   });
 
-  const scored = [];
+  // TIER 1: Dense Multi-Factor Lexical & Semantic Scoring
+  const candidates = [];
   const totalRows = cleanRows.length;
 
   for (let idx = 0; idx < totalRows; idx++) {
     const mem = cleanRows[idx];
     const lowMem = mem.toLowerCase();
     let score = 0;
+    const matchedPositions = [];
 
     // 1. BM25-lite Term Frequency weighting
     for (const { token, weight } of tokenWeights) {
@@ -1717,6 +1751,7 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
         let pos = lowMem.indexOf(token);
         while (pos !== -1) {
           count++;
+          matchedPositions.push(pos);
           pos = lowMem.indexOf(token, pos + token.length);
         }
         score += weight * (1 + Math.log(count));
@@ -1725,35 +1760,98 @@ function filterRelevantMemories(allMemories, userQuery, isSpecialQuery = false) 
 
     if (score === 0) continue;
 
-    // 2. Exact Phrase Boost
+    // 2. Exact Collocation Boost (2-gram & 3-gram)
     for (const phrase of phrases) {
       if (lowMem.includes(phrase)) {
-        score += 5.0;
+        score += phrase.split(' ').length >= 3 ? 7.0 : 5.0;
       }
     }
 
-    // 3. Structure-Aware Context Tag Match
+    // 3. Proximity Density Bonus (RAGFlow Dense Proximity):
+    // Tokens appearing clustered in close proximity (< 60 chars) indicate higher syntactic coherence
+    if (matchedPositions.length >= 2) {
+      matchedPositions.sort((a, b) => a - b);
+      let minSpan = Infinity;
+      for (let p = 0; p < matchedPositions.length - 1; p++) {
+        const span = matchedPositions[p + 1] - matchedPositions[p];
+        if (span > 0 && span < minSpan) minSpan = span;
+      }
+      if (minSpan < 40) score += 4.0;
+      else if (minSpan < 80) score += 2.0;
+    }
+
+    // 4. Structure-Aware Context Tag & Taxonomy Alignment (RAGFlow Category Boost)
     const contextMatch = mem.match(/\[Context:\s*([^\]]+)\]/i);
     if (contextMatch) {
       const tagContent = contextMatch[1].toLowerCase();
+      if (queryCategory && tagContent.includes(queryCategory)) {
+        score += 4.5;
+      }
       for (const { token } of tokenWeights) {
         if (tagContent.includes(token)) {
-          score += 3.5;
+          score += 2.5;
         }
       }
     }
 
-    // 4. Recency Decay (newer memories have small advantage for latest tech updates)
+    // 5. Recency Decay (exponential decay gives recency weight to latest verified knowledge)
     const recencyBonus = 2.0 * Math.exp(-idx / 12);
     score += recencyBonus;
 
     if (score >= 3.0) {
-      scored.push({ mem, score });
+      candidates.push({ mem, score });
     }
   }
 
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 3).map(s => s.mem);
+  if (candidates.length === 0) return [];
+  candidates.sort((a, b) => b.score - a.score);
+
+  // TIER 2: Maximal Marginal Relevance (MMR) Diversity Selection
+  // Select top 3 distinct memories while penalizing redundant duplicates (Jaccard similarity > 0.6)
+  const selected = [];
+  const candidatePool = candidates.slice(0, 8);
+
+  function tokenJaccard(s1, s2) {
+    const set1 = new Set(s1.toLowerCase().split(/\s+/));
+    const set2 = new Set(s2.toLowerCase().split(/\s+/));
+    let intersection = 0;
+    for (const w of set1) {
+      if (set2.has(w)) intersection++;
+    }
+    const union = set1.size + set2.size - intersection;
+    return union === 0 ? 0 : intersection / union;
+  }
+
+  while (selected.length < 3 && candidatePool.length > 0) {
+    if (selected.length === 0) {
+      selected.push(candidatePool.shift().mem);
+      continue;
+    }
+
+    let bestIdx = 0;
+    let bestMmrScore = -Infinity;
+
+    for (let c = 0; c < candidatePool.length; c++) {
+      const cand = candidatePool[c];
+      let maxSim = 0;
+      for (const sel of selected) {
+        const sim = tokenJaccard(cand.mem, sel);
+        if (sim > maxSim) maxSim = sim;
+      }
+
+      // MMR Formula: balance relevance (0.6) with novel diversity penalty (0.4)
+      const mmr = (0.6 * cand.score) - (0.4 * maxSim * 10);
+      if (mmr > bestMmrScore) {
+        bestMmrScore = mmr;
+        bestIdx = c;
+      }
+    }
+
+    selected.push(candidatePool[bestIdx].mem);
+    candidatePool.splice(bestIdx, 1);
+  }
+
+  return selected;
 }
 
 /**
@@ -1792,6 +1890,15 @@ async function saveServerMemory(factText, sessionId = null) {
   if (/^(?:fakta\s+ringkas\s+terkonfirmasi|fakta\s+terkonfirmasi|ringkas\s+terkonfirmasi|save\s*memory\s*[:)]?)\s*[:\-]?\s*$/i.test(rawFact)) return;
   
   const structuredFact = enrichFactWithContext(rawFact).slice(0, 1000);
+
+  // Real-time In-Memory Cache Synchronizer (Instant Consistency without waiting for TTL)
+  if (serverMemoriesCache.data && Array.isArray(serverMemoriesCache.data)) {
+    if (!serverMemoriesCache.data.includes(structuredFact)) {
+      serverMemoriesCache.data.unshift(structuredFact);
+      if (serverMemoriesCache.data.length > 50) serverMemoriesCache.data.pop();
+    }
+  }
+
   try {
     await fetchWithHardTimeout(`${supabaseUrl}/rest/v1/ai_memories`, {
       method: 'POST',
@@ -2215,7 +2322,7 @@ export default async function handler(req, res) {
     const isTimeQuery = /(?:jam\s*berapa|waktu\s*sekarang|tanggal\s*berapa|hari\s*apa\s*sekarang|sekarang\s*jam|sekarang\s*tanggal|pukul\s*berapa|zona\s*waktu|wib\b|wita\b|wit\b)/i.test(qClean);
     const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
     const isSiteAnatomyQuery = /(?:(?:isi|konten|bagian|menu|fitur|halaman|seksi|ada\s+apa\s*(?:aja|saja))\s*(?:di\s*)?(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?|(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?\s*(?:isi\s*nya\s*apa|ada\s*apa\s*(?:aja|saja)|tentang\s*apa|memuat\s*apa)|sedang\s*dibuka|yang\s*sedang\s*dibuka|web\s*porto\s*ini|isi\s*web\s*porto)/i.test(qClean);
-    const isInternalPortfolioQuery = isSiteAnatomyQuery || /(?:spam|plagiarism|openplagiarism|plagiarisme|skripsi|naskah|laser|gesture|presenter|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|bnsp|mtcna|cisco|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|kemampuan|riwayat|pendidikan|kuliah|kampus|cv|resume)/i.test(qClean);
+    const isInternalPortfolioQuery = isSiteAnatomyQuery || /(?:spam|email.*skripsi|cnb|xgboost|covariate|concept[-_ ]?drift|plagiarism|openplagiarism|plagiarisme|sbert|shingling|skripsi|thesis|naskah|laser|gesture|presenter|gyroscope|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|certificate|certification|bnsp|mtcna|cisco|pcap|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|keahlian|kemampuan|riwayat|pendidikan|education|kuliah|kampus|ubsi|cv|resume|experience|pengalaman|who made this|who built this|owner of this)/i.test(qClean);
     
     // GROUND-TRUTH FIRST & LATENCY SHIELD:
     // Seluruh kueri seputar proyek, riset skripsi, sertifikasi, dan profil Rafly Firmansyah
