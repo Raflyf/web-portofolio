@@ -417,6 +417,18 @@ function formulateSmartSearchQueries(query, history = []) {
   if (!query || typeof query !== 'string') return [];
   const queries = [];
 
+  // 0. Deteksi kueri berita umum harian tanpa subjek spesifik (e.g. "infokan berita hari ini", "berita hari ini")
+  const cleanRawLower = query.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const isGeneralNewsQuery = /^(?:infokan|tampilkan|berikan|cari|carikan|apa|ada)?\s*(?:berita|kabar|news|headline|peristiwa)\s*(?:hari\s*ini|terkini|terbaru|pagi\s*ini|siang\s*ini|sore\s*ini|malam\s*ini|saat\s*ini|update)?$/i.test(cleanRawLower) ||
+    /^(?:berita|kabar|news|headline)\s*(?:hari\s*ini|terkini|terbaru)$/i.test(cleanRawLower);
+  if (isGeneralNewsQuery) {
+    return [
+      'berita utama terkini hari ini indonesia',
+      'top breaking news headlines today',
+      'peristiwa penting hari ini'
+    ];
+  }
+
   // 1. Normalize typos and common Indonesian internet contractions
   const qNorm = query.toLowerCase()
     .replace(/\bperilisann+\b/g, 'perilisan')
@@ -1393,6 +1405,20 @@ ${uniqueSnippets.join('\n')}
 - DILARANG KERAS mengutip judul artikel mentah secara berulang-ulang atau mencantumkan judul yang nyaris identik lebih dari satu kali sebagai entri terpisah. Sintesiskan isi berita menjadi kalimat ringkas Anda sendiri (parafrasa), sebutkan tanggal laporan bila ada, dan jangan mengulang kalimat yang sama.`;
     }
 
+    if (isNewsOverviewQuery && formattedPrompt) {
+      formattedPrompt += `
+[ARAHAN KHUSUS PENYAJIAN RANGKUMAN BERITA HARI INI]:
+- Pengguna meminta ikhtisar atau rangkuman berita terkini.
+- DILARANG KERAS MENULIS JAWABAN SEBAGAI SATU PARAGRAF GADO-GADO DENGAN TANDA STRIP ATAU MENCAMPURADUKKAN BERBAGAI PERISTIWA ACAK TANPA STRUKTUR!
+- WAJIB kelompokkan peristiwa secara terstruktur menggunakan heading dan butir poin yang jelas:
+  ### Sorotan Berita Utama & Nasional
+  - **[Isu/Topik]**: Ringkasan fakta peristiwa yang terjadi.
+  ### Sorotan Berita Internasional & Global
+  - **[Isu/Topik]**: Ringkasan fakta peristiwa dunia.
+- Pilih 3 hingga 5 peristiwa paling relevan dari bukti di atas. Setiap peristiwa WAJIB berdiri sendiri sebagai butir poin terpisah (- **Judul Topik**: Penjelasan fakta).
+- DILARANG memotong kalimat di tengah jalan atau meninggalkan tanda baca rusak.`;
+    }
+
     return { formattedPrompt, rawSnippets: rawSnippets.slice(0, isLatestLandscapeQuery ? 18 : 10), agentToolsUsed };
   } catch (_) {
     return { formattedPrompt: '', rawSnippets: [], agentToolsUsed: [] };
@@ -1621,7 +1647,6 @@ function getSupabaseKey() {
   return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || SUPABASE_DEFAULT_ANON_KEY;
 }
 
-/**
 // Serverless in-memory cache for Supabase ai_memories (TTL 60s - Sub-Millisecond Retrieval)
 let serverMemoriesCache = {
   data: null,
@@ -2082,9 +2107,21 @@ function normalizeStructuredMarkdown(str) {
     out = merged.join('\n');
   }
 
-  // 7. Pisahkan bullet list (- **Label**: atau - Kata) yang menempel di tengah kalimat
+  // 7. Pisahkan bullet list (- **Label**: atau - Kata atau strip pemisah) yang menempel di tengah kalimat
+  out = out.replace(/([.:?!])\s*[-–—]\s+(\*\*[^*]+\*\*:?)/g, '$1\n\n- $2');
+  out = out.replace(/([.:?!])\s*[-–—]\s+([A-Z][a-zA-Z0-9])/g, '$1\n\n- $2');
   out = out.replace(/([.:?!]|\b)\s+[-*•]\s+(\*\*[^*]+\*\*:?)/g, '$1\n- $2');
   out = out.replace(/([.:?!])\s+[-*•]\s+([A-Za-z0-9])/g, '$1\n\n- $2');
+
+  // 7.2 Hapus asterisk tunggal yatim yang menempel di ujung kata (e.g. "tarif balik* pada" -> "tarif balik pada")
+  out = out.replace(/([a-zA-Z0-9])\*(?!\*)(?=\s|[.,:;?!]|$)/g, '$1');
+
+  // 7.3 Hapus bracket siku tutup yatim di ujung teks jika tidak ada pembuka (e.g. "...pasca 9/11]" -> "...pasca 9/11")
+  if (!out.includes('[') && out.includes(']')) {
+    out = out.replace(/\]+/g, '');
+  } else {
+    out = out.replace(/([a-zA-Z0-9])\]\s*$/g, '$1');
+  }
 
   // 8. Bersihkan artefak strip ganda sebelum kata biasa
   out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*([A-Z][a-z0-9])/g, '\n\n$1');

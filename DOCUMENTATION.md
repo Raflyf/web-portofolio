@@ -2093,6 +2093,29 @@ Mengimplementasikan prinsip-prinsip inti arsitektur RAGFlow (Opsi B: Serverless-
    - Validasi sintaksis `node -c api/chat.js` lulus tanpa peringatan.
    - Build Vite `npm run build` sukses dalam 958ms.
 
+### v10.668.1 — Fix Serverless Gateway Cache Reference & Structured Daily News Engine
+
+Released 2026-09-08.
+
+Menyelesaikan kendala *Serverless Gateway Exception* dan meningkatkan struktur output jawaban berita harian agar tidak acak-acakan:
+
+1. **Perbaikan Deklarasi In-Memory Cache (Resolusi `serverMemoriesCache is not defined`):**
+   - Menghapus tag pembuka JSDoc liar (`/**`) di atas `let serverMemoriesCache` yang sebelumnya membuat deklarasi variabel tertelan sebagai komentar di runtime Vercel.
+   - Memastikan `serverMemoriesCache` terinisialisasi secara global dan dapat diakses dengan aman oleh `fetchServerMemories` dan `saveServerMemory`.
+
+2. **Mesin Rangkuman Berita Harian Terstruktur:**
+   - Menyematkan penanganan kueri berita umum di `formulateSmartSearchQueries` agar kueri seperti "infokan berita hari ini" tidak kehilangan kata kunci substansi akibat pembersih stopword.
+   - Menambahkan arahan sintesis khusus `isNewsOverviewQuery` di `searchWebContext` yang mewajibkan asisten membagi berita ke dalam kategori terorganisir (Nasional & Internasional) dengan format butir poin, bukan menggabungkan berbagai isu acak ke dalam satu paragraf bersambung.
+
+3. **Pembersihan Artefak Tanda Baca & Simbol Yatim:**
+   - Memisahkan kalimat yang digabungkan tanda strip di tengah teks (`.\s*-\s*`) menjadi butir poin baru yang rapi.
+   - Menghilangkan tanda bintang tunggal yatim yang menempel di ujung kata (misal `kata*`) dan tanda kurung siku tutup tanpa pembuka di akhir kalimat.
+
+4. **Verifikasi:**
+   - `node -c api/chat.js` tuntas dengan kode keluar 0.
+   - Build Vite `npm run build` sukses dalam 1.10s.
+
+
 
 
 
