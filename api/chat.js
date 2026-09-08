@@ -3374,20 +3374,20 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       // & direct), dan Ollama Nano (fallback). OpenCode mimo-v2.5-free rawan 429 -> tidak diprioritaskan.
       if (hasImages || (model && model.toLowerCase().includes('vision')) || queryIntent.category === 'vision') {
         return [
-          // Tier 1: Gemini 2.0 Flash (OpenRouter SOTA Multimodal Vision & OCR super cepat <2s)
-          { provider: 'openrouter', model: 'google/gemini-2.0-flash-exp:free', timeout: 18000 },
-          // Tier 2: Llama 3.2 Vision 11B (OpenRouter - Multimodal Vision stabil)
-          { provider: 'openrouter', model: 'meta-llama/llama-3.2-11b-vision-instruct:free', timeout: 18000 },
-          // Tier 3: Qwen 2 VL 72B (OpenRouter - High-Precision Visual Understanding)
-          { provider: 'openrouter', model: 'qwen/qwen-2-vl-72b-instruct:free', timeout: 20000 },
-          // Tier 4: Nemotron Nano Omni (OpenRouter - Multimodal Omni Reasoning)
-          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 20000 },
-          // Tier 5: MiniMax M3 (OpenRouter - Multimodal Vision)
-          { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 20000 },
-          // Tier 6: Ollama Cloud Nano Text Fallback (Bila vision provider offline, jawab teksnya secara cerdas)
+          // Tier 1: Nemotron 3 Nano Omni (OpenRouter - TERVERIFIKASI SOTA Multimodal Reasoning & Image OCR)
+          { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 25000 },
+          // Tier 2: Dots Studio 3 Note Preview (OpenRouter - Multimodal Vision Verified OK)
+          { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 20000 },
+          // Tier 3: Gemma 4 31B Multimodal (OpenRouter - Google Vision Architecture)
+          { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 20000 },
+          // Tier 4: Gemma 4 26B Multimodal (OpenRouter - Google Vision Architecture)
+          { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free', timeout: 20000 },
+          // Tier 5: OpenRouter Free Pool Router
+          { provider: 'openrouter', model: 'openrouter/free', timeout: 18000 },
+          // Tier 6: Ollama Cloud Nano Text Fallback (Bila vision serverless load tinggi, jawab konteks teksnya)
           { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 },
-          // Tier 7: OpenRouter Free Pool
-          { provider: 'openrouter', model: 'openrouter/free', timeout: 18000 }
+          // Tier 7: Nemotron 3.5 Lightning Fallback
+          { provider: 'openrouter', model: 'nvidia/nemotron-3.5-lightning:free', timeout: 18000 }
         ];
       }
 
@@ -3464,14 +3464,15 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
         if (t.includes('vision')) {
           return [
             { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 25000 },
-            { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 20000 },
+            { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 20000 },
+            { provider: 'openrouter', model: 'google/gemma-4-31b-it:free', timeout: 20000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 }
           ];
         }
         if (t === 'minimax' || t.includes('minimax') || t === 'm3') {
           return [
-            { provider: 'openrouter', model: 'minimax/minimax-m3:free', timeout: 25000 },
-            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 20000 },
+            { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free', timeout: 25000 },
+            { provider: 'openrouter', model: 'dots-studio/dots-3-note-preview:free', timeout: 20000 },
             { provider: 'ollama', model: 'nemotron-3-nano:30b', timeout: 20000 }
           ];
         }
