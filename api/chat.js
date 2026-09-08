@@ -324,7 +324,20 @@ Aturan ini BERLAKU UNIVERSAL untuk SELURUH PERTANYAAN di SEMUA DOMAIN (Berita Du
    - DILARANG KERAS mengaitkan atau membiaskan frasa "web ini" dengan topik dari riwayat percakapan sebelumnya (misalnya jika sebelumnya membahas lowongan kerja, perusahaan luar, berita teknologi, atau website pihak ketiga). "Web ini" SELALU berarti website portofolio Rafly Firmansyah!
    - Jika pengguna bertanya "web ini isinya apa saja", "ada apa saja di web ini", "jelaskan isi web ini", "web porto ini isinya apa", dsb., jelaskan bagian-bagian yang tersaji di layar pengunjung secara jelas, ramah, dan terstruktur (Hero/Pengenalan, Tentang Rafly, Showcase Proyek Unggulan, Skills/Keahlian, Pengalaman & Organisasi, Sertifikasi Resmi, Kontak, dan Terminal AI).
    - DILARANG KERAS memberikan tutorial cara membuat portofolio dan DILARANG menjelaskan website lowongan kerja saat ditanya isi web ini!
-6. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
+6. [PROTOKOL WAJIB JURNAL & REFERENSI ILMIAH (MANDATORY ACTIVE LINKS & ZERO HALLUCINATED PAPERS)]:
+   - WAJIB MENYERTAKAN LINK SUMBER ASLI / DOI AKTIF OTOMATIS (TANPA PERLU DIMINTA):
+     Ketika pengguna meminta mencarikan jurnal, makalah, paper, atau riset ilmiah, Anda WAJIB LANGSUNG menyertakan link sumber asli / tautan DOI aktif dalam format Markdown [Judul Paper / Tautan DOI](URL) untuk setiap karya yang Anda sebutkan di jawaban pertama Anda.
+     Pengguna TIDAK BOLEH dibiarkan harus bertanya lagi "mana link nya" atau "linknya mana". Tautan resmi WAJIB hadir secara otomatis sejak awal!
+   - LARANGAN KERAS MEMFABRIKASI / MENGARANG JURNAL FIKTIF (ZERO HALLUCINATION):
+     DILARANG KERAS mengarang judul jurnal palsu, nama peneliti buatan, dataset khayalan, metrik akurasi fiktif, nama volume/edisi palsu, atau URL placeholder (seperti link Sciencedirect dengan 'ganti ID artikel' atau doi rekayasa). Setiap paper yang Anda sebutkan WAJIB 100% nyata dan bersumber dari bukti penelusuran ilmiah (OpenAlex / Crossref / arXiv) atau Ground Truth portofolio (seperti riset skripsi spam email concept drift Rafly Firmansyah).
+   - TRANSPARANSI JIKA JURNAL SPESIFIK TIDAK DITEMUKAN:
+     Jika setelah penelusuran tidak ditemukan jurnal yang secara spesifik membahas topik persis yang diminta pengguna, AKUI SECARA JUJUR DAN JELAS bahwa belum ditemukan publikasi yang secara persis mengkaji topik tersebut dalam repositori indeks.
+     Sajikan publikasi terdekat yang relevan dari hasil pencarian (lengkap dengan link URL/DOI aslinya), lalu LANGSUNG sertakan tautan pencarian Google Scholar / Semantic Scholar aktif yang siap diklik pengguna dari blok bukti:
+     - [Eksplorasi Jurnal Terkait di Google Scholar](https://scholar.google.com/scholar?q=...)
+     - [Eksplorasi di Semantic Scholar](https://www.semanticscholar.org/search?q=...)
+   - DILARANG MEMBERIKAN INSTRUKSI MANUAL SEBAGAI PENGGANTI LINK:
+     DILARANG menyuruh pengguna "Anda dapat mencari di Google Scholar dengan cara mengetik...", tetapi BERIKAN LANGSUNG link pencarian aktif Markdown di atas!
+7. Aturan ini berlaku universal untuk seluruh topik dan seluruh sesi percakapan tanpa pengecualian.`;
 
   if (!includeDetailedPortfolio) {
     return basePrompt;
@@ -512,15 +525,21 @@ function formulateSmartSearchQueries(query, history = []) {
   }
 
   // 3. Dynamic Multi-Turn Context Awareness (Only combine if query is an anaphoric/dependent follow-up)
-  const isDependentFollowUp = /^(harganya|fiturnya|speknya|spesifikasinya|jadwalnya|tanggalnya|rilisnya|fitur|spek|harga|biaya|kapan|dimana|siapa|kenapa|mengapa|bagaimana|gimana)$/i.test(coreSubject) || (coreSubject.length > 0 && coreSubject.length < 3);
+  const isLinkOrSourceFollowUp = /\b(mana\s+link|minta\s+link|linknya\s+mana|ada\s+link|mana\s+tautan|mana\s+url|minta\s+tautan|minta\s+url|sumbernya\s+mana|mana\s+sumber|apa\s+linknya|kasih\s+link|berikan\s+link)\b/i.test(qNorm);
+  const isDependentFollowUp = isLinkOrSourceFollowUp ||
+    /^(harganya|fiturnya|speknya|spesifikasinya|jadwalnya|tanggalnya|rilisnya|fitur|spek|harga|biaya|kapan|dimana|siapa|kenapa|mengapa|bagaimana|gimana|link|linknya|tautan|tautannya|url|urlnya|sumber|sumbernya)$/i.test(coreSubject) ||
+    (coreSubject.length > 0 && coreSubject.length < 3);
+
   if (isDependentFollowUp && Array.isArray(history) && history.length > 0) {
     const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
     for (const pastQ of pastUserTurns.slice(0, 2)) {
       const pastSubject = stripFillers(pastQ);
       if (pastSubject.length >= 3) {
-        const combined = `${pastSubject} ${coreSubject || qClean}`.trim().slice(0, 90);
+        const combined = isLinkOrSourceFollowUp
+          ? `${pastSubject} official journal link paper doi research`
+          : `${pastSubject} ${coreSubject || qClean}`.trim().slice(0, 90);
         if (!queries.includes(combined)) {
-          queries.push(combined);
+          queries.unshift(combined);
         }
         break;
       }
@@ -1148,6 +1167,60 @@ async function searchWebContext(query, history = []) {
       }
     }
 
+    // 3c. Real-Time Scholarly & Academic Paper Discovery (OpenAlex, Crossref, arXiv)
+    // Mendeteksi kueri jurnal, paper, publikasi ilmiah, riset, skripsi, literatur, atau follow-up tautan ilmiah
+    const isAcademicQuery = /\b(jurnal|journal|makalah|paper|publikasi ilmiah|skripsi|tesis|disertasi|penelitian|riset|scholarly|academic|literature review|state of the art|sota review|arxiv|crossref|ieee|sciencedirect|springer|acm|research paper|doi)\b/i.test(query) ||
+      (Array.isArray(history) && history.slice(-3).some(h => /\b(jurnal|journal|paper|skripsi|penelitian|riset)\b/i.test(h.content || '')));
+    
+    let academicTopic = '';
+    if (isAcademicQuery) {
+      let candidateTopic = query
+        .replace(/\b(carikan|cari|mencari|tampilkan|berikan|rekomendasikan|minta|tolong|dong|ada|apa|apakah|bisa|jurnal|journal|makalah|paper|publikasi ilmiah|publikasi|ilmiah|riset|penelitian|skripsi|tesis|terbaru|terkini|tentang|mengenai|soal|terkait|studi|kajian|mana link|linknya|tautan|url)\b/gi, ' ')
+        .replace(/[^\w\s\.\-]/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      // Jika kueri adalah dependent follow-up (seperti "mana link nya"), warisi topik dari turn sebelumnya
+      if (candidateTopic.length < 4 && Array.isArray(history) && history.length > 0) {
+        const pastUserTurns = history.filter(h => h.role === 'user').map(h => String(h.content || '')).reverse();
+        for (const pastQ of pastUserTurns) {
+          const pastClean = pastQ
+            .replace(/\b(carikan|cari|jurnal|paper|tentang|mengenai|terbaru|terkini|dong|tolong)\b/gi, ' ')
+            .replace(/[^\w\s\.\-]/gi, ' ')
+            .trim();
+          if (pastClean.length >= 4) {
+            candidateTopic = pastClean;
+            break;
+          }
+        }
+      }
+
+      academicTopic = candidateTopic.slice(0, 100);
+      if (academicTopic.length >= 2) {
+        // OpenAlex API (Open Scholarly Graph, 250M+ works, gratis, tanpa key)
+        searchFetches.push(
+          fetch(`https://api.openalex.org/works?search=${encodeURIComponent(academicTopic)}&per-page=4&mailto=dev@raflyfirmansyah.my.id`, {
+            headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026 (mailto:dev@raflyfirmansyah.my.id)' },
+            signal: controller.signal
+          })
+        );
+        // Crossref API (Registrasi resmi DOI dunia & nasional)
+        searchFetches.push(
+          fetch(`https://api.crossref.org/works?query.bibliographic=${encodeURIComponent(academicTopic)}&rows=3&mailto=dev@raflyfirmansyah.my.id`, {
+            headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
+            signal: controller.signal
+          })
+        );
+        // arXiv API (Repositori makalah terbuka untuk ilmu komputer / sains)
+        searchFetches.push(
+          fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(academicTopic)}&start=0&max_results=3`, {
+            headers: { 'User-Agent': 'Antigravity-Portfolio-Engine/2026' },
+            signal: controller.signal
+          })
+        );
+      }
+    }
+
     // 4. Open-Web Encyclopedic Knowledge (Multi-Language: Indonesian & English)
     // Dilewati untuk kueri lanskap yang butuh kecepatan — bukti berita sudah menjadi sumber utama.
     const isEncyclopedic = !isLatestLandscapeQuery && /\b(apa|siapa|definisi|pengertian|sejarah|biografi|rumus|cara kerja|apa arti|teori|asal usul|what|who|history|definition|jelaskan|analisis|komparasi|perbedaan|bagaimana|cara|faktor|arsitektur|konsep|mekanisme|struktur|prinsip|metode|algoritma|algorithm|how|explain|compare|versus|vs|kelebihan|kekurangan|manfaat|tujuan|fitur|dataset|evaluasi|akurasi|keunggulan)\b/i.test(query);
@@ -1287,24 +1360,99 @@ async function searchWebContext(query, history = []) {
                 }
               });
             }
+            // OpenAlex Works Parser (Open Scholarly Graph 250M+ Works)
+            if (Array.isArray(parsed?.results) && parsed.results.length > 0 && parsed.results[0]?.id) {
+              let alexCount = 0;
+              parsed.results.slice(0, 4).forEach(work => {
+                const title = cleanStr(work.title);
+                if (title && !isJunkArticle(title)) {
+                  const doiUrl = work.doi || work.primary_location?.landing_page_url || work.id;
+                  const year = work.publication_year || '';
+                  const venue = cleanStr(work.primary_location?.source?.display_name || '');
+                  const authors = Array.isArray(work.authorships)
+                    ? work.authorships.slice(0, 3).map(a => cleanStr(a.author?.display_name)).filter(Boolean).join(', ')
+                    : '';
+                  const entryText = `[Jurnal/Paper Terverifikasi (OpenAlex) | Link: ${doiUrl}${year ? ` | Tahun: ${year}` : ''}${venue ? ` | Venue: ${venue}` : ''}${authors ? ` | Penulis: ${authors}` : ''}]: "${title}"`;
+                  structuredSnippets.push({
+                    text: entryText,
+                    timestamp: Date.now() + 800000000,
+                    score: 95
+                  });
+                  rawSnippets.push(`[OpenAlex]: ${title}`);
+                  alexCount++;
+                }
+              });
+              if (alexCount > 0) {
+                agentToolsUsed.push({
+                  tool: 'academic_search',
+                  label: 'Repositori Jurnal Terbuka Global (OpenAlex)',
+                  sourcesCount: alexCount
+                });
+              }
+            }
+
+            // Crossref Works Parser (DOI Registration Authority)
+            if (parsed?.message && Array.isArray(parsed.message?.items) && parsed.message.items.length > 0) {
+              let crCount = 0;
+              parsed.message.items.slice(0, 3).forEach(item => {
+                const title = cleanStr(Array.isArray(item.title) ? item.title[0] : item.title);
+                if (title && !isJunkArticle(title)) {
+                  const doiUrl = item.URL || (item.DOI ? `https://doi.org/${item.DOI}` : '');
+                  const year = item.published?.['date-parts']?.[0]?.[0] || '';
+                  const venue = cleanStr(Array.isArray(item['container-title']) ? item['container-title'][0] : item['container-title']);
+                  const authors = Array.isArray(item.author)
+                    ? item.author.slice(0, 3).map(a => cleanStr(`${a.given || ''} ${a.family || ''}`).trim()).filter(Boolean).join(', ')
+                    : '';
+                  const entryText = `[Jurnal/Paper Terverifikasi (Crossref DOI) | Link: ${doiUrl}${year ? ` | Tahun: ${year}` : ''}${venue ? ` | Publisher: ${venue}` : ''}${authors ? ` | Penulis: ${authors}` : ''}]: "${title}"`;
+                  structuredSnippets.push({
+                    text: entryText,
+                    timestamp: Date.now() + 750000000,
+                    score: 90
+                  });
+                  rawSnippets.push(`[Crossref]: ${title}`);
+                  crCount++;
+                }
+              });
+              if (crCount > 0) {
+                agentToolsUsed.push({
+                  tool: 'academic_search',
+                  label: 'Otoritas DOI Ilmiah Global & Nasional (Crossref)',
+                  sourcesCount: crCount
+                });
+              }
+            }
           } catch (_) {}
         } else if (textData.includes('<feed') || textData.includes('<entry>')) {
           // arXiv XML Feed
           const entries = textData.match(/<entry>[\s\S]*?<\/entry>/gi) || [];
-          entries.slice(0, 2).forEach(entry => {
+          let arxivCount = 0;
+          entries.slice(0, 3).forEach(entry => {
             const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/i);
             const summaryMatch = entry.match(/<summary>([\s\S]*?)<\/summary>/i);
+            const idMatch = entry.match(/<id>([\s\S]*?)<\/id>/i);
+            const publishedMatch = entry.match(/<published>([\s\S]*?)<\/published>/i);
             const title = cleanStr(titleMatch ? titleMatch[1] : '');
             const summary = cleanStr(summaryMatch ? summaryMatch[1] : '');
-            if (title && summary) {
+            const rawId = cleanStr(idMatch ? idMatch[1] : '');
+            const arxivUrl = rawId ? rawId.replace(/^http:/i, 'https:') : '';
+            const pubYear = publishedMatch ? cleanStr(publishedMatch[1]).slice(0, 4) : '';
+            if (title && !isJunkArticle(title)) {
               structuredSnippets.push({
-                text: `[arXiv Research Paper (${title})]: ${summary.slice(0, 400)}...`,
-                timestamp: Date.now(),
-                score: 5
+                text: `[Jurnal/Paper Terverifikasi (arXiv ${pubYear}) | Link: ${arxivUrl}]: "${title}" — ${summary.slice(0, 350)}`,
+                timestamp: Date.now() + 850000000,
+                score: 92
               });
               rawSnippets.push(`[arXiv]: ${title}`);
+              arxivCount++;
             }
           });
+          if (arxivCount > 0) {
+            agentToolsUsed.push({
+              tool: 'academic_search',
+              label: 'arXiv Open-Access Research Repository',
+              sourcesCount: arxivCount
+            });
+          }
         } else {
           // RSS News Feeds (Google News Global & ID, Bing)
           const items = textData.match(/<item>[\s\S]*?<\/item>/gi) || [];
@@ -1347,7 +1495,8 @@ async function searchWebContext(query, history = []) {
               }
               if (searchKeywords.length === 0 || relScore > 0) {
                 const fullText = desc && desc.length > 20 ? `${title} — ${desc.slice(0, 150)}` : title;
-                const entry = pubDate ? `[Global Live Web/News (${pubDate})]: ${fullText}` : `[Global Live Web/News]: ${fullText}`;
+                const linkSuffix = (itemLink && isSafePublicUrl(itemLink)) ? ` | Link Sumber: ${itemLink}` : '';
+                const entry = pubDate ? `[Global Live Web/News (${pubDate})${linkSuffix}]: ${fullText}` : `[Global Live Web/News${linkSuffix}]: ${fullText}`;
                 structuredSnippets.push({ text: entry, timestamp: ts, score: relScore });
                 rawSnippets.push(title);
               }
@@ -1357,13 +1506,30 @@ async function searchWebContext(query, history = []) {
       }
     }
 
+    // Injeksi Direct Search Links Google Scholar & Semantic Scholar untuk kueri akademik
+    if (isAcademicQuery && academicTopic && academicTopic.length >= 2) {
+      const scholarUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(academicTopic)}`;
+      const semanticUrl = `https://www.semanticscholar.org/search?q=${encodeURIComponent(academicTopic)}`;
+      structuredSnippets.push({
+        text: `[Tautan Indeks Akademik Terverifikasi (Siap Diklik Pengunjung)]:
+- Google Scholar: ${scholarUrl}
+- Semantic Scholar: ${semanticUrl}`,
+        timestamp: Date.now() + 999999999,
+        score: 120
+      });
+      agentToolsUsed.push({
+        tool: 'academic_search',
+        label: 'Google Scholar & Semantic Scholar Direct Links'
+      });
+    }
+
     const newsItemsCount = structuredSnippets.filter(s => s.text.startsWith('[Global Live Web/News')).length;
     if (newsItemsCount > 0) {
       agentToolsUsed.push({
         tool: 'google_search',
         label: 'Google Search & Berita Global',
         sourcesCount: newsItemsCount,
-        sources: rawSnippets.filter(r => !r.startsWith('[Wikipedia]') && !r.startsWith('[GitHub')).slice(0, 4)
+        sources: rawSnippets.filter(r => !r.startsWith('[Wikipedia]') && !r.startsWith('[GitHub') && !r.startsWith('[OpenAlex') && !r.startsWith('[Crossref') && !r.startsWith('[arXiv')).slice(0, 4)
       });
     }
 
@@ -1405,7 +1571,8 @@ async function searchWebContext(query, history = []) {
       return ((b.score || 0) - (a.score || 0)) || (b.timestamp - a.timestamp);
     });
 
-    // Deduplicate snippets (top 7 highest scoring / newest snippets for fast, high-density grounding)
+    // Deduplicate snippets (top snippets for fast, high-density grounding)
+    const maxSnippets = isLatestLandscapeQuery ? 14 : (isAcademicQuery ? 11 : 7);
     const seen = new Set();
     const uniqueSnippets = [];
     for (const item of structuredSnippets) {
@@ -1413,7 +1580,7 @@ async function searchWebContext(query, history = []) {
         seen.add(item.text);
         uniqueSnippets.push(item.text);
       }
-      if (uniqueSnippets.length >= (isLatestLandscapeQuery ? 14 : 7)) break;
+      if (uniqueSnippets.length >= maxSnippets) break;
     }
 
     let formattedPrompt = '';
@@ -1436,6 +1603,16 @@ ${uniqueSnippets.join('\n')}
 - PROTOKOL ZERO-HALLUCINATION & ZERO-OVERCLAIM:
   * Rujuk peristiwa, tanggal, metrik, dan fakta nyata dari data pencarian.
   * Jika bukti di atas tidak memuat jawaban kunci, akui jujur bahwa informasi terkini tidak ditemukan dalam pencarian live, berikan yang terverifikasi (bila ada) dengan penanda waktu, lalu arahkan ke sumber resmi. DILARANG mengarang berita palsu, tanggal rilis fiktif, atau klaim berlebihan yang tidak tercantum di sumber resmi.\n`;
+    }
+
+    // Arahan sintesis khusus untuk referensi jurnal ilmiah:
+    if (isAcademicQuery && formattedPrompt) {
+      formattedPrompt += `
+[ARAHAN KHUSUS PENCARIAN JURNAL & REFERENSI ILMIAH]:
+- Pengguna meminta rekomendasi jurnal, makalah, atau riset ilmiah.
+- WAJIB MENYERTAKAN LINK SUMBER ASLI / DOI AKTIF DALAM FORMAT MARKDOWN [Judul Jurnal / Link DOI](URL) SECARA OTOMATIS PADA SETIAP KARYA YANG ANDA REKOMENDASIKAN. Pengguna tidak perlu meminta link lagi.
+- DILARANG KERAS MENGARANG JUDUL JURNAL FIKTIF, PENULIS PALSU, ATAU METRIK AKURASI BUATAN! Gunakan hanya jurnal nyata yang terdaftar pada bukti di atas.
+- Jika jurnal dengan topik persis tidak ditemukan dalam bukti indeks di atas, nyatakan secara transparan bahwa publikasi spesifik belum tercatat di indeks live. Sajikan studi terdekat dari bukti (dengan tautan aslinya), dan LANGSUNG sertakan tautan pencarian Google Scholar & Semantic Scholar yang tercantum di bukti di atas agar pengunjung dapat mengkliknya langsung.`;
     }
 
     // Arahan sintesis khusus LANSKAP "apa yang baru / rilis terbaru" (universal, semua domain):

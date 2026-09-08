@@ -2290,6 +2290,37 @@ Tabel Penjelajah Memori RAG di Dashboard berhenti mencatat data pada tanggal 3 S
 - Data test probe dibersihkan dengan status HTTP 204 No Content.
 - Build Vite `npm run build` sukses 100% tanpa error.
 
+---
+
+## 41. Catatan Rilis Versi 10.676.0 (8 September 2026)
+
+### Latar Belakang Masalah
+1. **Halusinasi Paper & Ketiadaan Tautan Ilmiah:**
+   Ketika pengguna meminta rekomendasi jurnal ilmiah, model asisten kerap mengarang judul paper atau atribut akurasi fiktif tanpa menyertakan tautan aktif asli. Jika pengguna bertanya "mana link nya", asisten tidak memiliki tautan DOI nyata untuk disajikan.
+2. **Keterbatasan Cakupan Indeks Ilmiah:**
+   Mesin pencari sebelumnya hanya mengandalkan Google News RSS, Hacker News, dan Wikipedia yang tidak dirancang untuk indeks literatur akademis/skripsi/jurnal.
+
+### Solusi Rekayasa yang Diimplementasikan
+1. **Integrasi OpenAlex API & Crossref DOI Discovery:**
+   - Menyuntikkan pemanggilan real-time ke **OpenAlex API** (graf literatur terbuka global dengan 250M+ karya ilmiah, termasuk ribuan jurnal nasional SINTA/Garuda di Indonesia) dan **Crossref API** untuk memverifikasi DOI resmi, tahun terbit, nama venue jurnal, dan daftar penulis.
+   - Menyertakan **arXiv API** dengan normalisasi istilah teknis untuk domain kecerdasan buatan, machine learning, dan ilmu komputer.
+2. **Generasi Tautan Aktif Otomatis (Markdown Active Links):**
+   - Setiap entri paper terverifikasi yang masuk ke konteks inferensi secara otomatis menyandang tautan langsung `[Link: https://doi.org/... atau URL PDF]`.
+   - Menginjeksi tautan pencarian siap klik ke **Google Scholar** (`https://scholar.google.com/scholar?q=...`) dan **Semantic Scholar** (`https://www.semanticscholar.org/search?q=...`) secara langsung di konteks pembuktian.
+3. **Penyambungan Riwayat Obrolan untuk Follow-Up Kontekstual:**
+   - Kueri dependent follow-up seperti "mana link nya", "linknya mana", atau "ada tautannya" secara otomatis mewarisi topik riset dari giliran dialog sebelumnya sehingga pencarian ilmiah tetap terarah presisi.
+4. **Penegakan Protokol Epistemis Ilmiah & Larangan Fabrikasi:**
+   - Menambahkan aturan ketat pada sistem prompt (`[PROTOKOL WAJIB JURNAL & REFERENSI ILMIAH]`):
+     - Wajib menyertakan tautan sumber asli/DOI aktif secara otomatis di jawaban pertama tanpa menunggu diminta.
+     - Dilarang keras mengarang jurnal fiktif, metrik akurasi buatan, atau tautan placeholder.
+     - Jika paper spesifik tidak tercatat, asisten wajib menyatakan secara jujur dan menyajikan tautan Google Scholar/Semantic Scholar yang siap diklik.
+
+### Verifikasi
+- Pengujian langsung `searchWebContext` untuk kueri "carikan jurnal terbaru tentang klasifikasi deteksi penyakit pada daun vanili" berhasil mengidentifikasi paper nyata dari OpenAlex: `PENERAPAN METODE SUPPORT VECTOR MACHINE (SVM) UNTUK KLASIFIKASI PENYAKIT TANAMAN VANILA PLANIFOLIA` lengkap dengan tautan DOI resmi `https://doi.org/10.26798/jiko.v10i1.2169` (JIKO, 2026).
+- Pengujian kueri follow-up "mana link nya" berhasil mewarisi topik dan menghasilkan tautan pencarian Google Scholar & Semantic Scholar.
+- Verifikasi sintaks `node -c api/chat.js` lolos dengan kode keluar 0.
+- Bundle `npm run build` sukses tanpa error dalam 1.43 detik.
+
 
 
 
