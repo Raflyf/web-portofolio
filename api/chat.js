@@ -838,18 +838,25 @@ async function scrapeDirectWebpageContent(url) {
           // Pattern v2: arena.ai JSON format uses {"rank":N,"contenderName":"...","model":"DisplayName","modelOrganization":"Org",...}
           // The older pattern (modelDisplayName/displayName) no longer matches — use the live-verified pattern.
           const entries = [];
+          const seenRanks = new Set();
           // Primary: contenderName-based pattern (arena.ai leaderboard as of Sep 2026)
           const arenaPattern = /"rank"\s*:\s*(\d+)\s*,\s*"contenderName"\s*:\s*"[^"]*"\s*,\s*"model"\s*:\s*"([^"]+)"\s*,\s*"modelOrganization"\s*:\s*"([^"]*)"(?:[^{}]{0,400}?"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
           let am;
-          while ((am = arenaPattern.exec(combinedPayload)) !== null && entries.length < 25) {
-            entries.push({ rank: parseInt(am[1], 10), name: am[2], org: am[3] || '', metric: am[4] != null ? parseFloat(am[4]) : null });
+          while ((am = arenaPattern.exec(combinedPayload)) !== null && seenRanks.size < 35) {
+            const rank = parseInt(am[1], 10);
+            if (seenRanks.has(rank)) continue;
+            seenRanks.add(rank);
+            entries.push({ rank, name: am[2], org: am[3] || '', metric: am[4] != null ? parseFloat(am[4]) : null });
           }
           // Fallback: generic rank+name+org pattern (covers other leaderboard sites)
           if (entries.length === 0) {
             const genericPattern = /"rank"\s*:\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName|model)"\s*:\s*"([^"]+)"[^{}]*?(?:"(?:modelOrganization|organization|provider|author)"\s*:\s*"([^"]+)")?[^{}]*?(?:"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
             let gm;
-            while ((gm = genericPattern.exec(combinedPayload)) !== null && entries.length < 25) {
-              entries.push({ rank: parseInt(gm[1], 10), name: gm[2], org: gm[3] || '', metric: gm[4] != null ? parseFloat(gm[4]) : null });
+            while ((gm = genericPattern.exec(combinedPayload)) !== null && seenRanks.size < 35) {
+              const rank = parseInt(gm[1], 10);
+              if (seenRanks.has(rank)) continue;
+              seenRanks.add(rank);
+              entries.push({ rank, name: gm[2], org: gm[3] || '', metric: gm[4] != null ? parseFloat(gm[4]) : null });
             }
           }
           if (entries.length > 0) {
@@ -891,16 +898,23 @@ async function scrapeDirectWebpageContent(url) {
               if (subPayload.length > 100) {
                 // Pattern v2: same logic as primary scraper — arena.ai format (Sep 2026)
                 const subEntries = [];
+                const subSeenRanks = new Set();
                 const subArenaPattern = /"rank"\s*:\s*(\d+)\s*,\s*"contenderName"\s*:\s*"[^"]*"\s*,\s*"model"\s*:\s*"([^"]+)"\s*,\s*"modelOrganization"\s*:\s*"([^"]*)"(?:[^{}]{0,400}?"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
                 let sam;
-                while ((sam = subArenaPattern.exec(subPayload)) !== null && subEntries.length < 25) {
-                  subEntries.push({ rank: parseInt(sam[1], 10), name: sam[2], org: sam[3] || '', metric: sam[4] != null ? parseFloat(sam[4]) : null });
+                while ((sam = subArenaPattern.exec(subPayload)) !== null && subSeenRanks.size < 35) {
+                  const rank = parseInt(sam[1], 10);
+                  if (subSeenRanks.has(rank)) continue;
+                  subSeenRanks.add(rank);
+                  subEntries.push({ rank, name: sam[2], org: sam[3] || '', metric: sam[4] != null ? parseFloat(sam[4]) : null });
                 }
                 if (subEntries.length === 0) {
                   const subGenericPattern = /"rank"\s*:\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName|model)"\s*:\s*"([^"]+)"[^{}]*?(?:"(?:modelOrganization|organization|provider|author)"\s*:\s*"([^"]+)")?[^{}]*?(?:"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
                   let sgm;
-                  while ((sgm = subGenericPattern.exec(subPayload)) !== null && subEntries.length < 25) {
-                    subEntries.push({ rank: parseInt(sgm[1], 10), name: sgm[2], org: sgm[3] || '', metric: sgm[4] != null ? parseFloat(sgm[4]) : null });
+                  while ((sgm = subGenericPattern.exec(subPayload)) !== null && subSeenRanks.size < 35) {
+                    const rank = parseInt(sgm[1], 10);
+                    if (subSeenRanks.has(rank)) continue;
+                    subSeenRanks.add(rank);
+                    subEntries.push({ rank, name: sgm[2], org: sgm[3] || '', metric: sgm[4] != null ? parseFloat(sgm[4]) : null });
                   }
                 }
                 if (subEntries.length > 0) {
@@ -1206,8 +1220,10 @@ async function searchWebContext(query, history = []) {
 
     // 3c. Real-Time Scholarly & Academic Paper Discovery (OpenAlex, Crossref, arXiv)
     // Mendeteksi kueri jurnal, paper, publikasi ilmiah, riset, skripsi, literatur, atau follow-up tautan ilmiah
+    const isAcademicFollowUp = /^(?:mana|apa|ada|berikan|tampilkan|minta|tolong|lanjut|lanjutkan|next|more)?\s*(?:link|linknya|tautan|tautannya|url|sumber|referensi|lengkapnya|detailnya|abstrak|isi|penulis)?\s*[?.]*$/i.test(query.trim()) ||
+      /^(?:mana\s+link|linknya\s+mana|mana\s+tautan|lanjut|lanjutkan|terus|next|more)\b/i.test(query.trim());
     const isAcademicQuery = /\b(jurnal|journal|makalah|paper|publikasi ilmiah|skripsi|tesis|disertasi|penelitian|riset|scholarly|academic|literature review|state of the art|sota review|arxiv|crossref|ieee|sciencedirect|springer|acm|research paper|doi)\b/i.test(query) ||
-      (Array.isArray(history) && history.slice(-3).some(h => /\b(jurnal|journal|paper|skripsi|penelitian|riset)\b/i.test(h.content || '')));
+      (isAcademicFollowUp && Array.isArray(history) && history.slice(-3).some(h => /\b(jurnal|journal|paper|skripsi|penelitian|riset)\b/i.test(h.content || '')));
     
     let academicTopic = '';
     if (isAcademicQuery) {
@@ -1776,8 +1792,21 @@ function classifyQueryIntent(query = '', docAttachments = [], hasImages = false)
     };
   }
 
+  // 4b. Ranking, Leaderboard, and Structured Multi-Item Listings (Top 10, 20 besar, dsb.)
+  const hasListingOrRankingKeywords = /\b(peringkat|ranking|leaderboard|urutan|tangga|top\s*\d+|\d+\s*besar|daftar|list|sebutkan|rekomendasi|koleksi|kumpulan|apa saja|apa aja|tahapan|langkah|jurnal|makalah|paper|artikel|riset)\b/i.test(q);
+  const isLargeListing = /\b(top\s*(?:1[5-9]|[2-9]\d|\d{3,})|(?:1[5-9]|[2-9]\d|\d{3,})\s*besar|seluruh|lengkap)\b/i.test(q) || (hasListingOrRankingKeywords && len > 30);
+  if (hasListingOrRankingKeywords) {
+    return {
+      category: isLargeListing ? 'project_architecture' : 'basic_standard',
+      isAnalysisOrComparison: true,
+      effort: isLargeListing ? 'high' : 'medium',
+      omniCandidates: ['Codex', 'x-preview-f-free', 'Antigravity', 'nemotron-3-nano', 'deepseek/deepseek-chat'],
+      label: isLargeListing ? 'Comprehensive Ranking & Multi-Model Synthesis (Nemotron Nano 30B)' : 'Structured Ranking & Listing (Nemotron Nano 30B)'
+    };
+  }
+
   // 5. Standard Informative, Conceptual, Ordinary Q&A, and Fast Trivia
-  const isShortQuery = len < 40 && !hasAnalysisOrComparisonKeywords;
+  const isShortQuery = len < 40 && !hasAnalysisOrComparisonKeywords && !hasListingOrRankingKeywords;
   return {
     category: isShortQuery ? 'trivial_casual' : 'basic_standard',
     isAnalysisOrComparison: hasAnalysisOrComparisonKeywords,
@@ -3026,6 +3055,12 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
         cleaned = cleaned.replace(/\*\*([^*\n]+)(?=[,\.\n]|$)/m, '**$1**');
       }
 
+      // 3.75. Clean abrupt truncated ending (e.g. "Gemini 3.8 Flash (" or trailing unclosed paren/dash/colon at end of text)
+      // Mencegah tampilan terpotong jelek jika model terhenti di tengah karakter pembuka
+      cleaned = cleaned.replace(/([A-Za-z0-9\s._\-]+)\s*\(\s*$/m, '$1');
+      cleaned = cleaned.replace(/([a-zA-Z0-9\s._\-]+)\s*\[\s*$/m, '$1');
+      cleaned = cleaned.replace(/[-–—:;,]\s*$/m, '').trim();
+
       // 4. Zero-Emoji Enforcement: Strip all Unicode emojis
       cleaned = cleaned.replace(/[\u{1F300}-\u{1FAD6}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}\u{FE00}-\u{FE0F}\u{200D}]/gu, '').replace(/[ \t]{2,}/g, ' ');
 
@@ -3355,14 +3390,14 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       }
     }
 
-    // Maximum token limits: Balanced for blazing fast first-token latency and complete answers
+    // Maximum token limits: Balanced for blazing fast first-token latency and complete answers without truncation
     const maxTokensConfig = (effectiveEffort === 'thinking')
       ? 8192
       : (effectiveEffort === 'high'
-          ? 4096
+          ? 6144
           : (effectiveEffort === 'medium'
-              ? 2048
-              : (effectiveEffort === 'low' ? 1024 : 2048)));
+              ? 4096
+              : (effectiveEffort === 'low' ? 2048 : 4096)));
     const tempConfig = effectiveEffort === 'low' ? 0.15 : (effectiveEffort === 'thinking' ? 0.35 : 0.25);
 
     // ========================================================================

@@ -463,6 +463,11 @@ function formatMessageContent(content) {
     text = formattedItems.join('\n');
   }
 
+  // Bersihkan karakter pembuka yatim di akhir teks jika respons terpotong sebelum ditutup
+  text = text.replace(/([A-Za-z0-9\s._\-]+)\s*\(\s*$/m, '$1');
+  text = text.replace(/([a-zA-Z0-9\s._\-]+)\s*\[\s*$/m, '$1');
+  text = text.replace(/[-–—:;,]\s*$/m, '').trim();
+
   return text;
 }
 
@@ -1295,13 +1300,13 @@ export default function TerminalAI({ onClose } = {}) {
                         ) : (
                           <div key={aIdx} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/40 border border-emerald-500/30 text-xs text-emerald-200">
                             <Paperclip className="w-3 h-3 text-emerald-400" />
-                            <span className="truncate max-w-[150px]">{att.name}</span>
+                            <span className="truncate max-w-37.5">{att.name}</span>
                           </div>
                         );
                       })}
                     </div>
                   )}
-                  {msg.content && <div className="leading-relaxed whitespace-pre-wrap break-words">{msg.content}</div>}
+                  {msg.content && <div className="leading-relaxed whitespace-pre-wrap wrap-break-word">{msg.content}</div>}
                 </div>
               </div>
             ) : msg.role === 'system' ? (
