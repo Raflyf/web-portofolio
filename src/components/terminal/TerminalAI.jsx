@@ -853,7 +853,18 @@ export default function TerminalAI({ onClose } = {}) {
       }
       
       let finalResponse = data?.response || "Maaf, terjadi kesalahan atau antrean penuh.";
-      // Save continuous RAG memories (explicit facts the model wants to persist)
+      // Save continuous RAG memories (explicit facts, grounded web insights, or server-persisted facts)
+      if (data?.savedFact && typeof data.savedFact === 'string') {
+        saveAIMemory(data.savedFact, telemetry.sessionId || 'unknown');
+      } else if (Array.isArray(data?.webMemories) && data.webMemories.length > 0) {
+        const topCandidate = data.webMemories.find(w => typeof w === 'string' && w.length >= 20 && !w.startsWith('[GitHub') && !w.startsWith('[Scraped'));
+        if (topCandidate) {
+          const cleanCandidate = topCandidate.replace(/\[(?:Global Live Web\/News|Wikipedia)[^\]]*\]\s*/g, '').trim();
+          if (cleanCandidate.length >= 15 && cleanCandidate.length <= 260) {
+            saveAIMemory(`Fakta live (${new Date().toISOString().slice(0, 10)}): ${cleanCandidate}`, telemetry.sessionId || 'unknown');
+          }
+        }
+      }
       const memoryRegex = /\[SAVE_MEMORY:\s*([\s\S]*?)\]/gi;
       const rawResponse = data.response || "";
       let memoryMatch;

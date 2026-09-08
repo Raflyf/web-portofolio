@@ -2264,6 +2264,33 @@ Audit menyeluruh dan pembaruan arsitektur multimodal vision berdasarkan pengujia
    - Tes live local handler via `node` terbukti mengembalikan HTTP 200 OK dari OpenRouter dengan model multimodal terverifikasi.
    - Build Vite `npm run build` sukses tanpa galat dalam 1.08 detik.
 
+---
+
+## 18. Pembaruan v10.675.0: Perbaikan Sinkronisasi Memori RAG Jangka Panjang (Supabase ai_memories)
+
+### Latar Belakang Masalah
+Tabel Penjelajah Memori RAG di Dashboard berhenti mencatat data pada tanggal 3 September (604 entri). Setelah diaudit mendalam secara empiris, ditemukan tiga akar penyebab:
+1. **Serverless Execution Freeze (Tanpa `await`):** Di `api/chat.js`, pemanggilan `saveServerMemory` tidak di-`await` (`saveServerMemory(...).catch(() => {})`). Pada arsitektur Vercel Serverless Function, runtime langsung dibekukan (*frozen*) begitu `res.status(200).json(...)` dikirimkan, sehingga promise koneksi POST ke Supabase terputus di tengah jalan sebelum TCP handshake atau HTTP request selesai.
+2. **Kriteria Seleksi Terlalu Sempit:** Memori RAG sebelumnya hanya menangkap snippet RSS Google News berformat tertentu. Jika pengguna menanyakan analisis teknis, konsep sistem, atau riset yang tidak memicu RSS berita, tidak ada fakta yang disimpan (`topGroundedMemory = null`).
+3. **Frontend Inactivity:** Fungsi `saveAIMemory` pada `TerminalAI.jsx` mengandalkan tag `[SAVE_MEMORY]` yang sudah dibersihkan oleh sanitizer backend, sehingga tidak pernah terpanggil untuk memperbarui `localStorage` (`portfolio_ai_memories`) atau memancarkan event `telemetry_update` ke Dashboard.
+
+### Solusi Rekayasa yang Diimplementasikan
+1. **Penyimpanan Serverless Deterministik Berbasis `await Promise.race`:**
+   - Mengubah `sendSuccess` menjadi `async` dan menambahkan `await` pada seluruh titik return provider (`callOpenRouter`, `callOpenCode`, `callNvidiaNim`, `callOllama`, `callMiniMax`).
+   - Menyimpan fakta RAG dengan hard timeout guard 1500ms (`Promise.race([saveServerMemory(...), timeout])`) sebelum respons HTTP dikirim, memastikan data 100% tersimpan ke Supabase tanpa tertahan oleh pembekuan container.
+2. **Ekstraksi Pengetahuan Berkelanjutan (*Continuous Learning Protocol*):**
+   - Mendukung bukti live web/news serta intisari pertanyaan dan jawaban substantif (>45 karakter) sebagai entri pengetahuan terverifikasi.
+   - Mengirimkan metadata `savedFact` pada respons JSON ke frontend.
+3. **Sinkronisasi Dual-Storage & Event Real-Time Frontend:**
+   - `TerminalAI.jsx` membaca `data.savedFact` dan memanggil `saveAIMemory` untuk memperbarui `localStorage` secara instan serta memancarkan event `window.dispatchEvent(new Event('telemetry_update'))`.
+   - Dashboard seketika merefresh dan menampilkan fakta memori baru tanpa jeda.
+
+### Verifikasi
+- Pengujian langsung POST ke Supabase `ai_memories` mengembalikan status HTTP 201 Created.
+- Data test probe dibersihkan dengan status HTTP 204 No Content.
+- Build Vite `npm run build` sukses 100% tanpa error.
+
+
 
 
 

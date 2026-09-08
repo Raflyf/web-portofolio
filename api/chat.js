@@ -2461,7 +2461,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       });
     }
 
-    const sendSuccess = (content, modelName, providerName) => {
+    const sendSuccess = async (content, modelName, providerName) => {
       let cleaned = String(content || '')
         .replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, '')
         .replace(/<br\s*\/?>/gi, '\n')
@@ -2478,43 +2478,42 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       const saveMemoryMatches = [...cleaned.matchAll(/\[SAVE_MEMORY:\s*([\s\S]*?)\]/gi)];
       for (const m of saveMemoryMatches) {
         if (m[1] && m[1].trim()) {
-          saveServerMemory(m[1].trim(), sessionId || null).catch(() => {});
+          try {
+            await Promise.race([
+              saveServerMemory(m[1].trim(), sessionId || null),
+              new Promise(resolve => setTimeout(resolve, 1200))
+            ]);
+          } catch (_) {}
         }
       }
 
-      // 0.2. DETERMINISTIC GROUNDED MEMORY CAPTURE (tanpa bergantung tag model):
-      // Model jarang mematuhi instruksi [SAVE_MEMORY], sehingga ai_memories (dashboard
-      // monitoring) tidak pernah bertambah. Solusi: bila jawaban berhasil disusun dari bukti
-      // live yang valid (bukan identitas/sapaan/error), simpan SATU ringkasan fakta dari
-      // judul berita teratas yang relevan sebagai memori terverifikasi. Tidak memakai awalan
-      // "Kueri Pengunjung:" (klien mengecualikannya dari tampilan RAG). Dedupe per topik per
-      // menit agar tidak spam.
-      const topGroundedMemory = (() => {
-        if (isSkipSearch || isIdentityQuery || isCasualGreeting || isTimeQuery) return null;
-        if (!Array.isArray(webMemories) || webMemories.length === 0) return null;
-        if (typeof query !== 'string' || query.trim().length < 5) return null;
-        // Ambil judul bukti paling relevan (hindari baris label/teknis)
-        const candidate = webMemories.find((s) => {
-          const t = String(s || '');
-          return t.length > 20 && !t.startsWith('[Wikipedia]') && !t.startsWith('[GitHub') && !t.startsWith('[Scraped');
-        });
-        if (!candidate) return null;
-        const cleanTitle = String(candidate).replace(/\[Global Live Web\/News[^\]]*\]\s*/g, '').trim();
-        if (cleanTitle.length < 20 || cleanTitle.length > 240) return null;
-        // Ringkas jadi kalimat fakta
-        return `Fakta live (${new Date().toISOString().slice(0, 10)}): ${cleanTitle}`;
-      })();
-      if (topGroundedMemory) {
-        const nowMin = Math.floor(Date.now() / 60000);
-        if (!globalThis.__lastGroundedMemory || globalThis.__lastGroundedMemory.min !== nowMin) {
-          globalThis.__lastGroundedMemory = { min: nowMin, keys: new Set() };
+      // 0.2. DETERMINISTIC GROUNDED & CONTINUOUS RAG KNOWLEDGE CAPTURE
+      // Ekstraksi memori otomatis dari bukti web live atau intisari percakapan substantif
+      let memoryToPersist = null;
+      if (!isIdentityQuery && !isCasualGreeting && !isTimeQuery) {
+        if (Array.isArray(webMemories) && webMemories.length > 0) {
+          const candidate = webMemories.find((s) => {
+            const t = String(s || '');
+            return t.length > 15 && !t.startsWith('[GitHub') && !t.startsWith('[Scraped');
+          });
+          if (candidate) {
+            const cleanTitle = String(candidate).replace(/\[(?:Global Live Web\/News|Wikipedia)[^\]]*\]\s*/g, '').trim();
+            if (cleanTitle.length >= 15 && cleanTitle.length <= 260) {
+              memoryToPersist = `Fakta live (${new Date().toISOString().slice(0, 10)}): ${cleanTitle}`;
+            }
+          }
         }
-        const topicKey = String(query || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 60);
-        if (!globalThis.__lastGroundedMemory.keys.has(topicKey)) {
-          globalThis.__lastGroundedMemory.keys.add(topicKey);
-          saveServerMemory(topGroundedMemory, sessionId || null).catch(() => {});
+        // Fallback pembelajaran berkelanjutan: bila tidak ada feed berita tapi kueri dan respons bernilai substantif
+        if (!memoryToPersist && typeof query === 'string' && query.trim().length >= 5 && cleaned.length >= 45) {
+          const firstSubstantiveLine = cleaned.split('\n').map(l => l.trim()).find(l => l.length >= 25 && !l.startsWith('#') && !l.startsWith('-') && !/^(?:Halo|Hai|Tentu|Baik|Terima kasih)/i.test(l));
+          if (firstSubstantiveLine) {
+            const qSnippet = query.trim().replace(/[?!.,]/g, '').slice(0, 60);
+            const ansSnippet = firstSubstantiveLine.slice(0, 180).trim();
+            memoryToPersist = `Pengetahuan RAG (${new Date().toISOString().slice(0, 10)}): [${qSnippet}] ${ansSnippet}`;
+          }
         }
       }
+
       const textWithoutTags = cleaned.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
       if (/^(?:User Safety:\s*\w+[\s\S]*?Response Safety:\s*\w+|Safety:\s*safe)$/i.test(cleaned) || !textWithoutTags.trim()) {
         return null;
@@ -2940,11 +2939,32 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       }
 
       if (res.headersSent) return true;
+
+      // Persist RAG Knowledge to Supabase with deterministic await and 1500ms safety timeout
+      // Wajib di-await SEBELUM res.status(200).json() agar runtime Vercel Serverless tidak membekukan proses write
+      if (memoryToPersist) {
+        const nowMin = Math.floor(Date.now() / 60000);
+        if (!globalThis.__lastGroundedMemory || globalThis.__lastGroundedMemory.min !== nowMin) {
+          globalThis.__lastGroundedMemory = { min: nowMin, keys: new Set() };
+        }
+        const topicKey = String(query || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 60);
+        if (!globalThis.__lastGroundedMemory.keys.has(topicKey)) {
+          globalThis.__lastGroundedMemory.keys.add(topicKey);
+          try {
+            await Promise.race([
+              saveServerMemory(memoryToPersist, sessionId || null),
+              new Promise(resolve => setTimeout(resolve, 1500))
+            ]);
+          } catch (_) {}
+        }
+      }
+
       const isSpecific = (model && model !== 'auto');
       const isFailover = isSpecific && !modelName.toLowerCase().includes(targetModel.toLowerCase().split('/').pop().replace(/-free$/i, ''));
       res.status(200).json({
         success: true,
         response: cleaned,
+        savedFact: memoryToPersist,
         model: modelName,
         requestedModel: model,
         isFailover: isFailover,
@@ -3131,7 +3151,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
               content = msg.reasoning || msg.reasoning_content || msg.thinking;
             }
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'OpenRouter Cloud Pool');
+              return await sendSuccess(content.trim(), mName, 'OpenRouter Cloud Pool');
             }
           } else if (res.status === 402 || res.status === 429) {
             if (res.status === 429) {
@@ -3193,7 +3213,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
               content = msg.reasoning || msg.reasoning_content || msg.thinking;
             }
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'OpenCode Zen Gateway');
+              return await sendSuccess(content.trim(), mName, 'OpenCode Zen Gateway');
             }
           } else if (res.status === 402 || res.status === 429) {
             rateLimitedKeyCache.set(opKey, Date.now() + 15 * 60 * 1000);
@@ -3243,7 +3263,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
           if (res.ok) {
             const content = res.data?.choices?.[0]?.message?.content;
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'NVIDIA NIM Production Engine');
+              return await sendSuccess(content.trim(), mName, 'NVIDIA NIM Production Engine');
             }
           } else {
             providerErrors.push(`Nvidia NIM HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
@@ -3294,7 +3314,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
               content = res.data.message.reasoning || res.data.message.thinking;
             }
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
+              return await sendSuccess(content.trim(), mName, 'Ollama Cloud SOTA Engine');
             }
           } else {
             providerErrors.push(`Ollama Cloud HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
@@ -3339,7 +3359,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
             }
             const content = res.data?.choices?.[0]?.messages?.[0]?.text || res.data?.choices?.[0]?.message?.content || res.data?.reply;
             if (content && content.trim().length > 0) {
-              return sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Multimodal Production API');
+              return await sendSuccess(content.trim(), 'MiniMax-M3', 'MiniMax Multimodal Production API');
             }
           } else {
             providerErrors.push(`MiniMax HTTP ${res.status}: ${(res.text || '').slice(0, 100)}`);
