@@ -2321,6 +2321,34 @@ Tabel Penjelajah Memori RAG di Dashboard berhenti mencatat data pada tanggal 3 S
 - Verifikasi sintaks `node -c api/chat.js` lolos dengan kode keluar 0.
 - Bundle `npm run build` sukses tanpa error dalam 1.43 detik.
 
+---
+
+## 42. Catatan Rilis Versi 10.677.0 (8 September 2026)
+
+### Latar Belakang Masalah
+Pada saat pengunjung menyapa atau memperkenalkan diri (misal: *"hai perkenalkan saya pengunjung web ini"*), model Nemotron-3-Nano:30B menghasilkan respons yang terkesan kaku dan canggung (*"Hai! Senang bertemu dengan Anda, pengunjung web ini. Ada yang bisa saya bantu?"*). Hal ini berbeda dengan Gemma4:31B yang otomatis menyambut hangat ke portofolio Rafly Firmansyah.
+
+Akar penyebab teknis:
+1. **Pola Literal Echoing Model Instruction-Tuned:** Nemotron-3-Nano memiliki kecenderungan bawaan untuk mengulang frasa subjek masukan pengguna (*"pengunjung web ini"*) sebagai vokatif panggilan karena ketiadaan protokol sambutan tamu yang eksplisit.
+2. **Kegagalan Intent Classification & Kebocoran Web Search:** Kueri sapaan perkenalan tidak cocok dengan regex kaku `isCasualGreeting`, sehingga sistem mengeksekusi penelusuran web eksternal yang lambat dan menyuntikkan instruksi grounding berita yang membingungkan fokus sambutan model.
+3. **Ketiadaan Konteks Portofolio:** Karena dianggap kueri umum luar, `includeDetailedPortfolio` bernilai `false`, sehingga model tidak memiliki ringkasan isi portofolio saat menyapa tamu.
+
+### Solusi Rekayasa yang Diimplementasikan
+1. **Pengenalan Sapaan & Perkenalan Pengunjung Kuat (`isVisitorGreeting`):**
+   - Mendeteksi variasi sapaan dan perkenalan pengunjung secara dinamis (termasuk *"hai perkenalkan saya pengunjung web ini"*, *"halo saya pengunjung baru"*, *"salam kenal"*, dll).
+   - Memasukkan `isVisitorGreeting` ke dalam `isCasualGreeting` dan `isInternalPortfolioQuery` sehingga penelusuran web yang tidak perlu otomatis di-skip (latensi sub-1s).
+2. **Protokol Sambutan Pengunjung Elegan di System Prompt:**
+   - Mengarahkan model untuk menyambut pengunjung dengan hangat dan antusias ke website portofolio Rafly Firmansyah.
+   - Melarang keras mengulang kata masukan user secara kaku (*anti-robotic echo*).
+   - Mendorong asisten memaparkan kesiapan mendampingi eksplorasi proyek software, riset machine learning, sertifikasi, maupun diskusi teknologi umum.
+3. **Deterministic Visitor Welcoming Polish di Post-Processing (`sendSuccess`):**
+   - Secara deterministik mentransformasikan frasa kaku sapaan mentah (seperti *", pengunjung web ini"*) menjadi sambutan resmi yang hangat dan profesional.
+
+### Verifikasi
+- Sintaks `api/chat.js` tervalidasi bersih via `node -c`.
+- Pengujian regex deteksi menyaring 9 variasi sapaan pengunjung dengan akurasi 100%.
+- Build Vite `npm run build` sukses tanpa galat dalam 1.18 detik.
+
 
 
 

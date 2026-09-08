@@ -209,7 +209,12 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   const cleanQ = String(userQuery || '').toLowerCase().replace(/[?!.,]/g, '').replace(/\s+/g, ' ').trim();
   const isIdentity = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda|kamu itu siapa|kamu itu model apa|model apa yang kamu gunakan|apa modelmu|kamu menggunakan model apa)$/i.test(cleanQ);
 
-  const identityInstruction = isIdentity ? `[IDENTITAS & PERAN ASISTEN]:
+  const isVisitorGreeting = /^(?:halo|hai|hey|hei|assalamu(?:'|a)?laikum|selamat\s*(?:pagi|siang|sore|malam)|salam\s*kenal)?[\s,.]*(?:perkenalkan|kenalin|kenalan)?[\s,.]*(?:(?:nama\s*saya|saya|aku)\s+)?(?:seorang\s+)?(?:pengunjung|tamu|guest|visitor|orang\s*baru)?[\s,.]*(?:baru\s*)?(?:(?:di|pada|ke|web|website|situs|halaman|porto|portofolio)\s*(?:ini|nya)?)?$/i.test(cleanQ) ||
+    /^(?:halo|hai|hey|hei|salam\s*kenal|selamat\s*(?:pagi|siang|sore|malam)|assalamu(?:'|a)?laikum|perkenalkan|kenalin)/i.test(cleanQ) && cleanQ.length < 65;
+
+  let identityInstruction = '';
+  if (isIdentity) {
+    identityInstruction = `[IDENTITAS & PERAN ASISTEN]:
 - Anda adalah **AI Assistant & Developer Agent** resmi yang terintegrasi di website portofolio **Rafly Firmansyah**. DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban.
 - RUANG LINGKUP ASISTEN (SERBAGUNA & GENERAL):
   Lingkup Anda TIDAK TERBATAS pada website ini saja. Anda adalah asisten AI serbaguna yang berpengetahuan luas dan siap membantu menjawab pertanyaan apa saja secara umum (pemrograman, coding, arsitektur software, sains, teknologi AI terkini, pengetahuan umum, maupun eksplorasi karya dan riset Rafly Firmansyah).
@@ -219,9 +224,25 @@ function buildSystemPrompt(sessionLanguage = 'id', reasoningEffort = 'auto', act
   3. DILARANG MEMBATASI DIRI HANYA PADA WEB: DILARANG mengesankan bahwa Anda hanya bisa membahas website ini saja. Anda bisa ditanya apa saja secara umum.
   4. DILARANG MENUMPAHKAN DAFTAR PROYEK: Jangan mengeja satu per satu nama proyek (seperti spam email, plagiarism, laser, dll) saat hanya ditanya siapa kamu atau model apa.
   5. DILARANG MEMBUAT KLAIM DEFENSIF APAPUN (jangan pernah sebut merek/vendor/brand).
-  6. DILARANG mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.`
-: `[IDENTITAS & PERAN ASISTEN]:
+  6. DILARANG mengulang pertanyaan pengguna ("Kamu Model Apa?", "Kamu Siapa?", dsb) sebagai judul atau awalan.`;
+  } else if (isVisitorGreeting) {
+    identityInstruction = `[IDENTITAS & PROTOKOL PENYAMBUTAN PENGUNJUNG (WELCOMING PROTOCOL)]:
+- Anda adalah **AI Assistant & Developer Agent** resmi yang cerdas, ramah, dan berwawasan luas di website portofolio **Rafly Firmansyah**.
+- Pengguna sedang menyapa atau memperkenalkan diri sebagai pengunjung website ini.
+- ATURAN SAMBUTAN CERDAS & ANTI-KAKU:
+  1. WAJIB SAMBUT DENGAN HANGAT & MENYEBUT WEBSITE PORTOFOLIO:
+     Ucapkan selamat datang di website portofolio Rafly Firmansyah dengan ramah, antusias, dan bersahabat.
+  2. LARANGAN KERAS MEMANGGIL DENGAN 'PENGUNJUNG WEB INI' (ANTI-ROBOTIC ECHO):
+     DILARANG KERAS mengulang atau menyapa user dengan panggilan kaku 'pengunjung web ini' (contoh DILARANG: 'Senang bertemu dengan Anda, pengunjung web ini', 'Halo pengunjung web ini'). Ini terdengar canggung, dangkal, dan seperti bot yang tidak mengerti konteks!
+  3. SAMBUTAN CERDAS, NATURAL, DAN BERKELAS:
+     Gunakan sambutan yang luwes dan mengalir alami, contohnya:
+     - "Halo! Selamat datang di website portofolio Rafly Firmansyah. Senang sekali menyambut Anda di sini! Saya adalah asisten AI yang siap menemani Anda menjelajahi berbagai proyek rekayasa software, riset machine learning (seperti deteksi spam email dan plagiarism checker), sertifikasi kompetensi Rafly, maupun berdiskusi tentang pemrograman dan teknologi secara umum. Ada topik atau karya tertentu yang ingin Anda ketahui lebih dalam?"
+  4. AKHIRI DENGAN AJAKAN DISKUSI YANG MENARIK:
+     Tanyakan topik, proyek, atau hal apa yang ingin dieksplorasi atau didiskusikan hari ini.`;
+  } else {
+    identityInstruction = `[IDENTITAS & PERAN ASISTEN]:
 - Anda adalah **AI Assistant & Developer Agent** serbaguna resmi di website portofolio **Rafly Firmansyah**. Anda siap membantu menjawab berbagai pertanyaan secara luas (pemrograman, teknologi terkini, sains, pengetahuan umum, maupun proyek portofolio). DILARANG menyisipkan username atau handle seperti "(@Raflyf)" atau "@Raflyf" di seluruh teks jawaban. Cukup sebutkan nama "Rafly Firmansyah" secara natural.`;
+  }
 
   const basePrompt = `Status: ${isEnglish ? 'ENGLISH' : 'BAHASA INDONESIA'}. Waktu Saat Ini (Ground Truth): ${dynamicDateStr}, Pukul ${dynamicTimeStr} WIB (Waktu Indonesia Barat, UTC+7).
 [INSTRUKSI WAKTU REALTIME]:
@@ -2586,11 +2607,13 @@ export default async function handler(req, res) {
     const qNormalized = qClean.toLowerCase().replace(/[?!.,]/g, '').replace(/\s+/g, ' ').trim();
     const isIdentityQuery = /^(kamu siapa|siapa kamu|kamu model apa|model apa kamu|model apa ini|kamu ai apa|kamu ini apa|siapa namamu|namamu siapa|who are you|what are you|what model are you|model apa yang aktif|kamu pakai model apa|ini model apa|anda siapa|siapa anda|kamu itu siapa|kamu itu model apa|model apa yang kamu gunakan|apa modelmu|kamu menggunakan model apa)$/i.test(qNormalized);
     const isTimeQuery = /(?:jam\s*berapa|waktu\s*sekarang|tanggal\s*berapa|hari\s*apa\s*sekarang|sekarang\s*jam|sekarang\s*tanggal|pukul\s*berapa|zona\s*waktu|wib\b|wita\b|wit\b)/i.test(qClean);
-    const isCasualGreeting = /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
+    const isVisitorGreeting = /^(?:halo|hai|hey|hei|assalamu(?:'|a)?laikum|selamat\s*(?:pagi|siang|sore|malam)|salam\s*kenal)?[\s,.]*(?:perkenalkan|kenalin|kenalan)?[\s,.]*(?:(?:nama\s*saya|saya|aku)\s+)?(?:seorang\s+)?(?:pengunjung|tamu|guest|visitor|orang\s*baru)?[\s,.]*(?:baru\s*)?(?:(?:di|pada|ke|web|website|situs|halaman|porto|portofolio)\s*(?:ini|nya)?)?$/i.test(qNormalized) ||
+      /^(?:halo|hai|hey|hei|salam\s*kenal|selamat\s*(?:pagi|siang|sore|malam)|assalamu(?:'|a)?laikum|perkenalkan|kenalin)/i.test(qNormalized) && qNormalized.length < 65;
+    const isCasualGreeting = isVisitorGreeting || /^(halo|hai|hey|pagi|siang|sore|malam|tes|test|ping|apa kabar|cukup|udah|sudah|selesai|stop|berhenti|gausah|nggak|tidak|makasih|terima kasih|thanks|thx|tq|oke|ok|sip|siap|mantap|keren|yup|yes|ya|iya|bye|dadah)$/i.test(qClean);
     const isNewsOverviewQuery = /^(?:infokan|tampilkan|berikan|cari|carikan|apa|ada)?\s*(?:berita|kabar|news|headline|peristiwa)\s*(?:hari\s*ini|terkini|terbaru|pagi\s*ini|siang\s*ini|sore\s*ini|malam\s*ini|saat\s*ini|update)?$/i.test(qClean.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim()) ||
       /^(?:berita|kabar|news|headline)\s*(?:hari\s*ini|terkini|terbaru)$/i.test(qClean.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim());
     const isSiteAnatomyQuery = /(?:(?:isi|konten|bagian|menu|fitur|halaman|seksi|ada\s+apa\s*(?:aja|saja))\s*(?:di\s*)?(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?|(?:web|website|situs|porto|portofolio)\s*(?:ini|nya)?\s*(?:isi\s*nya\s*apa|ada\s*apa\s*(?:aja|saja)|tentang\s*apa|memuat\s*apa)|sedang\s*dibuka|yang\s*sedang\s*dibuka|web\s*porto\s*ini|isi\s*web\s*porto)/i.test(qClean);
-    const isInternalPortfolioQuery = isSiteAnatomyQuery || /(?:spam|email.*skripsi|cnb|xgboost|covariate|concept[-_ ]?drift|plagiarism|openplagiarism|plagiarisme|sbert|shingling|skripsi|thesis|naskah|laser|gesture|presenter|gyroscope|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|certificate|certification|bnsp|mtcna|cisco|pcap|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|keahlian|kemampuan|riwayat|pendidikan|education|kuliah|kampus|ubsi|cv|resume|experience|pengalaman|who made this|who built this|owner of this)/i.test(qClean);
+    const isInternalPortfolioQuery = isSiteAnatomyQuery || isVisitorGreeting || /(?:spam|email.*skripsi|cnb|xgboost|covariate|concept[-_ ]?drift|plagiarism|openplagiarism|plagiarisme|sbert|shingling|skripsi|thesis|naskah|laser|gesture|presenter|gyroscope|fotokitablur|foto kita|portofolio|portfolio|porto\b|sertif|sertifikasi|certificate|certification|bnsp|mtcna|cisco|pcap|rafly|firmansyah|proyek|project|riset|research|kendala|eror|error|masalah|bug|kontak|contact|skills?|keahlian|kemampuan|riwayat|pendidikan|education|kuliah|kampus|ubsi|cv|resume|experience|pengalaman|who made this|who built this|owner of this)/i.test(qClean);
     
     // GROUND-TRUTH FIRST & LATENCY SHIELD:
     // Seluruh kueri seputar proyek, riset skripsi, sertifikasi, dan profil Rafly Firmansyah
@@ -3025,6 +3048,12 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
 
       // Auto-Format Markdown Structure & Table Reconstruction (CommonMark GFM)
       cleaned = normalizeStructuredMarkdown(cleaned);
+
+      // DETERMINISTIC VISITOR WELCOMING POLISH (Anti-Awkward Greeting Echo):
+      // Mengubah frasa kaku seperti "Senang bertemu dengan Anda, pengunjung web ini"
+      // menjadi sapaan hangat yang menyebut portofolio Rafly Firmansyah
+      cleaned = cleaned.replace(/,\s*pengunjung\s+(?:web|website|situs|porto|portofolio)\s+ini\b/gi, '! Selamat datang di website portofolio Rafly Firmansyah');
+      cleaned = cleaned.replace(/\b(?:Halo|Hai)!?\s*Senang\s+bertemu\s+(?:dengan\s+)?(?:Anda|kamu),?\s*pengunjung\s+(?:web|website|situs|porto|portofolio)\s+ini[.!]?/gi, 'Halo! Selamat datang di website portofolio Rafly Firmansyah. Senang sekali menyambut Anda di sini.');
 
       // DETERMINISTIC ANTI-ECHO / DEDUPE-LINE GUARD:
       // Model kecil (mis. Nemotron 3 Nano) kadang meng-echo satu judul/baris bukti berulang-ulang
