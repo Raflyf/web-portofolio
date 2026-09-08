@@ -835,24 +835,34 @@ async function scrapeDirectWebpageContent(url) {
           combinedPayload += '\n' + m[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
         }
         if (combinedPayload.length > 100) {
-          const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:(?:rating|elo|score)":\s*([\d.]+)|(?:netImprovement)":\s*([-\d.]+)|(?:confirmedSuccess)":\s*([-\d.]+))?[^{}]*?(?:(?:modelOrganization|organization|provider|author)":\s*"([^"]+)")?[^{}]*?\}/g;
+          // Pattern v2: arena.ai JSON format uses {"rank":N,"contenderName":"...","model":"DisplayName","modelOrganization":"Org",...}
+          // The older pattern (modelDisplayName/displayName) no longer matches — use the live-verified pattern.
           const entries = [];
-          let em;
-          while ((em = entryPattern.exec(combinedPayload)) !== null && entries.length < 15) {
-            const rank = parseInt(em[1], 10);
-            const name = em[2];
-            const elo = em[3] ? Math.round(parseFloat(em[3])) : null;
-            const netImp = em[4] ? parseFloat(em[4]) : null;
-            const org = em[6] || '';
-            entries.push({ rank, name, elo, netImp, org });
+          // Primary: contenderName-based pattern (arena.ai leaderboard as of Sep 2026)
+          const arenaPattern = /"rank"\s*:\s*(\d+)\s*,\s*"contenderName"\s*:\s*"[^"]*"\s*,\s*"model"\s*:\s*"([^"]+)"\s*,\s*"modelOrganization"\s*:\s*"([^"]*)"(?:[^{}]{0,400}?"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
+          let am;
+          while ((am = arenaPattern.exec(combinedPayload)) !== null && entries.length < 15) {
+            entries.push({ rank: parseInt(am[1], 10), name: am[2], org: am[3] || '', metric: am[4] != null ? parseFloat(am[4]) : null });
+          }
+          // Fallback: generic rank+name+org pattern (covers other leaderboard sites)
+          if (entries.length === 0) {
+            const genericPattern = /"rank"\s*:\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName|model)"\s*:\s*"([^"]+)"[^{}]*?(?:"(?:modelOrganization|organization|provider|author)"\s*:\s*"([^"]+)")?[^{}]*?(?:"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
+            let gm;
+            while ((gm = genericPattern.exec(combinedPayload)) !== null && entries.length < 15) {
+              entries.push({ rank: parseInt(gm[1], 10), name: gm[2], org: gm[3] || '', metric: gm[4] != null ? parseFloat(gm[4]) : null });
+            }
           }
           if (entries.length > 0) {
+            // Deduplicate by rank (arena.ai can duplicate entries across RSC chunks)
+            const seen = new Set();
+            const unique = entries.filter(e => { if (seen.has(e.rank)) return false; seen.add(e.rank); return true; });
+            unique.sort((a, b) => a.rank - b.rank);
             return `### Data Terverifikasi dari Halaman:\n` +
-              entries.map(e => {
-                const metricStr = e.netImp !== null 
-                  ? `Net Improvement: ${e.netImp > 0 ? '+' : ''}${e.netImp}%` 
-                  : (e.elo !== null ? `Score: ${e.elo}` : '');
-                return `- Rank #${e.rank}: ${e.name}${e.org ? ` (${e.org})` : ''}${metricStr ? ` — ${metricStr}` : ''}`;
+              unique.map(e => {
+                const metricStr = e.metric !== null
+                  ? ` — Skor: ${e.metric > 0 && e.metric < 10 ? e.metric.toFixed(2) + '%' : Math.round(e.metric)}`
+                  : '';
+                return `- Rank #${e.rank}: **${e.name}**${e.org ? ` (${e.org})` : ''}${metricStr}`;
               }).join('\n');
           }
         }
@@ -879,24 +889,30 @@ async function scrapeDirectWebpageContent(url) {
                 subPayload += '\n' + sm[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\n/g, '\n');
               }
               if (subPayload.length > 100) {
-                const entryPattern = /\{[^{}]*?"rank":\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName)":\s*"([^"]+)"[^{}]*?(?:(?:rating|elo|score)":\s*([\d.]+)|(?:netImprovement)":\s*([-\d.]+)|(?:confirmedSuccess)":\s*([-\d.]+))?[^{}]*?(?:(?:modelOrganization|organization|provider|author)":\s*"([^"]+)")?[^{}]*?\}/g;
-                const entries = [];
-                let em;
-                while ((em = entryPattern.exec(subPayload)) !== null && entries.length < 15) {
-                  const rank = parseInt(em[1], 10);
-                  const name = em[2];
-                  const elo = em[3] ? Math.round(parseFloat(em[3])) : null;
-                  const netImp = em[4] ? parseFloat(em[4]) : null;
-                  const org = em[6] || '';
-                  entries.push({ rank, name, elo, netImp, org });
+                // Pattern v2: same logic as primary scraper — arena.ai format (Sep 2026)
+                const subEntries = [];
+                const subArenaPattern = /"rank"\s*:\s*(\d+)\s*,\s*"contenderName"\s*:\s*"[^"]*"\s*,\s*"model"\s*:\s*"([^"]+)"\s*,\s*"modelOrganization"\s*:\s*"([^"]*)"(?:[^{}]{0,400}?"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
+                let sam;
+                while ((sam = subArenaPattern.exec(subPayload)) !== null && subEntries.length < 15) {
+                  subEntries.push({ rank: parseInt(sam[1], 10), name: sam[2], org: sam[3] || '', metric: sam[4] != null ? parseFloat(sam[4]) : null });
                 }
-                if (entries.length > 0) {
+                if (subEntries.length === 0) {
+                  const subGenericPattern = /"rank"\s*:\s*(\d+)[^{}]*?"(?:modelDisplayName|modelName|name|title|displayName|model)"\s*:\s*"([^"]+)"[^{}]*?(?:"(?:modelOrganization|organization|provider|author)"\s*:\s*"([^"]+)")?[^{}]*?(?:"(?:netImprovement|confirmedSuccess|score|elo|rating)"\s*:\s*([-\d.]+))?/g;
+                  let sgm;
+                  while ((sgm = subGenericPattern.exec(subPayload)) !== null && subEntries.length < 15) {
+                    subEntries.push({ rank: parseInt(sgm[1], 10), name: sgm[2], org: sgm[3] || '', metric: sgm[4] != null ? parseFloat(sgm[4]) : null });
+                  }
+                }
+                if (subEntries.length > 0) {
+                  const subSeen = new Set();
+                  const subUnique = subEntries.filter(e => { if (subSeen.has(e.rank)) return false; subSeen.add(e.rank); return true; });
+                  subUnique.sort((a, b) => a.rank - b.rank);
                   return `### Data Terverifikasi dari Halaman:\n` +
-                    entries.map(e => {
-                      const metricStr = e.netImp !== null 
-                        ? `Net Improvement: ${e.netImp > 0 ? '+' : ''}${e.netImp}%` 
-                        : (e.elo !== null ? `Score: ${e.elo}` : '');
-                      return `- Rank #${e.rank}: ${e.name}${e.org ? ` (${e.org})` : ''}${metricStr ? ` — ${metricStr}` : ''}`;
+                    subUnique.map(e => {
+                      const metricStr = e.metric !== null
+                        ? ` — Skor: ${e.metric > 0 && e.metric < 10 ? e.metric.toFixed(2) + '%' : Math.round(e.metric)}`
+                        : '';
+                      return `- Rank #${e.rank}: **${e.name}**${e.org ? ` (${e.org})` : ''}${metricStr}`;
                     }).join('\n');
                 }
               }
@@ -2284,6 +2300,19 @@ function normalizeStructuredMarkdown(str) {
 
   // 1.4 Normalisasi bullet character aneh ('•', '*') ke standard '-'
   out = out.replace(/^[•*]\s+/gm, '- ');
+
+  // 1.45 Perbaiki numbered list yang tertulis inline bercampur bullet (Nemotron Nano kadang menghasilkan
+  //      "1.\n\n• item kedua 3. item ketiga" atau "1. A 2.\n• B 3. C" semua di satu/dua baris)
+  //      Deteksi: ada angka dengan titik LALU bullet atau sebaliknya dalam satu baris
+  if (/\d+\.\s*[^\n]*[•*\-]|[•*\-]\s*[^\n]*\d+\./.test(out)) {
+    // a. Pisahkan nomor inline yang terjepit antara bullet characters
+    out = out.replace(/([•*\-]\s*[^\n\d]*?)\s*(\d+)\.\s*/g, (m, before, num) => {
+      if (!before.trim()) return `\n${num}. `;
+      return `${before.trim()}\n${num}. `;
+    });
+    // b. Pisahkan nomor urut baru yang langsung disambung setelah kalimat (spasi + angka + titik)
+    out = out.replace(/(\w[^\n]*)\s+(\d{1,2})\.\s+(?=[A-Za-z\*])/g, '$1\n$2. ');
+  }
 
   // 1.5 Format bullet items starting with bold label: e.g. "**Kemampuan Multimodal**: ..." -> "- **Kemampuan Multimodal**: ..."
   out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•])(\*\*[^*:\n]+\*\*)\s*(?:[:–—,]|: )?\s*([A-Za-z])/g, '\n- $1: $2');

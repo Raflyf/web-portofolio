@@ -2349,6 +2349,30 @@ Akar penyebab teknis:
 - Pengujian regex deteksi menyaring 9 variasi sapaan pengunjung dengan akurasi 100%.
 - Build Vite `npm run build` sukses tanpa galat dalam 1.18 detik.
 
+---
+
+## 43. Catatan Rilis Versi 10.678.0 (8 September 2026)
+
+### Masalah yang Diperbaiki
+
+#### 1. Arena.ai Leaderboard Parser Gagal (entryPattern Usang)
+Respons kueri *"peringkat model 10 besar di arena.ai"* tidak menyertakan data live karena `scrapeDirectWebpageContent` menggunakan regex lama yang mencari field `modelDisplayName`/`displayName` — sementara arena.ai telah mengubah struktur JSON-nya menjadi `contenderName` + `model` + `modelOrganization` (diverifikasi live 8 September 2026). Parser mengembalikan 0 entry sehingga model mengarang urutan dari ingatan training.
+
+#### 2. Mixed Numbered List + Bullet Merusak Formatting
+Nemotron-3-Nano:30B kadang menghasilkan numbered list yang bercampur bullet `•` secara inline dalam satu/dua baris (e.g., `1. A 2. • B 3. C`), merusak tampilan di UI terminal.
+
+### Solusi Rekayasa
+
+1. **Parser RSC v2 dengan Primary + Generic Fallback:** `arenaPattern` baru mendeteksi format `"rank":N,"contenderName":"...","model":"DisplayName","modelOrganization":"Org"`. Fallback `genericPattern` untuk situs leaderboard lain. Output diformat `- Rank #N: **Nama** (Org)`. Deduplication berdasarkan rank aktif.
+2. **Step 1.45 di `normalizeStructuredMarkdown`:** Mendeteksi dan memisahkan numbered list inline yang bercampur bullet characters ke baris terpisah.
+
+### Verifikasi
+- Sintaks `node -c api/chat.js` lolos kode keluar 0.
+- Tes runtime: parser v2 mengekstrak 15 entry terverifikasi dari arena.ai (Rank #1 Claude Fable 5.1 Max hingga #12 GLM 5.2 Max).
+- Respons kueri peringkat arena.ai kini bersumber dari scraper live, bukan halusinasi model.
+
+
+
 
 
 
