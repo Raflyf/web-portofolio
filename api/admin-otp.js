@@ -328,7 +328,37 @@ async function clearSessionToken(supabaseUrl, headers) {
 
 async function storeSessionToken(supabaseUrl, headers, sessionToken) {
   try {
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const expiresAtMs = Date.now() + 24 * 60 * 60 * 1000;
+    const expiresAtIso = new Date(expiresAtMs).toISOString();
+
+    // Fetch existing active sessions to support simultaneous multi-device monitoring (Laptop, Mobile, etc.)
+    let activeSessions = [];
+    try {
+      const getRes = await fetch(
+        `${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=session_token`,
+        { headers }
+      );
+      if (getRes.ok) {
+        const rows = await getRes.json();
+        const raw = rows?.[0]?.session_token;
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              activeSessions = parsed.filter(s => s && s.token && Number(s.exp) > Date.now());
+            }
+          } catch (_) {
+            // Legacy single token row
+            activeSessions = [];
+          }
+        }
+      }
+    } catch (_) {}
+
+    // Append new session and cap at last 10 devices
+    activeSessions.push({ token: sessionToken, exp: expiresAtMs });
+    if (activeSessions.length > 10) activeSessions = activeSessions.slice(-10);
+
     await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
       method: 'POST',
       headers: {
@@ -337,8 +367,8 @@ async function storeSessionToken(supabaseUrl, headers, sessionToken) {
       },
       body: JSON.stringify({
         id: 'master_auth',
-        session_token: sessionToken,
-        session_expires_at: expiresAt,
+        session_token: JSON.stringify(activeSessions),
+        session_expires_at: expiresAtIso,
         lockout_attempts: 0,
         locked_until: null,
         updated_at: new Date().toISOString()
