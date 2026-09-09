@@ -452,9 +452,107 @@ WHERE fact_text LIKE '%[OMNIROUTE_TUNNEL%';
 -- 9. MAINTENANCE NOTE (pg_cron TTL — Optional but Recommended)
 -- ============================================================================
 -- To prevent unbounded growth of portfolio_telemetry, schedule a cleanup job:
--- SELECT cron.schedule('telemetry-cleanup', '0 3 * * 0', $$
---   DELETE FROM public.portfolio_telemetry WHERE created_at < NOW() - INTERVAL '90 days';
--- $$);
+-- ============================================================================
+-- 10. HIGH-EFFICIENCY SERVER-SIDE TELEMETRY SUMMARY RPC (Egress Saver)
+-- ============================================================================
+-- Menghitung seluruh metrik agregasi langsung di dalam engine database PostgreSQL.
+-- Mengurangi konsumsi Egress dari puluhan Megabyte menjadi hanya ~10-30 Kilobyte (hemat 99%).
+-- ============================================================================
+CREATE OR REPLACE FUNCTION public.rpc_get_telemetry_summary_90d()
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_cutoff timestamptz := NOW() - INTERVAL '90 days';
+    v_total_views bigint;
+    v_unique_visitors bigint;
+    v_total_clicks bigint;
+    v_contact_submissions bigint;
+    v_daily_traffic json;
+    v_click_dist json;
+    v_device_stats json;
+    v_recent_events json;
+BEGIN
+    -- 1. Total views
+    SELECT COUNT(*) INTO v_total_views
+    FROM public.portfolio_telemetry
+    WHERE created_at >= v_cutoff AND event_type = 'page_view';
+
+    -- 2. Unique visitors (sessions)
+    SELECT COUNT(DISTINCT session_id) INTO v_unique_visitors
+    FROM public.portfolio_telemetry
+    WHERE created_at >= v_cutoff AND session_id IS NOT NULL;
+
+    -- 3. Total clicks
+    SELECT COUNT(*) INTO v_total_clicks
+    FROM public.portfolio_telemetry
+    WHERE created_at >= v_cutoff AND event_type != 'page_view';
+
+    -- 4. Contact submissions
+    SELECT COUNT(*) INTO v_contact_submissions
+    FROM public.portfolio_telemetry
+    WHERE created_at >= v_cutoff AND (
+        event_type = 'contact_submit' OR
+        event_target ILIKE '%contact%' OR
+        event_target ILIKE '%whatsapp%'
+    );
+
+    -- 5. Daily traffic (last 90 days)
+    SELECT json_agg(t) INTO v_daily_traffic FROM (
+        SELECT
+            date_trunc('day', created_at) AS day,
+            COUNT(*) FILTER (WHERE event_type = 'page_view') AS views,
+            COUNT(DISTINCT session_id) AS visitors
+        FROM public.portfolio_telemetry
+        WHERE created_at >= v_cutoff
+        GROUP BY 1
+        ORDER BY 1 ASC
+    ) t;
+
+    -- 6. Click distribution by target
+    SELECT json_agg(c) INTO v_click_dist FROM (
+        SELECT event_target, COUNT(*) as count
+        FROM public.portfolio_telemetry
+        WHERE created_at >= v_cutoff AND event_type != 'page_view'
+        GROUP BY event_target
+        ORDER BY count DESC
+        LIMIT 20
+    ) c;
+
+    -- 7. Device stats
+    SELECT json_build_object(
+        'desktop', COUNT(*) FILTER (WHERE device_type ILIKE '%desk%'),
+        'mobile', COUNT(*) FILTER (WHERE device_type ILIKE '%mob%'),
+        'tablet', COUNT(*) FILTER (WHERE device_type ILIKE '%tab%')
+    ) INTO v_device_stats
+    FROM public.portfolio_telemetry
+    WHERE created_at >= v_cutoff;
+
+    -- 8. 200 most recent events for the stream
+    SELECT json_agg(r) INTO v_recent_events FROM (
+        SELECT id, event_type, event_target, event_label, device_type, screen_resolution, referrer, session_id, created_at
+        FROM public.portfolio_telemetry
+        WHERE created_at >= v_cutoff
+        ORDER BY created_at DESC
+        LIMIT 200
+    ) r;
+
+    RETURN json_build_object(
+        'total_views', COALESCE(v_total_views, 0),
+        'unique_visitors', COALESCE(v_unique_visitors, 0),
+        'total_clicks', COALESCE(v_total_clicks, 0),
+        'contact_submissions', COALESCE(v_contact_submissions, 0),
+        'daily_traffic', COALESCE(v_daily_traffic, '[]'::json),
+        'click_distribution', COALESCE(v_click_dist, '[]'::json),
+        'device_stats', COALESCE(v_device_stats, '{}'::json),
+        'recent_events', COALESCE(v_recent_events, '[]'::json)
+    );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.rpc_get_telemetry_summary_90d() TO anon, authenticated, service_role;
 
 
 
