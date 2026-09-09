@@ -70,7 +70,8 @@ ChartJS.register(
 // separately — do not change this constant without updating the server.
 const PIN_SALT = "rafly_telemetry_salt";
 const SESSION_AUTH_KEY = "dash_admin_auth_session";
-const PIN_STORAGE_KEY = "admin_master_pin_hash";
+// Single source of truth: server DB only. No per-device PIN hash is stored —
+// a stale local copy is exactly what caused different PINs on different devices.
 
 // Shared Supabase config (single source of truth, see src/lib/supabase.js).
 // FAIL-CLOSED: no hardcoded key fallback. The dashboard reads telemetry via
@@ -741,11 +742,12 @@ export default function Dashboard() {
 
     try {
       const hashedInput = await sha256(pinInput + PIN_SALT);
-      const savedHash = localStorage.getItem(PIN_STORAGE_KEY);
 
-      // 1. Verifikasi langsung ke Serverless Supabase Gateway (Source of Truth)
+      // 1. Verifikasi HANYA ke Serverless Supabase Gateway (single source of truth).
+      //    Fallback hash lokal dihapus: ia membuat tiap device punya "PIN sendiri".
       let sessionToken = '';
       let serverVerified = false;
+      let serverMessage = '';
 
       try {
         const verifyRes = await fetch('/api/admin-otp', {
@@ -753,18 +755,17 @@ export default function Dashboard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'verify_pin', pin_hash: hashedInput })
         });
-        if (verifyRes.ok) {
-          const verifyData = await verifyRes.json();
-          if (verifyData?.verified && verifyData?.session_token) {
-            sessionToken = verifyData.session_token;
-            serverVerified = true;
-          }
+        const verifyData = await verifyRes.json().catch(() => ({}));
+        if (verifyRes.ok && verifyData?.verified && verifyData?.session_token) {
+          sessionToken = verifyData.session_token;
+          serverVerified = true;
+        } else if (verifyData?.message) {
+          serverMessage = verifyData.message;
         }
       } catch {}
 
-      // 2. Jika server verified atau cocok dengan local synced hash
-      if (serverVerified || (savedHash && hashedInput === savedHash)) {
-        localStorage.setItem(PIN_STORAGE_KEY, hashedInput);
+      // 2. Login hanya jika server memverifikasi. Tanpa server = tanpa login (fail-closed).
+      if (serverVerified) {
         sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify({ 
           auth: true, 
           session_token: sessionToken, 
@@ -780,6 +781,8 @@ export default function Dashboard() {
         if (failedAttemptsRef.current >= 5) {
           setLockoutSeconds(60);
           setAuthError('Terlalu banyak percobaan salah. Terkunci selama 60 detik.');
+        } else if (serverMessage) {
+          setAuthError(serverMessage);
         } else {
           setAuthError(`Master PIN tidak valid. Percobaan ${failedAttemptsRef.current}/5.`);
         }
@@ -799,11 +802,13 @@ export default function Dashboard() {
   };
 
   // 4. Change PIN Handler
+  // Server-is-source-of-truth: PIN lama diverifikasi oleh API (update_pin
+  // menolak 403 bila current_pin_hash tidak cocok). Tidak ada cek lokal.
   const handleChangePin = async (e) => {
     e.preventDefault();
     setChangePinMessage('');
-    if (newPinChange.length < 6) {
-      setChangePinMessage('PIN baru minimal 6 digit angka.');
+    if (newPinChange.length < 4 || newPinChange.length > 8) {
+      setChangePinMessage('PIN baru harus 4-8 digit angka (sama seperti batas server).');
       return;
     }
     if (newPinChange !== confirmPinChange) {
@@ -813,17 +818,7 @@ export default function Dashboard() {
 
     try {
       const currentHashed = await sha256(currentPinChange + PIN_SALT);
-      const activeHash = localStorage.getItem(PIN_STORAGE_KEY);
 
-      // FAIL-CLOSED: no hardcoded default-PIN bypass.
-      if (!activeHash || currentHashed !== activeHash) {
-        setChangePinMessage('Master PIN saat ini salah.');
-        return;
-      }
-
-      // FIX M4: persist the change server-side FIRST. The API verifies
-      // current_pin_hash and hashes the new PIN itself. localStorage is only
-      // updated AFTER the server confirms success.
       const res = await fetch('/api/admin-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -832,13 +827,11 @@ export default function Dashboard() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data.success) {
-        setChangePinMessage(data.message || data.error || 'Gagal mengubah PIN di cloud. PIN lokal tidak diubah.');
+        setChangePinMessage(data.message || data.error || 'Gagal mengubah PIN di cloud.');
         return;
       }
 
-      const newHashed = await sha256(newPinChange + PIN_SALT);
-      localStorage.setItem(PIN_STORAGE_KEY, newHashed);
-      setChangePinMessage('Master PIN berhasil diperbarui & tersimpan!');
+      setChangePinMessage('Master PIN berhasil diperbarui di semua device!');
       timeoutsRef.current.push(setTimeout(() => {
         setIsChangePinOpen(false);
         setCurrentPinChange('');
@@ -880,8 +873,8 @@ export default function Dashboard() {
   const handleVerifyOtp = async () => {
     setOtpLoading(true);
     setOtpMessage('');
-    if (newPinInput.length < 6) {
-      setOtpMessage('Master PIN baru harus minimal 6 karakter.');
+    if (newPinInput.length < 4 || newPinInput.length > 8) {
+      setOtpMessage('Master PIN baru harus 4-8 digit angka (sama seperti batas server).');
       setOtpLoading(false);
       return;
     }
@@ -894,8 +887,8 @@ export default function Dashboard() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        const hashed = await sha256(newPinInput + PIN_SALT);
-        localStorage.setItem(PIN_STORAGE_KEY, hashed);
+        // Server sudah menyimpan PIN baru (single source of truth).
+        // Tidak ada hash lokal yang ditulis — semua device memakai PIN yang sama.
         setOtpMessage('Master PIN berhasil direset! Silakan masuk kembali.');
         timeoutsRef.current.push(setTimeout(() => {
           setIsForgotPinOpen(false);
