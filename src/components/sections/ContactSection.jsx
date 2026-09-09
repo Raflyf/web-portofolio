@@ -305,6 +305,7 @@ export default function ContactSection() {
                 value={formState.name}
                 onChange={handleChange}
                 placeholder={t('contact.formNamePlaceholder')}
+                autoComplete="name"
                 required
                 className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
               />
@@ -321,6 +322,7 @@ export default function ContactSection() {
                 value={formState.email}
                 onChange={handleChange}
                 placeholder={t('contact.formEmailPlaceholder')}
+                autoComplete="email"
                 required
                 className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
               />
@@ -337,6 +339,7 @@ export default function ContactSection() {
                 onChange={handleChange}
                 rows={5}
                 placeholder={t('contact.formMessagePlaceholder')}
+                autoComplete="off"
                 required
                 className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all resize-none"
               />

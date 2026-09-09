@@ -1442,6 +1442,7 @@ export default function Dashboard() {
                   onChange={(e) => setPinInput(e.target.value)}
                   placeholder={t('dashboard.auth.pinPlaceholder')}
                   aria-label={t('dashboard.auth.pinPlaceholder')}
+                  autoComplete="current-password"
                   maxLength={8}
                   disabled={lockoutSeconds > 0}
                   autoFocus
@@ -1505,6 +1506,7 @@ export default function Dashboard() {
                     onChange={(e) => setOtpInput(e.target.value)}
                     placeholder={t('dashboard.auth.otpPlaceholder')}
                     aria-label={t('dashboard.auth.otpPlaceholder')}
+                    autoComplete="one-time-code"
                     maxLength={6}
                     className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
@@ -1514,6 +1516,7 @@ export default function Dashboard() {
                     onChange={(e) => setNewPinInput(e.target.value)}
                     placeholder={t('dashboard.auth.newPinPlaceholder')}
                     aria-label={t('dashboard.auth.newPinPlaceholder')}
+                    autoComplete="new-password"
                     maxLength={8}
                     className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white focus:outline-none focus:border-cyan-400"
                   />
@@ -2345,6 +2348,7 @@ export default function Dashboard() {
                   onChange={(e) => setCurrentPinChange(e.target.value)}
                   placeholder={t('dashboard.modals.currentPin')}
                   aria-label={t('dashboard.modals.currentPin')}
+                  autoComplete="current-password"
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
                 />
@@ -2358,6 +2362,7 @@ export default function Dashboard() {
                   onChange={(e) => setNewPinChange(e.target.value)}
                   placeholder={t('dashboard.modals.newPin')}
                   aria-label={t('dashboard.modals.newPin')}
+                  autoComplete="new-password"
                   maxLength={8}
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
@@ -2372,6 +2377,7 @@ export default function Dashboard() {
                   onChange={(e) => setConfirmPinChange(e.target.value)}
                   placeholder={t('dashboard.modals.confirmPin')}
                   aria-label={t('dashboard.modals.confirmPin')}
+                  autoComplete="new-password"
                   maxLength={8}
                   className="w-full liquid-glass-inset border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400 font-mono"
                   required
