@@ -5,8 +5,10 @@ import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 import { Shield, Menu, X, Terminal, Sun, Moon, Globe } from 'lucide-react';
 import Home from './pages/Home';
+import HomeV2 from './pages/HomeV2';
 // Dashboard is heavy (Chart.js) — code-split so the landing bundle stays light.
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const DashboardV2 = React.lazy(() => import('./pages/DashboardV2'));
 import { useTerminal } from './context/TerminalContext.jsx';
 import { useLanguage } from './context/LanguageContext.jsx';
 import { telemetry } from './lib/telemetry';
@@ -360,6 +362,15 @@ export default function App() {
     };
   }, []);
 
+  const isV2Route = location.pathname.startsWith('/v2');
+
+  // Enforce dark mode when on V2 routes
+  useEffect(() => {
+    if (isV2Route) {
+      document.documentElement.classList.add('dark');
+    }
+  }, [isV2Route]);
+
   // Scroll to top on route change via Lenis
   useEffect(() => {
     if (window.__lenis) {
@@ -372,10 +383,10 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="never">
       {/* Root-Level Unobstructed Scroll Progress Bar (z-[100] always floats above navbar) */}
-      <GlobalScrollProgressBar />
+      {!isV2Route && <GlobalScrollProgressBar />}
 
-      <div className="min-h-screen bg-background dark:bg-zinc-950 text-foreground relative selection:bg-cyan-500/20 font-sans">
-        <FloatingNavbar />
+      <div className={`min-h-screen ${isV2Route ? 'bg-[#05070e]' : 'bg-background dark:bg-zinc-950'} text-foreground relative selection:bg-cyan-500/20 font-sans`}>
+        {!isV2Route && <FloatingNavbar />}
 
         <Routes>
           <Route path="/" element={<Home />} />
@@ -391,10 +402,23 @@ export default function App() {
               </React.Suspense>
             }
           />
+          <Route path="/v2" element={<HomeV2 />} />
+          <Route
+            path="/v2/dashboard"
+            element={
+              <React.Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#05070e]">
+                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat dashboard v2" />
+                </div>
+              }>
+                <DashboardV2 />
+              </React.Suspense>
+            }
+          />
         </Routes>
       
         {/* Floating Action Buttons */}
-        {location.pathname !== '/dashboard' && (
+        {!isV2Route && location.pathname !== '/dashboard' && (
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
             <button 
               onClick={() => {
