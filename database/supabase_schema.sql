@@ -31,6 +31,7 @@ ALTER TABLE public.portfolio_telemetry ENABLE ROW LEVEL SECURITY;
 
 -- 4. Public Anonymous Role Policies
 -- Allow visitors to INSERT telemetry events (Append-only with strict column length guards)
+DROP POLICY IF EXISTS "Allow public anonymous insert" ON public.portfolio_telemetry;
 CREATE POLICY "Allow public anonymous insert"
 ON public.portfolio_telemetry
 FOR INSERT
@@ -49,6 +50,7 @@ WITH CHECK (
 -- may read it. `authenticated` is excluded because any Supabase user with an
 -- account could otherwise sign in and read all telemetry. Anonymous visitors
 -- may only INSERT (page_view etc.), never read.
+DROP POLICY IF EXISTS "Allow service role read telemetry" ON public.portfolio_telemetry;
 CREATE POLICY "Allow service role read telemetry"
 ON public.portfolio_telemetry
 FOR SELECT
@@ -56,12 +58,14 @@ TO service_role
 USING (true);
 
 -- Prohibit UPDATE and DELETE completely for public client (Immutable Event Log)
+DROP POLICY IF EXISTS "Deny public update" ON public.portfolio_telemetry;
 CREATE POLICY "Deny public update"
 ON public.portfolio_telemetry
 FOR UPDATE
 TO anon
 USING (false);
 
+DROP POLICY IF EXISTS "Deny public delete" ON public.portfolio_telemetry;
 CREATE POLICY "Deny public delete"
 ON public.portfolio_telemetry
 FOR DELETE
@@ -87,6 +91,7 @@ ALTER TABLE public.ai_memories ENABLE ROW LEVEL SECURITY;
 -- (service_role). Anonymous AND authenticated INSERT are revoked to prevent
 -- prompt/RAG poisoning — anyone with a Supabase account could otherwise plant
 -- false "facts" that the AI repeats. Writes go through /api/save-memory.
+DROP POLICY IF EXISTS "Allow service role insert memory" ON public.ai_memories;
 CREATE POLICY "Allow service role insert memory"
 ON public.ai_memories
 FOR INSERT
@@ -96,18 +101,21 @@ WITH CHECK (char_length(fact_text) <= 1000);
 -- RAG memory is PRIVATE: only service_role (serverless function) may read.
 -- `authenticated` is excluded (any Supabase user could otherwise read all
 -- stored memory).
+DROP POLICY IF EXISTS "Allow service role read memory" ON public.ai_memories;
 CREATE POLICY "Allow service role read memory"
 ON public.ai_memories
 FOR SELECT
 TO service_role
 USING (true);
 
+DROP POLICY IF EXISTS "Deny public update memory" ON public.ai_memories;
 CREATE POLICY "Deny public update memory"
 ON public.ai_memories
 FOR UPDATE
 TO anon
 USING (false);
 
+DROP POLICY IF EXISTS "Deny public delete memory" ON public.ai_memories;
 CREATE POLICY "Deny public delete memory"
 ON public.ai_memories
 FOR DELETE
@@ -406,6 +414,7 @@ CREATE TABLE IF NOT EXISTS public.rate_limits (
 ALTER TABLE public.rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- Only service_role may read/write the rate-limit counters.
+DROP POLICY IF EXISTS "Allow service role all rate_limits" ON public.rate_limits;
 CREATE POLICY "Allow service role all rate_limits" ON public.rate_limits
 FOR ALL TO service_role USING (true) WITH CHECK (true);
 
