@@ -463,11 +463,12 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, verified: false, message: 'Format input PIN atau hash tidak valid.' });
       }
 
-      // 1. Prioritaskan RPC SECURITY DEFINER (Bekerja mulus dengan Anon Key)
+      // 1. Prioritaskan RPC SECURITY DEFINER (Bekerja mulus dengan Anon Key & Service Role)
       const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_verify_pin', { p_pin_hash: inputHash });
       if (rpcResult.ok && rpcResult.data) {
         const d = rpcResult.data;
-        if (d.success && d.verified) {
+        // Menerima d.verified === true ATAU d.success === true (resilien terhadap format return RPC)
+        if (d.success && (d.verified === true || d.verified === undefined || d.status === 'success')) {
           const sessionToken = 'adm_' + crypto.randomBytes(32).toString('hex');
           // Persist token (best-effort) so dashboard-data can validate sessions.
           if (serviceRoleKey) {
@@ -479,7 +480,7 @@ export default async function handler(req, res) {
             session_token: sessionToken,
             message: d.message || 'Autentikasi Master PIN berhasil.'
           });
-        } else if (d.is_locked) {
+        } else if (d.is_locked || d.error === 'LOCKED') {
           return res.status(423).json({
             success: false,
             verified: false,
@@ -491,11 +492,11 @@ export default async function handler(req, res) {
           return res.status(401).json({
             success: false,
             verified: false,
-            lockout_attempts: d.lockout_attempts || 0,
-            remaining_attempts: d.remaining_attempts !== undefined ? d.remaining_attempts : 0,
+            lockout_attempts: d.lockout_attempts || d.attempts || 0,
+            remaining_attempts: d.remaining_attempts !== undefined ? d.remaining_attempts : (5 - (d.attempts || 0)),
             is_locked: !!d.is_locked,
             locked_until: d.locked_until,
-            message: d.message || 'Master PIN salah.'
+            message: d.message || (d.error === 'INVALID_PIN' ? `Master PIN salah. Sisa percobaan: ${Math.max(0, 5 - (d.attempts || 1))} kali.` : 'Master PIN salah.')
           });
         }
       }
@@ -620,8 +621,11 @@ export default async function handler(req, res) {
 
       let otpSaved = false;
 
-      // 1. Prioritaskan RPC SECURITY DEFINER
-      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_save_otp', { p_otp_hash: otpHash, p_expires_at: expiresAt });
+      // 1. Prioritaskan RPC SECURITY DEFINER (Mendukung kedua nama fungsi rpc_admin_save_otp & rpc_admin_request_otp)
+      let rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_save_otp', { p_otp_hash: otpHash, p_expires_at: expiresAt });
+      if (!rpcResult.ok) {
+        rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_request_otp', { p_otp_code_hash: otpHash, p_expires_at: expiresAt });
+      }
       if (rpcResult.ok && rpcResult.data?.success) {
         otpSaved = true;
       } else if (serviceRoleKey) {
@@ -692,8 +696,11 @@ export default async function handler(req, res) {
       const inputOtpHash = hashValue(enteredOtp);
       const newPinHash = hashValue(newPin);
 
-      // 1. Prioritaskan RPC SECURITY DEFINER
-      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_verify_otp_and_reset_pin', { p_otp_hash: inputOtpHash, p_new_pin_hash: newPinHash });
+      // 1. Prioritaskan RPC SECURITY DEFINER (Mendukung kedua nama fungsi)
+      let rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_verify_otp_and_reset_pin', { p_otp_hash: inputOtpHash, p_new_pin_hash: newPinHash });
+      if (!rpcResult.ok) {
+        rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_verify_otp', { p_otp_code_hash: inputOtpHash, p_new_pin_hash: newPinHash });
+      }
       if (rpcResult.ok && rpcResult.data) {
         const d = rpcResult.data;
         if (d.success) {
@@ -801,8 +808,11 @@ export default async function handler(req, res) {
 
       const newPinHash = hashValue(newPin);
 
-      // 1. Prioritaskan RPC SECURITY DEFINER
-      const rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_update_pin', { p_current_pin_hash: providedCurrentHash, p_new_pin_hash: newPinHash });
+      // 1. Prioritaskan RPC SECURITY DEFINER (Mendukung kedua nama fungsi)
+      let rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_update_pin', { p_current_pin_hash: providedCurrentHash, p_new_pin_hash: newPinHash });
+      if (!rpcResult.ok) {
+        rpcResult = await callRpc(supabaseUrl, headers, 'rpc_admin_change_pin', { p_current_pin_hash: providedCurrentHash, p_new_pin_hash: newPinHash });
+      }
       if (rpcResult.ok && rpcResult.data) {
         const d = rpcResult.data;
         if (d.success) {
