@@ -119,15 +119,16 @@ export default function HorizonHero() {
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
-      const timeStr = new Intl.DateTimeFormat(language === 'id' ? 'id-ID' : 'en-US', {
-        timeZone: 'Asia/Bangkok',
+      // Format 24-jam presisi HH:mm:ss dengan titik dua (bukan titik)
+      const timeStr = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Jakarta',
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
-      }).format(now);
+      }).format(now).replace(/\./g, ':');
       const tzLabel = language === 'id' ? 'WIB (UTC+7)' : 'UTC+7 (WIB)';
-      setClockTime(`${tzLabel} · ${timeStr}`);
+      setClockTime(`${tzLabel} • ${timeStr}`);
     };
     updateClock();
     const timer = setInterval(updateClock, 1000);
@@ -198,7 +199,7 @@ export default function HorizonHero() {
             style={{ y: heroTextY, opacity: heroOpacity }}
             className="lg:col-span-7 flex flex-col justify-center space-y-8"
           >
-            <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl transition-colors hover:bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
                 <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
                   {t('hero.badge')}
