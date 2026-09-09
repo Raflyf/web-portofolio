@@ -428,11 +428,11 @@ function formatMessageContent(content) {
   let text = content;
 
   // Anti-Inline Broken List: Rekonstruksi daftar nomor/peringkat yang terdesak sebaris (misal '• *1. A: - *2. B')
-  if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*\d{1,2}\.\s/i.test(text) || /\s+[-–—]\s*\*?\d{1,2}\.\s/i.test(text)) {
+  if (/(?:^|\n|:\s*)(?:[•\-\*]\s*\*?)+\s*(?<!\d|\.)\d{1,2}\.(?!\d)\s/i.test(text) || /\s+[-–—]\s*\*?(?<!\d|\.)\d{1,2}\.(?!\d)\s/i.test(text)) {
     text = text.replace(/(:\s*)(?:[•\-\*]\s*\*?)+\s*(?=1\.\s)/g, ':\n\n');
-    text = text.replace(/^[•\-\*]\s*\*?\s*(?=\d{1,2}\.\s)/gm, '');
-    text = text.replace(/(?::\s*)?(?:\s+(?:[-–—]|;)\s*|\s*[;•]\s*)\*?(\d{1,2})\.\s*\*?\s*/g, '\n$1. ');
-    text = text.replace(/(?:^|\n)\s*\*+(\d{1,2})\.\s*\*?/g, '\n$1. ');
+    text = text.replace(/^[•\-\*]\s*\*?\s*(?=(?<!\d|\.)\d{1,2}\.(?!\d)\s)/gm, '');
+    text = text.replace(/(?::\s*)?(?:\s+(?:[-–—]|;)\s*|\s*[;•]\s*)\*?(?<!\d|\.)(\d{1,2})\.(?!\d)\s*\*?\s*/g, '\n$1. ');
+    text = text.replace(/(?:^|\n)\s*\*+(?<!\d|\.)(\d{1,2})\.(?!\d)\s*\*?/g, '\n$1. ');
 
     const itemLines = text.split('\n');
     const formattedItems = [];
@@ -442,7 +442,7 @@ function formatMessageContent(content) {
         if (formattedItems.length > 0 && formattedItems[formattedItems.length - 1] !== '') formattedItems.push('');
         continue;
       }
-      const numMatch = line.match(/^(\d{1,2})\.\s*(.+)$/);
+      const numMatch = line.match(/^(?<!\d|\.)(\d{1,2})\.(?!\d)\s*(.+)$/);
       if (numMatch) {
         const num = numMatch[1];
         let rest = numMatch[2].trim().replace(/:\s*$/, '').replace(/^\*+|\*+$/g, '').trim();
