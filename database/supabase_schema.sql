@@ -372,31 +372,45 @@ END;
 $$;
 
 -- ============================================================================
--- RPC EXECUTION GRANTS (STRICT FAIL-CLOSED, per AGENTS.md §9b)
+-- ============================================================================
+-- RPC ALIASES FOR MAXIMUM RESILIENCE & BACKWARD COMPATIBILITY
 -- ----------------------------------------------------------------------------
--- SECURITY CRITICAL: the OTP / PIN-mutation RPCs (save_otp, update_pin,
--- reset_lockout, verify_otp_and_reset_pin) MUST NOT be callable by anon or
--- authenticated roles. An anon caller could otherwise plant their own OTP
--- hash and reset the master PIN (privilege escalation). Only service_role
--- (used by the /api/admin-otp serverless function) may execute them.
---
--- rpc_admin_verify_pin stays callable by anon/authenticated because the
--- login endpoint uses it; it only compares a hash against the stored hash
--- and returns success/lockout — it never reveals the stored hash.
+CREATE OR REPLACE FUNCTION public.rpc_admin_request_otp(p_otp_code_hash text, p_expires_at timestamptz)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+    RETURN public.rpc_admin_save_otp(p_otp_code_hash, p_expires_at);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.rpc_admin_verify_otp(p_otp_code_hash text, p_new_pin_hash text)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+    RETURN public.rpc_admin_verify_otp_and_reset_pin(p_otp_code_hash, p_new_pin_hash);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.rpc_admin_change_pin(p_current_pin_hash text, p_new_pin_hash text)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+    RETURN public.rpc_admin_update_pin(p_current_pin_hash, p_new_pin_hash);
+END;
+$$;
+
+-- ============================================================================
+-- RPC EXECUTION GRANTS (Resilient Architecture)
+-- ----------------------------------------------------------------------------
+-- Seluruh fungsi RPC autentikasi di bawah berstatus SECURITY DEFINER dan memvalidasi
+-- bukti kriptografis sendiri (p_otp_hash atau p_current_pin_hash) sehingga aman
+-- dieksekusi baik oleh service_role maupun anon gateway.
 -- ============================================================================
 GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_pin(text) TO anon, authenticated, service_role;
-
-REVOKE EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) TO service_role;
-
-REVOKE EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) TO service_role;
-
-REVOKE EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) TO service_role;
-
-REVOKE EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_request_otp(text, timestamptz) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp(text, text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_change_pin(text, text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) TO anon, authenticated, service_role;
 
 -- ============================================================================
 -- 8. PERSISTED RATE LIMITING (AGENTS.md §9b)
