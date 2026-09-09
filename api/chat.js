@@ -2329,39 +2329,29 @@ function normalizeStructuredMarkdown(str) {
   });
 
 
-  // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat (misal: "ringan. 2.\nInference:" atau "ringan. 2.\n**Inference**:")
-  out = out.replace(/([.:?!])\s*(\d+)\.\s*\n+\s*([A-Za-z*])/g, '$1\n\n$2. $3');
+  // 1. Sambungkan kembali nomor list yang terputus di akhir kalimat
+  out = out.replace(/([.:?!])\s*(?<!\d|\.)\b(\d{1,3})\.(?!\d)\s*\n+\s*([A-Za-z*])/g, '$1\n\n$2. $3');
 
   // 1.2 Bersihkan bullet/asterisk liar yang menempel setelah nomor urut (misal: "1. - *Pilih..." -> "1. Pilih...")
-  out = out.replace(/(\d+\.)\s*[-*•\s]+\*?/g, '$1 ');
+  out = out.replace(/(?<!\d|\.)\b(\d{1,3}\.)\s*[-*•]+\s*\*?/g, '$1 ');
 
-  // 1.3 Pisahkan nomor urut yang tergabung inline (misal: "...kedua model. 3. Identitas...") menjadi baris baru
-  out = out.replace(/([.!?])\s+(\d+\.\s+[A-Za-z*])/g, '$1\n\n$2');
+  // 1.3 Pisahkan nomor urut yang tergabung inline setelah tanda baca akhir kalimat (. ! ?)
+  out = out.replace(/([.!?])\s+(?<!\d|\.)\b(\d{1,3})\.(?!\d)\s+([A-Za-z*])/g, '$1\n\n$2. $3');
 
   // 1.4 Normalisasi bullet character aneh ('•', '*') ke standard '-'
   out = out.replace(/^[•*]\s+/gm, '- ');
 
-  // 1.45 Perbaiki numbered list yang tertulis inline bercampur bullet (Nemotron Nano kadang menghasilkan
-  //      "1.\n\n• item kedua 3. item ketiga" atau "1. A 2.\n• B 3. C" semua di satu/dua baris)
-  //      Deteksi: ada angka dengan titik LALU bullet atau sebaliknya dalam satu baris
-  if (/\d+\.\s*[^\n]*[•*\-]|[•*\-]\s*[^\n]*\d+\./.test(out)) {
-    // a. Pisahkan nomor inline yang terjepit antara bullet characters
-    out = out.replace(/([•*\-]\s*[^\n\d]*?)\s*(\d+)\.\s*/g, (m, before, num) => {
-      if (!before.trim()) return `\n${num}. `;
-      return `${before.trim()}\n${num}. `;
-    });
-    // b. Pisahkan nomor urut baru yang langsung disambung setelah kalimat (spasi + angka + titik)
-    out = out.replace(/(\w[^\n]*)\s+(\d{1,2})\.\s+(?=[A-Za-z\*])/g, '$1\n$2. ');
+  // 1.45 Perbaiki numbered list yang tertulis inline bercampur bullet (misal: "• 1. A • 2. B" atau "1. A • 2. B")
+  // HANYA trigger jika ada bullet character yang terisolasi dengan spasi sebelum angka integer list
+  if (/(?:\s+[•*]|\s+-\s+)\s*(?<!\d|\.)\b\d{1,3}\.(?!\d)\s+[A-Za-z*]/.test(out)) {
+    out = out.replace(/(?:\s+[•*]|\s+-\s+)\s*(?<!\d|\.)\b(\d{1,3})\.(?!\d)\s+/g, '\n$1. ');
   }
 
-  // 1.46 Pisahkan pure inline numbered list tanpa bullet sama sekali.
-  // Misal: "1. Claude Fable 5.1 (Max) (Anthropic) 2. Claude Opus 5 (High) (Anthropic) 3. ..."
-  // Step 1.45 tidak aktif karena tidak ada bullet. Deteksi: pola `) N.` atau `kata N.` diikuti huruf kapital.
-  if (/[)\w]\s+\d{1,2}\.\s+[A-Z*]/.test(out)) {
-    // Pisahkan setiap transisi "...) N. Teks" atau "...kata N. Teks" menjadi baris baru
-    out = out.replace(/([)\w])\s+(\d{1,2})\.\s+(?=[A-Z*\u00C0-\u017E])/g, (m, before, num) => {
-      return `${before}\n${num}. `;
-    });
+  // 1.46 Pisahkan pure inline numbered list tanpa bullet sama sekali (misal "1. A (Org) 2. B (Org) 3. C")
+  // HANYA trigger pada boundary setelah kurung tutup atau tanda baca: ") 2. " atau "; 2. "
+  // dan angka list BUKAN bagian dari nama model/versi ber-hyphen (e.g. BUKAN "GPT-5.")
+  if (/(?:\)|\;)\s+(?<!\d|\.)\b\d{1,3}\.(?!\d)\s+[A-Z*]/.test(out)) {
+    out = out.replace(/([);])\s+(?<!\d|\.)\b(\d{1,3})\.(?!\d)\s+(?=[A-Z*\u00C0-\u017E])/g, '$1\n$2. ');
   }
 
   // 1.5 Format bullet items starting with bold label: e.g. "**Kemampuan Multimodal**: ..." -> "- **Kemampuan Multimodal**: ..."
@@ -2369,15 +2359,15 @@ function normalizeStructuredMarkdown(str) {
 
   // 1.6 Normalisasi konsistensi label judul list item (Anti-Pewarnaan Huruf Tidak Konsisten):
   // Menjamin seluruh judul poin sebelum tanda titik dua (- Judul: Penjelasan, • Judul: Penjelasan, atau 1. Judul: Penjelasan)
-  // selalu dibungkus dengan **Judul**: secara seragam agar ter-render konsisten sebagai teks aksen cyan (<strong>)
-  out = out.replace(/(?:^|\n)\s*([•\-\*]|\d+\.)\s*(?!\*\*|#)\*?([\w][\w\s/&._\-]{1,50}?)\*?:\s+([^\n]+)/g, (match, bullet, title, desc) => {
+  // selalu dibungkus dengan **Judul**: secara seragam. HANYA satu baris, dilarang tembus newline!
+  out = out.replace(/(?:^|\n)[^\S\r\n]*([•\-\*]|(?<!\d|\.)\b\d{1,3}\.)[^\S\r\n]*(?!\*\*|#)\*?([\w][\w /&._\-]{1,50}?)\*?:[^\S\r\n]+([^\n]+)/g, (match, bullet, title, desc) => {
     const cleanBullet = (bullet === '•' || bullet === '*') ? '-' : bullet;
     return `\n${cleanBullet} **${title.trim()}**: ${desc.trim()}`;
   });
 
   // 1.7 Konversi baris tanpa bullet yang diawali label judul dan titik dua menjadi bullet list terformat
-  // Contoh: "Transfer pemain: Borussia Dortmund..." -> "- **Transfer Pemain**: Borussia Dortmund..."
-  out = out.replace(/(?:^|\n)\s*(?![#\d\s\-*•|])([A-Z][\w\s/&._\-]{1,35}?):\s+([^\n]+)/g, (match, title, desc) => {
+  // Contoh: "Transfer pemain: Borussia Dortmund..." -> "- **Transfer Pemain**: Borussia Dortmund..." (HANYA satu baris!)
+  out = out.replace(/(?:^|\n)[^\S\r\n]*(?![#\d\s\-*•|])([A-Z][\w /&._\-]{1,35}?):[^\S\r\n]+([^\n]+)/g, (match, title, desc) => {
     if (/^(?:http|https|note|catatan|peringatan|nb|ps)\b/i.test(title.trim())) return match;
     return `\n- **${title.trim()}**: ${desc.trim()}`;
   });
@@ -2394,14 +2384,14 @@ function normalizeStructuredMarkdown(str) {
   out = out.replace(/([^#\n\r])\s*(#{1,6}\s+)/g, '$1\n\n$2');
 
   // 4. Pisahkan heading yang menempel langsung dengan bullet list atau nomor
-  out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+\*\*|\d+\.\s+\*\*)/g, '$1\n\n$2');
+  out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+\*\*|(?<!\d|\.)\b\d{1,3}\.\s+\*\*)/g, '$1\n\n$2');
   out = out.replace(/(#{1,6}\s+[^\n]+?)\s+([-*•]\s+[A-Za-z0-9])/g, '$1\n\n$2');
 
   // 5. Bersihkan strip/bullet aneh sebelum angka list (tanpa memotong huruf kata sebelumnya)
-  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*(\d+\.\s+[A-Za-z*])/g, '\n\n$1');
+  out = out.replace(/(?:^|\n)\s*[-–—•\s]{2,}\s*((?<!\d|\.)\b\d{1,3}\.\s+[A-Za-z*])/g, '\n\n$1');
 
   // 6. Pisahkan numbered list (1. **Label**: atau 1. Kata) yang menempel di tengah kalimat atau setelah titik
-  out = out.replace(/([.:?!])\s+(\d+\.\s+(?:\*\*|[A-Za-z]))/g, '$1\n\n$2');
+  out = out.replace(/([.:?!])\s+((?<!\d|\.)\b\d{1,3}\.\s+(?:\*\*|[A-Za-z]))/g, '$1\n\n$2');
 
   // 6.5 Rekonstruksi nomor item yang terpisah dari isinya oleh baris kosong:
   //     Model sering menghasilkan "1.\n\nNama Item ...." (nomor di baris sendiri, isi di
@@ -2462,7 +2452,7 @@ function normalizeStructuredMarkdown(str) {
   out = out.replace(/(:\s*\n+)(?:(?![#\d\s\-*•])([A-Z][a-zA-Z0-9\s/&-]{3,45})(?:,\s+|\s*[-–—:]\s+)([A-Z][^\n]+)\n*)/g, '$1- **$2**: $3\n');
 
   // 10. Hapus bullet yang tidak sengaja tertempel di depan numbered list
-  out = out.replace(/\n\s*[-*•]\s*(\d+\.\s+)/g, '\n$1');
+  out = out.replace(/\n\s*[-*•]\s*(?<!\d|\.)(\d{1,3}\.\s+)/g, '\n$1');
 
   // 11. Rekonstruksi & Rapikan Tabel Markdown
   out = repairMarkdownTables(out);
