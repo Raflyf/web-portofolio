@@ -601,8 +601,18 @@ export default function Dashboard() {
           memoriesRef.current = loadedMemories;
           setIsLiveConnected(true);
         } else {
-          // RLS mencabut anon SELECT: tidak ada baca-langsung Supabase.
-          // Offline visibility memakai ring buffer lokal di bawah (single source tetap server).
+          // FAIL-CLOSED / SESSION EXPIRED (401):
+          // Jika serverless menolak token (token kedaluwarsa 24 jam atau tertimpa perangkat lain),
+          // hapus sesi lama dan minta pengguna memasukkan kembali Master PIN.
+          if (dataRes.status === 401) {
+            sessionStorage.removeItem(SESSION_AUTH_KEY);
+            setIsAuthenticated(false);
+            setAuthError(language === 'id'
+              ? 'Sesi admin telah kedaluwarsa demi keamanan (24 jam). Silakan masukkan kembali Master PIN Anda.'
+              : 'Admin session expired for security (24h). Please re-enter your Master PIN.');
+            return;
+          }
+          // RLS / Kuota Egress Terlampaui (429/502/503): aktifkan fallback cache lokal
           setIsLiveConnected(false);
         }
 
@@ -687,12 +697,12 @@ export default function Dashboard() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchTelemetryData();
-      // Realtime cadence stays 15s, but hidden tabs skip polling (they are not
-      // being viewed) and refetch immediately when visible again.
+      // Realtime cadence set to 30s to conserve Supabase Egress bandwidth quota.
+      // Hidden tabs skip polling and refetch immediately when visible again.
       const interval = setInterval(() => {
         if (document.hidden) return;
         fetchTelemetryData();
-      }, 15000);
+      }, 30000);
       window.addEventListener('telemetry_update', fetchTelemetryData);
       const onVisible = () => { if (!document.hidden) fetchTelemetryData(); };
       document.addEventListener('visibilitychange', onVisible);
@@ -1654,6 +1664,30 @@ export default function Dashboard() {
         {pingStatus && (
           <div className="p-3 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-xs font-mono text-cyan-300 text-center animate-fade-in">
             {pingStatus}
+          </div>
+        )}
+
+        {!isLiveConnected && (
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs font-mono text-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in shadow-lg shadow-amber-500/5">
+            <div className="flex items-start sm:items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 shrink-0 text-amber-400 mt-0.5 sm:mt-0" />
+              <div>
+                <p className="font-semibold text-amber-200">
+                  {language === 'id' ? 'Mode Cadangan Cache Lokal Aktif' : 'Local Cache Fallback Active'}
+                </p>
+                <p className="text-[11px] text-amber-400/90 mt-0.5 leading-relaxed">
+                  {language === 'id'
+                    ? 'Koneksi ke Supabase Cloud sedang terputus (kuota Egress bulanan Free Tier 5 GB kemungkinan tercapai atau sesi habis). Data di bawah bersumber dari cache sementara peramban.'
+                    : 'Connection to Supabase Cloud is currently limited (monthly 5 GB egress quota reached or session expired). Displaying local browser cache.'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-[11px] font-bold text-amber-200 cursor-pointer self-start sm:self-auto shrink-0 transition-all hover:scale-[1.02]"
+            >
+              {language === 'id' ? 'Login Ulang Sesi' : 'Re-authenticate'}
+            </button>
           </div>
         )}
 

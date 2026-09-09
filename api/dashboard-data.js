@@ -90,12 +90,12 @@ export default async function handler(req, res) {
       return res.status(401).json({ success: false, message: 'Sesi admin telah kedaluwarsa. Silakan login ulang.' });
     }
 
-    // Helper: High-Speed Paginated Batch Fetch for 100% complete row extraction
-    async function fetchAllRows(endpoint) {
+    // Helper: High-Speed Paginated Batch Fetch with Safety Limit (Egress-Safe)
+    async function fetchAllRows(endpoint, maxLimit = 10000) {
       let all = [];
       let offset = 0;
       const batchSize = 1000;
-      while (true) {
+      while (all.length < maxLimit) {
         try {
           const res = await fetch(`${endpoint}&offset=${offset}&limit=${batchSize}`, {
             headers: {
@@ -140,7 +140,7 @@ export default async function handler(req, res) {
     const MEMORIES_COLS = 'id,fact_text,session_id,created_at';
 
     // Delta mode: ?since=ISO returns only newer rows + server_max.
-    // Keeps the 15s realtime cadence while transferring bytes instead of MBs.
+    // Keeps the realtime cadence while transferring bytes instead of MBs.
     const sinceRaw = String((req.query && req.query.since) || '').trim();
     let sinceIso = '';
     if (sinceRaw) {
@@ -152,10 +152,12 @@ export default async function handler(req, res) {
       const filter = `created_at=gt.${encodeURIComponent(sinceIso)}`;
       const [deltaEvents, deltaMemories, serverMax] = await Promise.all([
         fetchAllRows(
-          `${supabaseUrl}/rest/v1/portfolio_telemetry?select=${EVENTS_COLS}&${filter}&order=created_at.asc`
+          `${supabaseUrl}/rest/v1/portfolio_telemetry?select=${EVENTS_COLS}&${filter}&order=created_at.asc`,
+          2000
         ),
         fetchAllRows(
-          `${supabaseUrl}/rest/v1/ai_memories?select=${MEMORIES_COLS}&${filter}&order=created_at.asc`
+          `${supabaseUrl}/rest/v1/ai_memories?select=${MEMORIES_COLS}&${filter}&order=created_at.asc`,
+          1000
         ),
         fetchServerMax()
       ]);
@@ -169,18 +171,23 @@ export default async function handler(req, res) {
       });
     }
 
-    // 2. Full load (login / manual refresh only): ALL telemetry & AI memories.
+    // 2. Full load (login / manual refresh): Bounded strictly to 90 days to eliminate egress bloat
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString();
+    const cutoffFilter = `created_at=gte.${encodeURIComponent(ninetyDaysAgo)}`;
+
     const [events, memories, serverMax] = await Promise.all([
       fetchAllRows(
-        `${supabaseUrl}/rest/v1/portfolio_telemetry?select=${EVENTS_COLS}&order=created_at.desc`
+        `${supabaseUrl}/rest/v1/portfolio_telemetry?select=${EVENTS_COLS}&${cutoffFilter}&order=created_at.desc`,
+        10000
       ),
       fetchAllRows(
-        `${supabaseUrl}/rest/v1/ai_memories?select=${MEMORIES_COLS}&order=created_at.desc`
+        `${supabaseUrl}/rest/v1/ai_memories?select=${MEMORIES_COLS}&${cutoffFilter}&order=created_at.desc`,
+        3000
       ),
       fetchServerMax()
     ]);
 
-    res.setHeader('Cache-Control', 'private, max-age=5, stale-while-revalidate=30');
+    res.setHeader('Cache-Control', 'private, max-age=15, stale-while-revalidate=60');
     return res.status(200).json({ success: true, incremental: false, events, memories, server_max: serverMax });
   } catch (err) {
     return res.status(502).json({ success: false, message: 'Gagal mengambil data dashboard.' });

@@ -2393,6 +2393,30 @@ Pada 9 September 2026, sempat dilakukan perancangan dan evaluasi eksperimental a
    - Panel observabilitas dilayani secara eksklusif oleh `/dashboard` ([Dashboard.jsx](file:///d:/code/project/portofolio%20landing%20page/src/pages/Dashboard.jsx)).
    - Seluruh data profil, riset skripsi, sertifikasi BNSP/MikroTik/Cisco, dan integrasi backend Supabase RLS tetap utuh dan beroperasi normal.
 
+---
+
+## 44. Resolusi Insiden Egress Supabase & Ketahanan Dashboard Observabilitas (9 September 2026)
+
+### 44.1 Ringkasan Insiden & Investigasi Masalah
+- **Gejala:** Dashboard observabilitas di peramban hanya menampilkan 329 kunjungan (sejak 24 Agustus) dan grafik sebelum 24 Agustus bernilai 0, disertai badge kuning `[Local Cache]`.
+- **Akar Penyebab Faktualitas:**
+  1. Penggunaan kuota transfer keluar (*Egress*) Supabase Free Tier telah mencapai batas maksimal (5.11 GB / 5 GB). Akibatnya, Supabase membatasi (*throttle*) koneksi REST API.
+  2. Endpoint `/api/dashboard-data` sebelumnya menarik seluruh baris telemetri sejak awal zaman tanpa batas rentang waktu (`created_at`), mengakibatkan pembengkakan Egress tiap kali dashboard dibuka.
+  3. Dashboard peramban yang mengalami kegagalan respons atau kedaluwarsa sesi (401) diam-diam jatuh ke mode `Local Cache` dari `localStorage` laptop tanpa memberikan peringatan jelas.
+  4. Data di database PostgreSQL Supabase sendiri berukuran 224 MB dan **100% aman (tidak pernah terhapus)**.
+
+### 44.2 Solusi Rekayasa yang Diterapkan
+1. **Pembatasan Rentang Waktu 90 Hari di API (`api/dashboard-data.js`):**
+   - Menambahkan filter wajib `created_at >= NOW() - INTERVAL '90 days'` pada query full load.
+   - Menambahkan limit pengaman (`maxLimit = 10000` baris) pada `fetchAllRows` guna mencegah *runaway query*.
+   - Menyetel header cache `Cache-Control: private, max-age=15, stale-while-revalidate=60`.
+2. **Penanganan Sesi & Peringatan di Frontend (`src/pages/Dashboard.jsx`):**
+   - Menangani HTTP 401: jika sesi kedaluwarsa (24 jam), sistem menghapus sesi lama dan menampilkan pesan notifikasi untuk login kembali.
+   - Menambahkan banner informatif amber di bagian atas dashboard saat berada di mode `Local Cache` dengan tombol cepat "Login Ulang Sesi".
+   - Mengubah cadence polling latar belakang dari 15 detik menjadi 30 detik guna memangkas konsumsi Egress hingga 50%.
+3. **Penyediaan Fungsi Agregasi Server-Side RPC (`database/supabase_schema.sql`):**
+   - Menambahkan fungsi Postgres `public.rpc_get_telemetry_summary_90d()` yang mengagregasi data langsung di database (output hanya ~30 KB per request dibanding puluhan MB data mentah, menghemat Egress hingga 99%).
+
 
 
 
