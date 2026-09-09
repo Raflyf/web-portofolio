@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import InteractiveScrollBackground from '../components/ui/interactive-scroll-background.jsx';
@@ -6,6 +7,7 @@ import { telemetry } from '../lib/telemetry';
 import {
   Lock,
   ArrowRight,
+  ArrowLeft,
   Activity,
   Users,
   MousePointerClick,
@@ -1391,6 +1393,19 @@ export default function Dashboard() {
         <div className="w-full max-w-md liquid-glass-strong p-8 relative overflow-hidden group">
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-indigo-500/10 pointer-events-none" />
           
+          {/* Top-Left Back to Home Button Pill */}
+          <div className="absolute top-4 left-4 z-20">
+            <Link
+              to="/"
+              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-mono font-medium text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer group/back"
+              title={t('dashboard.auth.backToHome')}
+              aria-label={t('dashboard.auth.backToHome')}
+            >
+              <ArrowLeft className="w-3 h-3 text-cyan-400 transition-transform group-hover/back:-translate-x-0.5" />
+              <span>{language === 'id' ? 'Beranda' : 'Home'}</span>
+            </Link>
+          </div>
+
           {/* Top-Right Language Switcher Pill */}
           <div className="absolute top-4 right-4 z-20">
             <button
@@ -1459,7 +1474,7 @@ export default function Dashboard() {
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="text-center pt-2">
+              <div className="flex items-center justify-center gap-3 pt-2 text-xs">
                 <button
                   type="button"
                   onClick={() => setIsForgotPinOpen(true)}
@@ -1467,6 +1482,14 @@ export default function Dashboard() {
                 >
                   {t('dashboard.auth.forgotPin')}
                 </button>
+                <span className="text-zinc-600">•</span>
+                <Link
+                  to="/"
+                  className="text-xs text-zinc-400 hover:text-cyan-300 transition-colors flex items-center gap-1 cursor-pointer group/link"
+                >
+                  <ArrowLeft className="w-3 h-3 transition-transform group-hover/link:-translate-x-0.5" />
+                  <span>{t('dashboard.auth.backToHome')}</span>
+                </Link>
               </div>
             </form>
           ) : (
