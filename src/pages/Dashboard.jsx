@@ -1474,7 +1474,7 @@ export default function Dashboard() {
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="flex items-center justify-center gap-3 pt-2 text-xs">
+              <div className="text-center pt-2">
                 <button
                   type="button"
                   onClick={() => setIsForgotPinOpen(true)}
@@ -1482,14 +1482,6 @@ export default function Dashboard() {
                 >
                   {t('dashboard.auth.forgotPin')}
                 </button>
-                <span className="text-zinc-600">•</span>
-                <Link
-                  to="/"
-                  className="text-xs text-zinc-400 hover:text-cyan-300 transition-colors flex items-center gap-1 cursor-pointer group/link"
-                >
-                  <ArrowLeft className="w-3 h-3 transition-transform group-hover/link:-translate-x-0.5" />
-                  <span>{t('dashboard.auth.backToHome')}</span>
-                </Link>
               </div>
             </form>
           ) : (
