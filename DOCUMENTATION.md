@@ -2380,6 +2380,20 @@ Nemotron-3-Nano:30B kadang menghasilkan numbered list yang bercampur bullet `•
 - Tes runtime: parser v2 mengekstrak 15 entry terverifikasi dari arena.ai (Rank #1 Claude Fable 5.1 Max hingga #12 GLM 5.2 Max).
 - Respons kueri peringkat arena.ai kini bersumber dari scraper live, bukan halusinasi model.
 
+---
+
+## 28. Status Arsitektur Antarmuka (Keputusan Retensi Desain V1)
+
+### 28.1 Ringkasan Evaluasi & Keputusan Pengguna
+Pada 9 September 2026, sempat dilakukan perancangan dan evaluasi eksperimental antarmuka alternatif (V2) yang mengusung konsep *scrollytelling* bergaya agensi dan *bento-box dashboard*. Berdasarkan arahan dan keputusan final dari pengguna:
+1. **Pembatalan Penuh V2:** Eksperimen V2 diputuskan untuk tidak diterapkan. Seluruh berkas komponen baru di bawah direktori `src/v2/`, `src/pages/HomeV2.jsx`, serta `src/pages/DashboardV2.jsx` telah dihapus secara bersih.
+2. **Retensi Penuh V1 sebagai Standar Tunggal:** Antarmuka produksi V1 (Cyber-Editorial dengan tema Emerald, sistem switch Light/Dark mode OKLCH, dan dashboard observabilitas analitik) dipertahankan 100% sebagai desain resmi dan satu-satunya *single source of truth*.
+3. **Integritas Rute & Data:**
+   - Halaman utama dilayani secara eksklusif oleh `/` ([Home.jsx](file:///d:/code/project/portofolio%20landing%20page/src/pages/Home.jsx)).
+   - Panel observabilitas dilayani secara eksklusif oleh `/dashboard` ([Dashboard.jsx](file:///d:/code/project/portofolio%20landing%20page/src/pages/Dashboard.jsx)).
+   - Seluruh data profil, riset skripsi, sertifikasi BNSP/MikroTik/Cisco, dan integrasi backend Supabase RLS tetap utuh dan beroperasi normal.
+
+
 
 
 
