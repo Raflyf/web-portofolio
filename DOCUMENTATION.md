@@ -2380,31 +2380,6 @@ Nemotron-3-Nano:30B kadang menghasilkan numbered list yang bercampur bullet `•
 - Tes runtime: parser v2 mengekstrak 15 entry terverifikasi dari arena.ai (Rank #1 Claude Fable 5.1 Max hingga #12 GLM 5.2 Max).
 - Respons kueri peringkat arena.ai kini bersumber dari scraper live, bukan halusinasi model.
 
----
-
-## 28. Arsitektur UI/UX V2 (Scrollytelling & Bento Observability)
-
-### 28.1 Latar Belakang & Mandat
-Pembaruan V2 merekayasa ulang seluruh tampilan Landing Page dan Dashboard menjadi antarmuka kelas dunia bebas "AI Slop" terinspirasi dari standar desain agensi modern (Shakuro & Scrollytelling.ai) dengan aturan mutlak:
-1. **Preservasi Konten 100%**: Seluruh 5 repositori riset GitHub, 10 sertifikat kredensial otentik, matriks keahlian, milestone linimasa, serta terminal AI dipertahankan tanpa ada yang dikurangi.
-2. **Isolasi Rute Lokal**: Seluruh implementasi V2 dibangun terpisah di bawah direktori `src/v2/` dan dapat diuji lokal via rute `/v2` (Landing Page) dan `/v2/dashboard` (Observability Bento) tanpa mengganggu situs produksi V1 aktif di `/` dan `/dashboard`.
-3. **Strict Dark Mode**: Antarmuka V2 dirancang eksklusif dengan tema gelap premium (Canvas Deep Obsidian `#05070e`, Glassmorphism 1px borders, subtle radial ambient glow) tanpa toggle light mode.
-
-### 28.2 Struktur Komponen V2
-- `src/v2/styles/v2.css`: Sistem token visual, styling kartu kaca obsidian, gradient tipografi, dan custom scrollbars.
-- `src/v2/components/V2Navbar.jsx`: Island navigation melayang responsif dengan indikator status proyek real-time, toggle bahasa ID/EN, dan drawer navigasi mobile.
-- `src/v2/components/HeroScrolly.jsx`: Headline tipografi berkarakter editorial dengan visual depth, bento cards metrik utama (10 Unit BNSP, MTCNA, 5 Proyek, S1 UBSI), serta trigger parallax scroll.
-- `src/v2/components/AboutStory.jsx`: Narasi filosofi rekayasa perangkat lunak dan riset terbuka disertai kartu interaktif 4 pilar domain.
-- `src/v2/components/ProjectsCurated.jsx`: Showcase dek interaktif dengan inspeksi spesifikasi arsitektur per proyek, tab kategori dinamis, dan direct repository actions.
-- `src/v2/components/SkillsMatrix.jsx`: Dual-track infinite running marquee (PyTorch, IndoBERT, OpenCV vs MikroTik, MTCNA, Supabase) dipadukan dengan grid kartu kaca 4 ranah keahlian.
-- `src/v2/components/CertificatesShowcase.jsx`: Brankas kredensial otentik dengan preview modal terisolasi untuk inspeksi gambar sertifikat dan validasi tautan lembaga resmi.
-- `src/v2/components/ExperienceTrack.jsx`: Linimasa vertikal terkoneksi dengan bullet node status dinamis untuk riwayat akademik dan karier.
-- `src/v2/components/InteractiveAILab.jsx`: Wadah terintegrasi untuk Terminal AI multi-model dengan command registry dan telemetry log.
-- `src/v2/components/ContactPortal.jsx`: Jalur komunikasi terenkripsi langsung (Email copy, WhatsApp Instant, GitHub) disertai formulir kontak ber-honeypot anti-spam dan pembatas laju pengiriman.
-- `src/v2/components/V2Footer.jsx`: Colophon penutup dengan badge teknologi arsitektur modern (React 19, Vite, Tailwind CSS, Framer Motion, Lenis Physics).
-- `src/pages/DashboardV2.jsx`: Dashboard telemetri bergaya bento Apple/Vercel dengan grafik tren interaktif Chart.js, katalog 16 model AI gateway, tabel streaming log realtime, serta pengamanan gerbang PIN SHA-256 terserver.
-
-
 
 
 
