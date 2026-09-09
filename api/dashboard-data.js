@@ -72,6 +72,7 @@ export default async function handler(req, res) {
 
   try {
     // 1. Validate session token against admin_auth_config (service_role read).
+    // Supports multi-device login (Laptop + Mobile) via JSON array of active sessions.
     const authRes = await fetch(
       `${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=session_token,session_expires_at,lockout_attempts`,
       { headers: serviceHeaders }
@@ -81,13 +82,30 @@ export default async function handler(req, res) {
     }
     const authRows = await authRes.json();
     const row = Array.isArray(authRows) ? authRows[0] : null;
-    if (!row || !row.session_token || row.session_token !== token) {
-      return res.status(401).json({ success: false, message: 'Token sesi tidak valid.' });
+    
+    let isValidSession = false;
+    if (row && row.session_token) {
+      try {
+        const tokenList = JSON.parse(row.session_token);
+        if (Array.isArray(tokenList)) {
+          const match = tokenList.find(t => t && t.token === token);
+          if (match && Number(match.exp) > Date.now()) {
+            isValidSession = true;
+          }
+        }
+      } catch (_) {
+        // Fallback for single-token legacy row format
+        if (row.session_token === token) {
+          const expiresAt = row.session_expires_at ? new Date(row.session_expires_at).getTime() : 0;
+          if (expiresAt > Date.now()) {
+            isValidSession = true;
+          }
+        }
+      }
     }
-    // FAIL-CLOSED expiry: a session without a valid future expiry is rejected.
-    const expiresAt = row.session_expires_at ? new Date(row.session_expires_at).getTime() : 0;
-    if (!expiresAt || expiresAt < Date.now()) {
-      return res.status(401).json({ success: false, message: 'Sesi admin telah kedaluwarsa. Silakan login ulang.' });
+
+    if (!isValidSession) {
+      return res.status(401).json({ success: false, message: 'Sesi admin tidak valid atau telah kedaluwarsa. Silakan login ulang.' });
     }
 
     // Helper: High-Speed Paginated Batch Fetch with Safety Limit (Egress-Safe)
