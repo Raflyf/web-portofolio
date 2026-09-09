@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import InteractiveScrollBackground from '../components/ui/interactive-scroll-background.jsx';
 import { telemetry } from '../lib/telemetry';
-import { getSupabaseConfig } from '../lib/supabase';
 import {
   Lock,
   ArrowRight,
@@ -529,6 +528,26 @@ export default function Dashboard() {
   // single throttled wrapper with an in-flight guard, so overlapping async
   // requests and out-of-order state overwrites are prevented.
   const isFetchingRef = useRef(false);
+  // Delta-poll watermark (server_max created_at). Polls send ?since= and merge by id,
+  // so the 15s realtime cadence transfers bytes instead of the full 90-day dataset.
+  const watermarkRef = useRef('');
+  const eventsRef = useRef([]);
+  const memoriesRef = useRef([]);
+  function mergeById(prev, next) {
+    if (!Array.isArray(next) || next.length === 0) return prev;
+    const seen = new Set();
+    for (const e of prev) { if (e && e.id) seen.add(e.id); }
+    const merged = prev.slice();
+    for (let i = next.length - 1; i >= 0; i--) {
+      const item = next[i];
+      if (item && item.id) {
+        if (!seen.has(item.id)) { seen.add(item.id); merged.unshift(item); }
+      } else {
+        merged.unshift(item);
+      }
+    }
+    return merged;
+  }
   // FIX M3: pending timers + in-flight fetch are tracked in refs so they can be
   // cleaned up on unmount (no leaked setTimeout / dangling fetch callbacks).
   const timeoutsRef = useRef([]);
@@ -555,7 +574,8 @@ export default function Dashboard() {
           if (session?.session_token) sessionToken = session.session_token;
         } catch {}
 
-        const dataRes = await fetch('/api/dashboard-data', {
+        const sinceParam = watermarkRef.current ? `?since=${encodeURIComponent(watermarkRef.current)}` : '';
+        const dataRes = await fetch(`/api/dashboard-data${sinceParam}`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -566,58 +586,21 @@ export default function Dashboard() {
 
         if (dataRes.ok) {
           const payload = await dataRes.json();
-          if (Array.isArray(payload.events)) loadedEvents = payload.events;
-          if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
+          if (payload && payload.incremental) {
+            loadedEvents = mergeById(eventsRef.current, payload.events);
+            loadedMemories = mergeById(memoriesRef.current, payload.memories);
+          } else {
+            if (Array.isArray(payload.events)) loadedEvents = payload.events;
+            if (Array.isArray(payload.memories)) loadedMemories = payload.memories;
+          }
+          if (payload && payload.server_max) watermarkRef.current = payload.server_max;
+          eventsRef.current = loadedEvents;
+          memoriesRef.current = loadedMemories;
           setIsLiveConnected(true);
         } else {
-          // Direct Supabase Cloud Fallback (Fetches 100% of all 2700+ telemetry rows & 1700+ memories via pagination)
-          const cfg = getSupabaseConfig();
-          if (cfg && cfg.url && cfg.anonKey) {
-            try {
-              const fetchBatch = async (table) => {
-                let all = [];
-                let offset = 0;
-                const batchSize = 1000;
-                while (true) {
-                  const res = await fetch(`${cfg.url}/rest/v1/${table}?select=*&order=created_at.desc&offset=${offset}&limit=${batchSize}`, {
-                    headers: {
-                      'apikey': cfg.anonKey,
-                      'Authorization': `Bearer ${cfg.anonKey}`,
-                      'Range-Unit': 'items',
-                      'Range': `${offset}-${offset + batchSize - 1}`
-                    },
-                    signal: abortControllerRef.current?.signal
-                  });
-                  if (!res.ok) break;
-                  const data = await res.json();
-                  if (!Array.isArray(data) || data.length === 0) break;
-                  all = all.concat(data);
-                  if (data.length < batchSize) break;
-                  offset += data.length;
-                }
-                const seenIds = new Set();
-                return all.filter(item => {
-                  if (!item.id) return true;
-                  if (seenIds.has(item.id)) return false;
-                  seenIds.add(item.id);
-                  return true;
-                });
-              };
-
-              const [allEvents, allMemories] = await Promise.all([
-                fetchBatch('portfolio_telemetry'),
-                fetchBatch('ai_memories')
-              ]);
-
-              if (allEvents.length > 0) {
-                loadedEvents = allEvents;
-                setIsLiveConnected(true);
-              }
-              if (allMemories.length > 0) {
-                loadedMemories = allMemories;
-              }
-            } catch {}
-          }
+          // RLS mencabut anon SELECT: tidak ada baca-langsung Supabase.
+          // Offline visibility memakai ring buffer lokal di bawah (single source tetap server).
+          setIsLiveConnected(false);
         }
 
         // SINGLE SOURCE OF TRUTH:
@@ -701,12 +684,20 @@ export default function Dashboard() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchTelemetryData();
-      const interval = setInterval(fetchTelemetryData, 15000);
+      // Realtime cadence stays 15s, but hidden tabs skip polling (they are not
+      // being viewed) and refetch immediately when visible again.
+      const interval = setInterval(() => {
+        if (document.hidden) return;
+        fetchTelemetryData();
+      }, 15000);
       window.addEventListener('telemetry_update', fetchTelemetryData);
+      const onVisible = () => { if (!document.hidden) fetchTelemetryData(); };
+      document.addEventListener('visibilitychange', onVisible);
 
       return () => {
         clearInterval(interval);
         window.removeEventListener('telemetry_update', fetchTelemetryData);
+        document.removeEventListener('visibilitychange', onVisible);
       };
     }
   }, [isAuthenticated, fetchTelemetryData]);
@@ -802,6 +793,9 @@ export default function Dashboard() {
     sessionStorage.removeItem(SESSION_AUTH_KEY);
     setIsAuthenticated(false);
     setPinInput('');
+    watermarkRef.current = '';
+    eventsRef.current = [];
+    memoriesRef.current = [];
   };
 
   // 4. Change PIN Handler

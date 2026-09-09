@@ -101,7 +101,8 @@ export default async function handler(req, res) {
             headers: {
               ...serviceHeaders,
               'Range-Unit': 'items',
-              'Range': `${offset}-${offset + batchSize - 1}`
+              'Range': `${offset}-${offset + batchSize - 1}`,
+              'Accept-Encoding': 'gzip, deflate'
             }
           });
           if (!res.ok) break;
@@ -117,18 +118,70 @@ export default async function handler(req, res) {
       return all;
     }
 
-    // 2. Fetch ALL telemetry & AI memories in PARALLEL with service role.
-    const [events, memories] = await Promise.all([
+    // Helper: newest created_at per table (2 tiny limit-1 queries).
+    async function fetchServerMax() {
+      let max = '';
+      for (const table of ['portfolio_telemetry', 'ai_memories']) {
+        try {
+          const res = await fetch(
+            `${supabaseUrl}/rest/v1/${table}?select=created_at&order=created_at.desc&limit=1`,
+            { headers: { ...serviceHeaders, 'Accept-Encoding': 'gzip, deflate' } }
+          );
+          if (!res.ok) continue;
+          const rows = await res.json();
+          const ts = Array.isArray(rows) && rows[0] ? String(rows[0].created_at || '') : '';
+          if (ts && (!max || ts > max)) max = ts;
+        } catch (_) {}
+      }
+      return max;
+    }
+
+    const EVENTS_COLS = 'id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at';
+    const MEMORIES_COLS = 'id,fact_text,session_id,created_at';
+
+    // Delta mode: ?since=ISO returns only newer rows + server_max.
+    // Keeps the 15s realtime cadence while transferring bytes instead of MBs.
+    const sinceRaw = String((req.query && req.query.since) || '').trim();
+    let sinceIso = '';
+    if (sinceRaw) {
+      const t = new Date(sinceRaw).getTime();
+      if (Number.isFinite(t)) sinceIso = new Date(t).toISOString();
+    }
+
+    if (sinceIso) {
+      const filter = `created_at=gt.${encodeURIComponent(sinceIso)}`;
+      const [deltaEvents, deltaMemories, serverMax] = await Promise.all([
+        fetchAllRows(
+          `${supabaseUrl}/rest/v1/portfolio_telemetry?select=${EVENTS_COLS}&${filter}&order=created_at.asc`
+        ),
+        fetchAllRows(
+          `${supabaseUrl}/rest/v1/ai_memories?select=${MEMORIES_COLS}&${filter}&order=created_at.asc`
+        ),
+        fetchServerMax()
+      ]);
+      res.setHeader('Cache-Control', 'private, no-store');
+      return res.status(200).json({
+        success: true,
+        incremental: true,
+        events: deltaEvents,
+        memories: deltaMemories,
+        server_max: serverMax
+      });
+    }
+
+    // 2. Full load (login / manual refresh only): ALL telemetry & AI memories.
+    const [events, memories, serverMax] = await Promise.all([
       fetchAllRows(
-        `${supabaseUrl}/rest/v1/portfolio_telemetry?select=id,event_type,event_target,event_label,device_type,screen_resolution,referrer,session_id,created_at&order=created_at.desc`
+        `${supabaseUrl}/rest/v1/portfolio_telemetry?select=${EVENTS_COLS}&order=created_at.desc`
       ),
       fetchAllRows(
-        `${supabaseUrl}/rest/v1/ai_memories?select=*&order=created_at.desc`
-      )
+        `${supabaseUrl}/rest/v1/ai_memories?select=${MEMORIES_COLS}&order=created_at.desc`
+      ),
+      fetchServerMax()
     ]);
 
     res.setHeader('Cache-Control', 'private, max-age=5, stale-while-revalidate=30');
-    return res.status(200).json({ success: true, events, memories });
+    return res.status(200).json({ success: true, incremental: false, events, memories, server_max: serverMax });
   } catch (err) {
     return res.status(502).json({ success: false, message: 'Gagal mengambil data dashboard.' });
   }
