@@ -117,14 +117,13 @@ async function recordOtpFailure(ip, supabaseUrl, headers) {
   const count = otpAttemptCache.get(ip)?.count || 1;
   const blockedUntil = count >= OTP_MAX_ATTEMPTS ? new Date(now + OTP_ATTEMPT_WINDOW_MS).toISOString() : null;
   try {
-    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-      method: 'POST',
+    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+      method: 'PATCH',
       headers: {
         ...headers,
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify({
-        id: 'master_auth',
         otp_attempts: count,
         otp_blocked_until: blockedUntil,
         updated_at: new Date().toISOString()
@@ -136,14 +135,13 @@ async function recordOtpFailure(ip, supabaseUrl, headers) {
 async function clearOtpAttempts(ip, supabaseUrl, headers) {
   otpAttemptCache.delete(ip);
   try {
-    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-      method: 'POST',
+    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+      method: 'PATCH',
       headers: {
         ...headers,
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify({
-        id: 'master_auth',
         otp_attempts: 0,
         otp_blocked_until: null,
         updated_at: new Date().toISOString()
@@ -207,8 +205,8 @@ function getSupabaseConfig() {
   // FAIL-CLOSED: no hardcoded anon key fallback (a committed key is a leak).
   // Keys must come from environment variables.
   const url = (process.env.SUPABASE_URL || SUPABASE_DEFAULT_URL).replace(/\/+$/, '');
-  const anonKey = process.env.SUPABASE_ANON_KEY || '';
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SECRET_KEY || '';
   return { url, anonKey, serviceRoleKey };
 }
 
@@ -321,14 +319,20 @@ async function dispatchEmail(otpCode) {
 // token must not survive a credential rotation.
 async function clearSessionToken(supabaseUrl, headers) {
   try {
-    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-      method: 'POST',
+    const { serviceRoleKey } = getSupabaseConfig();
+    const effectiveHeaders = serviceRoleKey ? {
+      ...headers,
+      'apikey': serviceRoleKey,
+      'Authorization': `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json'
+    } : headers;
+    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+      method: 'PATCH',
       headers: {
-        ...headers,
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
+        ...effectiveHeaders,
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify({
-        id: 'master_auth',
         session_token: null,
         session_expires_at: null,
         updated_at: new Date().toISOString()
@@ -339,6 +343,14 @@ async function clearSessionToken(supabaseUrl, headers) {
 
 async function storeSessionToken(supabaseUrl, headers, sessionToken) {
   try {
+    const { serviceRoleKey } = getSupabaseConfig();
+    const effectiveHeaders = serviceRoleKey ? {
+      ...headers,
+      'apikey': serviceRoleKey,
+      'Authorization': `Bearer ${serviceRoleKey}`,
+      'Content-Type': 'application/json'
+    } : headers;
+
     const expiresAtMs = Date.now() + 24 * 60 * 60 * 1000;
     const expiresAtIso = new Date(expiresAtMs).toISOString();
 
@@ -347,7 +359,7 @@ async function storeSessionToken(supabaseUrl, headers, sessionToken) {
     try {
       const getRes = await fetch(
         `${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth&select=session_token`,
-        { headers }
+        { headers: effectiveHeaders }
       );
       if (getRes.ok) {
         const rows = await getRes.json();
@@ -370,14 +382,13 @@ async function storeSessionToken(supabaseUrl, headers, sessionToken) {
     activeSessions.push({ token: sessionToken, exp: expiresAtMs });
     if (activeSessions.length > 10) activeSessions = activeSessions.slice(-10);
 
-    await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-      method: 'POST',
+    const patchRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+      method: 'PATCH',
       headers: {
-        ...headers,
-        'Prefer': 'resolution=merge-duplicates,return=representation'
+        ...effectiveHeaders,
+        'Prefer': 'return=representation'
       },
       body: JSON.stringify({
-        id: 'master_auth',
         session_token: JSON.stringify(activeSessions),
         session_expires_at: expiresAtIso,
         lockout_attempts: 0,
@@ -385,6 +396,9 @@ async function storeSessionToken(supabaseUrl, headers, sessionToken) {
         updated_at: new Date().toISOString()
       })
     });
+    if (!patchRes.ok) {
+      console.warn('[Admin OTP] storeSessionToken PATCH failed:', patchRes.status, await patchRes.text().catch(() => ''));
+    }
   } catch (err) {
     console.warn('[Admin OTP] Failed to persist session token:', err.message);
   }
@@ -564,14 +578,13 @@ export default async function handler(req, res) {
             // 1. Jika PIN cocok: Langsung loloskan dan reset lockout di database
             if (timingSafeMatch(inputHash, storedHash)) {
               try {
-                await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-                  method: 'POST',
+                await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+                  method: 'PATCH',
                   headers: {
                     ...headers,
-                    'Prefer': 'resolution=merge-duplicates,return=representation'
+                    'Prefer': 'return=representation'
                   },
                   body: JSON.stringify({
-                    id: 'master_auth',
                     lockout_attempts: 0,
                     locked_until: null,
                     updated_at: new Date().toISOString()
@@ -614,14 +627,13 @@ export default async function handler(req, res) {
       const lockedUntil = willLock ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
 
       try {
-        await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-          method: 'POST',
+        await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+          method: 'PATCH',
           headers: {
             ...headers,
-            'Prefer': 'resolution=merge-duplicates,return=representation'
+            'Prefer': 'return=representation'
           },
           body: JSON.stringify({
-            id: 'master_auth',
             lockout_attempts: newAttempts,
             locked_until: lockedUntil,
             updated_at: new Date().toISOString()
@@ -672,14 +684,13 @@ export default async function handler(req, res) {
       } else if (serviceRoleKey) {
         // 2. Direct Table Fallback jika service role tersedia
         try {
-          const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-            method: 'POST',
+          const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+            method: 'PATCH',
             headers: {
               ...headers,
-              'Prefer': 'resolution=merge-duplicates,return=representation'
+              'Prefer': 'return=representation'
             },
             body: JSON.stringify({
-              id: 'master_auth',
               otp_code_hash: otpHash,
               otp_expires_at: expiresAt,
               updated_at: new Date().toISOString()
@@ -972,14 +983,13 @@ export default async function handler(req, res) {
 
       let lockoutSaved = false;
       try {
-        const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
-          method: 'POST',
+        const saveRes = await fetch(`${supabaseUrl}/rest/v1/admin_auth_config?id=eq.master_auth`, {
+          method: 'PATCH',
           headers: {
             ...headers,
-            'Prefer': 'resolution=merge-duplicates,return=representation'
+            'Prefer': 'return=representation'
           },
           body: JSON.stringify({
-            id: 'master_auth',
             lockout_attempts: 0,
             locked_until: null,
             updated_at: new Date().toISOString()

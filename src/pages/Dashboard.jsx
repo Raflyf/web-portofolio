@@ -556,7 +556,7 @@ export default function Dashboard() {
   const timeoutsRef = useRef([]);
   const abortControllerRef = useRef(null);
   const fetchTelemetryData = useMemo(() => {
-    const run = async () => {
+    const run = async (isRetry = false) => {
       if (isFetchingRef.current) return; // skip if already in flight
       isFetchingRef.current = true;
       setIsLoading(true);
@@ -572,9 +572,10 @@ export default function Dashboard() {
         // serverless endpoint /api/dashboard-data with the admin session token.
         const sessionRaw = sessionStorage.getItem(SESSION_AUTH_KEY);
         let sessionToken = '';
+        let sessionObj = null;
         try {
-          const session = JSON.parse(sessionRaw || '{}');
-          if (session?.session_token) sessionToken = session.session_token;
+          sessionObj = JSON.parse(sessionRaw || '{}');
+          if (sessionObj?.session_token) sessionToken = sessionObj.session_token;
         } catch {}
 
         const sinceParam = watermarkRef.current ? `?since=${encodeURIComponent(watermarkRef.current)}` : '';
@@ -603,13 +604,26 @@ export default function Dashboard() {
         } else {
           // FAIL-CLOSED / SESSION EXPIRED (401):
           // Jika serverless menolak token (token kedaluwarsa 24 jam atau tertimpa perangkat lain),
-          // hapus sesi lama dan minta pengguna memasukkan kembali Master PIN.
+          // periksa apakah sesi baru saja dibuat (< 5 detik) untuk mencegah tendangan sesaat karena delay replikasi.
           if (dataRes.status === 401) {
+            const sessionAge = Date.now() - (sessionObj?.timestamp || 0);
+            if (sessionAge < 5000 && !isRetry) {
+              setIsLoading(false);
+              isFetchingRef.current = false;
+              const retryTimer = setTimeout(() => {
+                run(true);
+              }, 500);
+              timeoutsRef.current.push(retryTimer);
+              return;
+            }
+
             sessionStorage.removeItem(SESSION_AUTH_KEY);
             setIsAuthenticated(false);
             setAuthError(language === 'id'
               ? 'Sesi admin telah kedaluwarsa demi keamanan (24 jam). Silakan masukkan kembali Master PIN Anda.'
               : 'Admin session expired for security (24h). Please re-enter your Master PIN.');
+            setIsLoading(false);
+            isFetchingRef.current = false;
             return;
           }
           // RLS / Kuota Egress Terlampaui (429/502/503): aktifkan fallback cache lokal
