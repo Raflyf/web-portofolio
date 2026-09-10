@@ -217,6 +217,17 @@ function hashValue(val) {
 }
 
 /**
+ * Constant-time string comparison to prevent timing side-channel attacks
+ */
+function timingSafeMatch(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
  * Send Email via EmailJS REST API or Resend API if credentials available
  */
 async function dispatchEmail(otpCode) {
@@ -551,7 +562,7 @@ export default async function handler(req, res) {
             currentAttempts = row.lockout_attempts || 0;
 
             // 1. Jika PIN cocok: Langsung loloskan dan reset lockout di database
-            if (inputHash === storedHash) {
+            if (timingSafeMatch(inputHash, storedHash)) {
               try {
                 await fetch(`${supabaseUrl}/rest/v1/admin_auth_config`, {
                   method: 'POST',
@@ -765,7 +776,7 @@ export default async function handler(req, res) {
           if (Array.isArray(data) && data.length > 0) {
             const row = data[0];
             const isNotExpired = row.otp_expires_at && (new Date(row.otp_expires_at).getTime() > Date.now());
-            if (row.otp_code_hash === inputOtpHash && isNotExpired) {
+            if (timingSafeMatch(row.otp_code_hash, inputOtpHash) && isNotExpired) {
               isValidOtp = true;
             }
           }
@@ -872,7 +883,7 @@ export default async function handler(req, res) {
         // FAIL-CLOSED: no default-hash fallback. If the stored hash is missing,
         // refuse the change — the seeded default must never be an accepted proof.
         const storedHash = verifyData?.[0]?.pin_hash || '';
-        if (!storedHash || providedCurrentHash !== storedHash) {
+        if (!storedHash || !timingSafeMatch(providedCurrentHash, storedHash)) {
           return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
         }
       } catch (err) {
@@ -951,7 +962,7 @@ export default async function handler(req, res) {
         const verifyData = await verifyRes.json();
         // FAIL-CLOSED: no default-hash fallback.
         const storedHash = verifyData?.[0]?.pin_hash || '';
-        if (!storedHash || providedCurrentHash !== storedHash) {
+        if (!storedHash || !timingSafeMatch(providedCurrentHash, storedHash)) {
           return res.status(403).json({ success: false, message: 'Hash PIN aktif tidak cocok. Aksi ditolak.' });
         }
       } catch (err) {

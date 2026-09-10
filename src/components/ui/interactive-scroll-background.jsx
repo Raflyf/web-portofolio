@@ -71,7 +71,7 @@ export default function InteractiveScrollBackground() {
 
 
     const handleResize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width * dpr;
@@ -143,9 +143,9 @@ export default function InteractiveScrollBackground() {
     let time = 0;
 
     const render = () => {
-      // Pause loop if tab is inactive
+      // Pause loop completely if tab is inactive
       if (document.hidden) {
-        animationFrameId = requestAnimationFrame(render);
+        animationFrameId = null;
         return;
       }
 
@@ -271,10 +271,28 @@ export default function InteractiveScrollBackground() {
       animationFrameId = requestAnimationFrame(render);
     };
 
-    animationFrameId = requestAnimationFrame(render);
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      } else if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    if (!document.hidden) {
+      animationFrameId = requestAnimationFrame(render);
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
     };
   }, []);

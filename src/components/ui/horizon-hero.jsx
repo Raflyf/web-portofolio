@@ -22,14 +22,14 @@ const HERO_SHOWCASE_PROJECTS_I18N = {
   id: [
     {
       id: "open-plagiarism-checker",
-      tag: "NLP · Skripsi S1",
+      tag: "NLP · Riset Mandiri",
       title: "OpenPlagiarismChecker",
       desc: "Mesin riset pemeriksa dokumen akademik lokal berbasis N-Gram Shingling dan Sentence Transformers.",
       spec: "IndoBERT & N-Gram"
     },
     {
       id: "spam-email-classifier",
-      tag: "Machine Learning · Riset",
+      tag: "Machine Learning · Skripsi S1",
       title: "Spam-Email Detection System",
       desc: "Evaluasi komparatif Complement Naive Bayes (CNB) vs XGBoost dengan mitigasi Concept Drift.",
       spec: "CNB vs XGBoost"
@@ -52,21 +52,21 @@ const HERO_SHOWCASE_PROJECTS_I18N = {
       id: "web-portofolio",
       tag: "Frontend & Systems",
       title: "Web Portofolio & AI Platform",
-      desc: "Arsitektur antarmuka web modern Vanilla JS/CSS, observabilitas telemetri, dan integrasi AI.",
-      spec: "Vanilla Architecture"
+      desc: "Arsitektur antarmuka web modern React 19, Tailwind CSS, Framer Motion, observabilitas telemetri, dan integrasi AI.",
+      spec: "React 19 & Framer Motion"
     }
   ],
   en: [
     {
       id: "open-plagiarism-checker",
-      tag: "NLP · Academic Thesis",
+      tag: "NLP · Independent Research",
       title: "OpenPlagiarismChecker",
       desc: "Local research document similarity engine powered by 5-word N-Gram Shingling and Sentence Transformers.",
       spec: "IndoBERT & N-Gram"
     },
     {
       id: "spam-email-classifier",
-      tag: "Machine Learning · Research",
+      tag: "Machine Learning · Bachelor Thesis",
       title: "Spam-Email Detection System",
       desc: "Comparative benchmark of Complement Naive Bayes vs XGBoost with Concept Drift Domain Adaptation.",
       spec: "CNB vs XGBoost"
@@ -89,8 +89,8 @@ const HERO_SHOWCASE_PROJECTS_I18N = {
       id: "web-portofolio",
       tag: "Frontend & Systems",
       title: "Web Portfolio & AI Platform",
-      desc: "Modern bespoke web architecture with integrated AI lab and real-time telemetry observability.",
-      spec: "Vanilla Architecture"
+      desc: "Modern bespoke web architecture built with React 19, Tailwind CSS, Framer Motion, integrated AI lab, and real-time telemetry.",
+      spec: "React 19 & Framer Motion"
     }
   ]
 };

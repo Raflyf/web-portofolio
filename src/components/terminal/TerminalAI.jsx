@@ -17,16 +17,19 @@ const COMMAND_REGISTRY = {
   ],
   skills: () => [
     "--- TECH SKILLS ---",
-    "Frontend: React, Vue, TailwindCSS, Framer Motion",
-    "Backend: Node.js, Python, Express",
-    "Database: PostgreSQL, MongoDB, Supabase",
-    "AI/ML: PyTorch, LangChain, OpenAI, DeepSeek, Ollama"
+    "Frontend: React 19, Vite, Tailwind CSS, Framer Motion",
+    "Backend: Python, Node.js, Flask-SocketIO, RESTful APIs",
+    "Jaringan & Sistem: MikroTik RouterOS v7 (MTCNA Certified), Linux",
+    "Database: PostgreSQL, Supabase RLS, SQLite",
+    "AI/ML: PyTorch, Sentence-Transformers, Scikit-Learn, XGBoost, MediaPipe"
   ],
   projects: () => [
-    "--- OPEN SOURCE PROJECTS ---",
-    "1. Terminal AI Gateway - Smart LLM Router",
-    "2. Skripsi AI Plagiarism Checker",
-    "3. Next.js Dashboard Analytics",
+    "--- OPEN SOURCE PROJECTS & RESEARCH ---",
+    "1. OpenPlagiarismChecker - Mesin Riset Pemeriksa Dokumen Akademik NLP (SBERT & N-Gram)",
+    "2. Spam-Email Detection System - Riset Skripsi S1 (CNB vs XGBoost + Domain Adaptation)",
+    "3. laser_pointer_PPT - Pengendali Presentasi Nirsentuh (Gyroscope & WebSockets)",
+    "4. FotoKitaBlur - Real-time Hand Gesture & Face Tracking (MediaPipe & OpenCV)",
+    "5. Web Portofolio & AI Platform - React 19, Tailwind, Framer Motion, Supabase RAG",
     "Cek selengkapnya di GitHub: https://github.com/Raflyf"
   ],
   certifs: () => [
@@ -724,9 +727,11 @@ export default function TerminalAI({ onClose } = {}) {
     const nextMsgs = messages.slice(0, sliceIndex);
     setMessages(nextMsgs.length > 0 ? nextMsgs : [initialMsg]);
 
-    // Langsung arahkan kursor fokus kembali ke kotak ketikan
+    // Arahkan kursor fokus kembali ke kotak ketikan pada perangkat desktop/mouse (hindari popup keyboard paksa di mobile)
     setTimeout(() => {
-      textInputRef.current?.focus();
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+        textInputRef.current?.focus();
+      }
     }, 50);
   };
 

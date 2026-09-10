@@ -83,4 +83,31 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('chart.js') || id.includes('react-chartjs-2')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('react-markdown') || id.includes('remark-gfm')) {
+              return 'vendor-markdown';
+            }
+            if (id.includes('lenis')) {
+              return 'vendor-lenis';
+            }
+            return 'vendor-core';
+          }
+        }
+      }
+    }
+  }
 })

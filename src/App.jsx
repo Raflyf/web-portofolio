@@ -81,6 +81,18 @@ function FloatingNavbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [mobileMenuOpen]);
 
+  // Accessibility: Close mobile menu on Escape key press
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   // Isolate Dashboard: Hide public floating navbar on dashboard route
   if (location.pathname === '/dashboard') {
     return null;
@@ -164,7 +176,7 @@ function FloatingNavbar() {
         <div className="hidden md:flex items-center gap-2.5">
           <button
             onClick={toggleLanguage}
-            className="px-3 py-1.5 rounded-full liquid-glass-inset liquid-glass-pill liquid-press text-xs font-mono font-bold text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer transition-all flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-full liquid-glass-inset liquid-glass-pill liquid-press text-xs font-mono font-bold text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer transition-all flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
             aria-label={t('nav.switchLanguage')}
             title={language === 'id' ? 'Switch language to English' : 'Ganti bahasa ke Bahasa Indonesia'}
           >
@@ -176,7 +188,7 @@ function FloatingNavbar() {
 
           <button
             onClick={handleThemeToggle}
-            className="w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer"
+            className="w-9 h-9 rounded-full liquid-glass-inset liquid-glass-pill liquid-press flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
             aria-label={t('nav.themeToggle')}
             title={`${t('nav.themeToggle')} (${isDark ? t('nav.lightMode') : t('nav.darkMode')})`}
           >
@@ -184,7 +196,7 @@ function FloatingNavbar() {
           </button>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 liquid-press transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 liquid-press transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
           >
             <Shield className="w-4 h-4" />
             <span>{t('nav.dashboard')}</span>
@@ -213,6 +225,8 @@ function FloatingNavbar() {
 
           {/* Authentic Liquid Glass Mobile Navigation Panel */}
           <nav 
+            role="dialog"
+            aria-modal="true"
             className="md:hidden mx-4 mt-2 p-3.5 liquid-glass-strong glass-spring-in flex flex-col gap-1.5 pointer-events-auto"
             aria-label="Menu Mobile"
           >
