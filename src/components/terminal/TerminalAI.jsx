@@ -21,15 +21,16 @@ const COMMAND_REGISTRY = {
     "Backend: Python, Node.js, Flask-SocketIO, RESTful APIs",
     "Jaringan & Sistem: MikroTik RouterOS v7 (MTCNA Certified), Linux",
     "Database: PostgreSQL, Supabase RLS, SQLite",
-    "AI/ML: PyTorch, Sentence-Transformers, Scikit-Learn, XGBoost, MediaPipe"
+    "AI/ML: PyTorch, Sentence-Transformers, Prompt Engineering, Scikit-Learn, XGBoost, MediaPipe"
   ],
   projects: () => [
     "--- OPEN SOURCE PROJECTS & RESEARCH ---",
     "1. OpenPlagiarismChecker - Mesin Riset Pemeriksa Dokumen Akademik NLP (SBERT & N-Gram)",
     "2. Spam-Email Detection System - Riset Skripsi S1 (CNB vs XGBoost + Domain Adaptation)",
-    "3. laser_pointer_PPT - Pengendali Presentasi Nirsentuh (Gyroscope & WebSockets)",
-    "4. FotoKitaBlur - Real-time Hand Gesture & Face Tracking (MediaPipe & OpenCV)",
-    "5. Web Portofolio & AI Platform - React 19, Tailwind, Framer Motion, Supabase RAG",
+    "3. FreeAiBot - Asisten AI Multimodal 24/7 (WhatsApp & Telegram, Whisper, Multi-Provider Failover)",
+    "4. laser_pointer_PPT - Pengendali Presentasi Nirsentuh (Gyroscope & WebSockets)",
+    "5. FotoKitaBlur - Real-time Hand Gesture & Face Tracking (MediaPipe & OpenCV)",
+    "6. Web Portofolio & AI Platform - React 19, Tailwind, Framer Motion, Supabase RAG",
     "Cek selengkapnya di GitHub: https://github.com/Raflyf"
   ],
   certifs: () => [

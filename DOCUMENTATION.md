@@ -621,6 +621,7 @@ Berikut adalah rekam jejak evolusi arsitektural dan riwayat pembaruan sistem sec
 | **10.687.0** | 2026-09-09 | **Standarisasi Format Jam Hero & Perbaikan Flex Spacing Badges**: (1) Format Digital Clock Standar: Memperbaiki format tampilan jam WIB/UTC+7 di `horizon-hero.jsx` menggunakan pemisah titik dua standar digital (`HH:mm:ss`, misal `14:43:05`) alih-alih titik bawaan lokal bahasa (`14.43.05`), serta kalibrasi zona waktu eksplisit `Asia/Jakarta`; (2) Eliminasi Tabrakan Antar-Badge: Mengganti wrapper `space-y-3` menjadi `flex flex-wrap items-center gap-2.5 sm:gap-3`, memberikan jarak horizontal yang konsisten dan rapi antara badge label dan live clock ticker. |
 | **10.688.0** | 2026-09-10 | **Resolusi Menyeluruh Mental Login Admin Dashboard (HTTP 401 Fix & Supabase PATCH Migration)**: (1) Migrasi PostgREST ke HTTP PATCH (`api/admin-otp.js`): Mengganti metode `POST` dengan `PATCH` pada endpoint `admin_auth_config?id=eq.master_auth` di seluruh operasi sesi (`storeSessionToken`, `clearSessionToken`), pelacakan batas percobaan (`recordOtpAttempt`, `clearOtpAttempts`), dan reset lockout/fallback PIN. Ini mengeliminasi kegagalan `null value in column "pin_hash" violates not-null constraint (HTTP 400)` sehingga token sesi tersimpan 100% utuh di Supabase Cloud; (2) Multi-Alias Service Role Environment (`api/dashboard-data.js`): Mendukung alias kunci `SUPABASE_SERVICE_ROLE_KEY \|\| SUPABASE_SERVICE_KEY \|\| SUPABASE_SECRET_KEY`; (3) Resiliensi Transien Replikasi Database (`src/pages/Dashboard.jsx`): Menambahkan replication guard retry 1x (500ms) saat menerima status 401 jika sesi baru saja dibuat (< 5 detik), mengeliminasi tendangan keluar palsu akibat jeda transaksi basis data. |
 | **10.689.0** | 2026-09-11 | **Harmonisasi Kronologi Dokumentasi, Integrasi Sertifikasi Prompt Engineering & Ekspansi Skill Matrix**: (1) Restrukturisasi Menyeluruh `DOCUMENTATION.md`: Menyusun ulang riwayat versi dari v1.0.0 hingga v10.689.0 secara runtut, monoton, dan bebas inversi/gap 90 versi, memulihkan baris terdistorsi `10.465.0`, serta menstandarisasi sub-seksi rilis; (2) Sertifikasi Prompt Engineering: Menambahkan sertifikasi "Prompt Engineering for ChatGPT" dari Vanderbilt University / Coursera ke `src/data.js` dan sinkronisasi metadata terminal; (3) Ekspansi Matriks Keahlian & Marquee: Menambahkan Prompt Engineering, Whisper AI Audio, dan TypeScript ke kategori Machine Learning & NLP serta marquee skill; (4) Verifikasi Build: Build Vite sukses 100% tanpa error. |
+| **10.690.0** | 2026-09-11 | **Penyelarasan Taksonomi Keahlian Developer vs Deskripsi Proyek FreeAiBot**: (1) Isolasi Domain Keahlian Personal: Mengembalikan *Prompt Engineering* secara eksklusif sebagai keahlian inti developer di matriks keahlian (`DEVELOPER_PROFILE_I18N`, `SkillsBento.jsx`, dan konsol `TerminalAI.jsx`), menghapus frasa janggal "mengintegrasikan keahlian Prompt Engineering" dari deskripsi kartu proyek `FreeAiBot (chat-bot)` di `src/data.js`; (2) Refinement Spesifikasi Proyek FreeAiBot: Memperbarui deskripsi ringkas dan detail (ID & EN) agar murni berfokus pada fitur teknis produk (transkripsi suara Whisper, pemrosesan dokumen PDF/Word, memori kontekstual `/salah`, dan failover cascade 4-tier LLM); (3) Pembersihan Kategori & Tech Stack: Menyesuaikan `categoryLabel` menjadi *AI Agent & Multimodal* dan membersihkan item tech stack menjadi instrumen teknologi murni (`TypeScript`, `Vercel Serverless`, `Supabase PostgreSQL`, `WhatsApp Baileys`, `Telegram API`, `Whisper AI`); (4) Sinkronisasi Terminal Lab: Menambahkan Prompt Engineering pada perintah `skills` dan mendaftarkan FreeAiBot pada perintah `projects` konsol terminal interaktif; verifikasi build Vite sukses 100%. |
 
 ---
 
@@ -2873,6 +2874,25 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - Memperbarui daftar *marquee skills* agar menampilkan badge Prompt Engineering dan Whisper AI secara dinamis.
 4. **Verifikasi Build:**
    - Seluruh modul terkompilasi bersih via `npm run build` dalam 2.70 detik tanpa peringatan sintaksis atau regresi aset.
+
+### v10.690.0 — Penyelarasan Taksonomi Keahlian Developer vs Deskripsi Proyek FreeAiBot (2026-09-11)
+
+1. **Pemisahan Tegas Antara Keahlian Developer dan Deskripsi Proyek (`src/data.js`):**
+   - **Koreksi Deskripsi Kartu Proyek FreeAiBot:** Menghilangkan klaim rancu bahwa sistem "mengintegrasikan keahlian Prompt Engineering" pada deskripsi kartu FreeAiBot dwibahasa (ID & EN).
+   - **Fokus Fitur Teknis Produk:** Memperbarui deskripsi kartu FreeAiBot agar murni berfokus pada arsitektur perangkat lunak dan kapabilitas agen otonom: transkripsi audio Whisper, pemrosesan dokumen PDF/Word, manajemen memori percakapan berlanjut dengan koreksi `/salah`, serta rantai failover otomatis 4 provider LLM (xKiro Gateway, Groq, Google Gemini, OpenRouter).
+   - **Normalisasi Kategori & Stack:** Mengubah label kategori proyek dari *AI Agent & Prompt Engineering* menjadi *AI Agent & Multimodal*, serta mengeluarkan *Prompt Engineering* dari daftar `techStack` kartu proyek agar hanya berisi tumpukan teknologi komputasi dan pustaka nyata.
+
+2. **Konsolidasi Prompt Engineering sebagai Keahlian Pengembang:**
+   - Memastikan *Prompt Engineering* tetap ditempatkan secara eksklusif dan proporsional pada domain profil personal pengembang:
+     - `DEVELOPER_PROFILE_I18N`: Tercantum pada `title` ("Software Developer, AI/ML & Prompt Engineer") dan `bio` riset kecerdasan buatan.
+     - `SkillsBento.jsx`: Aktif pada *marquee badge* dan kategori keahlian *Machine Learning, NLP & Prompt Engineering*.
+     - `TerminalAI.jsx`: Terdaftar pada perintah konsol `skills` di bawah rumpun kompetensi AI/ML.
+
+3. **Sinkronisasi Katalog Terminal (`src/components/terminal/TerminalAI.jsx`):**
+   - Menambahkan proyek FreeAiBot ke dalam daftar keluaran perintah konsol `projects` pada Terminal Lab Developer.
+
+4. **Verifikasi Build:**
+   - Kompilasi produksi `npm run build` sukses 100% tanpa error dalam waktu sub-1 detik (< 950ms).
 
 ---
 
