@@ -63,7 +63,7 @@ export default function SkillsBento() {
         <div className="animate-marquee-left flex gap-3 whitespace-nowrap py-1">
           {[...Array(2)].map((_, i) => (
             <React.Fragment key={i}>
-              {["PyTorch Core", "Sentence-Transformers", "IndoBERT & RoBERTa", "NLP Cosine Metrics", "Scikit-Learn ML", "MediaPipe Tasks Vision", "OpenCV Python", "XGBoost & Naive Bayes", "Pandas & NumPy"].map((skill, j) => (
+              {["PyTorch Core", "Prompt Engineering", "Sentence-Transformers", "IndoBERT & RoBERTa", "Whisper AI Audio", "NLP Cosine Metrics", "Scikit-Learn ML", "MediaPipe Tasks Vision", "OpenCV Python", "XGBoost & Naive Bayes", "Pandas & NumPy"].map((skill, j) => (
                 <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-4 py-2 backdrop-blur-xl hover:border-cyan-400/40 transition-colors shadow-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
@@ -86,7 +86,7 @@ export default function SkillsBento() {
         <div className="animate-marquee-right flex gap-3 whitespace-nowrap py-1">
           {[...Array(2)].map((_, i) => (
             <React.Fragment key={i}>
-              {["MikroTik RouterOS v7", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filtering", "Flask-SocketIO", "Supabase Postgres RAG", "JavaScript ES2024", "RESTful APIs Architecture", "Linux & Git Workflow"].map((skill, j) => (
+              {["MikroTik RouterOS v7", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filtering", "Flask-SocketIO", "Supabase Postgres RAG", "TypeScript & Node.js", "JavaScript ES2024", "RESTful APIs Architecture", "Linux & Git Workflow"].map((skill, j) => (
                 <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-4 py-2 backdrop-blur-xl hover:border-emerald-400/40 transition-colors shadow-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
@@ -120,7 +120,7 @@ export default function SkillsBento() {
             {t('skills.catMl')}
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
-            {["Python 3", "PyTorch", "Scikit-Learn", "XGBoost", "Sentence-Transformers", "N-Gram Shingling", "Pandas", "NumPy"].map((tech, i) => (
+            {["Python 3", "PyTorch", "Prompt Engineering", "Sentence-Transformers", "Scikit-Learn", "XGBoost", "N-Gram Shingling", "Pandas", "NumPy"].map((tech, i) => (
               <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-cyan-400/30 hover:text-cyan-200 transition-colors">
                 {tech}
               </motion.span>
@@ -164,7 +164,7 @@ export default function SkillsBento() {
             {t('skills.catFullstack')}
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
-            {["React.js", "Tailwind CSS", "Framer Motion", "Supabase DB", "Node.js API", "Flask API"].map((tech, i) => (
+            {["React.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Supabase DB", "Node.js API", "Flask API"].map((tech, i) => (
               <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-indigo-400/30 hover:text-indigo-200 transition-colors">
                 {tech}
               </motion.span>

@@ -9,12 +9,12 @@ export const DEVELOPER_PROFILE_I18N = {
   id: {
     name: "Rafly Firmansyah",
     handle: "@Raflyf",
-    title: "Software Developer & AI/ML Engineer",
+    title: "Software Developer, AI/ML & Prompt Engineer",
     degree: "Program Sarjana (S1) Informatika",
     institution: "Universitas Bina Sarana Informatika (UBSI), Sukabumi",
     location: "Cianjur / Sukabumi, Indonesia",
     status: "Tersedia untuk proyek & kolaborasi AI/ML",
-    bio: "Mahasiswa Program Sarjana (S1) Informatika di Universitas Bina Sarana Informatika (UBSI) dan Pengembang Perangkat Lunak dengan minat mendalam pada riset kecerdasan buatan (NLP, Machine Learning, dan Computer Vision), arsitektur jaringan komputer MikroTik, serta rekayasa sistem web modern yang beretika privasi.",
+    bio: "Mahasiswa Program Sarjana (S1) Informatika di Universitas Bina Sarana Informatika (UBSI) dan Pengembang Perangkat Lunak dengan keahlian mendalam pada riset kecerdasan buatan (NLP, Machine Learning, Computer Vision, dan Prompt Engineering), arsitektur jaringan komputer MikroTik, serta rekayasa sistem agen AI dan web modern yang beretika privasi.",
     github: "https://github.com/Raflyf",
     email: "raflyfirmansyah02@gmail.com",
     whatsapp: "08991333323",
@@ -24,12 +24,12 @@ export const DEVELOPER_PROFILE_I18N = {
   en: {
     name: "Rafly Firmansyah",
     handle: "@Raflyf",
-    title: "Software Developer & AI/ML Engineer",
+    title: "Software Developer, AI/ML & Prompt Engineer",
     degree: "Informatics Engineering (B.Sc)",
     institution: "Bina Sarana Informatika University (UBSI), Sukabumi",
     location: "Cianjur / Sukabumi, Indonesia",
     status: "Available for projects & AI/ML collaborations",
-    bio: "Informatics undergraduate student at Bina Sarana Informatika University (UBSI) and Software Developer with deep interest in artificial intelligence research (NLP, Machine Learning, and Computer Vision), MikroTik network architecture, and modern privacy-first web systems engineering.",
+    bio: "Informatics undergraduate student at Bina Sarana Informatika University (UBSI) and Software Developer with deep expertise in artificial intelligence research (NLP, Machine Learning, Computer Vision, and Prompt Engineering), MikroTik network architecture, and modern privacy-first AI agent & web systems engineering.",
     github: "https://github.com/Raflyf",
     email: "raflyfirmansyah02@gmail.com",
     whatsapp: "08991333323",
@@ -79,6 +79,26 @@ export const PROJECTS_DATA_I18N = {
       githubUrl: "https://github.com/Raflyf/Spam-Email",
       demoUrl: null,
       stars: 3
+    },
+    {
+      id: "chat-bot",
+      title: "FreeAiBot (chat-bot)",
+      category: "ai-ml",
+      categoryLabel: "AI Agent & Prompt Engineering",
+      badge: "WhatsApp & Telegram Agent",
+      description: "Asisten AI multimodal cerdas 24/7 di WhatsApp dan Telegram. Mengintegrasikan keahlian Prompt Engineering tingkat lanjut, transkripsi suara Whisper, pemrosesan dokumen PDF/Word, dan rantai failover 4 provider LLM.",
+      longDescription: "FreeAiBot adalah agen kecerdasan buatan multimodal mandiri yang dirancang untuk beroperasi 24/7 pada platform pesan instan WhatsApp (via Baileys) dan Telegram Bot API dengan backend Vercel Serverless dan Supabase PostgreSQL. Proyek ini mendemonstrasikan keahlian Prompt Engineering sistemik, pengelolaan memori percakapan berlanjut dengan koreksi /salah, pipeline ekspor dataset prompt-completion (JSONL/CSV) untuk fine-tuning LLM, transkripsi suara OpenAI Whisper (~500ms), serta rotasi failover multi-provider (xKiro Gateway, Groq, Google Gemini, OpenRouter).",
+      keyFeatures: [
+        "Penerapan Advanced Prompt Engineering & ekspor dataset JSONL/CSV untuk fine-tuning LLM",
+        "Multimodal menyeluruh: transkripsi audio Whisper, analisis dokumen PDF/Word, dan pemahaman gambar",
+        "Rantai failover otomatis 4 provider LLM (xKiro, Groq, Google Gemini, OpenRouter)",
+        "Memori percakapan berkelanjutan dengan dukungan perintah koreksi interaktif /salah",
+        "Arsitektur serverless 24/7 di Vercel terhubung ke Supabase PostgreSQL untuk telemetri logging"
+      ],
+      techStack: ["TypeScript", "Prompt Engineering", "Vercel Serverless", "Supabase PostgreSQL", "WhatsApp Baileys", "Telegram API", "Whisper AI"],
+      githubUrl: "https://github.com/Raflyf/chat-bot",
+      demoUrl: "https://free-chatbot-ai.vercel.app",
+      stars: 1
     },
     {
       id: "laser-pointer-ppt",
@@ -179,6 +199,26 @@ export const PROJECTS_DATA_I18N = {
       githubUrl: "https://github.com/Raflyf/Spam-Email",
       demoUrl: null,
       stars: 3
+    },
+    {
+      id: "chat-bot",
+      title: "FreeAiBot (chat-bot)",
+      category: "ai-ml",
+      categoryLabel: "AI Agent & Prompt Engineering",
+      badge: "WhatsApp & Telegram Agent",
+      description: "Intelligent 24/7 multimodal AI assistant operating on WhatsApp and Telegram. Engineered with advanced Prompt Engineering, Whisper voice transcription, document parsing, and a 4-tier LLM provider failover cascade.",
+      longDescription: "FreeAiBot is a self-hosted multimodal conversational AI agent engineered for 24/7 reliability across WhatsApp (via Baileys) and Telegram Bot API, powered by Vercel Serverless and Supabase PostgreSQL. The project showcases systematic Prompt Engineering expertise, continuous conversational memory with interactive /salah correction commands, prompt-completion dataset export pipelines (JSONL/CSV) for LLM fine-tuning, ultra-fast Whisper voice transcription (~500ms), and resilient multi-provider failover routing (xKiro Gateway, Groq, Google Gemini, OpenRouter).",
+      keyFeatures: [
+        "Advanced Prompt Engineering implementation & JSONL/CSV dataset curation for LLM fine-tuning",
+        "Comprehensive multimodality: Whisper voice transcription, PDF/Word document parsing, and vision",
+        "Intelligent 4-tier LLM provider failover cascade (xKiro Gateway, Groq, Gemini, OpenRouter)",
+        "Continuous conversational memory with real-time /salah correction command support",
+        "24/7 Serverless architecture on Vercel backed by Supabase PostgreSQL for telemetry & audit logs"
+      ],
+      techStack: ["TypeScript", "Prompt Engineering", "Vercel Serverless", "Supabase PostgreSQL", "WhatsApp Baileys", "Telegram API", "Whisper AI"],
+      githubUrl: "https://github.com/Raflyf/chat-bot",
+      demoUrl: "https://free-chatbot-ai.vercel.app",
+      stars: 1
     },
     {
       id: "laser-pointer-ppt",
