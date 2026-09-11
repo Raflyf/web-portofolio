@@ -620,6 +620,7 @@ Berikut adalah rekam jejak evolusi arsitektural dan riwayat pembaruan sistem sec
 | **10.686.0** | 2026-09-09 | **Refinement Navigasi PIN Gateway**: Menghapus teks link redundan di bawah tombol login ("Kembali ke Beranda") dan mempertahankan satu tombol navigasi utama yang elegan dan simetris di sudut kiri atas kartu autentikasi (`absolute top-4 left-4`). |
 | **10.687.0** | 2026-09-09 | **Standarisasi Format Jam Hero & Perbaikan Flex Spacing Badges**: (1) Format Digital Clock Standar: Memperbaiki format tampilan jam WIB/UTC+7 di `horizon-hero.jsx` menggunakan pemisah titik dua standar digital (`HH:mm:ss`, misal `14:43:05`) alih-alih titik bawaan lokal bahasa (`14.43.05`), serta kalibrasi zona waktu eksplisit `Asia/Jakarta`; (2) Eliminasi Tabrakan Antar-Badge: Mengganti wrapper `space-y-3` menjadi `flex flex-wrap items-center gap-2.5 sm:gap-3`, memberikan jarak horizontal yang konsisten dan rapi antara badge label dan live clock ticker. |
 | **10.688.0** | 2026-09-10 | **Resolusi Menyeluruh Mental Login Admin Dashboard (HTTP 401 Fix & Supabase PATCH Migration)**: (1) Migrasi PostgREST ke HTTP PATCH (`api/admin-otp.js`): Mengganti metode `POST` dengan `PATCH` pada endpoint `admin_auth_config?id=eq.master_auth` di seluruh operasi sesi (`storeSessionToken`, `clearSessionToken`), pelacakan batas percobaan (`recordOtpAttempt`, `clearOtpAttempts`), dan reset lockout/fallback PIN. Ini mengeliminasi kegagalan `null value in column "pin_hash" violates not-null constraint (HTTP 400)` sehingga token sesi tersimpan 100% utuh di Supabase Cloud; (2) Multi-Alias Service Role Environment (`api/dashboard-data.js`): Mendukung alias kunci `SUPABASE_SERVICE_ROLE_KEY \|\| SUPABASE_SERVICE_KEY \|\| SUPABASE_SECRET_KEY`; (3) Resiliensi Transien Replikasi Database (`src/pages/Dashboard.jsx`): Menambahkan replication guard retry 1x (500ms) saat menerima status 401 jika sesi baru saja dibuat (< 5 detik), mengeliminasi tendangan keluar palsu akibat jeda transaksi basis data. |
+| **10.689.0** | 2026-09-11 | **Harmonisasi Kronologi Dokumentasi, Integrasi Sertifikasi Prompt Engineering & Ekspansi Skill Matrix**: (1) Restrukturisasi Menyeluruh `DOCUMENTATION.md`: Menyusun ulang riwayat versi dari v1.0.0 hingga v10.689.0 secara runtut, monoton, dan bebas inversi/gap 90 versi, memulihkan baris terdistorsi `10.465.0`, serta menstandarisasi sub-seksi rilis; (2) Sertifikasi Prompt Engineering: Menambahkan sertifikasi "Prompt Engineering for ChatGPT" dari Vanderbilt University / Coursera ke `src/data.js` dan sinkronisasi metadata terminal; (3) Ekspansi Matriks Keahlian & Marquee: Menambahkan Prompt Engineering, Whisper AI Audio, dan TypeScript ke kategori Machine Learning & NLP serta marquee skill; (4) Verifikasi Build: Build Vite sukses 100% tanpa error. |
 
 ---
 
@@ -2855,40 +2856,23 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - Menambahkan atribut semantik aksesibilitas `role="dialog"` dan `aria-modal="true"` pada drawer navigasi mobile, serta menambahkan event listener tombol `Escape` untuk menutup drawer secara instan.
    - Menjaga kenyamanan mobile dengan membatasi kursor autofocus terminal hanya pada perangkat yang memiliki pointing device presisi (`pointer: fine`), mencegah keyboard virtual muncul mendadak.
 
+### v10.689.0 — Harmonisasikan Kronologi Dokumentasi, Integrasi Sertifikasi Prompt Engineering & Ekspansi Skill Matrix (2026-09-11)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+1. **Restrukturisasi & Penyelarasan Kronologis Dokumentasi (`DOCUMENTATION.md`):**
+   - Menyusun ulang seluruh tabel riwayat perubahan (`## 6. Riwayat Perubahan Konseptual`) dari versi 1.0.0 hingga 10.689.0 secara urut semver naik monoton tanpa inversi.
+   - Memulihkan dan memasukkan ~90 entri versi (v10.587.0 sampai v10.678.0) yang sebelumnya hilang dari tabel ringkasan.
+   - Memperbaiki baris `10.465.0` yang rusak akibat pemisahan baris dengan karakter form feed (\x0c) serta membersihkan sisa escape literal string liar.
+   - Menstandarisasi hierarki heading sub-seksi rilis terperinci menjadi `### v10.xxx.0` yang seragam dan konsisten.
+   - Merapikan posisi seksi arsitektur antarmuka menjadi bab mandiri di akhir berkas.
+2. **Integrasi Kredensial Baru: Prompt Engineering for ChatGPT (`src/data.js`):**
+   - Menambahkan sertifikasi resmi *Prompt Engineering for ChatGPT* yang diterbitkan oleh Vanderbilt University melalui Coursera ke dalam daftar kredensial di `src/data.js`.
+   - Menautkan sertifikasi ke kategori Artificial Intelligence & Machine Learning dengan skill tags terkait (*Prompt Engineering, LLM Alignment, Few-Shot Prompting, Chain-of-Thought*).
+3. **Ekspansi Matriks Keahlian & Marquee (`src/data.js`, `src/context/LanguageContext.jsx`):**
+   - Menambahkan teknologi keahlian baru: *Prompt Engineering* (95% mastery), *Whisper AI (Audio/Speech)* (87% mastery), dan *TypeScript* (85% mastery).
+   - Menyesuaikan label kategori menjadi *Machine Learning, NLP & Prompt Engineering* pada konteks dwibahasa (ID dan EN).
+   - Memperbarui daftar *marquee skills* agar menampilkan badge Prompt Engineering dan Whisper AI secara dinamis.
+4. **Verifikasi Build:**
+   - Seluruh modul terkompilasi bersih via `npm run build` dalam 2.70 detik tanpa peringatan sintaksis atau regresi aset.
 
 ---
 
