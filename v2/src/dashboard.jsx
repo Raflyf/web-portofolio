@@ -111,7 +111,7 @@ function RangeTabs({ value, onChange, options }) {
         <button
           key={o.value} type="button" role="tab" aria-selected={value === o.value}
           onClick={() => onChange(o.value)}
-          className="chip !py-1.5 text-[11px] font-semibold"
+          className="chip py-1.5! text-[11px] font-semibold"
           style={value === o.value ? { borderColor: 'var(--accent)', color: 'var(--accent-ink)' } : undefined}
         >
           {o.label}
@@ -434,7 +434,7 @@ export default function Dashboard() {
     return (
       <main className="min-h-[100dvh] flex items-center justify-center px-4 relative z-10">
         <Reveal className="glass-strong w-full max-w-sm p-8 space-y-5">
-          <span className="inset w-12 h-12 inline-flex items-center justify-center !rounded-2xl">
+          <span className="inset w-12 h-12 inline-flex items-center justify-center rounded-2xl!">
             <Lock className="w-5 h-5 accent" aria-hidden="true" />
           </span>
           <div>
@@ -491,7 +491,7 @@ export default function Dashboard() {
               </>
             )}
             {otpMsg && <p role="status" className="text-xs" style={{ color: 'var(--muted)' }}>{otpMsg}</p>}
-            <button type="button" onClick={() => setForgotOpen(false)} className="btn-ghost w-full !py-2.5 text-sm">Tutup</button>
+            <button type="button" onClick={() => setForgotOpen(false)} className="btn-ghost w-full py-2.5! text-sm">Tutup</button>
           </form>
         </dialog>
       </main>
@@ -508,9 +508,9 @@ export default function Dashboard() {
   return (
     <main className="w-full relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-20 space-y-6">
       {/* header */}
-      <Reveal className="nav-shell !rounded-2xl px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+      <Reveal className="nav-shell rounded-2xl! px-5 py-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Link to="/" className="inset w-9 h-9 !rounded-xl inline-flex items-center justify-center" aria-label="Kembali ke beranda">
+          <Link to="/" className="inset w-9 h-9 rounded-xl! inline-flex items-center justify-center" aria-label="Kembali ke beranda">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
@@ -530,16 +530,16 @@ export default function Dashboard() {
             <Globe className="w-3.5 h-3.5 accent" aria-hidden="true" />
             {language === 'id' ? 'ID / EN' : 'EN / ID'}
           </button>
-          <button type="button" onClick={themeToggle} className="inset w-9 h-9 !rounded-xl inline-flex items-center justify-center" aria-label={t('nav.themeToggle')}>
+          <button type="button" onClick={themeToggle} className="inset w-9 h-9 rounded-xl! inline-flex items-center justify-center" aria-label={t('nav.themeToggle')}>
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <button type="button" onClick={() => { setChangeOpen(true); setChangeMsg(''); }} className="inset w-9 h-9 !rounded-xl inline-flex items-center justify-center" aria-label="Ubah PIN">
+          <button type="button" onClick={() => { setChangeOpen(true); setChangeMsg(''); }} className="inset w-9 h-9 rounded-xl! inline-flex items-center justify-center" aria-label="Ubah PIN">
             <KeyRound className="w-4 h-4" />
           </button>
-          <button type="button" onClick={fetchData} className="inset w-9 h-9 !rounded-xl inline-flex items-center justify-center" aria-label="Muat ulang data">
+          <button type="button" onClick={fetchData} className="inset w-9 h-9 rounded-xl! inline-flex items-center justify-center" aria-label="Muat ulang data">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <button type="button" onClick={logout} className="inset w-9 h-9 !rounded-xl inline-flex items-center justify-center" aria-label="Keluar">
+          <button type="button" onClick={logout} className="inset w-9 h-9 rounded-xl! inline-flex items-center justify-center" aria-label="Keluar">
             <LogOut className="w-4 h-4" />
           </button>
         </div>
@@ -623,15 +623,15 @@ export default function Dashboard() {
           <div className="flex flex-wrap gap-2 items-center">
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--faint)' }} aria-hidden="true" />
-              <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} className="field !py-2 !pl-9 !w-52" placeholder="Cari…" aria-label="Cari aktivitas" />
+              <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} className="field py-2! pl-9! w-52!" placeholder="Cari…" aria-label="Cari aktivitas" />
             </div>
-            <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }} className="field !py-2 !w-auto text-xs" aria-label="Filter tipe event">
+            <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }} className="field py-2! w-auto! text-xs" aria-label="Filter tipe event">
               {typeOptions.map((o) => <option key={o} value={o}>{o === 'all' ? 'Semua tipe' : o}</option>)}
             </select>
-            <button type="button" onClick={exportCsv} className="btn-ghost !py-2 !px-4 text-xs" disabled={!events.length}>
+            <button type="button" onClick={exportCsv} className="btn-ghost py-2! px-4! text-xs" disabled={!events.length}>
               <Download className="w-3.5 h-3.5" aria-hidden="true" />CSV
             </button>
-            <button type="button" onClick={exportJson} className="btn-ghost !py-2 !px-4 text-xs" disabled={!events.length}>
+            <button type="button" onClick={exportJson} className="btn-ghost py-2! px-4! text-xs" disabled={!events.length}>
               <Download className="w-3.5 h-3.5" aria-hidden="true" />JSON
             </button>
           </div>
@@ -679,7 +679,7 @@ export default function Dashboard() {
             <h2 className="font-bold text-sm">Memori RAG ({memRows.length})</h2>
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--faint)' }} aria-hidden="true" />
-              <input value={memQ} onChange={(e) => { setMemQ(e.target.value); setMemPage(1); }} className="field !py-2 !pl-9 !w-52" placeholder="Cari memori…" aria-label="Cari memori" />
+              <input value={memQ} onChange={(e) => { setMemQ(e.target.value); setMemPage(1); }} className="field py-2! pl-9! w-52!" placeholder="Cari memori…" aria-label="Cari memori" />
             </div>
           </div>
           <ul className="space-y-3">
@@ -702,7 +702,7 @@ export default function Dashboard() {
         <div className="lg:col-span-5 space-y-4">
           <div className="glass p-6">
             <h2 className="font-bold text-sm mb-3">Observabilitas</h2>
-            <button type="button" onClick={sendPing} className="btn-ghost w-full !py-2.5 text-sm">Kirim ping telemetri</button>
+            <button type="button" onClick={sendPing} className="btn-ghost w-full py-2.5! text-sm">Kirim ping telemetri</button>
             {ping && <p role="status" className="text-xs mt-2.5 flex items-center gap-1.5" style={{ color: 'var(--ok)' }}><CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />{ping}</p>}
           </div>
           <div className="glass p-6 text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>
@@ -732,7 +732,7 @@ export default function Dashboard() {
               setTimeout(() => setChangeOpen(false), 1400);
             } catch { setChangeMsg('Gagal mengubah PIN.'); }
           }}>Simpan PIN baru</button>
-          <button type="button" onClick={() => setChangeOpen(false)} className="btn-ghost w-full !py-2.5 text-sm">Batal</button>
+          <button type="button" onClick={() => setChangeOpen(false)} className="btn-ghost w-full py-2.5! text-sm">Batal</button>
         </form>
       </dialog>
     </main>
