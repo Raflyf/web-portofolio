@@ -108,13 +108,13 @@ function Hero() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className="text-[10px] font-mono chip">0{slide + 1} / 0{deck.length}</span>
-                  <button type="button" onClick={() => setPaused((p) => !p)} className="inset w-7 h-7 inline-flex items-center justify-center !rounded-lg" title={paused ? t('hero.resumeAuto') : t('hero.pauseAuto')} aria-label={paused ? t('hero.resumeAuto') : t('hero.pauseAuto')} aria-pressed={paused}>
+                  <button type="button" onClick={() => setPaused((p) => !p)} className="inset w-7 h-7 inline-flex items-center justify-center rounded-lg!" title={paused ? t('hero.resumeAuto') : t('hero.pauseAuto')} aria-label={paused ? t('hero.resumeAuto') : t('hero.pauseAuto')} aria-pressed={paused}>
                     {paused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
                   </button>
-                  <button type="button" onClick={() => setSlide((p) => (p === 0 ? deck.length - 1 : p - 1))} className="inset w-7 h-7 inline-flex items-center justify-center !rounded-lg" aria-label={t('hero.prevProject')}>
+                  <button type="button" onClick={() => setSlide((p) => (p === 0 ? deck.length - 1 : p - 1))} className="inset w-7 h-7 inline-flex items-center justify-center rounded-lg!" aria-label={t('hero.prevProject')}>
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <button type="button" onClick={() => setSlide((p) => (p + 1) % deck.length)} className="inset w-7 h-7 inline-flex items-center justify-center !rounded-lg" aria-label={t('hero.nextProject')}>
+                  <button type="button" onClick={() => setSlide((p) => (p + 1) % deck.length)} className="inset w-7 h-7 inline-flex items-center justify-center rounded-lg!" aria-label={t('hero.nextProject')}>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -160,7 +160,7 @@ function About() {
       <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-6 max-w-5xl mx-auto">
         {pillars.map((p) => (
           <div key={p.title} className="reveal glass card-lift p-6 flex gap-4">
-            <span className="inset w-11 h-11 shrink-0 inline-flex items-center justify-center !rounded-xl">
+            <span className="inset w-11 h-11 shrink-0 inline-flex items-center justify-center rounded-xl!">
               <p.icon className="w-5 h-5 accent" aria-hidden="true" />
             </span>
             <span>
@@ -202,14 +202,14 @@ function Skills() {
         {SKILL_CATS.map((c) => (
           <div key={c.key} className={`reveal glass card-lift p-7 ${c.span}`}>
             <h3 className="text-lg font-bold mb-5 flex items-center gap-3">
-              <span className="inset w-10 h-10 inline-flex items-center justify-center !rounded-xl">
+              <span className="inset w-10 h-10 inline-flex items-center justify-center rounded-xl!">
                 <c.icon className="w-5 h-5 accent" aria-hidden="true" />
               </span>
               {t(`skills.${c.key}`)}
             </h3>
             <div className="flex flex-wrap gap-2">
               {c.items.map((tech) => (
-                <span key={tech} className="chip !rounded-[10px] text-xs sm:text-sm" style={{ color: 'var(--muted)' }}>{tech}</span>
+                <span key={tech} className="chip rounded-[10px]! text-xs sm:text-sm" style={{ color: 'var(--muted)' }}>{tech}</span>
               ))}
             </div>
           </div>
@@ -299,7 +299,7 @@ function Projects() {
           <button
             key={tab.id} type="button" role="tab" aria-selected={filter === tab.id}
             onClick={() => setFilter(tab.id)}
-            className={`chip !px-5 !py-2 text-xs sm:text-sm font-medium ${filter === tab.id ? 'accent' : ''}`}
+            className={`chip px-5! py-2! text-xs sm:text-sm font-medium ${filter === tab.id ? 'accent' : ''}`}
             style={filter === tab.id ? { borderColor: 'var(--accent)' } : undefined}
           >
             {tab.label}
@@ -331,21 +331,21 @@ function Projects() {
               </ul>
               <div className="flex flex-wrap gap-2">
                 {(featured.techStack || []).map((tech) => (
-                  <span key={tech} className="chip !rounded-lg text-xs" style={{ color: 'var(--muted)' }}>{tech}</span>
+                  <span key={tech} className="chip rounded-lg! text-xs" style={{ color: 'var(--muted)' }}>{tech}</span>
                 ))}
               </div>
               <div className="pt-2">
-                <a href={featured.githubUrl} target="_blank" rel="noopener noreferrer" onClick={() => telemetry.logEvent('link_click', 'github_openplagiarismchecker', 'Kunjungi Repositori: OpenPlagiarismChecker')} className="btn-ghost !py-2.5 !px-5 text-sm">
+                <a href={featured.githubUrl} target="_blank" rel="noopener noreferrer" onClick={() => telemetry.logEvent('link_click', 'github_openplagiarismchecker', 'Kunjungi Repositori: OpenPlagiarismChecker')} className="btn-ghost py-2.5! px-5! text-sm">
                   <GithubIcon />
                   {t('projects.viewRepo')}
                 </a>
               </div>
             </div>
             <div className="lg:col-span-4 inset p-5 space-y-3">
-              <div className="eyebrow !text-[11px]">{t('projects.indexedDbs')}</div>
+              <div className="eyebrow text-[11px]!">{t('projects.indexedDbs')}</div>
               <div className="grid grid-cols-2 gap-2 text-xs font-mono" style={{ color: 'var(--muted)' }}>
                 {['GARUDA', 'OneSearch', 'Neliti', 'BASE (Bielefeld)', 'OpenAlex', 'Semantic Scholar'].map((db) => (
-                  <span key={db} className="chip !rounded-lg justify-center">{db}</span>
+                  <span key={db} className="chip rounded-lg! justify-center">{db}</span>
                 ))}
               </div>
             </div>
@@ -371,7 +371,7 @@ function Projects() {
               <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>{p.description}</p>
               <div className="flex flex-wrap gap-1.5">
                 {(p.techStack || []).map((tech) => (
-                  <span key={tech} className="chip !rounded-md text-[11px]" style={{ color: 'var(--muted)' }}>{tech}</span>
+                  <span key={tech} className="chip rounded-md! text-[11px]" style={{ color: 'var(--muted)' }}>{tech}</span>
                 ))}
               </div>
             </div>
@@ -438,9 +438,9 @@ function Certificates() {
     <section id="certificates" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       <SectionHead badge={t('certificates.badge')} title={t('certificates.title')} subtitle={t('certificates.subtitle')} />
       <Reveal className="flex flex-wrap justify-center gap-2 mb-10" role="tablist" aria-label={t('certificates.title')}>
-        <button type="button" role="tab" aria-selected={filter === 'all'} onClick={() => setFilter('all')} className="chip !px-5 !py-2 text-xs sm:text-sm font-medium" style={filter === 'all' ? { borderColor: 'var(--accent)' } : undefined}>{t('certificates.tabAll')}</button>
+        <button type="button" role="tab" aria-selected={filter === 'all'} onClick={() => setFilter('all')} className="chip px-5! py-2! text-xs sm:text-sm font-medium" style={filter === 'all' ? { borderColor: 'var(--accent)' } : undefined}>{t('certificates.tabAll')}</button>
         {cats.map(([id, label]) => (
-          <button key={id} type="button" role="tab" aria-selected={filter === id} onClick={() => setFilter(id)} className="chip !px-5 !py-2 text-xs sm:text-sm font-medium" style={filter === id ? { borderColor: 'var(--accent)' } : undefined}>
+          <button key={id} type="button" role="tab" aria-selected={filter === id} onClick={() => setFilter(id)} className="chip px-5! py-2! text-xs sm:text-sm font-medium" style={filter === id ? { borderColor: 'var(--accent)' } : undefined}>
             {labelFor(id) || label}
           </button>
         ))}
@@ -448,7 +448,7 @@ function Certificates() {
       <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {list.map((c) => (
           <article key={c.id} className="reveal glass card-lift p-6 flex flex-col gap-3">
-            <span className="inset w-10 h-10 inline-flex items-center justify-center !rounded-xl">
+            <span className="inset w-10 h-10 inline-flex items-center justify-center rounded-xl!">
               <Award className="w-5 h-5 accent" aria-hidden="true" />
             </span>
             <h3 className="font-bold leading-snug">{c.title}</h3>
@@ -467,17 +467,17 @@ function Certificates() {
       <dialog ref={dialogRef} onClose={close} aria-labelledby="v2-cert-title" className="glass-strong p-0 w-[min(92vw,40rem)]" style={{ background: 'var(--surface-strong)', color: 'var(--ink)' }}>
         {active && (
           <div className="p-7 space-y-4">
-            <p className="eyebrow !text-[11px]">{t('certificates.previewTitle')}</p>
+            <p className="eyebrow text-[11px]!">{t('certificates.previewTitle')}</p>
             <h3 id="v2-cert-title" className="text-xl font-bold">{active.title}</h3>
             <p className="text-sm" style={{ color: 'var(--muted)' }}>{active.issuer}{active.date ? ` — ${active.date}` : ''}</p>
             {active.pdfUrl && (
-              <a href={active.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost !py-2.5 !px-5 text-sm">
+              <a href={active.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost py-2.5! px-5! text-sm">
                 <FileText className="w-4 h-4" aria-hidden="true" />
                 {t('certificates.viewPdf')}
               </a>
             )}
             <div>
-              <button type="button" onClick={close} className="btn-primary !py-2.5 !px-5 text-sm">{t('certificates.close')}</button>
+              <button type="button" onClick={close} className="btn-primary py-2.5! px-5! text-sm">{t('certificates.close')}</button>
             </div>
           </div>
         )}
@@ -501,7 +501,7 @@ function Timeline() {
             const edu = item.type === 'education';
             return (
               <Reveal key={`${item.title}-${i}`} className={`relative sm:grid sm:grid-cols-2 sm:gap-10 ${left ? '' : ''}`}>
-                <span className="absolute left-8 sm:left-1/2 top-1 -translate-x-1/2 inset w-9 h-9 !rounded-full inline-flex items-center justify-center" aria-hidden="true" style={{ background: 'var(--bg)' }}>
+                <span className="absolute left-8 sm:left-1/2 top-1 -translate-x-1/2 inset w-9 h-9 rounded-full! inline-flex items-center justify-center" aria-hidden="true" style={{ background: 'var(--bg)' }}>
                   {edu ? <GraduationCap className="w-4 h-4 accent" /> : <Briefcase className="w-4 h-4 accent" />}
                 </span>
                 <div className={`glass card-lift p-6 ml-8 sm:ml-0 ${left ? 'sm:col-start-1 sm:text-right' : 'sm:col-start-2'}`}>
@@ -605,22 +605,22 @@ function Contact() {
         <RevealGroup className="lg:col-span-5 space-y-4">
           <div className="reveal glass card-lift p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="inset w-10 h-10 inline-flex items-center justify-center !rounded-xl">
+              <span className="inset w-10 h-10 inline-flex items-center justify-center rounded-xl!">
                 <Mail className="w-5 h-5 accent" aria-hidden="true" />
               </span>
               <span className="chip text-[10px] font-mono uppercase">{language === 'id' ? 'Respon Cepat' : 'Fast Response'}</span>
             </div>
             <div>
-              <span className="eyebrow !text-[11px]">{t('contact.emailDirect')}</span>
+              <span className="eyebrow text-[11px]!">{t('contact.emailDirect')}</span>
               <p className="text-sm sm:text-base font-bold font-mono mt-1 break-all">{DEVELOPER_PROFILE.email}</p>
             </div>
-            <button type="button" onClick={copyEmail} className="btn-ghost w-full !py-2.5 text-xs">
+            <button type="button" onClick={copyEmail} className="btn-ghost w-full py-2.5! text-xs">
               {copied ? <><Check className="w-3.5 h-3.5" aria-hidden="true" /><span>{language === 'id' ? 'Tersalin ke Clipboard!' : 'Copied to Clipboard!'}</span></> : <><Copy className="w-3.5 h-3.5" aria-hidden="true" /><span>{t('contact.copyEmail')}</span></>}
             </button>
           </div>
           <a href={DEVELOPER_PROFILE.whatsappUrl} target="_blank" rel="noopener noreferrer" onClick={() => telemetry.logEvent('link_click', 'whatsapp', 'Klik Tautan Kontak: WhatsApp')} className="reveal glass card-lift p-5 flex items-center justify-between gap-3">
             <span>
-              <span className="eyebrow !text-[11px]">WhatsApp</span>
+              <span className="eyebrow text-[11px]!">WhatsApp</span>
               <span className="block font-bold font-mono mt-1">{DEVELOPER_PROFILE.whatsapp}</span>
             </span>
             <ArrowUpRight className="w-5 h-5 accent shrink-0" aria-hidden="true" />
@@ -686,10 +686,10 @@ export function Footer() {
           </span>
         </div>
         <div className="flex items-center gap-2.5">
-          <a href="https://github.com/Raflyf" target="_blank" rel="noopener noreferrer" aria-label="GitHub" onClick={() => telemetry.logEvent('link_click', 'github', 'Klik Tautan Footer: GitHub')} className="inset w-9 h-9 !rounded-xl inline-flex items-center justify-center hover:border-[var(--accent)]">
+          <a href="https://github.com/Raflyf" target="_blank" rel="noopener noreferrer" aria-label="GitHub" onClick={() => telemetry.logEvent('link_click', 'github', 'Klik Tautan Footer: GitHub')} className="inset w-9 h-9 rounded-xl! inline-flex items-center justify-center hover:border-[var(--accent)]">
             <GithubIcon />
           </a>
-          <a href={`mailto:${DEVELOPER_PROFILE.email}`} aria-label="Email" onClick={() => telemetry.logEvent('link_click', 'email', 'Klik Tautan Footer: Email')} className="inset w-9 h-9 !rounded-xl inline-flex items-center justify-center hover:border-[var(--accent)]">
+          <a href={`mailto:${DEVELOPER_PROFILE.email}`} aria-label="Email" onClick={() => telemetry.logEvent('link_click', 'email', 'Klik Tautan Footer: Email')} className="inset w-9 h-9 rounded-xl! inline-flex items-center justify-center hover:border-[var(--accent)]">
             <Mail className="w-4 h-4" />
           </a>
         </div>

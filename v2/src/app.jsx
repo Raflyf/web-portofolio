@@ -98,15 +98,15 @@ function Navbar() {
             <span style={{ opacity: 0.35 }}>/</span>
             <span className={language === 'en' ? 'accent' : undefined} style={language !== 'en' ? { opacity: 0.55 } : undefined}>EN</span>
           </button>
-          <button type="button" onClick={theme} className="inset w-9 h-9 !rounded-full inline-flex items-center justify-center" aria-label={t('nav.themeToggle')}>
+          <button type="button" onClick={theme} className="inset w-9 h-9 rounded-full! inline-flex items-center justify-center" aria-label={t('nav.themeToggle')}>
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <Link to="/dashboard" className="chip !py-2 !px-4 text-sm font-semibold" style={{ borderColor: 'var(--ok)', color: 'var(--ok)' }}>
+          <Link to="/dashboard" className="chip py-2! px-4! text-sm font-semibold" style={{ borderColor: 'var(--ok)', color: 'var(--ok)' }}>
             <Shield className="w-4 h-4" aria-hidden="true" />
             {t('nav.dashboard')}
           </Link>
         </div>
-        <button type="button" onClick={() => setOpen((o) => !o)} className="lg:hidden inset w-9 h-9 !rounded-full inline-flex items-center justify-center" aria-label="Menu Navigasi" aria-expanded={open}>
+        <button type="button" onClick={() => setOpen((o) => !o)} className="lg:hidden inset w-9 h-9 rounded-full! inline-flex items-center justify-center" aria-label="Menu Navigasi" aria-expanded={open}>
           {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
@@ -118,10 +118,10 @@ function Navbar() {
             </a>
           ))}
           <div className="flex gap-2 px-1 pt-2">
-            <button type="button" onClick={toggleLanguage} className="chip flex-1 justify-center !py-2.5 text-xs font-bold">
+            <button type="button" onClick={toggleLanguage} className="chip flex-1 justify-center py-2.5! text-xs font-bold">
               {language === 'id' ? 'ID → EN' : 'EN → ID'}
             </button>
-            <button type="button" onClick={theme} className="chip flex-1 justify-center !py-2.5 text-xs font-bold">
+            <button type="button" onClick={theme} className="chip flex-1 justify-center py-2.5! text-xs font-bold">
               {isDark ? t('nav.darkMode') : t('nav.lightMode')}
             </button>
           </div>
@@ -175,7 +175,7 @@ export default function App() {
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="inset fixed bottom-6 right-6 z-50 w-11 h-11 !rounded-full inline-flex items-center justify-center"
+          className="inset fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full! inline-flex items-center justify-center"
           aria-label={t('nav.backToTop')}
           title={t('nav.backToTop')}
         >
