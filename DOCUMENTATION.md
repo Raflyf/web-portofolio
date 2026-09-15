@@ -2909,3 +2909,28 @@ Pada 9 September 2026, sempat dilakukan perancangan dan evaluasi eksperimental a
    - Seluruh data profil, riset skripsi, sertifikasi BNSP/MikroTik/Cisco, dan integrasi backend Supabase RLS tetap utuh dan beroperasi normal.
 
 ---
+
+## 9. Rebuild V2 Dari Nol (16 September 2026) — Liquid Glass Profesional
+
+### 9.1 Keputusan Baru Pengguna (Menggantikan Retensi §8)
+Pengguna meminta perombakan tema/UI agar tidak terlihat AI slop, ringan, dan cepat, dengan syarat: urutan layout dan isi konten tidak diubah sama sekali. Atas permintaan eksplisit ini, V2 dibangun ulang **dari 0 di folder terisolasi `v2/`** (bukan `src/v2/` seperti eksperimen lama yang dibatalkan). V1 tidak disentuh: status `git status` bersih, tidak ada konflik, duplikat, atau penumpukan kode.
+
+### 9.2 Arsitektur V2
+- **Satu stylesheet:** `v2/src/styles.css` (28,9 KB, gzip 6,7 KB). Satu aksen cyan terkunci, netral zinc/slate, tanpa gradien ungu, tanpa outer-glow neon, tanpa gradient-text, radius konsisten (kartu 16px, kontrol pill).
+- **Nol dependensi animasi:** reveal memakai IntersectionObserver + CSS (`v2/src/reveal.jsx`); tidak ada framer-motion/lenis di bundle v2. Smooth scroll via CSS + `scroll-margin`.
+- **Konten identik:** seluruh string lewat `src/data.js` dan `src/context/LanguageContext.jsx` yang sama (impor, bukan salinan). Urutan seksi sama: hero, about, skills, projects, certificates, timeline, lab, contact, footer. ID anchor sama (`#hero` … `#contact`).
+- **Satu marquee** (skills), ritme 42s. Kanvas ambient satu-hue (~36 partikel, DPR ≤1,25, pause saat tab hidden).
+- **Aksesibilitas:** `prefers-reduced-motion` dan `prefers-reduced-transparency` dihormati, fokus `:focus-visible` 2px, dialog memakai `<dialog>` native, target sentuh ≥24px.
+- **Dashboard v2** (`v2/src/dashboard.jsx`): alur PIN/OTP/sesi sama persis (kunci sesi `dash_admin_auth_session` dipakai bersama V1), KPI dan kategori metrik sama, grafik digambar SVG murni — `chart.js`/`react-chartjs-2` tidak masuk bundle dashboard (32 KB vs ratusan KB).
+- **Terminal Lab** dipakai ulang via `React.lazy` dari V1 (tidak diduplikasi); dimuat on-demand (chunk 239 KB terpisah).
+
+### 9.3 Menjalankan & Membangun
+- Dev V2: `npm run dev:v2` → http://localhost:5174/ (`/api` di-proxy ke dev V1 di 5173).
+- Build V2: `npm run build:v2` → `dist-v2/` (terverifikasi sukses).
+- Dev/Build V1 tidak berubah: `npm run dev`, `npm run build`.
+
+### 9.4 Backup & Restore V1
+- Backup: branch `backup-v1-20260916-0030` + tag `v1-pre-redesign-20260916` (dibuat sebelum pekerjaan V2).
+- Restore: `git checkout backup-v1-20260916-0030` untuk kembali penuh ke V1, atau abaikan folder `v2/`/`vite.config.v2.js` karena V1 tidak bergantung padanya.
+
+---
