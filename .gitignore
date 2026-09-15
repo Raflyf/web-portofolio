@@ -31,3 +31,4 @@ scratch/
 
 # Vite build output (never commit generated artifacts)
 dist/
+dist-v2/

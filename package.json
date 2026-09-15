@@ -6,7 +6,9 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:v2": "vite serve --config vite.config.v2.js",
     "build": "vite build",
+    "build:v2": "vite build --config vite.config.v2.js",
     "preview": "vite preview"
   },
   "keywords": [
