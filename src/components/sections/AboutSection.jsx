@@ -72,7 +72,7 @@ export default function AboutSection() {
         variants={containerVariants}
         className="text-center space-y-4 mb-16"
       >
-        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('about.badge')}</span>
         </motion.div>
         

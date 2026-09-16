@@ -28,7 +28,7 @@ export default function ExperienceTimeline() {
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-16"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+        <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('timeline.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -76,7 +76,7 @@ export default function ExperienceTimeline() {
                     className="liquid-glass liquid-glass-hover p-6 sm:p-7 relative overflow-hidden text-left"
                   >
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="px-2.5 py-1 text-[10px] font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 rounded-full uppercase">
+                      <span className="px-3 py-1 text-[10px] font-semibold tracking-wider text-cyan-300 stitch-btn-glass rounded-full uppercase">
                         {item.period}
                       </span>
                     </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext.jsx';
-import { Mail, ExternalLink, ArrowUpRight, BarChart3, Check } from 'lucide-react';
+import { Mail, ExternalLink, ArrowUpRight, BarChart3, Check, Globe } from 'lucide-react';
 import GithubIcon from './GithubIcon.jsx';
 import { telemetry } from '../../lib/telemetry';
 
@@ -54,7 +54,7 @@ export default function StitchNav() {
         </div>
 
         {/* Section Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-0.5 text-xs font-medium text-slate-300 font-sans">
+        <nav className="hidden lg:flex items-center gap-1 text-xs font-medium text-slate-300 font-sans">
           <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#about">
             {language === 'id' ? 'Tentang' : 'About'}
           </a>
@@ -65,9 +65,9 @@ export default function StitchNav() {
             {language === 'id' ? 'Proyek' : 'Projects'}
           </a>
           <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#certificates">
-            {language === 'id' ? 'Sertifikasi' : 'Certs'}
+            {language === 'id' ? 'Sertifikasi' : 'Certificates'}
           </a>
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#experience">
+          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#timeline">
             {language === 'id' ? 'Pengalaman' : 'Experience'}
           </a>
           <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#lab">
@@ -93,19 +93,20 @@ export default function StitchNav() {
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
-            className="px-2.5 py-1.5 rounded-full hover:bg-white/[0.08] text-[11px] font-mono text-slate-300 hover:text-white border border-white/10 transition-all cursor-pointer"
+            className="px-2.5 py-1.5 rounded-full stitch-btn-glass text-[11px] font-mono text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
             title="Toggle Language ID/EN"
           >
-            {language.toUpperCase()}
+            <Globe className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{language.toUpperCase()}</span>
           </button>
 
           {/* Copy Email Button */}
           <button
             onClick={handleCopyEmail}
-            className="p-2 rounded-full text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
+            className="p-2 rounded-full stitch-btn-glass text-slate-200 hover:text-white transition-all cursor-pointer flex items-center justify-center"
             title={copied ? 'Disalin!' : 'Salin Email'}
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Mail className="w-4 h-4" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Mail className="w-3.5 h-3.5" />}
           </button>
 
           {/* GitHub Icon */}
@@ -113,16 +114,16 @@ export default function StitchNav() {
             href="https://github.com/Raflyf"
             target="_blank"
             rel="noopener noreferrer"
-            className="p-2 rounded-full text-slate-300 hover:text-white hover:bg-white/[0.08] transition-all"
+            className="p-2 rounded-full stitch-btn-glass text-slate-200 hover:text-white transition-all flex items-center justify-center"
             title="Profil GitHub"
           >
-            <GithubIcon className="w-4 h-4" />
+            <GithubIcon className="w-3.5 h-3.5" />
           </a>
 
           {/* Direct CTA */}
           <a
             href="#contact"
-            className="hidden sm:inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full stitch-btn-primary font-medium text-xs transition-all"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full stitch-btn-primary font-semibold text-xs transition-all"
           >
             <span>{language === 'id' ? 'Hubungi' : 'Get in Touch'}</span>
             <ArrowUpRight className="w-3.5 h-3.5" />

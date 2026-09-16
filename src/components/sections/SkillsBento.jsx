@@ -64,7 +64,7 @@ export default function SkillsBento() {
           {[...Array(2)].map((_, i) => (
             <React.Fragment key={i}>
               {["PyTorch Core", "Prompt Engineering", "Sentence-Transformers", "IndoBERT & RoBERTa", "Whisper AI Audio", "NLP Cosine Metrics", "Scikit-Learn ML", "MediaPipe Tasks Vision", "OpenCV Python", "XGBoost & Naive Bayes", "Pandas & NumPy"].map((skill, j) => (
-                <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-4 py-2 backdrop-blur-xl hover:border-cyan-400/40 transition-colors shadow-sm">
+                <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-cyan-400/40 transition-all">
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
                 </div>
@@ -87,7 +87,7 @@ export default function SkillsBento() {
           {[...Array(2)].map((_, i) => (
             <React.Fragment key={i}>
               {["MikroTik RouterOS v7", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filtering", "Flask-SocketIO", "Supabase Postgres RAG", "TypeScript & Node.js", "JavaScript ES2024", "RESTful APIs Architecture", "Linux & Git Workflow"].map((skill, j) => (
-                <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/70 px-4 py-2 backdrop-blur-xl hover:border-emerald-400/40 transition-colors shadow-sm">
+                <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-emerald-400/40 transition-all">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
                 </div>
@@ -121,7 +121,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["Python 3", "PyTorch", "Prompt Engineering", "Sentence-Transformers", "Scikit-Learn", "XGBoost", "N-Gram Shingling", "Pandas", "NumPy"].map((tech, i) => (
-              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-cyan-400/30 hover:text-cyan-200 transition-colors">
+              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
                 {tech}
               </motion.span>
             ))}
@@ -143,7 +143,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MikroTik RouterOS", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filter Rules", "Simple Queues (QoS)", "VLAN & Tunnels"].map((tech, i) => (
-              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-emerald-400/30 hover:text-emerald-200 transition-colors">
+              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
                 {tech}
               </motion.span>
             ))}
@@ -165,7 +165,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["React.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Supabase DB", "Node.js API", "Flask API"].map((tech, i) => (
-              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-indigo-400/30 hover:text-indigo-200 transition-colors">
+              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
                 {tech}
               </motion.span>
             ))}
@@ -187,7 +187,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MediaPipe Tasks Vision", "OpenCV Python", "Flask-SocketIO", "WebSockets", "PyAutoGUI", "DeviceOrientation API"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/5 text-xs sm:text-sm text-zinc-300 font-medium hover:border-cyan-400/30 hover:text-cyan-200 transition-colors">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
                 {tech}
               </span>
             ))}

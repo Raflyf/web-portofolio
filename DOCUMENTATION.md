@@ -2958,3 +2958,30 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - Panel observabilitas telemetri dilayani oleh `/dashboard` ([StitchDashboard.jsx](file:///d:/code/project/portofolio%20landing%20page/src/stitch-ui/StitchDashboard.jsx)).
    - Seluruh konten biodata, data proyek, kredensial sertifikasi, sistem telemetri Supabase, dan interaktivitas AI lab terjaga 100% tanpa pengurangan.
 
+---
+
+### v10.694.0 — Refinement Liquid Glass V2: Terminal Popup, Optical Crystal Blur, Tab Filtering, & 60 FPS Performance (2026-09-16)
+
+1. **Transformasi Terminal Popup & Developer Lab:**
+   - **Enkapsulasi Tema Portal:** Menambahkan `stitch-liquid-theme` pada wrapper utama modal terminal agar saat `createPortal(..., document.body)` dirender ke root dokumen, seluruh aturan CSS liquid glass teraplikasi secara konsisten.
+   - **Jendela Liquid Glass Crystal (`stitch-terminal-window`):** Menerapkan latar belakang smoked glass (`rgba(8, 11, 22, 0.82)`), specular top highlight border, dan blur 28px.
+   - **Header & Kontrol 3D VisionOS:** Menata ulang bilah navigasi terminal dengan traffic lights berpendar halus, tombol `Riwayat`, `Checkpoint`, dan `Baru` bergaya 3D liquid pill, badge model AI aktif, serta dropdown Reasoning Effort (`CustomSelectEffort`).
+   - **Bilah Pintasan & Dock Masukan:** Merombak bilah pintasan perintah menjadi tombol kapsul transparan dengan efek hover 3D, serta merancang ulang dock input teks dan tombol kirim/batal menjadi komponen taktil 3D.
+   - **Modal Riwayat & Checkpoint:** Memperbarui antarmuka sub-modal riwayat dan rollback agar menggunakan window glass kristal visionOS yang harmonis.
+
+2. **Restorasi True Optical Crystal Blur & Koreksi Efek 3D:**
+   - **Penghapusan Saturasi Opaque:** Mengoreksi latar belakang navbar dan kartu dari `rgba(8, 11, 18, 0.96)` yang terlalu pekat menjadi `rgba(10, 14, 26, 0.72)` dengan `backdrop-filter: blur(20px) saturate(180%)`, mengembalikan efek frosted crystal optik tembus pandang yang sesungguhnya.
+   - **Peredaman Bayangan 3D:** Menghilangkan drop shadow pekat ekstrem (`0 32px 64px -14px rgba(0,0,0,0.95)`) dan menggantinya dengan elevasi natural visionOS yang bersih dan tenang.
+   - **Pencegahan Efek Tombol Tak Diinginkan:** Mengeliminasi selektor tombol global liar yang sebelumnya mengubah tautan utilitas seperti *"Lupa Master PIN? Pulihkan via Email OTP"* menjadi tombol kapsul 3D tebal.
+
+3. **Performa 60 FPS & Eliminasi Frame Drop:**
+   - **Eliminasi Filter SVG CPU-Bound:** Menghapus `<feTurbulence>` dan `<feDisplacementMap>` dari `StitchCausticsBackdrop.jsx` yang membebani komposit Chromium saat scrolling.
+   - **Transisi ke GPU Ambient Mesh:** Menggantikan spring physics scroll realtime yang berat dengan radial ambient mesh statis terakselerasi perangkat keras, meniadakan lag dan frame drop.
+
+4. **Interaktivitas Tab Filter & Navigasi:**
+   - **Proyek & Sertifikat:** Mengubah tab filter inaktif menjadi teks datar dalam dok kapsul (`stitch-tab-flat`), dan hanya menampilkan efek 3D liquid glass saat di-hover atau saat aktif terpilih (`stitch-btn-primary`).
+   - **Bilah Navigasi Header:** Menambahkan efek 3D liquid hover pill pada setiap tautan seksi navbar (`Tentang`, `Keahlian`, `Proyek`, dll.).
+   - **Bilah Samping Storyline:** Menyingkirkan pembesaran tombol yang tidak proporsional dan merampingkan indikator dot menjadi micro-dock visionOS minimalis yang anggun (lebar 18px).
+   - **Header Dashboard:** Menerapkan gaya tombol 3D liquid glass pada tautan *"<- Beranda"* agar seragam dengan tombol pemilih bahasa di sampingnya.
+
+
