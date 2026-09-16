@@ -54,18 +54,28 @@ export default function ScrollStoryline() {
 
       if (!ticking) {
         requestAnimationFrame(() => {
-          const scrollPosition = window.scrollY + window.innerHeight / 3;
+          const scrollY = window.scrollY;
+          const viewportHeight = window.innerHeight;
+          const triggerLine = viewportHeight * 0.35;
+          const scrollBottom = viewportHeight + scrollY;
+          const docHeight = document.documentElement.scrollHeight;
 
-          for (const section of sections) {
-            const el = document.getElementById(section.id);
-            if (el) {
-              const top = el.offsetTop;
-              const height = el.offsetHeight;
-              if (scrollPosition >= top && scrollPosition < top + height) {
-                setActiveSection(section.id);
-                break;
+          if (scrollY < 120) {
+            setActiveSection('hero');
+          } else if (scrollBottom >= docHeight - 80) {
+            setActiveSection('contact');
+          } else {
+            let current = 'hero';
+            for (const section of sections) {
+              const el = document.getElementById(section.id);
+              if (el) {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= triggerLine) {
+                  current = section.id;
+                }
               }
             }
+            setActiveSection(current);
           }
           ticking = false;
         });
@@ -74,16 +84,22 @@ export default function ScrollStoryline() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [sections]);
 
-  const scrollTo = (id) => {
+  const scrollTo = (e, id) => {
+    if (e && e.currentTarget) {
+      e.currentTarget.blur();
+    }
+    setActiveSection(id);
     const el = document.getElementById(id);
     if (el) {
       if (window.__lenis) {
-        window.__lenis.scrollTo(el, { duration: 1.2, offset: -30 });
+        window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 });
       } else {
-        el.scrollIntoView({ behavior: 'smooth' });
+        const top = el.getBoundingClientRect().top + window.scrollY - 70;
+        window.scrollTo({ top, behavior: 'smooth' });
       }
     }
   };
@@ -99,8 +115,8 @@ export default function ScrollStoryline() {
             return (
               <button
                 key={sec.id}
-                onClick={() => scrollTo(sec.id)}
-                className="stitch-raw-btn group relative flex items-center justify-center p-1 focus:outline-none cursor-pointer"
+                onClick={(e) => scrollTo(e, sec.id)}
+                className="stitch-raw-btn group relative flex items-center justify-center p-1 rounded-full focus:outline-none focus-visible:ring-1.5 focus-visible:ring-cyan-400/80 cursor-pointer"
                 aria-label={`${t('storyline.scrollTo')} ${sec.label}`}
               >
                 {/* Hover / Active Tooltip with Transient Auto-Hide */}
