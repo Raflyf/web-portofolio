@@ -525,11 +525,11 @@ export default function App() {
                 pointerEvents: showBackToTop ? 'auto' : 'none',
                 transition: 'opacity 450ms cubic-bezier(0.16, 1, 0.3, 1), transform 450ms cubic-bezier(0.16, 1, 0.3, 1)'
               }}
-              className="w-12 h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center cursor-pointer shadow-lg select-none will-change-[transform,opacity]"
+              className="w-12 h-12 rounded-full stitch-floating-fab-backtotop flex items-center justify-center cursor-pointer select-none will-change-[transform,opacity] text-slate-200 hover:text-white"
               aria-label={t('nav.backToTop')}
               title={t('nav.backToTop')}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+              <svg className="w-5 h-5 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M5 15l7-7 7 7" /></svg>
             </button>
             
             <button
@@ -537,7 +537,7 @@ export default function App() {
                 telemetry.logEvent('terminal_open', 'terminal_modal', 'Buka Jendela Terminal AI Modal');
                 setIsTerminalPopupOpen(true);
               }}
-              className="w-12 h-12 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 border border-cyan-300/60 text-slate-950 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-105 animate-pulse-glow cursor-pointer select-none"
+              className="w-12 h-12 rounded-full stitch-floating-fab-terminal flex items-center justify-center cursor-pointer select-none"
               aria-label={t('nav.openTerminal')}
               title={t('nav.openTerminal')}
             >

@@ -2513,12 +2513,12 @@ export default function Dashboard({ isStitch = true } = {}) {
           pointerEvents: showDashboardBackToTop ? 'auto' : 'none',
           transition: 'opacity 400ms cubic-bezier(0.16, 1, 0.3, 1), transform 400ms cubic-bezier(0.16, 1, 0.3, 1)'
         }}
-        className="fixed bottom-6 sm:bottom-8 right-5 sm:right-8 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-300 hover:text-white hover:border-cyan-400/60 flex items-center justify-center shadow-2xl cursor-pointer select-none border border-white/20 will-change-[transform,opacity]"
+        className="fixed bottom-6 sm:bottom-8 right-5 sm:right-8 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full stitch-floating-fab-backtotop flex items-center justify-center cursor-pointer select-none will-change-[transform,opacity] text-slate-200 hover:text-white"
         aria-label={t('dashboard.backToTop')}
         title={t('dashboard.backToTop')}
       >
-        <svg className="w-5 h-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+        <svg className="w-5 h-5 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M5 15l7-7 7 7" />
         </svg>
       </button>
 
