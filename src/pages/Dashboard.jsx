@@ -1421,7 +1421,7 @@ export default function Dashboard({ isStitch = true } = {}) {
           <div className="absolute top-4 left-4 z-20">
             <Link
               to="/"
-              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-mono font-medium text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer group/back"
+              className="stitch-btn-glass px-2.5 py-1 rounded-full text-[11px] font-mono font-medium text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer group/back"
               title={t('dashboard.auth.backToHome')}
               aria-label={t('dashboard.auth.backToHome')}
             >
@@ -1435,7 +1435,7 @@ export default function Dashboard({ isStitch = true } = {}) {
             <button
               type="button"
               onClick={toggleLanguage}
-              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-mono font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer"
+              className="stitch-btn-glass px-2.5 py-1 rounded-full text-[11px] font-mono font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer"
               title={t('dashboard.header.switchLang')}
               aria-label={t('dashboard.header.switchLang')}
             >
@@ -1502,7 +1502,7 @@ export default function Dashboard({ isStitch = true } = {}) {
                 <button
                   type="button"
                   onClick={() => setIsForgotPinOpen(true)}
-                  className="text-xs text-zinc-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                  className="stitch-raw-btn text-xs text-zinc-400 hover:text-cyan-300 transition-colors cursor-pointer bg-transparent border-0 p-0 shadow-none"
                 >
                   {t('dashboard.auth.forgotPin')}
                 </button>
@@ -1602,10 +1602,10 @@ export default function Dashboard({ isStitch = true } = {}) {
           <div className="flex items-center gap-3 relative z-10">
             <Link
               to="/"
-              className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-mono font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer group/back"
+              className="stitch-btn-glass px-3 py-1.5 rounded-full text-[11px] font-mono font-medium text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer group/back"
               title={language === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
             >
-              <ArrowLeft className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 transition-transform group-hover/back:-translate-x-0.5" />
+              <ArrowLeft className="w-3.5 h-3.5 text-cyan-400 transition-transform group-hover/back:-translate-x-0.5" />
               <span className="hidden sm:inline">{language === 'id' ? 'Beranda' : 'Home'}</span>
             </Link>
             <div className="flex items-center gap-2">
@@ -1623,11 +1623,11 @@ export default function Dashboard({ isStitch = true } = {}) {
             {/* Language Switcher Pill */}
             <button
               onClick={toggleLanguage}
-              className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="stitch-btn-glass px-3 py-1.5 rounded-full text-[11px] font-mono font-bold text-zinc-200 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer"
               title={t('dashboard.header.switchLang')}
               aria-label={t('dashboard.header.switchLang')}
             >
-              <Globe className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
+              <Globe className="w-3.5 h-3.5 text-cyan-400" />
               <span>{language === 'id' ? 'ID' : 'EN'}</span>
             </button>
 

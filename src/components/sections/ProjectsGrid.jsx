@@ -152,27 +152,32 @@ export default function ProjectsGrid() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.8 }}
-        className="flex flex-wrap justify-center gap-2 mb-12"
+        className="flex justify-center mb-12"
       >
-        {[
-          { id: 'all', label: t('projects.tabAll') },
-          { id: 'ai-ml', label: t('projects.tabAi') },
-          { id: 'tools', label: t('projects.tabTools') },
-          { id: 'web', label: t('projects.tabWeb') }
-        ].map(tab => (
-          <motion.button
-            variants={tabVariants}
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all backdrop-blur-xl border cursor-pointer ${
-              filter === tab.id 
-                ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]' 
-                : 'bg-slate-900/50 border-white/10 text-zinc-400 hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </motion.button>
-        ))}
+        <div className="stitch-capsule-group">
+          {[
+            { id: 'all', label: t('projects.tabAll') },
+            { id: 'ai-ml', label: t('projects.tabAi') },
+            { id: 'tools', label: t('projects.tabTools') },
+            { id: 'web', label: t('projects.tabWeb') }
+          ].map(tab => (
+            <motion.button
+              variants={tabVariants}
+              key={tab.id}
+              onClick={() => {
+                setFilter(tab.id);
+                telemetry.logEvent('filter_click', tab.id, `Filter Proyek: ${tab.label}`);
+              }}
+              className={`px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                filter === tab.id 
+                  ? 'stitch-btn-primary' 
+                  : 'stitch-tab-flat'
+              }`}
+            >
+              {tab.label}
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
       {/* Featured Project Showcase Card (HANYA tampil pada tab 'Semua Proyek') */}
@@ -232,7 +237,7 @@ export default function ProjectsGrid() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => telemetry.logEvent('link_click', 'github_openplagiarismchecker', 'Kunjungi Repositori: OpenPlagiarismChecker')}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-white font-medium text-sm transition-all hover:scale-105 shadow-md"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full stitch-btn-primary font-semibold text-sm transition-all shadow-md"
                 >
                   <GithubIcon className="w-4 h-4" />
                   {t('projects.viewRepo')}
@@ -311,16 +316,16 @@ export default function ProjectsGrid() {
                 </div>
               </div>
 
-              <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-between">
+              <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-between gap-2">
                 <a
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => telemetry.logEvent('link_click', `github_${project.id}`, `Kunjungi Repositori: ${project.title}`)}
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full stitch-btn-glass text-xs font-semibold text-zinc-200 hover:text-white transition-all"
                 >
-                  <GithubIcon className="w-4 h-4" />
-                  {t('projects.githubRepo')}
+                  <GithubIcon className="w-3.5 h-3.5" />
+                  <span>{t('projects.githubRepo')}</span>
                 </a>
                 
                 {project.demoUrl ? (
@@ -329,10 +334,10 @@ export default function ProjectsGrid() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => telemetry.logEvent('link_click', `demo_${project.id}`, `Buka Demo: ${project.title}`)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full stitch-btn-glass text-xs font-semibold text-cyan-300 hover:text-white transition-all"
                   >
-                    {t('projects.liveDemo')}
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>{t('projects.liveDemo')}</span>
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 ) : (
                   <span className="text-[11px] font-mono text-zinc-500">{t('projects.standaloneApp')}</span>

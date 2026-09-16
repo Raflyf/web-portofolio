@@ -96,22 +96,27 @@ export default function CertificatesGrid() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: false, amount: 0.8 }}
-        className="flex flex-wrap justify-center gap-2 mb-12"
+        className="flex justify-center mb-12"
       >
-        {filterTabs.map(tab => (
-          <motion.button
-            variants={tabVariants}
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all backdrop-blur-xl border cursor-pointer ${
-              filter === tab.id 
-                ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.25)]' 
-                : 'bg-slate-900/50 border-white/10 text-zinc-400 hover:bg-white/5 hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </motion.button>
-        ))}
+        <div className="stitch-capsule-group">
+          {filterTabs.map(tab => (
+            <motion.button
+              variants={tabVariants}
+              key={tab.id}
+              onClick={() => {
+                setFilter(tab.id);
+                telemetry.logEvent('filter_click', tab.id, `Filter Sertifikat: ${tab.label}`);
+              }}
+              className={`px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                filter === tab.id 
+                  ? 'stitch-btn-primary' 
+                  : 'stitch-tab-flat'
+              }`}
+            >
+              {tab.label}
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
       {/* Cards Grid — whileInView per-card agar animasi individual */}
@@ -193,7 +198,7 @@ export default function CertificatesGrid() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => telemetry.logEvent('cert_view', `${cert.id}_pdf`, `Buka PDF: ${cert.title}`)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-cyan-300 flex items-center justify-center gap-2 transition-all shadow-sm group/btn"
+                  className="w-full py-2.5 px-4 rounded-full stitch-btn-glass text-xs font-semibold text-zinc-200 hover:text-white flex items-center justify-center gap-2 transition-all group/btn shadow-md"
                 >
                   <FileText className="w-4 h-4 text-cyan-400 group-hover/btn:scale-110 transition-transform" />
                   <span>{t('certificates.viewPdf')}</span>

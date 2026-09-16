@@ -200,13 +200,13 @@ export default function HorizonHero() {
             className="lg:col-span-7 flex flex-col justify-center space-y-8"
           >
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl transition-colors hover:bg-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
+                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
                   {t('hero.badge')}
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
                 </span>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/5 px-3.5 py-1.5 backdrop-blur-xl">
+              <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
                 <Clock className="w-3.5 h-3.5 text-cyan-400" />
                 <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
                   {clockTime}
@@ -227,11 +227,11 @@ export default function HorizonHero() {
               {t('hero.tagline')}
             </p>
 
-            {/* Pristine iOS Liquid Glass Buttons */}
+            {/* Pristine 3D Tactile Liquid Glass Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <a 
                 href="#projects"
-                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-linear-to-b from-cyan-400 to-cyan-600 hover:from-cyan-300 hover:to-cyan-500 border border-cyan-300/60 text-white font-semibold tracking-wide text-sm shadow-[0_8px_24px_rgba(6,182,212,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] liquid-press transition-all hover:scale-[1.03] group"
+                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full stitch-btn-primary font-semibold tracking-wide text-sm liquid-press transition-all group"
               >
                 <span>{t('hero.exploreBtn')}</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -239,7 +239,7 @@ export default function HorizonHero() {
               
               <a 
                 href="#lab"
-                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full liquid-glass-inset liquid-glass-pill liquid-press text-slate-200 font-semibold tracking-wide text-sm transition-all hover:scale-[1.03] group"
+                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full stitch-btn-glass font-semibold tracking-wide text-sm liquid-press transition-all group"
               >
                 <Terminal className="w-4 h-4 text-cyan-400 transition-transform group-hover:scale-110" />
                 <span>{t('hero.terminalBtn')}</span>
@@ -257,7 +257,7 @@ export default function HorizonHero() {
             onBlur={() => setIsPaused(false)}
           >
             {/* Dynamic Project Showcase Canvas */}
-            <div className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7">
+            <div className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7 rounded-3xl">
               <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
               {/* Showcase Window Header */}
@@ -274,40 +274,40 @@ export default function HorizonHero() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-400 font-medium">
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full stitch-btn-glass text-zinc-300 font-medium">
                     0{currentSlide + 1} / 0{showcaseProjects.length}
                   </span>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5">
                     {/* Visible pause/play control for the auto-slide */}
                     <button
                       type="button"
                       onClick={() => setIsPaused(prev => !prev)}
-                      className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                         isPaused
-                          ? "bg-cyan-500/25 border-cyan-500/40 text-cyan-300"
-                          : "bg-white/5 border-white/10 text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40"
+                          ? "stitch-btn-primary text-cyan-300"
+                          : "stitch-btn-glass text-zinc-300 hover:text-white"
                       }`}
                       title={isPaused ? t('hero.resumeAuto') : t('hero.pauseAuto')}
                       aria-label={isPaused ? t('hero.resumeAuto') : t('hero.pauseAuto')}
                       aria-pressed={isPaused}
                     >
-                      {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                      {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
                     </button>
                     <button
                       onClick={handlePrev}
-                      className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
+                      className="w-7 h-7 rounded-full stitch-btn-glass flex items-center justify-center text-zinc-300 hover:text-white transition-all cursor-pointer"
                       title={t('hero.prevProject')}
                       aria-label={t('hero.prevProject')}
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={handleNext}
-                      className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
+                      className="w-7 h-7 rounded-full stitch-btn-glass flex items-center justify-center text-zinc-300 hover:text-white transition-all cursor-pointer"
                       title={t('hero.nextProject')}
                       aria-label={t('hero.nextProject')}
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export default function HorizonHero() {
                     className="space-y-3"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-wide text-cyan-300 bg-cyan-500/10 border border-cyan-500/30">
+                      <span className="inline-block px-3 py-1 rounded-full text-[11px] font-medium tracking-wide stitch-btn-glass text-cyan-300">
                         {activeProject.tag}
                       </span>
                       <span className="text-[11px] font-mono text-zinc-400">
@@ -352,7 +352,7 @@ export default function HorizonHero() {
                   </span>
                   <a 
                     href="#projects" 
-                    className="text-cyan-400 hover:text-cyan-300 font-medium inline-flex items-center gap-1 transition-colors"
+                    className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-cyan-300 hover:text-white font-medium text-xs inline-flex items-center gap-1 transition-all"
                   >
                     Detail Proyek &rarr;
                   </a>
@@ -361,7 +361,7 @@ export default function HorizonHero() {
             </div>
 
             {/* Marquee Tech Brand Pod */}
-            <div className="relative overflow-hidden liquid-glass py-4">
+            <div className="relative overflow-hidden liquid-glass py-4 rounded-2xl">
               <div className="mb-2.5 px-6 flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Core Engineering Stack</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />

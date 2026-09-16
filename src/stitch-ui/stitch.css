@@ -29,48 +29,65 @@
 /* --------------------------------------------------------------------------
    2. Authentic Apple Liquid Glass Primitives (Understated & Calm)
    -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+   2. Authentic Apple iOS 26 / visionOS / Stitch Liquid Glass Primitives
+   Model: Volumetric Optical Smoked Crystal + Specular Top Rim + Physical 3D Elevation
+   -------------------------------------------------------------------------- */
 .stitch-glass,
 .stitch-liquid-theme .liquid-glass {
-  background: rgba(255, 255, 255, 0.032) !important;
-  backdrop-filter: blur(32px) saturate(160%) contrast(102%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(160%) contrast(102%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.085) !important;
+  background: 
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(11, 15, 28, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(180%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.02),
-    0 16px 36px -10px rgba(0, 0, 0, 0.55) !important;
-  border-radius: 1.25rem !important;
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.50),
+    0 16px 36px -6px rgba(0, 0, 0, 0.65),
+    0 4px 12px -2px rgba(0, 0, 0, 0.45) !important;
+  border-radius: 1.5rem !important;
   position: relative;
 }
 
-.stitch-liquid-theme .liquid-glass-strong {
-  background: rgba(255, 255, 255, 0.045) !important;
-  backdrop-filter: blur(36px) saturate(170%) contrast(102%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(170%) contrast(102%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+.stitch-liquid-theme .liquid-glass-strong,
+.stitch-dashboard-container .liquid-glass-strong {
+  background: 
+    linear-gradient(145deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(12, 17, 32, 0.78) !important;
+  backdrop-filter: blur(24px) saturate(190%) contrast(104%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.03),
-    0 20px 42px -12px rgba(0, 0, 0, 0.65) !important;
-  border-radius: 1.5rem !important;
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.55),
+    0 20px 48px -10px rgba(0, 0, 0, 0.75),
+    0 6px 16px -3px rgba(0, 0, 0, 0.50) !important;
+  border-radius: 1.75rem !important;
 }
 
-/* Restrained, elegant card hover: no harsh neon blur */
+/* Restrained, tactile card hover with elevated 3D extrusion */
 .stitch-glass-hover,
-.stitch-liquid-theme .liquid-glass-hover {
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+.stitch-liquid-theme .liquid-glass-hover,
+.stitch-dashboard-container .liquid-glass-hover {
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .stitch-glass-hover:hover,
-.stitch-liquid-theme .liquid-glass-hover:hover {
-  background: rgba(255, 255, 255, 0.055) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
+.stitch-liquid-theme .liquid-glass-hover:hover,
+.stitch-dashboard-container .liquid-glass-hover:hover {
+  background: 
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%),
+    rgba(18, 24, 44, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
   box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
-    0 20px 42px -10px rgba(0, 0, 0, 0.7) !important;
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.40),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.55),
+    0 24px 56px -12px rgba(0, 0, 0, 0.85),
+    0 8px 20px -4px rgba(0, 0, 0, 0.55) !important;
   transform: translateY(-2px) !important;
 }
 
@@ -78,31 +95,59 @@
 .stitch-blueprint-cavity,
 .stitch-liquid-theme .liquid-glass-inset,
 .stitch-dashboard-container .liquid-glass-inset {
-  background: rgba(0, 0, 0, 0.42) !important;
-  border: 1px solid rgba(255, 255, 255, 0.075) !important;
-  box-shadow: inset 0 2px 5px 0 rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+  background: rgba(8, 10, 18, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 
+    inset 0 3px 8px 0 rgba(0, 0, 0, 0.75),
+    inset 0 1px 2px 0 rgba(0, 0, 0, 0.90),
+    0 1px 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
-.stitch-liquid-theme .liquid-glass-pill {
+/* 3D Tactile Liquid Glass Pills */
+.stitch-liquid-theme .liquid-glass-pill,
+.stitch-dashboard-container .liquid-glass-pill {
   border-radius: 9999px !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    inset 0 1.2px 1.2px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.45),
+    0 5px 14px -2px rgba(0, 0, 0, 0.65) !important;
 }
 
 /* --------------------------------------------------------------------------
-   3. Floating Liquid Glass Navigation (iOS / visionOS Pill)
+   3. Floating Liquid Glass Navigation (Apple visionOS Crystal Frosted Pill)
    -------------------------------------------------------------------------- */
 .stitch-glass-nav,
 .stitch-liquid-theme .liquid-glass-nav,
 .stitch-dashboard-container header {
-  background: rgba(12, 16, 25, 0.72) !important;
-  backdrop-filter: blur(36px) saturate(180%) contrast(102%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(180%) contrast(102%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(10, 14, 26, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
-    inset 0 -1px 0 0 rgba(255, 255, 255, 0.02),
-    0 16px 36px -10px rgba(0, 0, 0, 0.7) !important;
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.50),
+    0 16px 40px -10px rgba(0, 0, 0, 0.75),
+    0 4px 12px 0 rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Navbar Links 3D Liquid Hover Pill */
+.stitch-glass-nav nav a {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+}
+
+.stitch-glass-nav nav a:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%), #1c223c !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.45),
+    0 4px 12px -2px rgba(0, 0, 0, 0.60) !important;
+  transform: translateY(-1px) !important;
 }
 
 .stitch-dashboard-container header {
@@ -116,63 +161,160 @@
 }
 
 /* --------------------------------------------------------------------------
-   4. Buttons: Calm Luxury Specular Controls (No AI-Slop Neon)
+   4. Unified 3D Tactile Liquid Glass Buttons & Capsules
    -------------------------------------------------------------------------- */
-/* Primary Specular Liquid Button (Monochrome Satin / Silver Specular) */
+
+/* 4a. Capsule Switcher Container (Stitch App / Web switcher model) */
+.stitch-capsule-group {
+  background: rgba(10, 13, 24, 0.72) !important;
+  backdrop-filter: blur(16px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(170%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.60),
+    0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  border-radius: 9999px !important;
+  padding: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.stitch-capsule-group .stitch-tab-flat {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 1px solid transparent !important;
+  color: #94a3b8 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stitch-capsule-group .stitch-tab-flat:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
+    0 3px 8px -1px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* 4b. Secondary / Standard 3D Tactile Liquid Glass Button */
+.stitch-btn-glass,
+.stitch-btn-3d,
+a.stitch-btn-glass,
+button.stitch-btn-glass,
+.stitch-liquid-theme a[href="#lab"].liquid-glass-inset {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 100%), #181d31 !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -1.2px 1.2px 0 rgba(0, 0, 0, 0.50),
+    0 4px 14px -2px rgba(0, 0, 0, 0.60),
+    0 2px 4px 0 rgba(0, 0, 0, 0.35) !important;
+  color: #f1f5f9 !important;
+  border-radius: 9999px !important;
+  position: relative;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              color 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stitch-btn-glass:hover,
+.stitch-btn-3d:hover,
+a.stitch-btn-glass:hover,
+button.stitch-btn-glass:hover,
+.stitch-liquid-theme a[href="#lab"].liquid-glass-inset:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%), #1f253e !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.50),
+    inset 0 -1.2px 1.2px 0 rgba(0, 0, 0, 0.55),
+    0 6px 18px -3px rgba(0, 0, 0, 0.70),
+    0 2px 6px 0 rgba(0, 0, 0, 0.40) !important;
+  color: #ffffff !important;
+  transform: translateY(-1.5px) !important;
+}
+
+.stitch-btn-glass:active,
+.stitch-btn-3d:active,
+a.stitch-btn-glass:active,
+button.stitch-btn-glass:active,
+.stitch-liquid-theme a[href="#lab"].liquid-glass-inset:active {
+  transform: translateY(1px) scale(0.98) !important;
+  box-shadow: 
+    inset 0 2px 3px 0 rgba(0, 0, 0, 0.65),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 4px -1px rgba(0, 0, 0, 0.40) !important;
+}
+
+/* 4c. Primary 3D Tactile Liquid Glass Button (Featured / Action / CTAs) */
 .stitch-btn-primary,
 .stitch-liquid-theme a[href="#projects"].bg-linear-to-b,
 .stitch-dashboard-container button[type="submit"] {
-  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%) !important;
-  color: #090d16 !important;
-  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 70%, #cbd5e1 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.90) !important;
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
-    0 4px 16px rgba(0, 0, 0, 0.35),
-    0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    inset 0 1.5px 1.5px 0 #ffffff,
+    inset 0 -2px 2px 0 rgba(100, 116, 139, 0.45),
+    0 8px 24px -2px rgba(0, 0, 0, 0.75),
+    0 3px 8px 0 rgba(0, 0, 0, 0.45) !important;
+  color: #090d16 !important;
+  border-radius: 9999px !important;
   font-weight: 600 !important;
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-              background 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  position: relative;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .stitch-btn-primary:hover,
 .stitch-liquid-theme a[href="#projects"].bg-linear-to-b:hover,
 .stitch-dashboard-container button[type="submit"]:hover {
-  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 60%, #e2e8f0 100%) !important;
   box-shadow: 
-    inset 0 1px 1.5px 0 #ffffff,
-    0 8px 24px rgba(0, 0, 0, 0.45) !important;
-  transform: translateY(-1px) !important;
+    inset 0 2px 2px 0 #ffffff,
+    inset 0 -2px 2px 0 rgba(100, 116, 139, 0.50),
+    0 12px 30px -3px rgba(0, 0, 0, 0.85),
+    0 4px 10px 0 rgba(0, 0, 0, 0.50) !important;
+  transform: translateY(-1.5px) !important;
+  color: #000000 !important;
 }
 
-/* Translucent Glass Secondary Button */
-.stitch-btn-glass,
-.stitch-liquid-theme a[href="#lab"].liquid-glass-inset,
-.stitch-dashboard-container button:not([type="submit"]):not(.stitch-custom-btn) {
-  background: rgba(255, 255, 255, 0.045) !important;
-  backdrop-filter: blur(20px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.09) !important;
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-  color: #e2e8f0 !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+.stitch-btn-primary:active,
+.stitch-liquid-theme a[href="#projects"].bg-linear-to-b:active,
+.stitch-dashboard-container button[type="submit"]:active {
+  transform: translateY(1px) scale(0.98) !important;
+  box-shadow: 
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.40),
+    0 3px 8px rgba(0, 0, 0, 0.50) !important;
 }
 
-.stitch-btn-glass:hover,
-.stitch-liquid-theme a[href="#lab"].liquid-glass-inset:hover,
-.stitch-dashboard-container button:not([type="submit"]):not(.stitch-custom-btn):hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 6px 16px rgba(0, 0, 0, 0.4) !important;
-  color: #ffffff !important;
-  transform: translateY(-1px) !important;
-}
-
+/* 4d. Danger Button (Logout / Clear) */
 .stitch-dashboard-container button[title*="Logout"],
-.stitch-dashboard-container button[title*="Keluar"] {
-  background: rgba(244, 63, 94, 0.12) !important;
-  border-color: rgba(244, 63, 94, 0.22) !important;
+.stitch-dashboard-container button[title*="Keluar"],
+.stitch-btn-danger {
+  background: linear-gradient(180deg, rgba(244, 63, 94, 0.20) 0%, rgba(244, 63, 94, 0.08) 100%), rgba(19, 13, 20, 0.85) !important;
+  border-color: rgba(244, 63, 94, 0.32) !important;
+  box-shadow: 
+    inset 0 1.2px 1.2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1.2px 1.2px 0 rgba(0, 0, 0, 0.45),
+    0 5px 15px -2px rgba(0, 0, 0, 0.65) !important;
   color: #fecdd3 !important;
+}
+
+.stitch-dashboard-container button[title*="Logout"]:hover,
+.stitch-dashboard-container button[title*="Keluar"]:hover,
+.stitch-btn-danger:hover {
+  background: linear-gradient(180deg, rgba(244, 63, 94, 0.30) 0%, rgba(244, 63, 94, 0.14) 100%), rgba(28, 16, 24, 0.90) !important;
+  border-color: rgba(244, 63, 94, 0.45) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.50),
+    0 9px 24px -3px rgba(244, 63, 94, 0.35) !important;
+  color: #ffffff !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -345,8 +487,71 @@
 
 /* Modals with Apple visionOS Deep Frosted Blur */
 .stitch-dashboard-container .glass-backdrop-in,
-.stitch-dashboard-container .fixed.inset-0.bg-black\/80 {
-  backdrop-filter: blur(32px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(160%) !important;
-  background: rgba(4, 6, 10, 0.75) !important;
+.stitch-dashboard-container .fixed.inset-0.bg-black\/80,
+.stitch-liquid-theme .glass-backdrop-in {
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  background: rgba(4, 6, 12, 0.72) !important;
 }
+
+/* --------------------------------------------------------------------------
+   7. Terminal AI & Developer Lab Liquid Glass System
+   -------------------------------------------------------------------------- */
+.stitch-terminal-window {
+  background: 
+    linear-gradient(160deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.015) 100%),
+    rgba(8, 11, 22, 0.82) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.60),
+    0 24px 64px -12px rgba(0, 0, 0, 0.90),
+    0 8px 24px -4px rgba(0, 0, 0, 0.60) !important;
+}
+
+.stitch-terminal-header {
+  background: rgba(12, 16, 30, 0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+}
+
+.stitch-terminal-control-bar {
+  background: rgba(7, 9, 17, 0.65) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.stitch-terminal-shortcut-bar {
+  background: rgba(5, 7, 14, 0.50) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.stitch-terminal-dock {
+  background: rgba(8, 11, 20, 0.82) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.stitch-capsule-badge {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  border-radius: 9999px !important;
+}
+
+.stitch-pill-glass {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
+    0 4px 12px rgba(0, 0, 0, 0.40) !important;
+  border-radius: 9999px !important;
+}
+
