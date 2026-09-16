@@ -127,7 +127,7 @@ export default function ProjectsGrid() {
   };
 
   return (
-    <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24 section-contain">
+    <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -135,7 +135,7 @@ export default function ProjectsGrid() {
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-12"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('projects.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -189,18 +189,12 @@ export default function ProjectsGrid() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group"
         >
-          <div 
-            className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full pointer-events-none" 
-            style={{
-              background: 'radial-gradient(circle at center, rgba(6, 182, 212, 0.16) 0%, transparent 70%)',
-              transform: 'translateZ(0)'
-            }}
-          />
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             <div className="lg:col-span-8 space-y-6">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-full uppercase">
+                <span className="px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-full uppercase backdrop-blur-md">
                   {featuredProject.badge}
                 </span>
                 <span className="px-3.5 py-1 text-xs font-medium text-zinc-300 bg-white/5 border border-white/10 rounded-full">

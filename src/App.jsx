@@ -354,7 +354,7 @@ export default function App() {
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      syncTouch: false,
+      syncTouch: true,
       wheelMultiplier: 1.25,
       touchMultiplier: 1.8,
       respectReducedMotion: false, // Memaksa smooth & inertia scroll selalu aktif di laptop (abaikan Windows battery saver / reduced-motion)

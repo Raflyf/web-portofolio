@@ -61,7 +61,7 @@ export default function StitchNav() {
     }
   };
 
-  // Synchronize active nav highlight with viewport scroll and auto-hide on scroll down
+  // Synchronize active nav highlight with viewport scroll
   useEffect(() => {
     let ticking = false;
 
@@ -69,17 +69,15 @@ export default function StitchNav() {
       const currentY = window.scrollY;
       const delta = currentY - lastScrollY.current;
 
-      // Smart Auto-Hide: Match monitoring navbar behavior exactly
-      if (currentY < 60 || mobileMenuOpen) {
+      // Always keep floating navbar visible on desktop so user can see the active sync pill
+      if (currentY < 70 || window.innerWidth >= 1024 || mobileMenuOpen) {
         setNavVisible(true);
-      } else if (Math.abs(delta) > 8) {
-        if (delta > 0) {
-          setNavVisible(false); // Scrolling down: slide up out of view
-        } else {
-          setNavVisible(true);  // Scrolling up: reveal navbar
-        }
-        lastScrollY.current = currentY;
+      } else if (delta > 8) {
+        setNavVisible(false);
+      } else if (delta < -8) {
+        setNavVisible(true);
       }
+      lastScrollY.current = currentY;
 
       if (!ticking) {
         window.requestAnimationFrame(() => {
@@ -162,7 +160,7 @@ export default function StitchNav() {
   };
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 flex items-center justify-center pt-2 sm:pt-3 px-3 sm:px-6 pointer-events-none transition-transform duration-300 ease-in-out ${
+    <header className={`fixed top-0 inset-x-0 z-50 flex items-center justify-center p-2.5 sm:p-5 md:p-6 pointer-events-none transition-transform duration-300 ease-in-out ${
       navVisible ? 'translate-y-0' : '-translate-y-32'
     }`}>
       <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">

@@ -130,7 +130,7 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24 section-contain">
+    <section id="contact" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       {/* Header Section */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -139,7 +139,7 @@ export default function ContactSection() {
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-16"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('contact.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
