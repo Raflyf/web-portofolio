@@ -1286,7 +1286,7 @@ export default function TerminalAI({ onClose } = {}) {
       </div>
 
       {/* Terminal Body (Messages) */}
-      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3.5 sm:p-5 space-y-4 scroll-smooth bg-slate-950/75">
+      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3.5 sm:p-5 space-y-4 scroll-smooth bg-slate-950/40 backdrop-blur-md">
         {messages.map((msg, idx) => (
           <div key={idx} className={cn("flex flex-col w-full mb-2", msg.role === 'user' ? "items-end" : "items-start")}>
             

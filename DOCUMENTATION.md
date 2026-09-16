@@ -3112,6 +3112,10 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - **Restorasi `.stitch-nav-link-active` & Tab Aktif:** Mengaktifkan kembali `backdrop-filter: blur(28px) saturate(220%) contrast(108%)` dan `blur(24px)` pada pil tautan aktif dengan efek elevasi 3D.
    - **Unifikasi Tombol Kontrol Dashboard (`Dashboard.jsx`):** Menerapkan kelas `stitch-btn-glass` pada seluruh tombol aksi di header monitoring (Theme Toggle, Test Ping, Ubah PIN, Refresh, Logout) serta menyesuaikan jarak atas konten (`pt-20 sm:pt-24`) agar selaras dengan estetika liquid glass pil.
 
-3. **Perlindungan Kinerja & Garansi CPU Rendah (< 20%):**
-   - Penonaktifan blur (`backdrop-filter: none`) diisolasi secara presisi HANYA pada elemen yang bergerak kontinu secara terus-menerus (`.animate-marquee-left *` dan `.animate-marquee-right *`), sedangkan navbar dan tombol statis di-cache dalam texture tile GPU terisolasi (`transform: translateZ(0)`), menjamin tampilan kristal cair visionOS tetap mulus 60 FPS tanpa beban CPU berlebih.
+### v10.697.4 — Rollback Penuh ke Versi bbee7d2 Sesuai Permintaan Pengguna (2026-09-16)
+
+1. **Restorasi Mutlak Versi `bbee7d2`:**
+   - Seluruh berkas pada direktori `src/` (`StitchNav.jsx`, `stitch.css`, `index.css`, `Dashboard.jsx`, `TerminalAI.jsx`, `StitchCausticsBackdrop.jsx`, dan seluruh komponen terkait) dikembalikan 100% tepat ke kondisi commit `bbee7d2` (*refactor: apply canonical Tailwind CSS v4 classes across components*).
+   - Tampilan visual pulau navigasi floating liquid glass, padding `p-2.5 sm:p-5 md:p-6`, efek blur kristal cair, pill highlight aktif, dan seluruh hierarki styling kembali persis ke versi yang telah diverifikasi dan disetujui sebelumnya.
+
 
