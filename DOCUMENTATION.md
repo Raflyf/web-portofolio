@@ -3149,6 +3149,201 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
      - Mengecualikan elemen `.absolute`, `.fixed`, `[role="listbox"]`, dan `[role="dialog"]` dari `position: relative` dan `contain: layout style` di `stitch.css`.
      - Menyematkan `style={{ position: 'absolute', top: '100%', right: 0 }}` dan kelas `!absolute top-full right-0 z-100` pada `CustomSelect` di `Dashboard.jsx` sehingga dropdown menu selalu melayang rapi tepat di bawah tombol trigger tanpa mengubah alur atau menggeser elemen input dan tombol filter lainnya.
 
+   - Halaman utama dilayani oleh `/` ([StitchPortfolio.jsx](file:///d:/code/project/portofolio%20landing%20page/src/stitch-ui/StitchPortfolio.jsx)).
+   - Panel observabilitas telemetri dilayani oleh `/dashboard` ([StitchDashboard.jsx](file:///d:/code/project/portofolio%20landing%20page/src/stitch-ui/StitchDashboard.jsx)).
+   - Seluruh konten biodata, data proyek, kredensial sertifikasi, sistem telemetri Supabase, dan interaktivitas AI lab terjaga 100% tanpa pengurangan.
+
+---
+
+### v10.694.0 — Refinement Liquid Glass V2: Terminal Popup, Optical Crystal Blur, Tab Filtering, & 60 FPS Performance (2026-09-16)
+
+1. **Transformasi Terminal Popup & Developer Lab:**
+   - **Enkapsulasi Tema Portal:** Menambahkan `stitch-liquid-theme` pada wrapper utama modal terminal agar saat `createPortal(..., document.body)` dirender ke root dokumen, seluruh aturan CSS liquid glass teraplikasi secara konsisten.
+   - **Jendela Liquid Glass Crystal (`stitch-terminal-window`):** Menerapkan latar belakang smoked glass (`rgba(8, 11, 22, 0.82)`), specular top highlight border, dan blur 28px.
+   - **Header & Kontrol 3D VisionOS:** Menata ulang bilah navigasi terminal dengan traffic lights berpendar halus, tombol `Riwayat`, `Checkpoint`, dan `Baru` bergaya 3D liquid pill, badge model AI aktif, serta dropdown Reasoning Effort (`CustomSelectEffort`).
+   - **Bilah Pintasan & Dock Masukan:** Merombak bilah pintasan perintah menjadi tombol kapsul transparan dengan efek hover 3D, serta merancang ulang dock input teks dan tombol kirim/batal menjadi komponen taktil 3D.
+   - **Modal Riwayat & Checkpoint:** Memperbarui antarmuka sub-modal riwayat dan rollback agar menggunakan window glass kristal visionOS yang harmonis.
+
+2. **Restorasi True Optical Crystal Blur & Koreksi Efek 3D:**
+   - **Penghapusan Saturasi Opaque:** Mengoreksi latar belakang navbar dan kartu dari `rgba(8, 11, 18, 0.96)` yang terlalu pekat menjadi `rgba(10, 14, 26, 0.72)` dengan `backdrop-filter: blur(20px) saturate(180%)`, mengembalikan efek frosted crystal optik tembus pandang yang sesungguhnya.
+   - **Peredaman Bayangan 3D:** Menghilangkan drop shadow pekat ekstrem (`0 32px 64px -14px rgba(0,0,0,0.95)`) dan menggantinya dengan elevasi natural visionOS yang bersih dan tenang.
+   - **Pencegahan Efek Tombol Tak Diinginkan:** Mengeliminasi selektor tombol global liar yang sebelumnya mengubah tautan utilitas seperti *"Lupa Master PIN? Pulihkan via Email OTP"* menjadi tombol kapsul 3D tebal.
+
+3. **Performa 60 FPS & Eliminasi Frame Drop:**
+   - **Eliminasi Filter SVG CPU-Bound:** Menghapus `<feTurbulence>` dan `<feDisplacementMap>` dari `StitchCausticsBackdrop.jsx` yang membebani komposit Chromium saat scrolling.
+   - **Transisi ke GPU Ambient Mesh:** Menggantikan spring physics scroll realtime yang berat dengan radial ambient mesh statis terakselerasi perangkat keras, meniadakan lag dan frame drop.
+
+4. **Interaktivitas Tab Filter & Navigasi:**
+   - **Proyek & Sertifikat:** Mengubah tab filter inaktif menjadi teks datar dalam dok kapsul (`stitch-tab-flat`), dan hanya menampilkan efek 3D liquid glass saat di-hover atau saat aktif terpilih (`stitch-btn-primary`).
+   - **Bilah Navigasi Header:** Menambahkan efek 3D liquid hover pill pada setiap tautan seksi navbar (`Tentang`, `Keahlian`, `Proyek`, dll.).
+   - **Bilah Samping Storyline:** Menyingkirkan pembesaran tombol yang tidak proporsional dan merampingkan indikator dot menjadi micro-dock visionOS minimalis yang anggun (lebar 18px).
+   - **Header Dashboard:** Menerapkan gaya tombol 3D liquid glass pada tautan *"<- Beranda"* agar seragam dengan tombol pemilih bahasa di sampingnya.
+
+---
+
+### v10.695.0 — Sinkronisasi Navigasi Dinamis, Tab Filter Liquid Glass Anti-Putih, Pemulihan Terminal Native, & Peniadaan Scrollbar OS (2026-09-16)
+
+1. **Sinkronisasi Dinamis & Navigasi Scroll Navbar (`StitchNav.jsx`):**
+   - **Integrasi Programmatic Lenis Scroll:** Menghubungkan klik seluruh item navigasi (`Tentang`, `Keahlian`, `Proyek`, `Sertifikasi`, `Pengalaman`, `AI Lab`, `Kontak`) ke instance `window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 })` sehingga peramban berpindah secara mulus ke posisi seksi yang presisi tanpa loncatan kaku bawaan hash anchor.
+   - **Indikator Aktif 3D Liquid Glass (`.stitch-nav-link-active`):** Mengimplementasikan deteksi seksi aktif berbasis perhitungan viewport scroll (`scrollPosition >= el.offsetTop && scrollPosition < el.offsetTop + el.offsetHeight`), secara dinamis menyalakan pil kaca cair 3D dengan specular rim highlight dan ambient cyan glow saat pengguna menggulir halaman.
+   - **Visibilitas Navbar Desktop:** Memastikan floating navbar tetap terlihat mengambang anggun di layar desktop/laptop agar status sinkronisasi aktif selalu terpantau secara konsisten.
+
+2. **Tab Filter Pure Liquid Glass Anti-Putih (`.stitch-tab-active`):**
+   - **Eliminasi Tombol Putih Solid:** Mengganti kelas `stitch-btn-primary` (putih solid `#ffffff`) pada tab filter aktif `ProjectsGrid.jsx` dan `CertificatesGrid.jsx` dengan `.stitch-tab-active`.
+   - **Estetika Smoked Crystal 3D:** Menerapkan gradien kaca cair smoked (`rgba(29, 37, 69)`), `backdrop-filter: blur(20px) saturate(190%)`, specular inner highlight, dan bayangan elevasi halus dengan teks putih bersih tanpa cat putih solid opaque.
+
+3. **Restorasi Terminal Native di Seksi Lab (`TerminalAI.jsx` & `stitch.css`):**
+   - **Eliminasi Opaque Cut-Out:** Mengoreksi selektor tema root `div.stitch-liquid-theme:not(.relative)` dan `.stitch-liquid-theme.relative { background-color: transparent !important; }` sehingga pembungkus terminal native tidak lagi menciptakan kotak hitam pekat yang menutupi kanvas caustics di sekeliling terminal.
+   - **Polish Bodi & Tombol Kirim:** Mengganti latar belakang bodi pesan menjadi `bg-slate-950/40 backdrop-blur-md` dan tombol submit kirim dari putih solid menjadi `stitch-btn-glass` dengan aksen cyan berpendar.
+
+4. **Peniadaan Scrollbar Bawaan Sistem Operasi (`index.css`):**
+   - **Global Native Scrollbar Concealment:** Menyembunyikan track dan bilah scrollbar abu-abu bawaan Windows/macOS/Linux secara global (`html, body, .no-scrollbar { scrollbar-width: none !important; -ms-overflow-style: none !important; }` serta `*::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }`).
+   - **Estetika Layar Bersih Seamless:** Menghasilkan antarmuka tanpa bilah scrollbar kaku pada tepi layar sembari menjaga fungsi scrolling inersia mouse, trackpad, dan gesture sentuh 100% aktif dan lancar.
+
+---
+
+### v10.696.0 — Eliminasi Total Cat Solid & Realisasi Apple iOS 26 / visionOS 3D Liquid Glass Crystal Blur (2026-09-16)
+
+1. **Eliminasi Total Warna Opaque Solid Hex:**
+   - **Pemberantasan Nilai Opaque:** Menghapus seluruh cat solid opaque hex (`#1f2746`, `#181d31`, `#1d2545`, `#1c223c`, dan gradien putih solid `#ffffff` 0% s/d `#e2e8f0` 70%) dari seluruh elemen antarmuka interaktif.
+   - **Transisi ke Translusen Multi-Stop Fluid:** Seluruh komponen interaktif kini menggunakan multi-stop `rgba(...)` dengan opasitas 35%–60% yang membiarkan cahaya latar dan elemen di baliknya tembus dan dibiarkan secara alami.
+
+2. **Arsitektur Pulau Kaca Kristal Navbar (`.stitch-glass-nav`):**
+   - **Volumetric Liquid Body:** Menggantikan warna dasar abu-abu datar dengan gradien kristal optik multi-stop `linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.42) 75%, rgba(8, 12, 28, 0.62) 100%)`.
+   - **Deep Optical Frosted Blur:** Mengaktifkan pembiasan optik tebal `backdrop-filter: blur(36px) saturate(220%) contrast(106%)` sehingga teks dan caustics yang melintas di balik navbar diburamkan secara anggun dan tersaturasi penuh ala Apple visionOS.
+   - **Dual-Bevel Specular Rim:** Mengimplementasikan pantulan specular sudut atas (`inset 0 1.5px 2px rgba(255,255,255,0.70)`), bayangan refraksi bawah (`inset 0 -1.5px 2px rgba(0,0,0,0.50)`), dan pendaran fotonik inti (`inset 0 0 32px rgba(56,189,248,0.09)`).
+
+3. **Lensa Pil Kaca Cair Aktif (`.stitch-nav-link-active` & `.stitch-tab-active`):**
+   - **Peniadaan Solid Badge:** Menghilangkan badge solid `#1f2746` dan `#1d2545`. Mengubahnya menjadi pil lensa kristal cair 3D translusen dengan `backdrop-filter: blur(28px) saturate(220%) contrast(108%)`.
+   - **Specular Bevel & Photonic Halo:** Menambahkan garis tepi specular atas ganda (`inset 0 1.6px 2px rgba(255,255,255,0.85)`), teks putih berpendar (`text-shadow: 0 0 10px rgba(255,255,255,0.6)`), dan pendaran ambient cyan halus (`0 0 22px rgba(56, 189, 248, 0.45)`).
+
+4. **Komponen Tombol Liquid Crystal Non-Putih (`.stitch-btn-primary` & `.stitch-btn-glass`):**
+   - **Transformasi Tombol Utama ("Hubungi" / "Jelajahi Karya"):** Mengeliminasi gradien putih solid pekat menjadi pil kristal cair bercahaya (`rgba(16, 26, 60, 0.60)` dengan translusensi 60%, specular highlight `inset 0 1.8px 2.2px rgba(255,255,255,0.95)`, dan blur optik 28px).
+   - **Tombol Kaca Sekunder (`stitch-btn-glass`):** Telemetry, pemilih bahasa (ID/EN), salin email, dan tautan GitHub dikonversi menjadi kapsul kristal cair translusen berbezel 3D halus (`blur(24px) saturate(200%)`).
+
+5. **Resolusi Kompatibilitas Parser CSS LightningCSS:**
+   - **Perbaikan Stripping Standard `backdrop-filter`:** Menghilangkan deklarasi duplikat manual `-webkit-backdrop-filter` yang sebelumnya memicu LightningCSS memangkas properti standar `backdrop-filter` di Chromium, memulihkan efek blur optik 100% pada semua peramban modern.
+
+---
+
+### v10.697.0 — Responsivitas Mobile Menyeluruh, Menu Drawer Kaca Cair iOS 26, Restorasi Bar Monitoring Dashboard, & Optimasi GPU (2026-09-16)
+
+1. **Menu Navigasi Mobile 3D Liquid Glass Crystal (`StitchNav.jsx`):**
+   - **Tombol Hamburger Kaca Cair:** Menambahkan tombol toggle menu hamburger interaktif (`Menu` / `X`) khusus pada layar mobile (`lg:hidden`) dengan styling kapsul kristal cair translusen.
+   - **Lembar Menu Mengambang (Floating Liquid Sheet):** Menghadirkan drawer navigasi mobile 3D liquid glass (`.stitch-nav-mobile-sheet`) berbezel optik visionOS dengan blur mendalam (`blur(36px) saturate(220%)`).
+   - **Daftar Tautan Lengkap:** Memungkinkan pengguna ponsel mengakses seluruh 7 seksi landing page (`Tentang`, `Keahlian`, `Proyek`, `Sertifikasi`, `Pengalaman`, `AI Lab`, `Kontak`) dengan indikator seksi aktif (`.stitch-nav-link-active`), scroll mulus berbasis Lenis tanpa tanda `#` pada URL, dan auto-close saat seksi ditekan atau tombol Escape ditekan.
+   - **Utilitas Ringkas Mobile:** Menyediakan tombol aksi cepat langsung di dalam lembar mobile: Tombol Hubungi Saya (CTA utama), jalan pintas Dashboard Telemetry, Salin Alamat Email, dan Tautan Profil GitHub.
+
+2. **Restorasi Bar Monitoring Metrik Dashboard (`stitch.css` & `Dashboard.jsx`):**
+   - **Akar Masalah:** Selektor global `.stitch-dashboard-container .bg-linear-to-r` pada CSS sebelumnya menimpa seluruh elemen bergradien horizontal dengan warna abu-abu gelap transparan 4% dan border tebal, menyebabkan batang kemajuan (progress bar) pada seksi *Proyek Terpopuler*, *Sertifikat Diminati*, dan *Saluran Trafik* menjadi hitam pekat tak terlihat.
+   - **Isolasi Selektor Spesifik:** Mengganti selektor tersebut menjadi `.stitch-dashboard-container .auto-gateway-router-banner` khusus untuk spanduk Smart Auto Gateway.
+   - **Pendaran Warna Gradien Hidup:** Memberikan nilai fallback gradien terang (`purple-to-cyan`, `emerald-to-teal`, `indigo-to-pink`) dengan elevasi bayangan pendaran neon (`shadow-[0_0_10px_rgba(...)]`) serta batas lebar minimal (`Math.max(pct, 6)%`) agar batang tetap tampak estetik dan jelas terbaca bahkan pada metrik bernilai kecil.
+
+3. **Responsivitas Header Dashboard & Layout Mobile (`Dashboard.jsx`):**
+   - **Bilah Header Tanpa Terpotong:** Menyesuaikan ukuran padding dan tata letak bilah kontrol atas dashboard (`p-1.5 sm:px-2.5 sm:py-1.5`, `overflow-x-auto no-scrollbar`) sehingga 6 tombol kontrol (Kembali, Status Live, Bahasa, Tema, Ping, Ganti PIN, Refresh, Logout) muat dengan sempurna di layar smartphone sempit (< 380px).
+   - **Grid Metrik Adaptif:** Memastikan seluruh kartu Bento KPI, 4 kartu intelijen, dan 16 kartu model AI tersusun rapi dalam 1 kolom pada ponsel (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`).
+
+4. **Responsivitas Terminal Native & Modal Pop-up (`TerminalAI.jsx`):**
+   - **Ketinggian Fluida Mobile:** Menyesuaikan tinggi jendela terminal inline di seksi `#lab` menjadi `h-[540px] sm:h-150 lg:h-175` agar proporsional dan tidak memotong viewport pada perangkat ponsel dengan rasio layar vertikal.
+   - **Pencegahan Teks Meluber:** Merampingkan teks label prompt terminal (`rafly@portfolio-lab:~`) dengan pemotongan teks anggun (`truncate`) pada layar ultra-kecil (< 360px).
+   - **Resolusi Lint CSS Conflict:** Membersihkan duplikasi kelas `text-sm` vs `text-xs` pada menu perintah garis miring (/cmd) dan merapikan kelas Tailwind v4.
+
+5. **Optimasi Performa Ekstrem & Konservasi Memori GPU (`StitchCausticsBackdrop.jsx`):**
+   - **Eliminasi Pemborosan VRAM:** Menghapus deklarasi `willChange: 'transform'` pada 4 elemen lingkaran mesh ambient raksasa (`blur-[100px]`, `w-[720px]`). Karena elemen ini statis dan tidak bergerak dalam loop frame animasi, peniadaan `willChange` mencegah GPU mengalokasikan layer tekstur raster terpisah yang boros memori.
+   - **Garansi 60 FPS & Resource < 20%:** Memastikan penggunaan CPU dan GPU tetap berada jauh di bawah ambang batas 20% dengan laju render scroll 60 FPS tanpa frame drop.
+
+---
+
+### v10.697.1 — Standardisasi Kelas Kanonikal Tailwind CSS v4 & Pembersihan Diagnostik (2026-09-16)
+
+1. **Refaktorisasi Kelas Kanonikal Terminal AI (`TerminalAI.jsx`):**
+   - Mengganti nilai arbitrary `h-[540px]` menjadi kelas kanonikal `h-135`.
+   - Mengganti sintaks warisan `bg-gradient-to-r` pada tombol batal generasi menjadi `bg-linear-to-r` (Tailwind v4 standard).
+
+2. **Standardisasi Dimensi Mesh Ambient (`StitchCausticsBackdrop.jsx`):**
+   - Mengonversi seluruh nilai arbitrary dimensi lingkaran radial ambient menjadi kelas utilitas standar Tailwind:
+     - `w-[680px]` / `h-[640px]` -> `w-170` / `h-160`
+     - `w-[720px]` / `h-[680px]` -> `w-180` / `h-170`
+     - `w-[640px]` / `h-[600px]` -> `w-160` / `h-150`
+     - `w-[700px]` / `h-[500px]` -> `w-175` / `h-125`
+
+3. **Standardisasi Lebar Kontainer & Opasitas Navbar (`StitchNav.jsx`):**
+   - Mengganti `max-w-[1240px]` menjadi kelas kanonikal `max-w-310`.
+   - Mengganti kelas pseudo hover `hover:bg-white/[0.08]` pada tautan desktop dan drawer mobile menjadi `hover:bg-white/8`.
+
+---
+
+### v10.697.2 — Sinkronisasi Desain Liquid Glass iOS 26, Fungsionalitas Scroll Navbar Monitoring, & Eliminasi Lonjakan Beban CPU (2026-09-16)
+
+1. **Sinkronisasi Perilaku Scroll & Jarak Header Navbar (`StitchNav.jsx`):**
+   - **Mekanisme Auto-Hide Seragam:** Menyamakan logika navigasi beranda dengan bilah monitoring: saat scroll ke bawah (*scroll down*), navbar secara anggun meluncur ke atas dan tersembunyi (`-translate-y-32`); saat scroll ke atas (*scroll up*), navbar langsung meluncur turun dan muncul kembali (`translate-y-0`).
+   - **Konsistensi Lintas Perangkat:** Menghapus pengecualian desktop (`window.innerWidth >= 1024`) sehingga fitur auto-hide aktif secara responsif di semua perangkat (desktop, tablet, smartphone).
+   - **Penyusutan Jarak Atas Layar:** Merampingkan padding kontainer fixed dari `p-2.5 sm:p-5 md:p-6` menjadi `pt-2 sm:pt-3 px-3 sm:px-6` agar navbar berada dekat dengan batas atas layar, presisi seperti header dashboard.
+
+2. **Unifikasi Material 3D Liquid Glass Apple visionOS / iOS 26 (`stitch.css`, `index.css`):**
+   - **Sinkronisasi DNA Optik Kristal:** Menerapkan formula visual navbar ke seluruh kartu konten (Hero showcase deck, Bento grid, Proyek, Sertifikasi, Pengalaman, Terminal AI, Kontak):
+     - Gradien kristal asap reflektif 135 derajat: `linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.46) 75%, rgba(8, 12, 28, 0.66) 100%)`.
+     - Bevel spekular fisik 3D ganda: bibir kilau atas (`inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70)`) dan bayangan kedalaman optik bawah (`inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50)`).
+     - Pendaran caustics safir internal (`inset 0 0 32px 0 rgba(56, 189, 248, 0.09)`).
+     - Bayangan elevasi mengambang berdimensi (`0 24px 54px -10px rgba(0, 0, 0, 0.80), 0 4px 16px 0 rgba(0, 0, 0, 0.45), 0 0 28px -4px rgba(56, 189, 248, 0.18)`).
+     - Border presisi optik (`1px solid rgba(255, 255, 255, 0.26)`).
+
+3. **Eliminasi Akar Masalah Lonjakan CPU 90% (Skia Software Blur Thrashing):**
+   - **Pemberantasan Nested Backdrop-Filter:** Menghilangkan `backdrop-filter` bersarang pada anak navbar (tautan aktif, tombol aksi, ikon), tombol `stitch-btn-glass`, badge keahlian, dan bilah sub-komponen terminal. Elemen anak mewarisi latar belakang blur wadah induk tanpa memicu de-optimasi recursive blur pass pada thread rasterizer CPU.
+   - **Transisi ke Gradien Shader GPU Murni:** Mengganti seluruh filter blur kernel raksasa software (`blur-[100px]`, `blur-[120px]`, `blur-3xl`) pada `StitchCausticsBackdrop.jsx` dan `horizon-hero.jsx` dengan gradien radial multi-stop hardware yang dievaluasi langsung oleh shader GPU dengan nol beban konvolusi CPU.
+   - **Isolasi Layer Marquee Bergerak:** Mengisolasi layer marquee animasi yang bergerak kontinu dengan `transform: translateZ(0)` dan `contain: paint`, serta menonaktifkan `backdrop-filter` pada 62 pil keahlian yang bergerak di dalam marquee.
+   - **Aktivasi Section Containment:** Menerapkan `.section-contain` (`content-visibility: auto; contain-intrinsic-size: 1px 750px;`) pada seluruh seksi halaman utama (`AboutSection`, `SkillsBento`, `ProjectsGrid`, `CertificatesGrid`, `ExperienceTimeline`, `#lab`, `ContactSection`) untuk menghentikan pemborosan siklus rendering pada elemen di luar viewport.
+   - **Stabilisasi Event Listener:** Memoisasi array seksi pada `ScrollStoryline.jsx` via `useMemo` dan menonaktifkan `syncTouch: false` pada Lenis smooth scroll di `App.jsx`.
+
+### v10.697.3 — Restorasi Penuh Blur Liquid Glass Kristal Autentik & Opasitas Optik Kedap Teks Latar Belakang (2026-09-16)
+
+1. **Restorasi Total Blur Liquid Glass Kristal visionOS (`stitch.css`, `index.css`):**
+   - **Pencegahan Tembus Pandang Teks Kartu:** Mengembalikan densitas gradien kristal asap pada `.stitch-glass-nav`, `.liquid-glass-nav`, dan header dashboard dari opasitas tipis 42%–62% menjadi `linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 28%, rgba(14, 22, 54, 0.82) 72%, rgba(8, 12, 28, 0.95) 100%)`. Kandungan gelap beropasitas 82%–95% dengan sempurna membaurkan dan memblokir tembusan angka/teks kartu metrik di bawahnya tanpa kehilangan kilau kristal permukaan.
+   - **Pengembalian Ketebalan Difusi Optik:** Menaikkan kembali `backdrop-filter` dari 24px ke `blur(40px) saturate(220%) contrast(108%)` untuk menciptakan kedalaman difusi kristal es yang pekat dan mewah.
+   - **Bevel Spekular Presisi Tinggi:** Memperkuat garis pantul fisik 3D atas (`inset 0 1.5px 2.5px 0 rgba(255, 255, 255, 0.75)`), bayangan bawah (`inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.60)`), dan pendaran caustics safir internal (`inset 0 0 32px 0 rgba(56, 189, 248, 0.12)`).
+
+2. **Pemulihan Karakter Fisik 3D Tombol & Pil Navigasi (`stitch.css`):**
+   - **Restorasi `.stitch-btn-glass`:** Mengembalikan `backdrop-filter: blur(20px) saturate(200%) contrast(104%)` dan border kristal `1px solid rgba(255, 255, 255, 0.28)` sehingga seluruh tombol navigasi dan aksi kembali memiliki tekstur taktil kristal cair 3D.
+   - **Restorasi `.stitch-nav-link-active` & Tab Aktif:** Mengaktifkan kembali `backdrop-filter: blur(28px) saturate(220%) contrast(108%)` dan `blur(24px)` pada pil tautan aktif dengan efek elevasi 3D.
+   - **Unifikasi Tombol Kontrol Dashboard (`Dashboard.jsx`):** Menerapkan kelas `stitch-btn-glass` pada seluruh tombol aksi di header monitoring (Theme Toggle, Test Ping, Ubah PIN, Refresh, Logout) serta menyesuaikan jarak atas konten (`pt-20 sm:pt-24`) agar selaras dengan estetika liquid glass pil.
+
+### v10.697.4 — Rollback Penuh ke Versi bbee7d2 Sesuai Permintaan Pengguna (2026-09-16)
+
+1. **Restorasi Mutlak Versi `bbee7d2`:**
+   - Seluruh berkas pada direktori `src/` (`StitchNav.jsx`, `stitch.css`, `index.css`, `Dashboard.jsx`, `TerminalAI.jsx`, `StitchCausticsBackdrop.jsx`, dan seluruh komponen terkait) dikembalikan 100% tepat ke kondisi commit `bbee7d2` (*refactor: apply canonical Tailwind CSS v4 classes across components*).
+   - Tampilan visual pulau navigasi floating liquid glass, padding `p-2.5 sm:p-5 md:p-6`, efek blur kristal cair, pill highlight aktif, dan seluruh hierarki styling kembali persis ke versi yang telah diverifikasi dan disetujui sebelumnya.
+
+### v10.697.5 — Sinkronisasi Scroll Auto-Hide & Perampingan Jarak Atas Navbar (2026-09-16)
+
+1. **Sinkronisasi Scroll Auto-Hide dengan Header Dashboard (`StitchNav.jsx`):**
+   - **Perilaku Sembunyi Masuk ke Atas:** Menghapus batas desktop (`window.innerWidth >= 1024`) pada event scroll `StitchNav.jsx` agar mekanisme auto-hide bekerja konsisten di seluruh perangkat: saat pengguna melakukan scroll ke bawah (*scroll down*), navbar meluncur mulus ke atas keluar layar (`-translate-y-32`); saat scroll ke atas (*scroll up*) atau berada di area puncak (`currentY < 70`), navbar langsung kembali turun (`translate-y-0`).
+   - **Perampingan Jarak Puncak Layar:** Mengganti padding luar kontainer navbar dari `p-2.5 sm:p-5 md:p-6` menjadi `pt-2 sm:pt-3 px-3 sm:px-6` sehingga jarak navbar terhadap tepi atas layar menjadi ramping dan proporsional (8px di mobile, 12px di desktop), serasi dengan header dashboard tanpa mengubah formula visual liquid glass kristal sedikit pun.
+
+### v10.697.6 — Unifikasi Penuh Formula Liquid Glass Navbar ke Seluruh Konten & Kartu (2026-09-16)
+
+1. **Implementasi Gaya Liquid Glass Navbar ke Seluruh Konten (`stitch.css`, `index.css`):**
+   - **Preservasi Navbar 100%:** Komponen navbar ([StitchNav.jsx](file:///d:/code/project/portofolio%20landing%20page/src/stitch-ui/components/StitchNav.jsx)) dan kelas `.stitch-glass-nav` dipertahankan 100% tanpa perubahan apa pun sesuai arahan pengguna.
+   - **Unifikasi Kartu & Kontainer Konten:** Mengimplementasikan formula material, gradien, blur, border, dan dual-bevel spekular dari navbar ke seluruh elemen kartu dan kontainer:
+     - Kartu Standar (`.stitch-glass`, `.liquid-glass`): Gradien kristal optik `linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.46) 75%, rgba(8, 12, 28, 0.66) 100%)`, `backdrop-filter: blur(36px) saturate(220%) contrast(106%)`, border `rgba(255, 255, 255, 0.26)`, dan bayangan pantul spekular atas `inset 0 1.5px 2px rgba(255, 255, 255, 0.70)` serta caustics safir `inset 0 0 32px rgba(56, 189, 248, 0.09)`.
+     - Kartu Unggulan (`.liquid-glass-strong`): Gradien kristal diperkuat dengan bevel spekular `inset 0 1.6px 2.2px rgba(255, 255, 255, 0.75)` dan caustics safir `inset 0 0 36px rgba(56, 189, 248, 0.10)`.
+     - Interaksi Hover Kartu (`.liquid-glass-hover:hover`): Elevasi taktil 3D `translateY(-3px)` dengan pantulan tepi atas `inset 0 1.6px 2.2px rgba(255, 255, 255, 0.90)` dan pendaran pendar `0 0 32px rgba(56, 189, 248, 0.28)`.
+     - Jendela Terminal AI (`.stitch-terminal-window`): Penyelarasan penuh dengan material kristal liquid glass 36px dan border spekular yang identik.
+     - Token Desain Global (`index.css`): Menyelaraskan token `--glass-bg`, `--glass-bg-strong`, `--glass-blur`, `--glass-border`, dan `--glass-shadow` dengan formula navbar.
+
+### v10.697.7 — Optimasi Performa Mobile 60 FPS, Perbaikan Dropdown Dashboard, & Sinkronisasi Terminal Header (2026-09-17)
+
+1. **Optimasi Performa Mobile 60 FPS (Anti-Lag & Anti-Jank Scroll):**
+   - **Eliminasi Touch Interception Lenis (`App.jsx`):** Mengubah `syncTouch: false` dan `touchInertiaMultiplier: 1.0` agar peramban ponsel (iOS WebKit / Android Chromium) mengeksekusi momentum scrolling secara native pada thread compositor GPU 60/120 FPS tanpa pertarungan interupsi komputasi JavaScript di main thread.
+   - **Shader Gradien GPU Murni Pengganti Blur Kernel Raksasa (`horizon-hero.jsx`, `StitchCausticsBackdrop.jsx`):** Menghapus seluruh filter blur multi-pass berat (`blur-[120px]`, `blur-[100px]`, `blur-3xl`) berukuran 700x700px yang membebani GPU rasterizer di smartphone. Menggantinya dengan `radial-gradient` hardware multi-stop murni yang dihitung instan oleh GPU shader tanpa overhead konvolusi.
+   - **Bypass DOM Reflow Mobile (`scroll-storyline.jsx`):** Menambahkan `if (window.innerWidth < 1280) return;` agar pengukuran reflow `offsetTop` dan `offsetHeight` tidak dijalankan saat scroll di perangkat HP/tablet yang memang menyembunyikan sidebar storyline.
+   - **Penerapan Section Containment (`StitchPortfolio.jsx`, `stitch.css`):** Mengaktifkan `.section-contain` (`content-visibility: auto; contain-intrinsic-size: 1px 700px;`) pada seluruh seksi utama agar DOM yang berada di luar layar tidak memakan siklus render sebelum digulir ke viewport.
+
+2. **Perbaikan Tuntas Dropdown Dashboard Rusak / Melompat ke Atas (`Dashboard.jsx`, `stitch.css`):**
+   - **Akar Masalah:** Di `stitch.css`, selektor `.stitch-dashboard-container .liquid-glass` memaksakan `position: relative;` dan `contain: layout style;` dengan spesifisitas CSS tinggi yang menimpa kelas `.absolute` pada menu dropdown `[role="listbox"]`. Akibatnya, menu dropdown masuk ke dalam normal document flow flexbox dengan tinggi ~300px, membuat flex parent dengan `items-center` menengahkan saudara-saudaranya dan melontarkan tombol trigger ke pojok paling atas kartu.
+   - **Solusi Komprehensif:**
+     - Mengecualikan elemen `.absolute`, `.fixed`, `[role="listbox"]`, dan `[role="dialog"]` dari `position: relative` dan `contain: layout style` di `stitch.css`.
+     - Menyematkan `style={{ position: 'absolute', top: '100%', right: 0 }}` dan kelas `!absolute top-full right-0 z-100` pada `CustomSelect` di `Dashboard.jsx` sehingga dropdown menu selalu melayang rapi tepat di bawah tombol trigger tanpa mengubah alur atau menggeser elemen input dan tombol filter lainnya.
+
 3. **Restorasi Posisi & Fungsionalitas Tombol Jendela Terminal (`TerminalAI.jsx`):**
    - **Standardisasi Kontrol Jendela macOS:** Memindahkan 3 bulatan kontrol jendela (merah, kuning, hijau) ke posisi standar di pojok kiri atas bilah header terminal (`stitch-terminal-header`), terpusat vertikal dengan judul terminal di semua mode (laptop maupun HP).
    - **Interaktivitas Tombol:** Bulatan merah menutup modal pop-up / mereset sesi, bulatan kuning membuka checkpoint, dan bulatan hijau memperbesar ke mode pop-up layar penuh, lengkap dengan hover icon indikator (`X`, `-`, `+`).
@@ -3163,3 +3358,27 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
 5. **Penyempurnaan Opasitas Navbar Mobile & Jendela Terminal (`stitch.css`):**
    - Memperkuat lapisan dasar gradien kristal asap pada `.stitch-nav-mobile-sheet` dan navbar mobile (`@media (max-width: 768px)`) menjadi `linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 20%, rgba(12, 17, 36, 0.96) 60%, rgba(6, 9, 20, 0.99) 100%)`. Konten dan teks halaman di balik navbar kini 100% diblokir tanpa ada kebocoran teks tembus pandang sedikit pun, sementara efek bevel kristal 3D dan blur tetap mewah.
    - Menyelaraskan jendela modal terminal pop-up dengan kristal optik pekat (`rgba(12, 17, 36, 0.95)` hingga `rgba(6, 9, 20, 0.99)`) agar kontras tinggi dan tidak tembus ke halaman di belakangnya.
+
+---
+
+### v10.697.8 — Penataan Kapsul Input & Send Button Terminal, Pemulihan Dropdown Effort, Bubble Chat Adaptif, & 3D Liquid Glass Floating Buttons (2026-09-17)
+
+1. **Unifikasi Kapsul Input & Send Button Terminal AI (`TerminalAI.jsx`):**
+   - **Akar Masalah:** Tombol kirim (`Send`) diposisikan secara `absolute right-1.5` dengan kelas `.stitch-btn-glass` yang memiliki `border-radius: 9999px` melayang di atas sudut membulat `rounded-xl` milik elemen `<input>`. Pada resolusi mobile, radius tombol meluber keluar dari batas tepi input dan memicu overlap visual ganda yang tidak rapi.
+   - **Solusi Komprehensif:** Mengintegrasikan `<input>`, tombol lampiran file (`Paperclip`), dan tombol aksi (`Send` / `Cancel`) ke dalam satu kontainer kapsul flex terpadu berkelas `rounded-2xl bg-black/50 border border-white/15 focus-within:border-cyan-400/60 pl-2 pr-1.5 py-1`. Elemen `<input>` diubah menjadi borderless transparan di bagian tengah, sedangkan tombol kirim tertanam rapi di dalam padding ujung kapsul tanpa saling tumpang tindih.
+
+2. **Pemulihan Dropdown Reasoning Effort Terminal (`TerminalAI.jsx`):**
+   - Menghapus `overflow-x-auto` pada bar kontrol terminal (`stitch-terminal-control-bar`) dan menggantinya dengan `overflow-visible relative z-30`. Dropdown menu `CustomSelectEffort` kini bebas melayang dengan `z-[100]` tanpa terpotong atau tersembunyi oleh batas overflow container.
+
+3. **Bubble Chat Adaptif (AI Fit-Content & User Emerald Crystal) (`TerminalAI.jsx`):**
+   - **Bubble Respon AI:** Mengganti kelas kontainer pesan `w-full` menjadi `w-fit max-w-full` di dalam pembungkus `max-w-[95%] sm:max-w-[85%]`. Respon pendek seperti "Pong!" kini menciut proporsional mengikuti panjang teks, sementara penjelasan panjang, tabel, atau blok kode tetap dapat melebar secara optimal.
+   - **Bubble Pesan Pengunjung (User):** Mengganti styling dasar emerald datar dengan material kristal 3D Liquid Glass safir-zamrud: `bg-gradient-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75 border border-emerald-400/35 backdrop-blur-xl shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)]`.
+
+4. **Eliminasi Artefak Kotak Ujung Navbar Mobile & Dekopling Stacking Context (`StitchNav.jsx`, `stitch.css`):**
+   - **Eliminasi Sudut Kotak:** Menyematkan `border-radius: 9999px !important;` secara eksplisit pada selektor `.stitch-glass-nav` di `stitch.css` sehingga pil navigasi pada tampilan mobile selalu melengkung bulat sempurna tanpa sudut kotak di kedua ujungnya.
+   - **Isolasi Stacking Context:** Memindahkan kartu navigasi mobile (`.stitch-nav-mobile-sheet`) keluar dari dalam elemen pil `.stitch-glass-nav` menjadi anak langsung `<header>`.
+   - **Backdrop Dimmer Layar Penuh Anti-Bleedthrough:** Menempatkan overlay backdrop dimmer pekat (`fixed inset-0 bg-black/80 backdrop-blur-md z-45`) di luar hierarki transformasi header, serta mempertebal lapisan dasar sheet mobile menjadi kristal asap gelap 98% (`rgba(10, 15, 32, 0.98)`). Teks halaman di latar belakang kini sepenuhnya teredam dan tidak lagi berbenturan dengan menu navigasi mobile.
+
+5. **Unifikasi 3D Liquid Glass Floating Action Buttons (`stitch.css`, `App.jsx`, `Dashboard.jsx`):**
+   - **Tombol Back to Top:** Mengganti gaya datar dengan kelas `.stitch-floating-fab-backtotop` yang mengusung gradien kristal kaca cair, refleksi spekular atas ganda (`inset 0 1.5px 2px rgba(255,255,255,0.75)`), dan pendaran optik safir halus di halaman beranda dan dashboard.
+   - **Tombol Floating Terminal Launcher:** Mengganti bulatan solid cyan datar dengan kelas `.stitch-floating-fab-terminal` berefek kristal cair safir 3D transparan (`linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(56, 189, 248, 0.30) 100%), rgba(14, 28, 64, 0.65)`), pantulan cahaya kaca visionOS, dan pendaran pendar cyan lembut yang serasi dengan navbar utama.

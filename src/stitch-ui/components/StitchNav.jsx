@@ -162,10 +162,20 @@ export default function StitchNav() {
   };
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 flex items-center justify-center pt-2 sm:pt-3 px-3 sm:px-6 pointer-events-none transition-transform duration-300 ease-in-out ${
-      navVisible ? 'translate-y-0' : '-translate-y-32'
-    }`}>
-      <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
+    <>
+      {/* Soft backdrop dimmer when mobile menu is open (Fixed full viewport, behind header) */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-45 pointer-events-auto transition-opacity duration-200"
+          aria-hidden="true"
+        />
+      )}
+
+      <header className={`fixed top-0 inset-x-0 z-50 flex flex-col items-center pt-2 sm:pt-3 px-3 sm:px-6 pointer-events-none transition-transform duration-300 ease-in-out ${
+        navVisible ? 'translate-y-0' : '-translate-y-32'
+      }`}>
+        <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
         {/* Brand & Status Indicator */}
         <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
           <a 
@@ -266,108 +276,99 @@ export default function StitchNav() {
             {mobileMenuOpen ? <X className="w-4 h-4 text-cyan-300" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
-
-        {/* Mobile 3D Liquid Glass Crystal Menu Sheet */}
-        {mobileMenuOpen && (
-          <>
-            {/* Soft backdrop dimmer */}
-            <div 
-              onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 pointer-events-auto transition-opacity"
-              aria-hidden="true"
-            />
-
-            {/* Floating Liquid Glass Navigation Card */}
-            <div 
-              role="dialog"
-              aria-modal="true"
-              aria-label="Menu Navigasi Mobile"
-              className="pointer-events-auto absolute top-full mt-2 inset-x-1 sm:inset-x-2 max-w-md mx-auto z-50 p-4 sm:p-5 stitch-nav-mobile-sheet glass-spring-in space-y-3.5 font-sans"
-            >
-              {/* Status Bar */}
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 text-xs font-mono text-slate-300">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(111,246,255,0.85)] animate-pulse" />
-                  <span className="text-[11px]">{language === 'id' ? 'Tersedia untuk Riset & Rekayasa' : 'Available for Research & Eng'}</span>
-                </div>
-                <span className="text-[10px] text-cyan-400 font-bold tracking-wider">RF.dev</span>
-              </div>
-
-              {/* Nav Items List */}
-              <div className="grid grid-cols-1 gap-1">
-                {NAV_ITEMS.map((item) => {
-                  const isActive = activeSection === item.id;
-                  const Icon = item.icon;
-                  return (
-                    <a
-                      key={item.id}
-                      href={`#${item.id}`}
-                      onClick={(e) => scrollToSection(e, item.id)}
-                      className={`px-3.5 py-2.5 rounded-2xl flex items-center justify-between text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                        isActive 
-                          ? 'stitch-nav-link-active' 
-                          : 'text-slate-200 hover:text-white hover:bg-white/8'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        {Icon && <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-300' : 'text-slate-400'}`} />}
-                        <span>{language === 'id' ? item.labelId : item.labelEn}</span>
-                      </div>
-                      {isActive ? (
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_#22d3ee]" />
-                      ) : (
-                        <span className="text-slate-500 text-xs">→</span>
-                      )}
-                    </a>
-                  );
-                })}
-              </div>
-
-              {/* Mobile Footer Quick Utilities */}
-              <div className="pt-3 border-t border-white/10 space-y-2.5">
-                <a
-                  href="#contact"
-                  onClick={(e) => scrollToSection(e, 'contact')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl stitch-btn-primary font-semibold text-xs tracking-wide transition-all cursor-pointer"
-                >
-                  <span>{language === 'id' ? 'Hubungi Saya' : 'Get in Touch'}</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
-
-                <div className="flex items-center justify-between gap-2 pt-1">
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex-1 py-2 px-3 rounded-xl stitch-btn-glass text-[11px] font-mono text-cyan-300 hover:text-white flex items-center justify-center gap-1.5"
-                  >
-                    <BarChart3 className="w-3.5 h-3.5" />
-                    <span>Telemetry</span>
-                  </Link>
-
-                  <button
-                    onClick={handleCopyEmail}
-                    className="py-2 px-3 rounded-xl stitch-btn-glass text-[11px] font-mono text-slate-200 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer"
-                    title="Salin Email"
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Mail className="w-3.5 h-3.5" />}
-                    <span>{copied ? 'Disalin!' : 'Email'}</span>
-                  </button>
-
-                  <a
-                    href="https://github.com/Raflyf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-xl stitch-btn-glass text-slate-200 hover:text-white flex items-center justify-center"
-                    title="GitHub"
-                  >
-                    <GithubIcon className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
       </div>
+
+      {/* Floating Liquid Glass Navigation Card (Direct Child of Header, Outside Pill) */}
+      {mobileMenuOpen && (
+        <div 
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu Navigasi Mobile"
+          className="pointer-events-auto w-full max-w-md mt-2 p-4 sm:p-5 stitch-nav-mobile-sheet glass-spring-in space-y-3.5 font-sans"
+        >
+          {/* Status Bar */}
+          <div className="flex items-center justify-between pb-3 border-b border-white/10 text-xs font-mono text-slate-300">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(111,246,255,0.85)] animate-pulse" />
+              <span className="text-[11px]">{language === 'id' ? 'Tersedia untuk Riset & Rekayasa' : 'Available for Research & Eng'}</span>
+            </div>
+            <span className="text-[10px] text-cyan-400 font-bold tracking-wider">RF.dev</span>
+          </div>
+
+          {/* Nav Items List */}
+          <div className="grid grid-cols-1 gap-1">
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeSection === item.id;
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => scrollToSection(e, item.id)}
+                  className={`px-3.5 py-2.5 rounded-2xl flex items-center justify-between text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                    isActive 
+                      ? 'stitch-nav-link-active' 
+                      : 'text-slate-200 hover:text-white hover:bg-white/8'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    {Icon && <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-300' : 'text-slate-400'}`} />}
+                    <span>{language === 'id' ? item.labelId : item.labelEn}</span>
+                  </div>
+                  {isActive ? (
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_#22d3ee]" />
+                  ) : (
+                    <span className="text-slate-500 text-xs">→</span>
+                  )}
+                </a>
+              );
+            })}
+          </div>
+
+          {/* Mobile Footer Quick Utilities */}
+          <div className="pt-3 border-t border-white/10 space-y-2.5">
+            <a
+              href="#contact"
+              onClick={(e) => scrollToSection(e, 'contact')}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl stitch-btn-primary font-semibold text-xs tracking-wide transition-all cursor-pointer"
+            >
+              <span>{language === 'id' ? 'Hubungi Saya' : 'Get in Touch'}</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </a>
+
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex-1 py-2 px-3 rounded-xl stitch-btn-glass text-[11px] font-mono text-cyan-300 hover:text-white flex items-center justify-center gap-1.5"
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span>Telemetry</span>
+              </Link>
+
+              <button
+                onClick={handleCopyEmail}
+                className="py-2 px-3 rounded-xl stitch-btn-glass text-[11px] font-mono text-slate-200 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer"
+                title="Salin Email"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Mail className="w-3.5 h-3.5" />}
+                <span>{copied ? 'Disalin!' : 'Email'}</span>
+              </button>
+
+              <a
+                href="https://github.com/Raflyf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl stitch-btn-glass text-slate-200 hover:text-white flex items-center justify-center"
+                title="GitHub"
+              >
+                <GithubIcon className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
+    </>
   );
 }

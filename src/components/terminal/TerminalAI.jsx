@@ -171,7 +171,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
         <div 
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window shadow-2xl z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl border border-white/20"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window shadow-2xl z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl border border-white/20"
         >
           <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-200/50 dark:border-white/5 font-semibold">
             Reasoning Effort
@@ -1257,7 +1257,7 @@ export default function TerminalAI({ onClose } = {}) {
         </div>
   
         {/* Control Bar (Prompt, Riwayat, Baru, Model, Effort) */}
-        <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-white/10 stitch-terminal-control-bar gap-2 shrink-0 relative z-20 overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between px-3 sm:px-4 py-2 border-b border-white/10 stitch-terminal-control-bar gap-2 shrink-0 relative z-30 overflow-visible">
           <div className="flex items-center gap-2 shrink-0 min-w-0 font-mono">
             <span className="text-cyan-400 text-xs font-semibold whitespace-nowrap">rafly@portfolio-lab:~$</span>
             <span className="hidden sm:inline text-zinc-400 text-[11px] font-normal">(bash/AI)</span>
@@ -1351,7 +1351,7 @@ export default function TerminalAI({ onClose } = {}) {
                     <User className="w-3 h-3 text-emerald-400" />
                   </div>
                 </div>
-                <div className="bg-emerald-900/30 border border-emerald-500/40 rounded-2xl rounded-tr-sm px-4 py-3 text-emerald-50 shadow-[0_0_20px_rgba(16,185,129,0.15)] text-[13px] sm:text-sm">
+                <div className="w-fit max-w-full rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] sm:text-sm text-emerald-100 backdrop-blur-xl border border-emerald-400/35 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)] bg-gradient-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75">
                   {/* Render attachments preview if present */}
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
@@ -1453,7 +1453,7 @@ export default function TerminalAI({ onClose } = {}) {
                   </div>
                 )}
                 
-                <div className="w-full liquid-glass rounded-2xl rounded-tl-sm px-4 py-4 sm:px-6 text-zinc-200">
+                <div className="w-fit max-w-full liquid-glass rounded-2xl rounded-tl-sm px-4 py-3 sm:px-5.5 text-zinc-200">
                   <div className="markdown-body max-w-none leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {formatMessageContent(msg.content)}
@@ -1804,15 +1804,15 @@ export default function TerminalAI({ onClose } = {}) {
           )}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full relative">
             <span className="hidden sm:block text-cyan-400 font-semibold text-xs whitespace-nowrap pl-1 font-mono">rafly@Lab:~$</span>
-            <div className="flex-1 relative flex items-center w-full">
+            <div className="flex-1 relative flex items-center w-full rounded-2xl bg-black/50 border border-white/15 focus-within:border-cyan-400/60 focus-within:ring-1 focus-within:ring-cyan-400/40 transition-all pl-2 pr-1.5 py-1 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.12),0_4px_16px_rgba(0,0,0,0.4)]">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="stitch-raw-btn absolute left-2.5 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+                className="stitch-raw-btn p-1.5 text-zinc-400 hover:text-cyan-300 transition-colors cursor-pointer shrink-0"
                 aria-label="Lampirkan file"
                 title="Lampirkan file (teks/kode/gambar)"
               >
-                <Paperclip className="w-3.5 h-3.5" />
+                <Paperclip className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
               <input
                 ref={fileInputRef}
@@ -1831,7 +1831,7 @@ export default function TerminalAI({ onClose } = {}) {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={attachments.length > 0 ? "Tambahkan pesan atau langsung kirim lampiran..." : "Ketik perintah atau tanya sesuatu... (misal: 'berita terbaru apa hari ini')"}
-                className="w-full bg-black/40 border border-white/15 text-white rounded-xl py-2 sm:py-2.5 pl-8.5 pr-11 sm:pr-12 focus:outline-none focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/40 placeholder-zinc-500 transition-all text-xs sm:text-sm font-sans"
+                className="flex-1 min-w-0 bg-transparent border-none text-white px-2.5 py-1.5 focus:outline-none placeholder-zinc-500 text-xs sm:text-sm font-sans"
                 disabled={isLoading}
               />
               
@@ -1856,17 +1856,17 @@ export default function TerminalAI({ onClose } = {}) {
                   type="button"
                   onClick={cancelGeneration}
                   title="Batalkan pengiriman (Cancel)"
-                  className="absolute right-1.5 p-1.5 sm:p-2 bg-linear-to-r from-red-500 to-rose-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:brightness-110 transition-all cursor-pointer flex items-center justify-center"
+                  className="w-8 h-8 rounded-full bg-linear-to-r from-red-500 to-rose-600 text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:brightness-110 transition-all cursor-pointer flex items-center justify-center shrink-0"
                 >
-                  <Square className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white animate-pulse" />
+                  <Square className="w-3.5 h-3.5 fill-white animate-pulse" />
                 </button>
               ) : (
                 <button
                   type="submit"
                   disabled={(!input.trim() && attachments.length === 0) || isLoading}
-                  className="stitch-btn-glass absolute right-1.5 p-1.5 sm:p-2 text-cyan-300 hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center"
+                  className="w-8 h-8 rounded-full stitch-btn-glass text-cyan-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center shrink-0"
                 >
-                  <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Send className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
