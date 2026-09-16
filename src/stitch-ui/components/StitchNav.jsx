@@ -82,7 +82,7 @@ export default function StitchNav() {
         <div className="flex items-center gap-2 shrink-0">
           {/* Dashboard Link */}
           <Link
-            to="/preview-stitch/dashboard"
+            to="/dashboard"
             className="px-2.5 py-1.5 rounded-full stitch-btn-glass text-[11px] font-mono text-cyan-300 hover:text-white transition-all flex items-center gap-1.5"
             title="Buka Observability Dashboard"
           >

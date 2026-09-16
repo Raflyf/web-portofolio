@@ -2929,18 +2929,32 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - **Manajemen Daya Tab:** Menambahkan listener `visibilitychange` yang otomatis membekukan kalkulasi dan meredupkan intensitas saat tab tidak aktif (`document.hidden`).
    - **Ukuran Aset Ringan:** CSS kompilasi produksi menyusut sebesar ~11 KB (turun menjadi 159 KB) dengan waktu build sub-1 detik (927 ms).
 
+### v10.693.0 — Migrasi Produksi Liquid Glass V2, Preservasi Snapshot V1, & Pembersihan Struktur Proyek (2026-09-16)
+
+1. **Pembersihan Berkas & Folder Tanpa Polusi Proyek:**
+   - **Kepatuhan Mutlak Aturan Zero-Pollution (Rule 2):** Menghapus folder `.claude-flow/` dari root repositori proyek setelah menyalin konfigurasi `state.json` dengan aman ke direktori pengguna `%USERPROFILE%\.claude-flow\policy\state.json`.
+   - **Pembersihan Direktori Build Usang:** Menghapus folder sementara `dist-v2/` dari root proyek.
+   - **Eliminasi Mock Eksperimen Awal:** Menghapus 7 berkas mock yang tidak lagi terpakai di `src/stitch-ui/components/` (`StitchHero.jsx`, `StitchTerminal.jsx`, `StitchProjects.jsx`, `StitchSkills.jsx`, `StitchCredentials.jsx`, `StitchContact.jsx`, `StitchDock.jsx`), menyisakan hanya berkas inti fungsional (`StitchCausticsBackdrop.jsx`, `StitchNav.jsx`, `GithubIcon.jsx`).
+
+2. **Preservasi Snapshot Arsitektur V1 (`backup_v1/`):**
+   - Membuat folder snapshot aman `backup_v1/` berisi berkas sumber orisinal: `App.jsx`, `Home.jsx`, `Dashboard.jsx`, dan `index.css`.
+   - Melengkapi dengan dokumentasi `backup_v1/README.md` yang memuat panduan langkah demi langkah prosedur pemulihan (*rollback*) jika sewaktu-waktu diperlukan.
+
+3. **Promosi V2 Liquid Glass ke Rute Produksi Utama (`/` & `/dashboard`):**
+   - **Rute Utama (`/`):** Menggantikan landing page V1 dengan antarmuka Liquid Glass Stitch yang memuat seluruh seksi autentik portofolio, latar caustics 3D dinamis 60 FPS, dan navigasi pil visionOS.
+   - **Rute Observabilitas (`/dashboard`):** Mengintegrasikan dashboard telemetri ke dalam sistem tema Liquid Glass dengan parameter `isStitch = true`, dilengkapi tombol navigasi kembali ke beranda beraksen kaca pada header autentikasi maupun header utama.
+   - **Dukungan Rute Arsip & Aliases:** Menyediakan rute arsip `/archive-v1` dan `/archive-v1/dashboard` untuk akses retroaktif ke V1, serta mempertahankan rute alias `/preview-stitch` dan `/preview-stitch/dashboard` untuk kompatibilitas tautan sebelumnya.
+   - **Pembaruan CSP `index.html`:** Menambahkan `https://api.github.com` ke direktif `connect-src` pada tag meta CSP untuk mengeliminasi pemblokiran pengambilan repositori dinamis saat dev preview.
+
 ---
 
-## 8. Status Arsitektur Antarmuka (Keputusan Retensi Desain V1)
+## 8. Status Arsitektur Antarmuka (Migrasi Resmi V2 Liquid Glass)
 
+### 8.1 Ringkasan Evolusi & Status Terkini
+1. **Adopsi Penuh V2 Liquid Glass:** Antarmuka V2 (sistem desain Apple visionOS / iOS Liquid Glass murni berbasis Google Stitch dengan palet *Calm Luxury Obsidian* dan latar 3D scrollytelling bebas AI-slop) resmi menggantikan V1 sebagai standar tampilan produksi utama.
+2. **Preservasi V1 Terjamin:** Seluruh kode sumber antarmuka V1 disimpan utuh di direktori `backup_v1/` dan dapat diakses melalui rute `/archive-v1`.
+3. **Integritas Rute Produksi:**
+   - Halaman utama dilayani oleh `/` ([StitchPortfolio.jsx](file:///d:/code/project/portofolio%20landing%20page/src/stitch-ui/StitchPortfolio.jsx)).
+   - Panel observabilitas telemetri dilayani oleh `/dashboard` ([StitchDashboard.jsx](file:///d:/code/project/portofolio%20landing%20page/src/stitch-ui/StitchDashboard.jsx)).
+   - Seluruh konten biodata, data proyek, kredensial sertifikasi, sistem telemetri Supabase, dan interaktivitas AI lab terjaga 100% tanpa pengurangan.
 
-### 8.1 Ringkasan Evaluasi & Keputusan Pengguna
-Pada 9 September 2026, sempat dilakukan perancangan dan evaluasi eksperimental antarmuka alternatif (V2) yang mengusung konsep *scrollytelling* bergaya agensi dan *bento-box dashboard*. Berdasarkan arahan dan keputusan final dari pengguna:
-1. **Pembatalan Penuh V2:** Eksperimen V2 diputuskan untuk tidak diterapkan. Seluruh berkas komponen baru di bawah direktori `src/v2/`, `src/pages/HomeV2.jsx`, serta `src/pages/DashboardV2.jsx` telah dihapus secara bersih.
-2. **Retensi Penuh V1 sebagai Standar Tunggal:** Antarmuka produksi V1 (Cyber-Editorial dengan tema Emerald, sistem switch Light/Dark mode OKLCH, dan dashboard observabilitas analitik) dipertahankan 100% sebagai desain resmi dan satu-satunya *single source of truth*.
-3. **Integritas Rute & Data:**
-   - Halaman utama dilayani secara eksklusif oleh `/` ([Home.jsx](file:///d:/code/project/portofolio%20landing%20page/src/pages/Home.jsx)).
-   - Panel observabilitas dilayani secara eksklusif oleh `/dashboard` ([Dashboard.jsx](file:///d:/code/project/portofolio%20landing%20page/src/pages/Dashboard.jsx)).
-   - Seluruh data profil, riset skripsi, sertifikasi BNSP/MikroTik/Cisco, dan integrasi backend Supabase RLS tetap utuh dan beroperasi normal.
-
----
