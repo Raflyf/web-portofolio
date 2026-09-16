@@ -1,0 +1,352 @@
+/* ==========================================================================
+   PURE APPLE VISIONOS & IOS LIQUID GLASS DESIGN SYSTEM (CALM & PROFESSIONAL)
+   Palette: Deep Obsidian Slate (#080b11), Satin Silver (#f8fafc), Ice Slate (#7dd3fc)
+   Zero AI-Slop Neon Glow | Butter-Smooth 60fps GPU Performance | WCAG 2.2 AAA Contrast
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Hardware Acceleration & Performance Foundations
+   -------------------------------------------------------------------------- */
+.stitch-liquid-theme,
+.stitch-dashboard-container {
+  background-color: #080b11 !important;
+  color: #f1f5f9 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Isolate layout and composite surfaces for zero-framedrop 60fps scrolling */
+.stitch-liquid-theme .liquid-glass,
+.stitch-liquid-theme .liquid-glass-strong,
+.stitch-dashboard-container .liquid-glass,
+.stitch-dashboard-container .liquid-glass-strong {
+  contain: layout style;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   2. Authentic Apple Liquid Glass Primitives (Understated & Calm)
+   -------------------------------------------------------------------------- */
+.stitch-glass,
+.stitch-liquid-theme .liquid-glass {
+  background: rgba(255, 255, 255, 0.032) !important;
+  backdrop-filter: blur(32px) saturate(160%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(160%) contrast(102%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.085) !important;
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.02),
+    0 16px 36px -10px rgba(0, 0, 0, 0.55) !important;
+  border-radius: 1.25rem !important;
+  position: relative;
+}
+
+.stitch-liquid-theme .liquid-glass-strong {
+  background: rgba(255, 255, 255, 0.045) !important;
+  backdrop-filter: blur(36px) saturate(170%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(170%) contrast(102%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.03),
+    0 20px 42px -12px rgba(0, 0, 0, 0.65) !important;
+  border-radius: 1.5rem !important;
+}
+
+/* Restrained, elegant card hover: no harsh neon blur */
+.stitch-glass-hover,
+.stitch-liquid-theme .liquid-glass-hover {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stitch-glass-hover:hover,
+.stitch-liquid-theme .liquid-glass-hover:hover {
+  background: rgba(255, 255, 255, 0.055) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+    0 20px 42px -10px rgba(0, 0, 0, 0.7) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Inset Blueprint Cavities for Code, Input, and Sub-containers */
+.stitch-blueprint-cavity,
+.stitch-liquid-theme .liquid-glass-inset,
+.stitch-dashboard-container .liquid-glass-inset {
+  background: rgba(0, 0, 0, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  box-shadow: inset 0 2px 5px 0 rgba(0, 0, 0, 0.55), 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.stitch-liquid-theme .liquid-glass-pill {
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. Floating Liquid Glass Navigation (iOS / visionOS Pill)
+   -------------------------------------------------------------------------- */
+.stitch-glass-nav,
+.stitch-liquid-theme .liquid-glass-nav,
+.stitch-dashboard-container header {
+  background: rgba(12, 16, 25, 0.72) !important;
+  backdrop-filter: blur(36px) saturate(180%) contrast(102%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(180%) contrast(102%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.02),
+    0 16px 36px -10px rgba(0, 0, 0, 0.7) !important;
+}
+
+.stitch-dashboard-container header {
+  position: fixed !important;
+  top: 0.75rem !important;
+  left: 1rem !important;
+  right: 1rem !important;
+  max-width: 80rem !important;
+  margin: 0 auto !important;
+  border-radius: 9999px !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Buttons: Calm Luxury Specular Controls (No AI-Slop Neon)
+   -------------------------------------------------------------------------- */
+/* Primary Specular Liquid Button (Monochrome Satin / Silver Specular) */
+.stitch-btn-primary,
+.stitch-liquid-theme a[href="#projects"].bg-linear-to-b,
+.stitch-dashboard-container button[type="submit"] {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%) !important;
+  color: #090d16 !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
+    0 4px 16px rgba(0, 0, 0, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  font-weight: 600 !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stitch-btn-primary:hover,
+.stitch-liquid-theme a[href="#projects"].bg-linear-to-b:hover,
+.stitch-dashboard-container button[type="submit"]:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%) !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 #ffffff,
+    0 8px 24px rgba(0, 0, 0, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Translucent Glass Secondary Button */
+.stitch-btn-glass,
+.stitch-liquid-theme a[href="#lab"].liquid-glass-inset,
+.stitch-dashboard-container button:not([type="submit"]):not(.stitch-custom-btn) {
+  background: rgba(255, 255, 255, 0.045) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  color: #e2e8f0 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stitch-btn-glass:hover,
+.stitch-liquid-theme a[href="#lab"].liquid-glass-inset:hover,
+.stitch-dashboard-container button:not([type="submit"]):not(.stitch-custom-btn):hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.stitch-dashboard-container button[title*="Logout"],
+.stitch-dashboard-container button[title*="Keluar"] {
+  background: rgba(244, 63, 94, 0.12) !important;
+  border-color: rgba(244, 63, 94, 0.22) !important;
+  color: #fecdd3 !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. Calm Typographic & Color Tuning
+   -------------------------------------------------------------------------- */
+/* Eliminate neon text glows while keeping crystal clarity */
+.stitch-liquid-theme h1,
+.stitch-liquid-theme h2,
+.stitch-liquid-theme h3,
+.stitch-liquid-theme h4,
+.stitch-dashboard-container h1,
+.stitch-dashboard-container h2,
+.stitch-dashboard-container h3,
+.stitch-dashboard-container h4 {
+  color: #f8fafc !important;
+  letter-spacing: -0.025em;
+  text-shadow: none !important;
+}
+
+.stitch-liquid-theme p,
+.stitch-dashboard-container p {
+  color: #94a3b8 !important;
+  line-height: 1.65;
+}
+
+/* Remove gaudy drop-shadows on hero title */
+.stitch-liquid-theme .drop-shadow-\[0_0_35px_rgba\(255\,255\,255\,0\.2\)\] {
+  filter: none !important;
+}
+
+/* Ambient nebula: soft, soothing and quiet */
+.stitch-liquid-theme #hero .blur-\[120px\],
+.stitch-liquid-theme #hero .blur-\[100px\] {
+  opacity: 0.35 !important;
+}
+
+/* Refined, quiet pill accents */
+.stitch-liquid-theme .text-cyan-400,
+.stitch-liquid-theme .text-cyan-300,
+.stitch-dashboard-container .text-cyan-400,
+.stitch-dashboard-container .text-cyan-300 {
+  color: #7dd3fc !important;
+}
+
+.stitch-liquid-theme .bg-cyan-500\/10,
+.stitch-dashboard-container .bg-cyan-500\/10 {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+  border-color: rgba(56, 189, 248, 0.18) !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. Dashboard Elements Fine-Tuning
+   -------------------------------------------------------------------------- */
+/* Time range tab capsules */
+.stitch-dashboard-container .bg-black\/40,
+.stitch-dashboard-container .bg-zinc-200\/80 {
+  background: rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 9999px !important;
+  padding: 3px !important;
+}
+
+.stitch-dashboard-container .bg-black\/40 button,
+.stitch-dashboard-container .bg-zinc-200\/80 button {
+  border-radius: 9999px !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #94a3b8 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  transition: all 0.2s ease !important;
+}
+
+.stitch-dashboard-container .bg-black\/40 button.bg-cyan-500\/20,
+.stitch-dashboard-container .bg-zinc-200\/80 button.bg-indigo-100,
+.stitch-dashboard-container .bg-zinc-200\/80 button.dark\:bg-indigo-500\/20,
+.stitch-dashboard-container .bg-zinc-200\/80 button.bg-cyan-100,
+.stitch-dashboard-container .bg-zinc-200\/80 button.dark\:bg-cyan-500\/20,
+.stitch-dashboard-container .bg-zinc-200\/80 button.bg-emerald-100,
+.stitch-dashboard-container .bg-zinc-200\/80 button.dark\:bg-emerald-500\/20 {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Inputs & search boxes */
+.stitch-dashboard-container input {
+  background: rgba(0, 0, 0, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.5) !important;
+  color: #f8fafc !important;
+  border-radius: 0.75rem !important;
+}
+
+.stitch-dashboard-container input:focus {
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
+  outline: none !important;
+}
+
+/* Progress track cavities */
+.stitch-dashboard-container .h-1\.5.rounded-full {
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+  height: 0.45rem !important;
+}
+
+.stitch-dashboard-container .h-1\.5.rounded-full > div {
+  box-shadow: none !important;
+}
+
+/* Auto Gateway Router Banner: Muted Satin Slate */
+.stitch-dashboard-container .bg-linear-to-r {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.5) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 16px 36px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 16 AI Model Cards */
+.stitch-dashboard-container .grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 > div {
+  background: rgba(255, 255, 255, 0.028) !important;
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  border-radius: 1rem !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 20px -6px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stitch-dashboard-container .grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 > div:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 12px 28px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Table headers & rows */
+.stitch-dashboard-container table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.stitch-dashboard-container thead {
+  background: rgba(255, 255, 255, 0.025) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.stitch-dashboard-container th {
+  color: #94a3b8 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-size: 0.6875rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.stitch-dashboard-container tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  transition: background 0.15s ease !important;
+}
+
+.stitch-dashboard-container tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.stitch-dashboard-container td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  color: #cbd5e1 !important;
+}
+
+/* Modals with Apple visionOS Deep Frosted Blur */
+.stitch-dashboard-container .glass-backdrop-in,
+.stitch-dashboard-container .fixed.inset-0.bg-black\/80 {
+  backdrop-filter: blur(32px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(160%) !important;
+  background: rgba(4, 6, 10, 0.75) !important;
+}

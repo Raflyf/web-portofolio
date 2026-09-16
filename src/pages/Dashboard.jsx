@@ -352,7 +352,7 @@ const alwaysShowDataLabelPlugin = {
   }
 };
 
-export default function Dashboard() {
+export default function Dashboard({ isStitch = false } = {}) {
   const { language, setLanguage, toggleLanguage, t } = useLanguage();
 
   // Theme State
@@ -1411,7 +1411,7 @@ export default function Dashboard() {
   if (!isAuthenticated) {
     return (
       <>
-        <InteractiveScrollBackground />
+        {!isStitch && <InteractiveScrollBackground />}
         <main className="w-full min-h-screen relative z-10 flex items-center justify-center p-4 pt-24 bg-transparent text-zinc-900 dark:text-white font-sans">
           {/* Auth Glass Card */}
         <div className="w-full max-w-md liquid-glass-strong p-8 relative overflow-hidden group">
@@ -1420,7 +1420,7 @@ export default function Dashboard() {
           {/* Top-Left Back to Home Button Pill */}
           <div className="absolute top-4 left-4 z-20">
             <Link
-              to="/"
+              to={isStitch ? "/preview-stitch" : "/"}
               className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-mono font-medium text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer group/back"
               title={t('dashboard.auth.backToHome')}
               aria-label={t('dashboard.auth.backToHome')}
@@ -1588,7 +1588,7 @@ export default function Dashboard() {
   // ==========================================
   return (
     <>
-      <InteractiveScrollBackground />
+      {!isStitch && <InteractiveScrollBackground />}
       <main className="w-full min-h-screen relative z-10 pb-20 bg-transparent text-zinc-900 dark:text-white font-sans">
 
 

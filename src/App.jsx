@@ -7,6 +7,8 @@ import { Shield, Menu, X, Terminal, Sun, Moon, Globe } from 'lucide-react';
 import Home from './pages/Home';
 // Dashboard is heavy (Chart.js) — code-split so the landing bundle stays light.
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const StitchPortfolio = React.lazy(() => import('./stitch-ui/StitchPortfolio'));
+const StitchDashboard = React.lazy(() => import('./stitch-ui/StitchDashboard'));
 import { useTerminal } from './context/TerminalContext.jsx';
 import { useLanguage } from './context/LanguageContext.jsx';
 import { telemetry } from './lib/telemetry';
@@ -129,6 +131,10 @@ function FloatingNavbar() {
     { name: t('nav.lab'), href: '/#lab' },
     { name: t('nav.contact'), href: '/#contact' },
   ];
+
+  if (location.pathname.startsWith('/preview-stitch')) {
+    return null;
+  }
 
   return (
     <header className={`fixed top-0 inset-x-0 z-50 pointer-events-none transition-transform duration-300 ease-in-out ${
@@ -405,10 +411,34 @@ export default function App() {
               </React.Suspense>
             }
           />
+          <Route
+            path="/preview-stitch"
+            element={
+              <React.Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
+                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Stitch Preview" />
+                </div>
+              }>
+                <StitchPortfolio />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/preview-stitch/dashboard"
+            element={
+              <React.Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
+                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Stitch Dashboard" />
+                </div>
+              }>
+                <StitchDashboard />
+              </React.Suspense>
+            }
+          />
         </Routes>
       
         {/* Floating Action Buttons */}
-        {location.pathname !== '/dashboard' && (
+        {location.pathname !== '/dashboard' && !location.pathname.startsWith('/preview-stitch') && (
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
             <button 
               onClick={() => {
