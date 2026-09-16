@@ -1634,7 +1634,7 @@ export default function Dashboard({ isStitch = true } = {}) {
             {/* Theme Toggle Button */}
             <button
               onClick={handleThemeToggle}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              className="stitch-btn-glass p-1.5 sm:px-2.5 sm:py-1.5 rounded-full text-[11px] font-medium text-zinc-200 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
               title={isDark ? t('nav.lightMode') : t('nav.darkMode')}
             >
               {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-500" />}
@@ -1643,7 +1643,7 @@ export default function Dashboard({ isStitch = true } = {}) {
 
             <button
               onClick={handleSendPing}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-[11px] font-medium text-cyan-600 dark:text-cyan-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              className="stitch-btn-glass p-1.5 sm:px-2.5 sm:py-1.5 rounded-full text-[11px] font-medium text-cyan-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
               title={t('dashboard.header.testPingTitle')}
             >
               <Zap className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
@@ -1652,7 +1652,7 @@ export default function Dashboard({ isStitch = true } = {}) {
 
             <button
               onClick={() => setIsChangePinOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              className="stitch-btn-glass p-1.5 sm:px-2.5 sm:py-1.5 rounded-full text-[11px] font-medium text-zinc-200 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
               title={t('dashboard.header.changePinTitle')}
             >
               <KeyRound className="w-3 h-3 text-purple-500 dark:text-purple-400" />
@@ -1662,7 +1662,7 @@ export default function Dashboard({ isStitch = true } = {}) {
             <button
               onClick={fetchTelemetryData}
               disabled={isLoading}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shrink-0"
+              className="stitch-btn-glass p-1.5 sm:px-2.5 sm:py-1.5 rounded-full text-[11px] font-medium text-zinc-200 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shrink-0"
               title={t('dashboard.header.refreshTitle')}
             >
               <RefreshCw className={`w-3 h-3 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`} />
@@ -1671,7 +1671,7 @@ export default function Dashboard({ isStitch = true } = {}) {
 
             <button
               onClick={handleLogout}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-[11px] font-medium text-rose-300 flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0"
+              className="stitch-btn-glass p-1.5 sm:px-2.5 sm:py-1.5 rounded-full text-[11px] font-medium text-rose-300 hover:text-white border-rose-500/40 hover:border-rose-400 flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer shrink-0"
               title={t('dashboard.header.logoutTitle')}
             >
               <LogOut className="w-3 h-3" />
@@ -1681,7 +1681,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 space-y-8">
 
         {pingStatus && (
           <div className="p-3 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-xs font-mono text-cyan-300 text-center animate-fade-in">
