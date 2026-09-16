@@ -1181,16 +1181,60 @@ export default function TerminalAI({ onClose } = {}) {
       )}>
         
         {/* Terminal App Header */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 stitch-terminal-header shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <Terminal className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-300 uppercase truncate">
-              Terminal Developer Lab & AI Assistant
-            </span>
+        <div className="flex items-center justify-between px-3.5 sm:px-4 py-2 border-b border-white/10 stitch-terminal-header shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            {/* macOS Style Window Action Controls (Top-Left Standard Alignment) */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isTerminalPopupOpen) {
+                    setIsTerminalPopupOpen(false);
+                    if (onClose) onClose();
+                  } else {
+                    handleNewChat();
+                  }
+                }}
+                className="w-3 h-3 rounded-full bg-rose-500/90 hover:bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)] flex items-center justify-center transition cursor-pointer group/dot focus:outline-none"
+                title={isTerminalPopupOpen ? "Tutup Modal Terminal" : "Bersihkan Percakapan / Reset"}
+                aria-label={isTerminalPopupOpen ? "Tutup Modal" : "Reset Percakapan"}
+              >
+                <X className="w-2 h-2 text-rose-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-[3]" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCheckpointModal(true)}
+                className="w-3 h-3 rounded-full bg-amber-400/90 hover:bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)] flex items-center justify-center transition cursor-pointer group/dot focus:outline-none"
+                title="Buka Checkpoint & Snapshot Sesi"
+                aria-label="Checkpoint Sesi"
+              >
+                <span className="w-1.5 h-0.5 bg-amber-950 opacity-0 group-hover/dot:opacity-100 transition-opacity" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsTerminalPopupOpen(!isTerminalPopupOpen)}
+                className="w-3 h-3 rounded-full bg-emerald-400/90 hover:bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)] flex items-center justify-center transition cursor-pointer group/dot focus:outline-none"
+                title={isTerminalPopupOpen ? "Kembalikan Ukuran Normal" : "Buka Mode Pop-up Layar Penuh"}
+                aria-label="Toggle Fullscreen Pop-up"
+              >
+                <Maximize2 className="w-1.5 h-1.5 text-emerald-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-[3]" />
+              </button>
+            </div>
+
+            <div className="h-3.5 w-px bg-white/15 mx-0.5 shrink-0 hidden xs:block" />
+
+            <div className="flex items-center gap-2 min-w-0">
+              <Terminal className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-300 uppercase truncate font-mono">
+                Terminal Developer Lab & AI Assistant
+              </span>
+            </div>
           </div>
+
           <div className="flex items-center gap-2 shrink-0">
              {isTerminalPopupOpen ? (
                <button 
+                 type="button"
                  onClick={() => { setIsTerminalPopupOpen(false); if (onClose) onClose(); }} 
                  className="stitch-raw-btn p-1.5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition cursor-pointer" 
                  title="Tutup Modal" 
@@ -1200,6 +1244,7 @@ export default function TerminalAI({ onClose } = {}) {
                </button>
              ) : (
                <button 
+                 type="button"
                  onClick={() => setIsTerminalPopupOpen(true)} 
                  className="stitch-raw-btn p-1.5 rounded-full hover:bg-white/10 text-zinc-400 hover:text-white transition cursor-pointer" 
                  title="Buka Pop-up Jendela Terminal" 
@@ -1211,55 +1256,54 @@ export default function TerminalAI({ onClose } = {}) {
           </div>
         </div>
   
-        {/* Control Bar (Riwayat, Baru, Pop-up) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2 border-b border-white/10 stitch-terminal-control-bar gap-2 shrink-0 relative z-20">
-          <div className="flex items-center gap-2.5 shrink-0 min-w-0">
-            <div className="flex gap-1.5 shrink-0">
-              <div className="w-2.5 h-2.5 rounded-full bg-rose-500/90 shadow-[0_0_6px_rgba(244,63,94,0.4)]"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-400/90 shadow-[0_0_6px_rgba(251,191,36,0.4)]"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/90 shadow-[0_0_6px_rgba(52,211,153,0.4)]"></div>
-            </div>
-            <span className="text-zinc-300 text-xs font-semibold flex items-center gap-1.5 truncate">
-              <span className="truncate">rafly@portfolio-lab:~</span>
-              <span className="hidden xs:inline text-zinc-400 font-normal">(bash/AI)</span>
-            </span>
+        {/* Control Bar (Prompt, Riwayat, Baru, Model, Effort) */}
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2 border-b border-white/10 stitch-terminal-control-bar gap-2 shrink-0 relative z-20 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 shrink-0 min-w-0 font-mono">
+            <span className="text-cyan-400 text-xs font-semibold whitespace-nowrap">rafly@portfolio-lab:~$</span>
+            <span className="hidden sm:inline text-zinc-400 text-[11px] font-normal">(bash/AI)</span>
           </div>
           
-          <div className="flex items-center flex-wrap gap-1.5 sm:gap-2 text-xs text-zinc-300 font-medium w-full sm:w-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-zinc-300 font-medium shrink-0">
             <button 
+              type="button"
               onClick={() => setShowHistoryModal(true)} 
-              className="stitch-btn-glass flex items-center gap-1.5 px-3 py-1 text-[11px] shrink-0 cursor-pointer"
+              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-[11px] shrink-0 cursor-pointer"
             >
-              <Clock className="w-3 h-3 text-cyan-400" /> Riwayat
+              <Clock className="w-3 h-3 text-cyan-400" /> 
+              <span className="hidden xs:inline">Riwayat</span>
             </button>
             <button 
+              type="button"
               onClick={() => setShowCheckpointModal(true)} 
-              className="stitch-btn-glass flex items-center gap-1.5 px-3 py-1 text-amber-300 text-[11px] shrink-0 cursor-pointer" 
+              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-amber-300 text-[11px] shrink-0 cursor-pointer" 
               title="Pulihkan / Rollback ke Checkpoint"
             >
-              <RotateCcw className="w-3 h-3 text-amber-400" /> Checkpoint
-              {checkpoints.length > 0 && <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{checkpoints.length}</span>}
+              <RotateCcw className="w-3 h-3 text-amber-400" /> 
+              <span className="hidden xs:inline">Checkpoint</span>
+              {checkpoints.length > 0 && <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{checkpoints.length}</span>}
             </button>
             <button 
+              type="button"
               onClick={handleNewChat} 
-              className="stitch-btn-glass flex items-center gap-1.5 px-3 py-1 text-emerald-300 hover:text-emerald-200 text-[11px] shrink-0 cursor-pointer"
+              className="stitch-btn-glass flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-emerald-300 hover:text-emerald-200 text-[11px] shrink-0 cursor-pointer"
             >
-              <Plus className="w-3 h-3 text-emerald-400" /> Baru
+              <Plus className="w-3 h-3 text-emerald-400" /> 
+              <span className="hidden xs:inline">Baru</span>
             </button>
             
-            <div className="hidden sm:block h-3.5 w-px bg-white/20 mx-0.5"></div>
+            <div className="hidden sm:block h-3.5 w-px bg-white/20 mx-0.5 shrink-0"></div>
             
-            <div className="stitch-capsule-badge relative flex items-center gap-1.5 px-2.5 py-1 text-[11px]" title={`Model AI Aktif: ${selectedModel.toUpperCase()}`}>
-              <span className="text-zinc-400">Model:</span> 
+            <div className="stitch-capsule-badge relative flex items-center gap-1.5 px-2.5 py-1 text-[11px] shrink-0" title={`Model AI Aktif: ${selectedModel.toUpperCase()}`}>
+              <span className="text-zinc-400 hidden sm:inline">Model:</span> 
               <span className="bg-cyan-500/20 text-cyan-300 font-bold px-1.5 py-0.5 rounded text-[9px] uppercase border border-cyan-500/30">
-                {selectedModel === 'auto' ? 'AUTO ROUTER' : selectedModel}
+                {selectedModel === 'auto' ? 'AUTO' : selectedModel}
               </span>
             </div>
 
-            <div className="hidden sm:block h-3.5 w-px bg-white/20 mx-0.5"></div>
+            <div className="hidden sm:block h-3.5 w-px bg-white/20 mx-0.5 shrink-0"></div>
 
             <div className="flex items-center gap-1 shrink-0" title="Pilih Reasoning Effort & Thinking Mode">
-              <span className="text-zinc-400 text-[11px] hidden xs:inline">Effort:</span>
+              <span className="text-zinc-400 text-[11px] hidden sm:inline">Effort:</span>
               <CustomSelectEffort value={effort} onChange={(val) => setEffort(val)} />
             </div>
           </div>

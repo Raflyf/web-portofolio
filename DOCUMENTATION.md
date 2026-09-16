@@ -3135,6 +3135,31 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
      - Jendela Terminal AI (`.stitch-terminal-window`): Penyelarasan penuh dengan material kristal liquid glass 36px dan border spekular yang identik.
      - Token Desain Global (`index.css`): Menyelaraskan token `--glass-bg`, `--glass-bg-strong`, `--glass-blur`, `--glass-border`, dan `--glass-shadow` dengan formula navbar.
 
+### v10.697.7 — Optimasi Performa Mobile 60 FPS, Perbaikan Dropdown Dashboard, & Sinkronisasi Terminal Header (2026-09-17)
 
+1. **Optimasi Performa Mobile 60 FPS (Anti-Lag & Anti-Jank Scroll):**
+   - **Eliminasi Touch Interception Lenis (`App.jsx`):** Mengubah `syncTouch: false` dan `touchInertiaMultiplier: 1.0` agar peramban ponsel (iOS WebKit / Android Chromium) mengeksekusi momentum scrolling secara native pada thread compositor GPU 60/120 FPS tanpa pertarungan interupsi komputasi JavaScript di main thread.
+   - **Shader Gradien GPU Murni Pengganti Blur Kernel Raksasa (`horizon-hero.jsx`, `StitchCausticsBackdrop.jsx`):** Menghapus seluruh filter blur multi-pass berat (`blur-[120px]`, `blur-[100px]`, `blur-3xl`) berukuran 700x700px yang membebani GPU rasterizer di smartphone. Menggantinya dengan `radial-gradient` hardware multi-stop murni yang dihitung instan oleh GPU shader tanpa overhead konvolusi.
+   - **Bypass DOM Reflow Mobile (`scroll-storyline.jsx`):** Menambahkan `if (window.innerWidth < 1280) return;` agar pengukuran reflow `offsetTop` dan `offsetHeight` tidak dijalankan saat scroll di perangkat HP/tablet yang memang menyembunyikan sidebar storyline.
+   - **Penerapan Section Containment (`StitchPortfolio.jsx`, `stitch.css`):** Mengaktifkan `.section-contain` (`content-visibility: auto; contain-intrinsic-size: 1px 700px;`) pada seluruh seksi utama agar DOM yang berada di luar layar tidak memakan siklus render sebelum digulir ke viewport.
 
+2. **Perbaikan Tuntas Dropdown Dashboard Rusak / Melompat ke Atas (`Dashboard.jsx`, `stitch.css`):**
+   - **Akar Masalah:** Di `stitch.css`, selektor `.stitch-dashboard-container .liquid-glass` memaksakan `position: relative;` dan `contain: layout style;` dengan spesifisitas CSS tinggi yang menimpa kelas `.absolute` pada menu dropdown `[role="listbox"]`. Akibatnya, menu dropdown masuk ke dalam normal document flow flexbox dengan tinggi ~300px, membuat flex parent dengan `items-center` menengahkan saudara-saudaranya dan melontarkan tombol trigger ke pojok paling atas kartu.
+   - **Solusi Komprehensif:**
+     - Mengecualikan elemen `.absolute`, `.fixed`, `[role="listbox"]`, dan `[role="dialog"]` dari `position: relative` dan `contain: layout style` di `stitch.css`.
+     - Menyematkan `style={{ position: 'absolute', top: '100%', right: 0 }}` dan kelas `!absolute top-full right-0 z-100` pada `CustomSelect` di `Dashboard.jsx` sehingga dropdown menu selalu melayang rapi tepat di bawah tombol trigger tanpa mengubah alur atau menggeser elemen input dan tombol filter lainnya.
 
+3. **Restorasi Posisi & Fungsionalitas Tombol Jendela Terminal (`TerminalAI.jsx`):**
+   - **Standardisasi Kontrol Jendela macOS:** Memindahkan 3 bulatan kontrol jendela (merah, kuning, hijau) ke posisi standar di pojok kiri atas bilah header terminal (`stitch-terminal-header`), terpusat vertikal dengan judul terminal di semua mode (laptop maupun HP).
+   - **Interaktivitas Tombol:** Bulatan merah menutup modal pop-up / mereset sesi, bulatan kuning membuka checkpoint, dan bulatan hijau memperbesar ke mode pop-up layar penuh, lengkap dengan hover icon indikator (`X`, `-`, `+`).
+   - **Perapian Bilah Kontrol Bawah:** Menyelaraskan teks prompt `rafly@portfolio-lab:~$` dengan bilah tombol aksi cepat (`Riwayat`, `Checkpoint`, `Baru`, `Model`, `Effort`) dalam satu baris fleksibel horizontal berfitur `overflow-x-auto no-scrollbar` yang tidak bertumpuk atau patah di layar HP.
+
+4. **Perbaikan Tombol Back to Top di Dashboard pada HP (`Dashboard.jsx`):**
+   - Menambahkan pelacakan posisi scroll `showDashboardBackToTop = currentY > 180` pada event scroll dashboard.
+   - Menambah dimensi target sentuh mobile ramah WCAG (`w-11 h-11 sm:w-12 sm:h-12`) dan memperluas z-index menjadi `z-50`.
+   - Mengintegrasikan fungsi multi-fallback scroll (`lenis.scrollTo(0)`, `window.scrollTo({ top: 0, behavior: 'smooth' })`, `document.documentElement.scrollTo`, `document.body.scrollTo`) agar responsif di seluruh peramban mobile (Safari iOS, Chrome Android).
+   - Mengatur padding aman bawah (`bottom-6 sm:bottom-8 right-5 sm:right-8`) agar tidak tertutup gesture bar atau home bar HP.
+
+5. **Penyempurnaan Opasitas Navbar Mobile & Jendela Terminal (`stitch.css`):**
+   - Memperkuat lapisan dasar gradien kristal asap pada `.stitch-nav-mobile-sheet` dan navbar mobile (`@media (max-width: 768px)`) menjadi `linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 20%, rgba(12, 17, 36, 0.96) 60%, rgba(6, 9, 20, 0.99) 100%)`. Konten dan teks halaman di balik navbar kini 100% diblokir tanpa ada kebocoran teks tembus pandang sedikit pun, sementara efek bevel kristal 3D dan blur tetap mewah.
+   - Menyelaraskan jendela modal terminal pop-up dengan kristal optik pekat (`rgba(12, 17, 36, 0.95)` hingga `rgba(6, 9, 20, 0.99)`) agar kontras tinggi dan tidak tembus ke halaman di belakangnya.
