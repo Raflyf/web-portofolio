@@ -5,7 +5,7 @@ import StitchCausticsBackdrop from './components/StitchCausticsBackdrop.jsx';
 
 export default function StitchDashboard() {
   useEffect(() => {
-    document.title = 'Dashboard Telemetri — Stitch Liquid Glass Preview';
+    document.title = 'Dashboard Telemetri & Observatorium — Rafly Firmansyah';
   }, []);
 
   return (

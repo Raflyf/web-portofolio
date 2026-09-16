@@ -132,7 +132,7 @@ function FloatingNavbar() {
     { name: t('nav.contact'), href: '/#contact' },
   ];
 
-  if (location.pathname.startsWith('/preview-stitch')) {
+  if (location.pathname === '/' || location.pathname.startsWith('/preview-stitch') || location.pathname.includes('dashboard')) {
     return null;
   }
 
@@ -398,19 +398,47 @@ export default function App() {
         <FloatingNavbar />
 
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={
+              <React.Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
+                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Portofolio" />
+                </div>
+              }>
+                <StitchPortfolio />
+              </React.Suspense>
+            }
+          />
           <Route
             path="/dashboard"
             element={
               <React.Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
-                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat dashboard" />
+                <div className="min-h-screen flex items-center justify-center bg-[#06080d]">
+                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Dashboard" />
                 </div>
               }>
-                <Dashboard />
+                <StitchDashboard />
               </React.Suspense>
             }
           />
+          <Route
+            path="/archive-v1"
+            element={<Home />}
+          />
+          <Route
+            path="/archive-v1/dashboard"
+            element={
+              <React.Suspense fallback={
+                <div className="min-h-screen flex items-center justify-center bg-background dark:bg-zinc-950">
+                  <div className="w-9 h-9 rounded-full border-2 border-cyan-500/40 border-t-cyan-400 animate-spin" aria-label="Memuat Dashboard V1" />
+                </div>
+              }>
+                <Dashboard isStitch={false} />
+              </React.Suspense>
+            }
+          />
+          {/* Backwards compatibility aliases for preview links */}
           <Route
             path="/preview-stitch"
             element={
@@ -438,7 +466,7 @@ export default function App() {
         </Routes>
       
         {/* Floating Action Buttons */}
-        {location.pathname !== '/dashboard' && !location.pathname.startsWith('/preview-stitch') && (
+        {!location.pathname.includes('dashboard') && (
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
             <button 
               onClick={() => {

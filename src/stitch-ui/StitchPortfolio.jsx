@@ -21,8 +21,8 @@ export default function StitchPortfolio() {
 
   useEffect(() => {
     telemetry.init();
-    telemetry.logEvent('page_view', 'stitch_portfolio_preview', 'Membuka Halaman Evaluasi Stitch UI/UX');
-    document.title = 'Rafly Firmansyah — Pure Liquid Glass Portfolio (iOS & visionOS)';
+    telemetry.logEvent('page_view', 'portfolio_home', 'Membuka Beranda Portofolio Liquid Glass');
+    document.title = 'Rafly Firmansyah — AI Engineering & Full-Stack Research Portfolio';
   }, []);
 
   return (

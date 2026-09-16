@@ -352,7 +352,7 @@ const alwaysShowDataLabelPlugin = {
   }
 };
 
-export default function Dashboard({ isStitch = false } = {}) {
+export default function Dashboard({ isStitch = true } = {}) {
   const { language, setLanguage, toggleLanguage, t } = useLanguage();
 
   // Theme State
@@ -1420,7 +1420,7 @@ export default function Dashboard({ isStitch = false } = {}) {
           {/* Top-Left Back to Home Button Pill */}
           <div className="absolute top-4 left-4 z-20">
             <Link
-              to={isStitch ? "/preview-stitch" : "/"}
+              to="/"
               className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-mono font-medium text-zinc-300 hover:text-white flex items-center gap-1.5 transition-all cursor-pointer group/back"
               title={t('dashboard.auth.backToHome')}
               aria-label={t('dashboard.auth.backToHome')}
@@ -1600,6 +1600,14 @@ export default function Dashboard({ isStitch = false } = {}) {
           <div className="absolute inset-0 bg-linear-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
           
           <div className="flex items-center gap-3 relative z-10">
+            <Link
+              to="/"
+              className="px-2.5 py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-mono font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer group/back"
+              title={language === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400 transition-transform group-hover/back:-translate-x-0.5" />
+              <span className="hidden sm:inline">{language === 'id' ? 'Beranda' : 'Home'}</span>
+            </Link>
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full shrink-0 ${isLiveConnected ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]' : 'bg-amber-400'}`} />
               <h1 className="text-sm sm:text-base font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2 whitespace-nowrap">
