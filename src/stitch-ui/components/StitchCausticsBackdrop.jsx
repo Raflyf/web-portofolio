@@ -32,7 +32,7 @@ export default function StitchCausticsBackdrop() {
       >
         {/* Glow 1: Rich Violet-Indigo Aurora (Top-Left) */}
         <div
-          className="absolute rounded-full blur-[90px] -top-24 -left-24 w-[680px] h-[640px]"
+          className="absolute rounded-full blur-[90px] -top-24 -left-24 w-170 h-160"
           style={{
             background: 'radial-gradient(circle at 45% 45%, rgba(139, 92, 246, 0.18) 0%, rgba(99, 102, 241, 0.10) 45%, transparent 75%)',
             transform: 'translateZ(0)'
@@ -41,7 +41,7 @@ export default function StitchCausticsBackdrop() {
 
         {/* Glow 2: Sapphire & Cyan Refraction (Mid-Right) */}
         <div
-          className="absolute rounded-full blur-[100px] top-[28%] -right-20 w-[720px] h-[680px]"
+          className="absolute rounded-full blur-[100px] top-[28%] -right-20 w-180 h-170"
           style={{
             background: 'radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.16) 0%, rgba(37, 99, 235, 0.08) 50%, transparent 75%)',
             transform: 'translateZ(0)'
@@ -50,7 +50,7 @@ export default function StitchCausticsBackdrop() {
 
         {/* Glow 3: Twilight Amethyst & Deep Indigo (Interactive Lab Anchor) */}
         <div
-          className="absolute rounded-full blur-[100px] top-[60%] -left-16 w-[640px] h-[600px]"
+          className="absolute rounded-full blur-[100px] top-[60%] -left-16 w-160 h-150"
           style={{
             background: 'radial-gradient(circle at 45% 45%, rgba(168, 85, 247, 0.14) 0%, rgba(79, 70, 229, 0.08) 50%, transparent 75%)',
             transform: 'translateZ(0)'
@@ -59,7 +59,7 @@ export default function StitchCausticsBackdrop() {
 
         {/* Glow 4: Luminous Cyan-Azure Atmospheric Anchor (Bottom) */}
         <div
-          className="absolute rounded-full blur-[100px] bottom-0 right-[15%] w-[700px] h-[500px]"
+          className="absolute rounded-full blur-[100px] bottom-0 right-[15%] w-175 h-125"
           style={{
             background: 'radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.14) 0%, rgba(30, 41, 59, 0.04) 55%, transparent 75%)',
             transform: 'translateZ(0)'

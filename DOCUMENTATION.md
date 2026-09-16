@@ -3056,3 +3056,22 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
 5. **Optimasi Performa Ekstrem & Konservasi Memori GPU (`StitchCausticsBackdrop.jsx`):**
    - **Eliminasi Pemborosan VRAM:** Menghapus deklarasi `willChange: 'transform'` pada 4 elemen lingkaran mesh ambient raksasa (`blur-[100px]`, `w-[720px]`). Karena elemen ini statis dan tidak bergerak dalam loop frame animasi, peniadaan `willChange` mencegah GPU mengalokasikan layer tekstur raster terpisah yang boros memori.
    - **Garansi 60 FPS & Resource < 20%:** Memastikan penggunaan CPU dan GPU tetap berada jauh di bawah ambang batas 20% dengan laju render scroll 60 FPS tanpa frame drop.
+
+---
+
+### v10.697.1 — Standardisasi Kelas Kanonikal Tailwind CSS v4 & Pembersihan Diagnostik (2026-09-16)
+
+1. **Refaktorisasi Kelas Kanonikal Terminal AI (`TerminalAI.jsx`):**
+   - Mengganti nilai arbitrary `h-[540px]` menjadi kelas kanonikal `h-135`.
+   - Mengganti sintaks warisan `bg-gradient-to-r` pada tombol batal generasi menjadi `bg-linear-to-r` (Tailwind v4 standard).
+
+2. **Standardisasi Dimensi Mesh Ambient (`StitchCausticsBackdrop.jsx`):**
+   - Mengonversi seluruh nilai arbitrary dimensi lingkaran radial ambient menjadi kelas utilitas standar Tailwind:
+     - `w-[680px]` / `h-[640px]` -> `w-170` / `h-160`
+     - `w-[720px]` / `h-[680px]` -> `w-180` / `h-170`
+     - `w-[640px]` / `h-[600px]` -> `w-160` / `h-150`
+     - `w-[700px]` / `h-[500px]` -> `w-175` / `h-125`
+
+3. **Standardisasi Lebar Kontainer & Opasitas Navbar (`StitchNav.jsx`):**
+   - Mengganti `max-w-[1240px]` menjadi kelas kanonikal `max-w-310`.
+   - Mengganti kelas pseudo hover `hover:bg-white/[0.08]` pada tautan desktop dan drawer mobile menjadi `hover:bg-white/8`.

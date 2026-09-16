@@ -163,7 +163,7 @@ export default function StitchNav() {
     <header className={`fixed top-0 inset-x-0 z-50 flex items-center justify-center p-2.5 sm:p-5 md:p-6 pointer-events-none transition-transform duration-300 ease-in-out ${
       navVisible ? 'translate-y-0' : '-translate-y-32'
     }`}>
-      <div className="pointer-events-auto h-13 max-w-[1240px] w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
+      <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
         {/* Brand & Status Indicator */}
         <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
           <a 
@@ -193,7 +193,7 @@ export default function StitchNav() {
                 className={`px-3 py-1.5 rounded-full transition-all cursor-pointer ${
                   isActive 
                     ? 'stitch-nav-link-active' 
-                    : 'text-slate-300 hover:text-white hover:bg-white/[0.08]'
+                    : 'text-slate-300 hover:text-white hover:bg-white/8'
                 }`}
               >
                 {language === 'id' ? item.labelId : item.labelEn}
@@ -304,7 +304,7 @@ export default function StitchNav() {
                       className={`px-3.5 py-2.5 rounded-2xl flex items-center justify-between text-xs sm:text-sm font-medium transition-all cursor-pointer ${
                         isActive 
                           ? 'stitch-nav-link-active' 
-                          : 'text-slate-200 hover:text-white hover:bg-white/[0.08]'
+                          : 'text-slate-200 hover:text-white hover:bg-white/8'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
