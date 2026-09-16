@@ -53,9 +53,9 @@
   /* ============ Liquid-glass design tokens (iOS 26 & Stitch material) ============ */
   --glass-bg: linear-gradient(145deg, rgba(32, 36, 62, 0.88) 0%, rgba(18, 22, 38, 0.94) 50%, rgba(10, 12, 22, 0.98) 100%);
   --glass-bg-strong: linear-gradient(145deg, rgba(38, 44, 76, 0.90) 0%, rgba(22, 26, 46, 0.95) 50%, rgba(11, 14, 26, 0.99) 100%);
-  --glass-bg-nav: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(8, 11, 18, 0.96);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.15);
-  --glass-border-strong: 1px solid rgba(255, 255, 255, 0.20);
+  --glass-bg-nav: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.42) 75%, rgba(8, 12, 28, 0.62) 100%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.22);
+  --glass-border-strong: 1px solid rgba(255, 255, 255, 0.28);
   --glass-blur: blur(48px) saturate(200%) contrast(105%);
   --glass-blur-lg: blur(52px) saturate(210%) contrast(106%);
   --glass-shadow: inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.32), inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.65), 0 24px 56px -12px rgba(0, 0, 0, 0.90), 0 8px 20px -4px rgba(0, 0, 0, 0.65);
@@ -200,13 +200,17 @@
   border-radius: var(--glass-radius-sm);
 }
 
-/* Near-opaque liquid nav - sticky headers only (cheap, no live blur over fixed) */
+/* 3D Liquid Glass Nav - Apple iOS / visionOS Floating Crystal Pill */
 .liquid-glass-nav {
   background: var(--glass-bg-nav);
-  border-bottom: var(--glass-border);
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  border: var(--glass-border);
+  backdrop-filter: blur(36px) saturate(220%) contrast(106%);
+  -webkit-backdrop-filter: blur(36px) saturate(220%) contrast(106%);
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50),
+    0 20px 48px -8px rgba(0, 0, 0, 0.75),
+    0 4px 16px rgba(0, 0, 0, 0.40);
 }
 
 /* Hover lift + glow transition - pair with .liquid-glass or .liquid-glass-strong */
