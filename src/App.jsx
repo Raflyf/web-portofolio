@@ -389,6 +389,49 @@ export default function App() {
     }
   }, [location.pathname]);
 
+  // Global anchor click delegator to prevent appending '#' to browser address bar
+  useEffect(() => {
+    const cleanHash = () => {
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.href.split('#')[0]);
+      }
+    };
+
+    // Clean hash on initial mount or whenever hash changes
+    cleanHash();
+    window.addEventListener('hashchange', cleanHash);
+
+    const handleAnchorClick = (e) => {
+      const anchor = e.target.closest('a[href^="#"]');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || href === '#' || href.length <= 1) return;
+
+      e.preventDefault();
+      const targetId = href.slice(1);
+      const targetEl = document.getElementById(targetId);
+
+      if (targetEl) {
+        if (window.__lenis) {
+          window.__lenis.scrollTo(targetEl, { duration: 1.2, offset: -70 });
+        } else {
+          const top = targetEl.getBoundingClientRect().top + window.scrollY - 70;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }
+
+      // Ensure clean URL without hash
+      cleanHash();
+    };
+
+    document.addEventListener('click', handleAnchorClick);
+    return () => {
+      window.removeEventListener('hashchange', cleanHash);
+      document.removeEventListener('click', handleAnchorClick);
+    };
+  }, [location]);
+
   return (
     <MotionConfig reducedMotion="never">
       {/* Root-Level Unobstructed Scroll Progress Bar (z-[100] always floats above navbar) */}

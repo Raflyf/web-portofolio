@@ -1177,18 +1177,18 @@ export default function TerminalAI({ onClose } = {}) {
     >
       <div className={cn(
         "w-full max-w-5xl mx-auto flex flex-col overflow-hidden stitch-terminal-window font-mono text-sm relative transition-all duration-300",
-        isTerminalPopupOpen ? "h-[94vh] sm:h-[92vh] glass-spring-in rounded-2xl sm:rounded-3xl" : "h-150 sm:h-175 rounded-2xl sm:rounded-3xl"
+        isTerminalPopupOpen ? "h-[94vh] sm:h-[92vh] glass-spring-in rounded-2xl sm:rounded-3xl" : "h-[540px] sm:h-150 lg:h-175 rounded-2xl sm:rounded-3xl"
       )}>
         
         {/* Terminal App Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 stitch-terminal-header shrink-0">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-300 uppercase">
+          <div className="flex items-center gap-2 min-w-0">
+            <Terminal className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-slate-300 uppercase truncate">
               Terminal Developer Lab & AI Assistant
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
              {isTerminalPopupOpen ? (
                <button 
                  onClick={() => { setIsTerminalPopupOpen(false); if (onClose) onClose(); }} 
@@ -1213,14 +1213,15 @@ export default function TerminalAI({ onClose } = {}) {
   
         {/* Control Bar (Riwayat, Baru, Pop-up) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2 border-b border-white/10 stitch-terminal-control-bar gap-2 shrink-0 relative z-20">
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0 min-w-0">
             <div className="flex gap-1.5 shrink-0">
               <div className="w-2.5 h-2.5 rounded-full bg-rose-500/90 shadow-[0_0_6px_rgba(244,63,94,0.4)]"></div>
               <div className="w-2.5 h-2.5 rounded-full bg-amber-400/90 shadow-[0_0_6px_rgba(251,191,36,0.4)]"></div>
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/90 shadow-[0_0_6px_rgba(52,211,153,0.4)]"></div>
             </div>
-            <span className="text-zinc-300 text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap">
-              rafly@portfolio-lab:~ (bash / AI Engine)
+            <span className="text-zinc-300 text-xs font-semibold flex items-center gap-1.5 truncate">
+              <span className="truncate">rafly@portfolio-lab:~</span>
+              <span className="hidden xs:inline text-zinc-400 font-normal">(bash/AI)</span>
             </span>
           </div>
           
@@ -1271,7 +1272,7 @@ export default function TerminalAI({ onClose } = {}) {
           <button 
             key={cmd}
             onClick={() => handleShortcutClick(`/${cmd}`)}
-            className="stitch-raw-btn text-[10px] font-mono px-2.5 py-1 rounded-full bg-white/[0.04] hover:bg-white/[0.12] text-zinc-300 hover:text-white border border-white/10 hover:border-white/25 hover:shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-all shrink-0 cursor-pointer"
+            className="stitch-raw-btn text-[10px] font-mono px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 hover:border-white/25 hover:shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-all shrink-0 cursor-pointer"
           >
             {cmd}
           </button>
@@ -1797,7 +1798,7 @@ export default function TerminalAI({ onClose } = {}) {
                       key={cmd} 
                       onClick={() => sendMessage(`/${cmd}`)}
                       className={cn(
-                        "px-4 py-2 text-sm cursor-pointer transition-colors font-mono text-xs",
+                        "px-4 py-2 cursor-pointer transition-colors font-mono text-xs",
                         idx === slashSelectedIndex ? "bg-cyan-500/20 text-cyan-300 font-semibold" : "text-zinc-300 hover:bg-white/10 hover:text-white"
                       )}
                     >

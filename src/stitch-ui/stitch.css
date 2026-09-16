@@ -478,23 +478,40 @@ button.stitch-btn-glass:active,
   outline: none !important;
 }
 
-/* Progress track cavities */
+/* Progress track cavities & glowing progress bars */
 .stitch-dashboard-container .h-1\.5.rounded-full {
-  background: rgba(0, 0, 0, 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
-  height: 0.45rem !important;
+  background: rgba(0, 0, 0, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+  height: 0.55rem !important;
+  overflow: hidden !important;
 }
 
 .stitch-dashboard-container .h-1\.5.rounded-full > div {
-  box-shadow: none !important;
+  min-width: 6px !important;
+  box-shadow: 0 0 12px currentColor !important;
 }
 
 /* Auto Gateway Router Banner: Muted Satin Slate */
-.stitch-dashboard-container .bg-linear-to-r {
+.stitch-dashboard-container .auto-gateway-router-banner {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(15, 23, 42, 0.5) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 16px 36px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Mobile Liquid Glass Sheet */
+.stitch-nav-mobile-sheet {
+  background: 
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(14, 22, 50, 0.55) 75%, rgba(8, 12, 28, 0.88) 100%) !important;
+  backdrop-filter: blur(36px) saturate(220%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  box-shadow: 
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.60),
+    0 24px 60px -10px rgba(0, 0, 0, 0.85),
+    0 0 32px -4px rgba(56, 189, 248, 0.20) !important;
+  border-radius: 1.75rem !important;
 }
 
 /* 16 AI Model Cards */
