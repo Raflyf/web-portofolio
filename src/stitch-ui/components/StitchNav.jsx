@@ -21,13 +21,13 @@ import GithubIcon from './GithubIcon.jsx';
 import { telemetry } from '../../lib/telemetry';
 
 const NAV_ITEMS = [
-  { id: 'about', labelId: 'Tentang', labelEn: 'About', icon: User },
-  { id: 'skills', labelId: 'Keahlian', labelEn: 'Skills', icon: Cpu },
-  { id: 'projects', labelId: 'Proyek', labelEn: 'Projects', icon: Layers },
-  { id: 'certificates', labelId: 'Sertifikasi', labelEn: 'Certificates', icon: Award },
-  { id: 'timeline', labelId: 'Pengalaman', labelEn: 'Experience', icon: Briefcase },
-  { id: 'lab', labelId: 'AI Lab', labelEn: 'AI Lab', icon: TerminalIcon },
-  { id: 'contact', labelId: 'Kontak', labelEn: 'Contact', icon: Send },
+  { id: 'about', labelKey: 'about', icon: User },
+  { id: 'skills', labelKey: 'skills', icon: Cpu },
+  { id: 'projects', labelKey: 'projects', icon: Layers },
+  { id: 'certificates', labelKey: 'certificates', icon: Award },
+  { id: 'timeline', labelKey: 'timeline', icon: Briefcase },
+  { id: 'lab', labelKey: 'lab', icon: TerminalIcon },
+  { id: 'contact', labelKey: 'contact', icon: Send },
 ];
 
 export default function StitchNav() {
@@ -83,20 +83,24 @@ export default function StitchNav() {
 
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          if (currentY < 200) {
-            setActiveSection('hero');
-          } else {
-            const scrollPosition = currentY + window.innerHeight / 3;
-            let currentActive = 'hero';
+          const scrollY = window.scrollY;
+          const viewportHeight = window.innerHeight;
+          const triggerLine = viewportHeight * 0.35;
+          const scrollBottom = viewportHeight + scrollY;
+          const docHeight = document.documentElement.scrollHeight;
 
+          if (scrollY < 120) {
+            setActiveSection('hero');
+          } else if (scrollBottom >= docHeight - 80) {
+            setActiveSection('contact');
+          } else {
+            let currentActive = 'hero';
             for (const item of NAV_ITEMS) {
               const el = document.getElementById(item.id);
               if (el) {
-                const top = el.offsetTop;
-                const height = el.offsetHeight;
-                if (scrollPosition >= top && scrollPosition < top + height) {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= triggerLine) {
                   currentActive = item.id;
-                  break;
                 }
               }
             }
@@ -208,7 +212,7 @@ export default function StitchNav() {
                     : 'text-slate-300 hover:text-white hover:bg-white/8'
                 }`}
               >
-                {language === 'id' ? item.labelId : item.labelEn}
+                {t(`nav.${item.labelKey}`)}
               </a>
             );
           })}
@@ -313,7 +317,7 @@ export default function StitchNav() {
                 >
                   <div className="flex items-center gap-2.5">
                     {Icon && <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-300' : 'text-slate-400'}`} />}
-                    <span>{language === 'id' ? item.labelId : item.labelEn}</span>
+                    <span>{t(`nav.${item.labelKey}`)}</span>
                   </div>
                   {isActive ? (
                     <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_#22d3ee]" />

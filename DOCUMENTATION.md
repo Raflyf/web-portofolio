@@ -3382,3 +3382,28 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
 5. **Unifikasi 3D Liquid Glass Floating Action Buttons (`stitch.css`, `App.jsx`, `Dashboard.jsx`):**
    - **Tombol Back to Top:** Mengganti gaya datar dengan kelas `.stitch-floating-fab-backtotop` yang mengusung gradien kristal kaca cair, refleksi spekular atas ganda (`inset 0 1.5px 2px rgba(255,255,255,0.75)`), dan pendaran optik safir halus di halaman beranda dan dashboard.
    - **Tombol Floating Terminal Launcher:** Mengganti bulatan solid cyan datar dengan kelas `.stitch-floating-fab-terminal` berefek kristal cair safir 3D transparan (`linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(56, 189, 248, 0.30) 100%), rgba(14, 28, 64, 0.65)`), pantulan cahaya kaca visionOS, dan pendaran pendar cyan lembut yang serasi dengan navbar utama.
+
+---
+
+### v10.697.9 — Sinkronisasi Penuh Pelacakan Scroll Navbar & Storyline Sidebar, Algoritma Viewport Bounding Rect, & Penyelarasan Nomenklatur (2026-09-17)
+
+1. **Akar Masalah Kegagalan Highlight Aktif Navbar & Sidebar:**
+   - **Limitasi `offsetTop` pada Kontainer Terisolasi:** Di `StitchPortfolio.jsx`, setiap seksi dibungkus dalam kontainer `<main className="relative ...">` dan `<div className="section-contain">` (`content-visibility: auto`). Nilai `el.offsetTop` dievaluasi relatif terhadap `offsetParent` lokal, bukan koordinat absolut dokumen.
+   - **Dead Zones di Celah Antar-Seksi & Ujung Bawah:** Logika rentang kaku `scrollPosition >= top && scrollPosition < top + height` mengalami blind-spot pada jarak margin (`space-y-24` = 96px) serta saat berada di bagian paling bawah halaman (`contact` dan `footer`). Kegagalan pencocokan ini memicu fallback otomatis ke `'hero'`, sehingga bilah pil aktif kaca cair di navbar mati total pada seksi Proyek, Sertifikasi, Pengalaman, dan Kontak.
+   - **Desinkronisasi Indikator Sidebar:** Pada bilah dock samping (`ScrollStoryline.jsx`), kegagalan pembaruan seksi menyebabkan bilah indikator tertahan pada status seksi sebelumnya (misalnya `lab` tetap menyala saat pengguna telah tiba di `contact` pada scroll 96%). Selain itu, klik mouse memicu status `:focus-visible` bawaan peramban yang meninggalkan cincin lingkaran sian hampa di atas bulatan target yang tidak aktif.
+
+2. **Implementasi Algoritma Viewport Bounding Rect Intersection Terpadu (`StitchNav.jsx`, `ScrollStoryline.jsx`):**
+   - Mengganti total kalkulasi `offsetTop` dengan evaluasi deterministik berbasis koordinat peramban `getBoundingClientRect()`:
+     - **Pelindung Puncak:** Saat `scrollY < 120`, status aktif ditetapkan sebagai `'hero'`.
+     - **Pelindung Dasar Dokumen:** Saat `viewportHeight + scrollY >= documentHeight - 80`, status aktif dipastikan terkunci pada `'contact'`.
+     - **Evaluasi Garis Pemicu (Trigger Line):** Menetapkan garis referensi pada `window.innerHeight * 0.35`. Loop terurut mengevaluasi seksi secara sekuensial dan menandai seksi terakhir yang puncak batasnya telah melintasi garis pemicu (`rect.top <= triggerLine`). Metode ini 100% kebal terhadap margin gap, transformasi CSS, maupun optimasi `content-visibility`.
+   - Menggunakan fungsi pemindaian yang identik pada `StitchNav.jsx` dan `ScrollStoryline.jsx` sehingga pil navigasi kaca cair dan bulatan storyline sidebar selalu berpindah secara presisi dan serentak.
+
+3. **Penyelarasan Nomenklatur & Kunci Kamus Bahasa (`LanguageContext.jsx`, `StitchNav.jsx`):**
+   - **Harmonisasi Istilah:** Menyelaraskan istilah seksi riwayat menjadi **Pengalaman** (Bahasa Indonesia) / **Experience** (Bahasa Inggris) dan seksi sertifikat menjadi **Sertifikasi** (Bahasa Indonesia) / **Certificates** (Bahasa Inggris) pada seluruh struktur `nav` dan `storyline`.
+   - **Unifikasi Sumber Kebenaran:** Mengonfigurasi `NAV_ITEMS` di `StitchNav.jsx` agar merujuk langsung ke kamus terjemahan reaktif `{t('nav.' + item.labelKey)}`, mengeliminasi perbedaan teks antara navbar (`Pengalaman`) dan tooltip sidebar (`Riwayat`).
+
+4. **Pembersihan Cincin Fokus Klik Mouse Sidebar (`ScrollStoryline.jsx`):**
+   - Memanggil `e.currentTarget.blur()` sesaat setelah tombol bulatan storyline diklik, menghapus cincin `:focus-visible` persisten setelah navigasi mouse sembari tetap mempertahankan aksesibilitas navigasi keyboard via Tab (`focus-visible:ring-1.5 focus-visible:ring-cyan-400/80`).
+   - Menyelaraskan offset lompatan scroll pada Lenis menjadi `-70px` agar judul seksi tidak tertutup oleh navbar yang melayang.
+
