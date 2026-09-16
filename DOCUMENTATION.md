@@ -3118,4 +3118,11 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - Seluruh berkas pada direktori `src/` (`StitchNav.jsx`, `stitch.css`, `index.css`, `Dashboard.jsx`, `TerminalAI.jsx`, `StitchCausticsBackdrop.jsx`, dan seluruh komponen terkait) dikembalikan 100% tepat ke kondisi commit `bbee7d2` (*refactor: apply canonical Tailwind CSS v4 classes across components*).
    - Tampilan visual pulau navigasi floating liquid glass, padding `p-2.5 sm:p-5 md:p-6`, efek blur kristal cair, pill highlight aktif, dan seluruh hierarki styling kembali persis ke versi yang telah diverifikasi dan disetujui sebelumnya.
 
+### v10.697.5 — Sinkronisasi Scroll Auto-Hide & Perampingan Jarak Atas Navbar (2026-09-16)
+
+1. **Sinkronisasi Scroll Auto-Hide dengan Header Dashboard (`StitchNav.jsx`):**
+   - **Perilaku Sembunyi Masuk ke Atas:** Menghapus batas desktop (`window.innerWidth >= 1024`) pada event scroll `StitchNav.jsx` agar mekanisme auto-hide bekerja konsisten di seluruh perangkat: saat pengguna melakukan scroll ke bawah (*scroll down*), navbar meluncur mulus ke atas keluar layar (`-translate-y-32`); saat scroll ke atas (*scroll up*) atau berada di area puncak (`currentY < 70`), navbar langsung kembali turun (`translate-y-0`).
+   - **Perampingan Jarak Puncak Layar:** Mengganti padding luar kontainer navbar dari `p-2.5 sm:p-5 md:p-6` menjadi `pt-2 sm:pt-3 px-3 sm:px-6` sehingga jarak navbar terhadap tepi atas layar menjadi ramping dan proporsional (8px di mobile, 12px di desktop), serasi dengan header dashboard tanpa mengubah formula visual liquid glass kristal sedikit pun.
+
+
 
