@@ -7,13 +7,17 @@
 /* --------------------------------------------------------------------------
    1. Hardware Acceleration & Performance Foundations
    -------------------------------------------------------------------------- */
-.stitch-liquid-theme,
+div.stitch-liquid-theme:not(.relative),
 .stitch-dashboard-container {
   background-color: #080b11 !important;
   color: #f1f5f9 !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+.stitch-liquid-theme.relative {
+  background-color: transparent !important;
 }
 
 /* Isolate layout and composite surfaces for zero-framedrop 60fps scrolling */
@@ -150,6 +154,21 @@
   transform: translateY(-1px) !important;
 }
 
+/* Active Nav Link 3D Liquid Glass Pill (Dynamic Sync with Viewport Scroll) */
+.stitch-glass-nav nav a.stitch-nav-link-active {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%), #1f2746 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 9999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1.2px 1.2px 0 rgba(0, 0, 0, 0.50),
+    0 4px 14px -2px rgba(0, 0, 0, 0.60),
+    0 0 16px rgba(56, 189, 248, 0.32) !important;
+  transform: translateY(-1px) !important;
+}
+
 .stitch-dashboard-container header {
   position: fixed !important;
   top: 0.75rem !important;
@@ -195,6 +214,23 @@
   box-shadow: 
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
     0 3px 8px -1px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* 4a-1. Active Filter Tab Pill (Authentic Liquid Glass 3D, Non-White) */
+.stitch-capsule-group .stitch-tab-active,
+.stitch-tab-active {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%), #1d2545 !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.30) !important;
+  box-shadow: 
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1.2px 1.2px 0 rgba(0, 0, 0, 0.50),
+    0 4px 16px -2px rgba(0, 0, 0, 0.65),
+    0 0 18px rgba(56, 189, 248, 0.30) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 9999px !important;
 }
 
 /* 4b. Secondary / Standard 3D Tactile Liquid Glass Button */
@@ -499,42 +535,47 @@ button.stitch-btn-glass:active,
    -------------------------------------------------------------------------- */
 .stitch-terminal-window {
   background: 
-    linear-gradient(160deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.015) 100%),
-    rgba(8, 11, 22, 0.82) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
+    linear-gradient(160deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(10, 15, 30, 0.72) !important;
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
   box-shadow: 
-    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.60),
-    0 24px 64px -12px rgba(0, 0, 0, 0.90),
-    0 8px 24px -4px rgba(0, 0, 0, 0.60) !important;
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1.5px 1.5px 0 rgba(0, 0, 0, 0.55),
+    0 24px 64px -12px rgba(0, 0, 0, 0.85),
+    0 0 35px rgba(56, 189, 248, 0.12) !important;
 }
 
 .stitch-terminal-header {
-  background: rgba(12, 16, 30, 0.75) !important;
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
+    rgba(12, 17, 34, 0.78) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
 .stitch-terminal-control-bar {
-  background: rgba(7, 9, 17, 0.65) !important;
+  background: rgba(8, 12, 24, 0.60) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .stitch-terminal-shortcut-bar {
-  background: rgba(5, 7, 14, 0.50) !important;
+  background: rgba(6, 9, 18, 0.45) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .stitch-terminal-dock {
-  background: rgba(8, 11, 20, 0.82) !important;
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
+    rgba(8, 12, 24, 0.75) !important;
   backdrop-filter: blur(24px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }
 
 .stitch-capsule-badge {

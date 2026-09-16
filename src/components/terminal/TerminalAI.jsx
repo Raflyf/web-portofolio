@@ -1167,8 +1167,7 @@ export default function TerminalAI({ onClose } = {}) {
   const terminalContent = (
     <div 
       className={cn(
-        "stitch-liquid-theme",
-        isTerminalPopupOpen ? "fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-2xl glass-backdrop-in p-2 sm:p-4" : "relative w-full"
+        isTerminalPopupOpen ? "stitch-liquid-theme fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-2xl glass-backdrop-in p-2 sm:p-4" : "relative w-full bg-transparent"
       )}
       onClick={(e) => {
         if (isTerminalPopupOpen && e.target === e.currentTarget) {
@@ -1286,7 +1285,7 @@ export default function TerminalAI({ onClose } = {}) {
       </div>
 
       {/* Terminal Body (Messages) */}
-      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3.5 sm:p-5 space-y-4 scroll-smooth bg-[#060812]/75 backdrop-blur-sm">
+      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3.5 sm:p-5 space-y-4 scroll-smooth bg-slate-950/40 backdrop-blur-md">
         {messages.map((msg, idx) => (
           <div key={idx} className={cn("flex flex-col w-full mb-2", msg.role === 'user' ? "items-end" : "items-start")}>
             
@@ -1820,7 +1819,7 @@ export default function TerminalAI({ onClose } = {}) {
                 <button
                   type="submit"
                   disabled={(!input.trim() && attachments.length === 0) || isLoading}
-                  className="stitch-btn-primary absolute right-1.5 p-1.5 sm:p-2 text-zinc-950 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center"
+                  className="stitch-btn-glass absolute right-1.5 p-1.5 sm:p-2 text-cyan-300 hover:text-white rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center justify-center"
                 >
                   <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
