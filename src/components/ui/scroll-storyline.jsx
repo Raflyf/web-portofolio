@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useScroll } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
@@ -21,10 +21,10 @@ export default function ScrollStoryline() {
   const prevSectionRef = useRef(null);
   const { scrollYProgress } = useScroll();
 
-  const sections = SECTION_IDS.map(id => ({
+  const sections = useMemo(() => SECTION_IDS.map(id => ({
     id,
     label: t(`storyline.${id}`)
-  }));
+  })), [t]);
 
   // Auto-hide label seksi: hanya tampil sejenak (1.8s) saat ada perpindahan seksi, lalu otomatis disembunyikan
   useEffect(() => {

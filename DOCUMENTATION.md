@@ -3075,3 +3075,28 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
 3. **Standardisasi Lebar Kontainer & Opasitas Navbar (`StitchNav.jsx`):**
    - Mengganti `max-w-[1240px]` menjadi kelas kanonikal `max-w-310`.
    - Mengganti kelas pseudo hover `hover:bg-white/[0.08]` pada tautan desktop dan drawer mobile menjadi `hover:bg-white/8`.
+
+---
+
+### v10.697.2 — Sinkronisasi Desain Liquid Glass iOS 26, Fungsionalitas Scroll Navbar Monitoring, & Eliminasi Lonjakan Beban CPU (2026-09-16)
+
+1. **Sinkronisasi Perilaku Scroll & Jarak Header Navbar (`StitchNav.jsx`):**
+   - **Mekanisme Auto-Hide Seragam:** Menyamakan logika navigasi beranda dengan bilah monitoring: saat scroll ke bawah (*scroll down*), navbar secara anggun meluncur ke atas dan tersembunyi (`-translate-y-32`); saat scroll ke atas (*scroll up*), navbar langsung meluncur turun dan muncul kembali (`translate-y-0`).
+   - **Konsistensi Lintas Perangkat:** Menghapus pengecualian desktop (`window.innerWidth >= 1024`) sehingga fitur auto-hide aktif secara responsif di semua perangkat (desktop, tablet, smartphone).
+   - **Penyusutan Jarak Atas Layar:** Merampingkan padding kontainer fixed dari `p-2.5 sm:p-5 md:p-6` menjadi `pt-2 sm:pt-3 px-3 sm:px-6` agar navbar berada dekat dengan batas atas layar, presisi seperti header dashboard.
+
+2. **Unifikasi Material 3D Liquid Glass Apple visionOS / iOS 26 (`stitch.css`, `index.css`):**
+   - **Sinkronisasi DNA Optik Kristal:** Menerapkan formula visual navbar ke seluruh kartu konten (Hero showcase deck, Bento grid, Proyek, Sertifikasi, Pengalaman, Terminal AI, Kontak):
+     - Gradien kristal asap reflektif 135 derajat: `linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.46) 75%, rgba(8, 12, 28, 0.66) 100%)`.
+     - Bevel spekular fisik 3D ganda: bibir kilau atas (`inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70)`) dan bayangan kedalaman optik bawah (`inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50)`).
+     - Pendaran caustics safir internal (`inset 0 0 32px 0 rgba(56, 189, 248, 0.09)`).
+     - Bayangan elevasi mengambang berdimensi (`0 24px 54px -10px rgba(0, 0, 0, 0.80), 0 4px 16px 0 rgba(0, 0, 0, 0.45), 0 0 28px -4px rgba(56, 189, 248, 0.18)`).
+     - Border presisi optik (`1px solid rgba(255, 255, 255, 0.26)`).
+
+3. **Eliminasi Akar Masalah Lonjakan CPU 90% (Skia Software Blur Thrashing):**
+   - **Pemberantasan Nested Backdrop-Filter:** Menghilangkan `backdrop-filter` bersarang pada anak navbar (tautan aktif, tombol aksi, ikon), tombol `stitch-btn-glass`, badge keahlian, dan bilah sub-komponen terminal. Elemen anak mewarisi latar belakang blur wadah induk tanpa memicu de-optimasi recursive blur pass pada thread rasterizer CPU.
+   - **Transisi ke Gradien Shader GPU Murni:** Mengganti seluruh filter blur kernel raksasa software (`blur-[100px]`, `blur-[120px]`, `blur-3xl`) pada `StitchCausticsBackdrop.jsx` dan `horizon-hero.jsx` dengan gradien radial multi-stop hardware yang dievaluasi langsung oleh shader GPU dengan nol beban konvolusi CPU.
+   - **Isolasi Layer Marquee Bergerak:** Mengisolasi layer marquee animasi yang bergerak kontinu dengan `transform: translateZ(0)` dan `contain: paint`, serta menonaktifkan `backdrop-filter` pada 62 pil keahlian yang bergerak di dalam marquee.
+   - **Aktivasi Section Containment:** Menerapkan `.section-contain` (`content-visibility: auto; contain-intrinsic-size: 1px 750px;`) pada seluruh seksi halaman utama (`AboutSection`, `SkillsBento`, `ProjectsGrid`, `CertificatesGrid`, `ExperienceTimeline`, `#lab`, `ContactSection`) untuk menghentikan pemborosan siklus rendering pada elemen di luar viewport.
+   - **Stabilisasi Event Listener:** Memoisasi array seksi pada `ScrollStoryline.jsx` via `useMemo` dan menonaktifkan `syncTouch: false` pada Lenis smooth scroll di `App.jsx`.
+

@@ -182,11 +182,29 @@ export default function HorizonHero() {
       ref={containerRef}
       className="relative w-full min-h-[105vh] flex flex-col justify-center items-center bg-transparent text-zinc-900 dark:text-white overflow-hidden font-sans pt-20 pb-24"
     >
-      {/* Ambient Deep Space Nebula */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-100 bg-linear-to-b from-indigo-500/20 via-cyan-500/10 to-transparent blur-[120px] rounded-full" />
-        <div className="absolute top-1/3 left-1/4 w-100 h-75 bg-purple-500/10 blur-[100px] rounded-full" />
-        <div className="absolute top-1/3 right-1/4 w-100 h-75 bg-emerald-500/10 blur-[100px] rounded-full" />
+      {/* Ambient Deep Space Nebula (100% GPU Shader, Zero CPU Blur Kernel) */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden" style={{ contain: 'strict' }}>
+        <div 
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-100 rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.16) 0%, rgba(6, 182, 212, 0.07) 40%, rgba(6, 182, 212, 0.02) 60%, transparent 75%)',
+            transform: 'translateZ(0)'
+          }}
+        />
+        <div 
+          className="absolute top-1/3 left-1/4 w-100 h-75 rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(168, 85, 247, 0.10) 0%, rgba(147, 51, 234, 0.04) 45%, transparent 75%)',
+            transform: 'translateZ(0)'
+          }}
+        />
+        <div 
+          className="absolute top-1/3 right-1/4 w-100 h-75 rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.03) 45%, transparent 75%)',
+            transform: 'translateZ(0)'
+          }}
+        />
       </div>
 
 
@@ -258,7 +276,13 @@ export default function HorizonHero() {
           >
             {/* Dynamic Project Showcase Canvas */}
             <div className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7 rounded-3xl">
-              <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+              <div 
+                className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full pointer-events-none" 
+                style={{
+                  background: 'radial-gradient(circle at center, rgba(6, 182, 212, 0.14) 0%, transparent 70%)',
+                  transform: 'translateZ(0)'
+                }}
+              />
 
               {/* Showcase Window Header */}
               <div className="flex items-center justify-between pb-5 border-b border-white/10 mb-5 relative z-10">
@@ -371,7 +395,9 @@ export default function HorizonHero() {
                 className="relative flex overflow-hidden"
                 style={{
                   maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
-                  WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
+                  WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+                  transform: 'translateZ(0)',
+                  contain: 'paint'
                 }}
               >
                 <div className="animate-marquee-left flex gap-8 whitespace-nowrap px-4 py-1">
