@@ -44,14 +44,14 @@ export default function StitchPortfolio() {
         </div>
 
         {/* Main Sections with Bidirectional Scroll Reveal */}
-        <AboutSection />
-        <SkillsBento />
-        <ProjectsGrid />
-        <CertificatesGrid />
-        <ExperienceTimeline />
+        <div className="section-contain"><AboutSection /></div>
+        <div className="section-contain"><SkillsBento /></div>
+        <div className="section-contain"><ProjectsGrid /></div>
+        <div className="section-contain"><CertificatesGrid /></div>
+        <div className="section-contain"><ExperienceTimeline /></div>
 
         {/* Terminal & Interactive AI Lab */}
-        <section className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-12 pb-24" id="lab">
+        <section className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-12 pb-24 section-contain" id="lab">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -81,7 +81,7 @@ export default function StitchPortfolio() {
         </section>
 
         {/* Contact Form & Information */}
-        <ContactSection />
+        <div className="section-contain"><ContactSection /></div>
       </main>
 
       {/* 4. Footer */}

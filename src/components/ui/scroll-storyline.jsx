@@ -49,6 +49,9 @@ export default function ScrollStoryline() {
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
+      // Storyline sidebar is only visible on >= 1280px (xl:flex); skip reflows on mobile/tablet
+      if (window.innerWidth < 1280) return;
+
       if (!ticking) {
         requestAnimationFrame(() => {
           const scrollPosition = window.scrollY + window.innerHeight / 3;

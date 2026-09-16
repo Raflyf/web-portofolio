@@ -349,15 +349,15 @@ export default function App() {
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.25,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      syncTouch: true,
-      wheelMultiplier: 1.25,
-      touchMultiplier: 1.8,
-      respectReducedMotion: false, // Memaksa smooth & inertia scroll selalu aktif di laptop (abaikan Windows battery saver / reduced-motion)
+      syncTouch: false, // JANGAN bajak touch event di HP/mobile agar native 60fps/120Hz momentum compositor tetap mulus tanpa frame drop
+      touchInertiaMultiplier: 1.0,
+      wheelMultiplier: 1.15,
+      respectReducedMotion: false,
     });
 
     window.__lenis = lenis;

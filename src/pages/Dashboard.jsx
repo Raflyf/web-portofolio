@@ -296,7 +296,8 @@ const CustomSelect = ({ value, onChange, options }) => {
         <div
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.15),0_0_20px_rgba(6,182,212,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(6,182,212,0.15)] focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl"
+          style={{ position: 'absolute', top: '100%', right: 0 }}
+          className="!absolute top-full right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-2xl focus:outline-none overflow-hidden backdrop-blur-2xl"
         >
           <div 
             data-lenis-prevent="true" 
@@ -460,8 +461,9 @@ export default function Dashboard({ isStitch = true } = {}) {
   // Ping Toast
   const [pingStatus, setPingStatus] = useState('');
 
-  // Smart Auto-Hide Dashboard Header on Scroll
+  // Smart Auto-Hide Dashboard Header & Scroll to Top on Scroll
   const [dashboardNavVisible, setDashboardNavVisible] = useState(true);
+  const [showDashboardBackToTop, setShowDashboardBackToTop] = useState(false);
   const lastDashboardScrollY = useRef(0);
 
   useEffect(() => {
@@ -471,8 +473,10 @@ export default function Dashboard({ isStitch = true } = {}) {
     const handleDashboardScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const currentY = window.scrollY;
+          const currentY = window.scrollY || document.documentElement.scrollTop || 0;
           const delta = currentY - lastDashboardScrollY.current;
+
+          setShowDashboardBackToTop(currentY > 180);
 
           if (currentY < 70) {
             setDashboardNavVisible(true);
@@ -491,6 +495,7 @@ export default function Dashboard({ isStitch = true } = {}) {
     };
 
     window.addEventListener('scroll', handleDashboardScroll, { passive: true });
+    handleDashboardScroll();
     return () => window.removeEventListener('scroll', handleDashboardScroll);
   }, []);
 
@@ -2486,20 +2491,35 @@ export default function Dashboard({ isStitch = true } = {}) {
         </div>
       )}
 
-      {/* Floating Smooth Scroll to Top Button for Admin */}
+      {/* Floating Smooth Scroll to Top Button for Admin & Mobile */}
       <button
-        onClick={() => {
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
           if (window.__lenis) {
-            window.__lenis.scrollTo(0, { duration: 1 });
-          } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            try {
+              window.__lenis.scrollTo(0, { immediate: false, duration: 0.8 });
+            } catch {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
           }
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+          document.body.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        className="fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-400 hover:text-white hover:border-cyan-500/40 flex items-center justify-center transition-all hover:-translate-y-0.5 shadow-lg cursor-pointer"
+        style={{
+          opacity: showDashboardBackToTop ? 1 : 0,
+          transform: showDashboardBackToTop ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.65)',
+          pointerEvents: showDashboardBackToTop ? 'auto' : 'none',
+          transition: 'opacity 400ms cubic-bezier(0.16, 1, 0.3, 1), transform 400ms cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+        className="fixed bottom-6 sm:bottom-8 right-5 sm:right-8 z-50 w-11 h-11 sm:w-12 sm:h-12 rounded-full liquid-glass-strong liquid-glass-pill liquid-press text-zinc-300 hover:text-white hover:border-cyan-400/60 flex items-center justify-center shadow-2xl cursor-pointer select-none border border-white/20 will-change-[transform,opacity]"
         aria-label={t('dashboard.backToTop')}
         title={t('dashboard.backToTop')}
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+        <svg className="w-5 h-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+        </svg>
       </button>
 
     </main>

@@ -21,18 +21,15 @@ div.stitch-liquid-theme:not(.relative),
 }
 
 /* Isolate layout and composite surfaces for zero-framedrop 60fps scrolling */
-.stitch-liquid-theme .liquid-glass,
-.stitch-liquid-theme .liquid-glass-strong,
-.stitch-dashboard-container .liquid-glass,
-.stitch-dashboard-container .liquid-glass-strong {
+.stitch-liquid-theme .liquid-glass:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass-strong:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]) {
   contain: layout style;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
-/* --------------------------------------------------------------------------
-   2. Authentic Apple Liquid Glass Primitives (Understated & Calm)
-   -------------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------
    2. Authentic Apple iOS 26 / visionOS / Stitch Liquid Glass Primitives
    Model: Volumetric Optical Smoked Crystal + Specular Top Rim + Physical 3D Elevation
@@ -53,6 +50,10 @@ div.stitch-liquid-theme:not(.relative),
     0 4px 16px 0 rgba(0, 0, 0, 0.45),
     0 0 28px -4px rgba(56, 189, 248, 0.18) !important;
   border-radius: 1.75rem !important;
+}
+
+.stitch-liquid-theme .liquid-glass:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]) {
   position: relative;
 }
 
@@ -71,6 +72,10 @@ div.stitch-liquid-theme:not(.relative),
     0 6px 20px -2px rgba(0, 0, 0, 0.45),
     0 0 28px -4px rgba(56, 189, 248, 0.18) !important;
   border-radius: 1.75rem !important;
+}
+
+.stitch-liquid-theme .liquid-glass-strong:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass-strong:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]) {
   position: relative;
 }
 
@@ -504,19 +509,36 @@ button.stitch-btn-glass:active,
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 16px 36px -10px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* Mobile Liquid Glass Sheet */
+/* Mobile Liquid Glass Sheet (Zero Text Bleedthrough + Apple visionOS Optical Depth) */
 .stitch-nav-mobile-sheet {
   background: 
-    linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(14, 22, 50, 0.55) 75%, rgba(8, 12, 28, 0.88) 100%) !important;
-  backdrop-filter: blur(36px) saturate(220%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(220%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 20%, rgba(12, 17, 36, 0.96) 60%, rgba(6, 9, 20, 0.99) 100%) !important;
+  backdrop-filter: blur(44px) saturate(220%) contrast(110%) !important;
+  -webkit-backdrop-filter: blur(44px) saturate(220%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
   box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.65),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.60),
-    0 24px 60px -10px rgba(0, 0, 0, 0.85),
-    0 0 32px -4px rgba(56, 189, 248, 0.20) !important;
+    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.70),
+    0 24px 64px -10px rgba(0, 0, 0, 0.95),
+    0 0 36px -4px rgba(56, 189, 248, 0.25) !important;
   border-radius: 1.75rem !important;
+}
+
+/* Mobile Navbar Pill Solid Backing on Viewports <= 768px (Zero Text Bleedthrough during Scroll) */
+@media (max-width: 768px) {
+  .stitch-glass-nav,
+  .liquid-glass-nav {
+    background: 
+      linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(12, 17, 36, 0.94) 65%, rgba(6, 9, 20, 0.98) 100%) !important;
+    backdrop-filter: blur(40px) saturate(220%) contrast(110%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(220%) !important;
+  }
+}
+
+/* Offscreen section rendering optimization for silky smooth 60fps mobile scroll */
+.section-contain {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 700px;
 }
 
 /* 16 AI Model Cards */
@@ -644,5 +666,32 @@ button.stitch-btn-glass:active,
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
     0 4px 12px rgba(0, 0, 0, 0.40) !important;
   border-radius: 9999px !important;
+}
+
+/* Terminal Popup Modal Solid Glass Surface (100% Legibility over Page Content) */
+.fixed .stitch-terminal-window {
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 25%, rgba(12, 17, 36, 0.95) 60%, rgba(6, 9, 20, 0.99) 100%) !important;
+  backdrop-filter: blur(44px) saturate(220%) contrast(110%) !important;
+  -webkit-backdrop-filter: blur(44px) saturate(220%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 
+    inset 0 1.6px 2.2px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.70),
+    0 32px 80px -12px rgba(0, 0, 0, 0.95),
+    0 0 44px rgba(56, 189, 248, 0.22) !important;
+}
+
+/* Terminal Internal Dialog & Modal Cards */
+.stitch-terminal-dialog-card {
+  background: 
+    linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(14, 22, 50, 0.85) 75%, rgba(8, 12, 28, 0.96) 100%) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 
+    inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.50),
+    0 16px 36px -6px rgba(0, 0, 0, 0.75) !important;
 }
 
