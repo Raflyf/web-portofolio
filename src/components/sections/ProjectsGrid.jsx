@@ -170,7 +170,7 @@ export default function ProjectsGrid() {
               }}
               className={`px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition-all cursor-pointer ${
                 filter === tab.id 
-                  ? 'stitch-btn-primary' 
+                  ? 'stitch-tab-active text-white' 
                   : 'stitch-tab-flat'
               }`}
             >

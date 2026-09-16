@@ -1,21 +1,57 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext.jsx';
-import { Mail, ExternalLink, ArrowUpRight, BarChart3, Check, Globe } from 'lucide-react';
+import { Mail, ArrowUpRight, BarChart3, Check, Globe } from 'lucide-react';
 import GithubIcon from './GithubIcon.jsx';
 import { telemetry } from '../../lib/telemetry';
+
+const NAV_ITEMS = [
+  { id: 'about', labelId: 'Tentang', labelEn: 'About' },
+  { id: 'skills', labelId: 'Keahlian', labelEn: 'Skills' },
+  { id: 'projects', labelId: 'Proyek', labelEn: 'Projects' },
+  { id: 'certificates', labelId: 'Sertifikasi', labelEn: 'Certificates' },
+  { id: 'timeline', labelId: 'Pengalaman', labelEn: 'Experience' },
+  { id: 'lab', labelId: 'AI Lab', labelEn: 'AI Lab' },
+  { id: 'contact', labelId: 'Kontak', labelEn: 'Contact' },
+];
 
 export default function StitchNav() {
   const { language, toggleLanguage, t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [navVisible, setNavVisible] = useState(true);
+  const [activeSection, setActiveSection] = useState('hero');
   const lastScrollY = useRef(0);
 
+  // Scroll to section with Lenis Smooth Scroll or native fallback
+  const scrollToSection = (e, id) => {
+    if (e) e.preventDefault();
+    setActiveSection(id);
+    setNavVisible(true);
+    
+    // Update hash in browser without harsh jumping
+    window.history.pushState(null, '', `#${id}`);
+
+    const el = document.getElementById(id);
+    if (el) {
+      if (window.__lenis) {
+        window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 });
+      } else {
+        const top = el.getBoundingClientRect().top + window.scrollY - 70;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    }
+  };
+
+  // Synchronize active nav highlight with viewport scroll
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
       const currentY = window.scrollY;
       const delta = currentY - lastScrollY.current;
-      if (currentY < 70) {
+
+      // Always keep floating navbar visible on desktop so user can see the active sync pill
+      if (currentY < 70 || window.innerWidth >= 1024) {
         setNavVisible(true);
       } else if (delta > 8) {
         setNavVisible(false);
@@ -23,9 +59,57 @@ export default function StitchNav() {
         setNavVisible(true);
       }
       lastScrollY.current = currentY;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (currentY < 200) {
+            setActiveSection('hero');
+          } else {
+            const scrollPosition = currentY + window.innerHeight / 3;
+            let currentActive = 'hero';
+
+            for (const item of NAV_ITEMS) {
+              const el = document.getElementById(item.id);
+              if (el) {
+                const top = el.offsetTop;
+                const height = el.offsetHeight;
+                if (scrollPosition >= top && scrollPosition < top + height) {
+                  currentActive = item.id;
+                  break;
+                }
+              }
+            }
+            setActiveSection(currentActive);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Handle direct URL hash landing (e.g. #timeline)
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      setActiveSection(hash);
+      const timer = setTimeout(() => {
+        const el = document.getElementById(hash);
+        if (el) {
+          if (window.__lenis) {
+            window.__lenis.scrollTo(el, { duration: 1.0, offset: -70 });
+          } else {
+            const top = el.getBoundingClientRect().top + window.scrollY - 70;
+            window.scrollTo({ top, behavior: 'smooth' });
+          }
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const handleCopyEmail = () => {
@@ -42,7 +126,11 @@ export default function StitchNav() {
       <div className="pointer-events-auto h-13 max-w-[1240px] w-full stitch-glass-nav rounded-full px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Brand & Status Indicator */}
         <div className="flex items-center gap-3.5 shrink-0">
-          <a href="#hero" className="flex items-center gap-2 group">
+          <a 
+            href="#hero" 
+            onClick={(e) => scrollToSection(e, 'hero')}
+            className="flex items-center gap-2 group cursor-pointer"
+          >
             <span className="font-mono text-sm font-semibold tracking-tight text-white group-hover:text-cyan-300 transition-colors">
               RF<span className="text-cyan-400">.</span>dev
             </span>
@@ -53,29 +141,25 @@ export default function StitchNav() {
           </div>
         </div>
 
-        {/* Section Navigation Links */}
+        {/* Section Navigation Links with Synchronized 3D Liquid Glass Pill */}
         <nav className="hidden lg:flex items-center gap-1 text-xs font-medium text-slate-300 font-sans">
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#about">
-            {language === 'id' ? 'Tentang' : 'About'}
-          </a>
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#skills">
-            {language === 'id' ? 'Keahlian' : 'Skills'}
-          </a>
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#projects">
-            {language === 'id' ? 'Proyek' : 'Projects'}
-          </a>
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#certificates">
-            {language === 'id' ? 'Sertifikasi' : 'Certificates'}
-          </a>
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#timeline">
-            {language === 'id' ? 'Pengalaman' : 'Experience'}
-          </a>
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#lab">
-            {language === 'id' ? 'AI Lab' : 'AI Lab'}
-          </a>
-          <a className="px-2.5 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all" href="#contact">
-            {language === 'id' ? 'Kontak' : 'Contact'}
-          </a>
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => scrollToSection(e, item.id)}
+                className={`px-3 py-1.5 rounded-full transition-all cursor-pointer ${
+                  isActive 
+                    ? 'stitch-nav-link-active' 
+                    : 'text-slate-300 hover:text-white hover:bg-white/[0.08]'
+                }`}
+              >
+                {language === 'id' ? item.labelId : item.labelEn}
+              </a>
+            );
+          })}
         </nav>
 
         {/* Right Actions & Utilities */}
@@ -123,7 +207,8 @@ export default function StitchNav() {
           {/* Direct CTA */}
           <a
             href="#contact"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full stitch-btn-primary font-semibold text-xs transition-all"
+            onClick={(e) => scrollToSection(e, 'contact')}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full stitch-btn-primary font-semibold text-xs transition-all cursor-pointer"
           >
             <span>{language === 'id' ? 'Hubungi' : 'Get in Touch'}</span>
             <ArrowUpRight className="w-3.5 h-3.5" />

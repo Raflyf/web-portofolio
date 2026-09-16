@@ -2984,4 +2984,25 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - **Bilah Samping Storyline:** Menyingkirkan pembesaran tombol yang tidak proporsional dan merampingkan indikator dot menjadi micro-dock visionOS minimalis yang anggun (lebar 18px).
    - **Header Dashboard:** Menerapkan gaya tombol 3D liquid glass pada tautan *"<- Beranda"* agar seragam dengan tombol pemilih bahasa di sampingnya.
 
+---
+
+### v10.695.0 — Sinkronisasi Navigasi Dinamis, Tab Filter Liquid Glass Anti-Putih, Pemulihan Terminal Native, & Peniadaan Scrollbar OS (2026-09-16)
+
+1. **Sinkronisasi Dinamis & Navigasi Scroll Navbar (`StitchNav.jsx`):**
+   - **Integrasi Programmatic Lenis Scroll:** Menghubungkan klik seluruh item navigasi (`Tentang`, `Keahlian`, `Proyek`, `Sertifikasi`, `Pengalaman`, `AI Lab`, `Kontak`) ke instance `window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 })` sehingga peramban berpindah secara mulus ke posisi seksi yang presisi tanpa loncatan kaku bawaan hash anchor.
+   - **Indikator Aktif 3D Liquid Glass (`.stitch-nav-link-active`):** Mengimplementasikan deteksi seksi aktif berbasis perhitungan viewport scroll (`scrollPosition >= el.offsetTop && scrollPosition < el.offsetTop + el.offsetHeight`), secara dinamis menyalakan pil kaca cair 3D dengan specular rim highlight dan ambient cyan glow saat pengguna menggulir halaman.
+   - **Visibilitas Navbar Desktop:** Memastikan floating navbar tetap terlihat mengambang anggun di layar desktop/laptop agar status sinkronisasi aktif selalu terpantau secara konsisten.
+
+2. **Tab Filter Pure Liquid Glass Anti-Putih (`.stitch-tab-active`):**
+   - **Eliminasi Tombol Putih Solid:** Mengganti kelas `stitch-btn-primary` (putih solid `#ffffff`) pada tab filter aktif `ProjectsGrid.jsx` dan `CertificatesGrid.jsx` dengan `.stitch-tab-active`.
+   - **Estetika Smoked Crystal 3D:** Menerapkan gradien kaca cair smoked (`rgba(29, 37, 69)`), `backdrop-filter: blur(20px) saturate(190%)`, specular inner highlight, dan bayangan elevasi halus dengan teks putih bersih tanpa cat putih solid opaque.
+
+3. **Restorasi Terminal Native di Seksi Lab (`TerminalAI.jsx` & `stitch.css`):**
+   - **Eliminasi Opaque Cut-Out:** Mengoreksi selektor tema root `div.stitch-liquid-theme:not(.relative)` dan `.stitch-liquid-theme.relative { background-color: transparent !important; }` sehingga pembungkus terminal native tidak lagi menciptakan kotak hitam pekat yang menutupi kanvas caustics di sekeliling terminal.
+   - **Polish Bodi & Tombol Kirim:** Mengganti latar belakang bodi pesan menjadi `bg-slate-950/40 backdrop-blur-md` dan tombol submit kirim dari putih solid menjadi `stitch-btn-glass` dengan aksen cyan berpendar.
+
+4. **Peniadaan Scrollbar Bawaan Sistem Operasi (`index.css`):**
+   - **Global Native Scrollbar Concealment:** Menyembunyikan track dan bilah scrollbar abu-abu bawaan Windows/macOS/Linux secara global (`html, body, .no-scrollbar { scrollbar-width: none !important; -ms-overflow-style: none !important; }` serta `*::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }`).
+   - **Estetika Layar Bersih Seamless:** Menghasilkan antarmuka tanpa bilah scrollbar kaku pada tepi layar sembari menjaga fungsi scrolling inersia mouse, trackpad, dan gesture sentuh 100% aktif dan lancar.
+
 
