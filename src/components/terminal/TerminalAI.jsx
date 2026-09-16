@@ -1177,7 +1177,7 @@ export default function TerminalAI({ onClose } = {}) {
     >
       <div className={cn(
         "w-full max-w-5xl mx-auto flex flex-col overflow-hidden stitch-terminal-window font-mono text-sm relative transition-all duration-300",
-        isTerminalPopupOpen ? "h-[94vh] sm:h-[92vh] glass-spring-in rounded-2xl sm:rounded-3xl" : "h-[540px] sm:h-150 lg:h-175 rounded-2xl sm:rounded-3xl"
+        isTerminalPopupOpen ? "h-[94vh] sm:h-[92vh] glass-spring-in rounded-2xl sm:rounded-3xl" : "h-135 sm:h-150 lg:h-175 rounded-2xl sm:rounded-3xl"
       )}>
         
         {/* Terminal App Header */}
@@ -1812,7 +1812,7 @@ export default function TerminalAI({ onClose } = {}) {
                   type="button"
                   onClick={cancelGeneration}
                   title="Batalkan pengiriman (Cancel)"
-                  className="absolute right-1.5 p-1.5 sm:p-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:brightness-110 transition-all cursor-pointer flex items-center justify-center"
+                  className="absolute right-1.5 p-1.5 sm:p-2 bg-linear-to-r from-red-500 to-rose-600 text-white rounded-lg hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:brightness-110 transition-all cursor-pointer flex items-center justify-center"
                 >
                   <Square className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-white animate-pulse" />
                 </button>
