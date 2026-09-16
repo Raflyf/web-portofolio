@@ -71,7 +71,7 @@ export default function CertificatesGrid() {
   ], [t]);
 
   return (
-    <section id="certificates" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
+    <section id="certificates" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24 section-contain">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -79,7 +79,7 @@ export default function CertificatesGrid() {
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-12"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('certificates.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -164,12 +164,12 @@ export default function CertificatesGrid() {
                   
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent z-20" />
                   
-                  <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-zinc-300">
+                  <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/80 border border-white/15 text-[10px] font-mono text-zinc-300">
                     <Calendar className="w-3 h-3 text-cyan-400" />
                     {cert.date}
                   </div>
 
-                  <div className="absolute bottom-3 right-3 z-30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center gap-1 px-2.5 py-1 rounded-md bg-cyan-500/20 backdrop-blur-md border border-cyan-400/40 text-[10px] font-semibold text-cyan-300">
+                  <div className="absolute bottom-3 right-3 z-30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center gap-1 px-2.5 py-1 rounded-md bg-cyan-500/25 border border-cyan-400/40 text-[10px] font-semibold text-cyan-300">
                     <Eye className="w-3 h-3" />
                     {language === 'id' ? 'Pratinjau' : 'Preview'}
                   </div>

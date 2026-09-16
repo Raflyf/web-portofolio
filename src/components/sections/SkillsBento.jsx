@@ -32,7 +32,7 @@ export default function SkillsBento() {
   const { t } = useLanguage();
 
   return (
-    <section id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
+    <section id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24 section-contain">
       <motion.div 
         initial="hidden"
         whileInView="visible"
@@ -40,7 +40,7 @@ export default function SkillsBento() {
         variants={containerVariants}
         className="text-center space-y-4 mb-14"
       >
-        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('skills.badge')}</span>
         </motion.div>
         <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -58,7 +58,12 @@ export default function SkillsBento() {
         viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.1 }}
         className="relative overflow-hidden flex w-full mb-4" 
-        style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
+        style={{ 
+          maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", 
+          WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+          transform: "translateZ(0)",
+          contain: "paint"
+        }}
       >
         <div className="animate-marquee-left flex gap-3 whitespace-nowrap py-1">
           {[...Array(2)].map((_, i) => (
@@ -81,7 +86,12 @@ export default function SkillsBento() {
         viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="relative overflow-hidden flex w-full mb-16" 
-        style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
+        style={{ 
+          maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", 
+          WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+          transform: "translateZ(0)",
+          contain: "paint"
+        }}
       >
         <div className="animate-marquee-right flex gap-3 whitespace-nowrap py-1">
           {[...Array(2)].map((_, i) => (

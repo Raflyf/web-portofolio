@@ -64,7 +64,7 @@ export default function AboutSection() {
   ];
 
   return (
-    <section id="about" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
+    <section id="about" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24 section-contain">
       <motion.div 
         initial="hidden"
         whileInView="visible"
