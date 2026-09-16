@@ -113,7 +113,7 @@ export default function ScrollStoryline() {
                 <div
                   className={`rounded-full transition-all duration-300 ${
                     isActive
-                      ? 'w-2.5 h-2.5 bg-gradient-to-tr from-cyan-400 to-white shadow-[0_0_8px_rgba(34,211,238,0.85)] ring-1.5 ring-cyan-400/50 scale-110'
+                      ? 'w-2.5 h-2.5 bg-linear-to-tr from-cyan-400 to-white shadow-[0_0_8px_rgba(34,211,238,0.85)] ring-1.5 ring-cyan-400/50 scale-110'
                       : 'w-1.5 h-1.5 bg-zinc-600 group-hover:bg-zinc-300 group-hover:scale-125'
                   }`}
                 />

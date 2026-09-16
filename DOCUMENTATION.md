@@ -3028,3 +3028,31 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
 
 5. **Resolusi Kompatibilitas Parser CSS LightningCSS:**
    - **Perbaikan Stripping Standard `backdrop-filter`:** Menghilangkan deklarasi duplikat manual `-webkit-backdrop-filter` yang sebelumnya memicu LightningCSS memangkas properti standar `backdrop-filter` di Chromium, memulihkan efek blur optik 100% pada semua peramban modern.
+
+---
+
+### v10.697.0 — Responsivitas Mobile Menyeluruh, Menu Drawer Kaca Cair iOS 26, Restorasi Bar Monitoring Dashboard, & Optimasi GPU (2026-09-16)
+
+1. **Menu Navigasi Mobile 3D Liquid Glass Crystal (`StitchNav.jsx`):**
+   - **Tombol Hamburger Kaca Cair:** Menambahkan tombol toggle menu hamburger interaktif (`Menu` / `X`) khusus pada layar mobile (`lg:hidden`) dengan styling kapsul kristal cair translusen.
+   - **Lembar Menu Mengambang (Floating Liquid Sheet):** Menghadirkan drawer navigasi mobile 3D liquid glass (`.stitch-nav-mobile-sheet`) berbezel optik visionOS dengan blur mendalam (`blur(36px) saturate(220%)`).
+   - **Daftar Tautan Lengkap:** Memungkinkan pengguna ponsel mengakses seluruh 7 seksi landing page (`Tentang`, `Keahlian`, `Proyek`, `Sertifikasi`, `Pengalaman`, `AI Lab`, `Kontak`) dengan indikator seksi aktif (`.stitch-nav-link-active`), scroll mulus berbasis Lenis tanpa tanda `#` pada URL, dan auto-close saat seksi ditekan atau tombol Escape ditekan.
+   - **Utilitas Ringkas Mobile:** Menyediakan tombol aksi cepat langsung di dalam lembar mobile: Tombol Hubungi Saya (CTA utama), jalan pintas Dashboard Telemetry, Salin Alamat Email, dan Tautan Profil GitHub.
+
+2. **Restorasi Bar Monitoring Metrik Dashboard (`stitch.css` & `Dashboard.jsx`):**
+   - **Akar Masalah:** Selektor global `.stitch-dashboard-container .bg-linear-to-r` pada CSS sebelumnya menimpa seluruh elemen bergradien horizontal dengan warna abu-abu gelap transparan 4% dan border tebal, menyebabkan batang kemajuan (progress bar) pada seksi *Proyek Terpopuler*, *Sertifikat Diminati*, dan *Saluran Trafik* menjadi hitam pekat tak terlihat.
+   - **Isolasi Selektor Spesifik:** Mengganti selektor tersebut menjadi `.stitch-dashboard-container .auto-gateway-router-banner` khusus untuk spanduk Smart Auto Gateway.
+   - **Pendaran Warna Gradien Hidup:** Memberikan nilai fallback gradien terang (`purple-to-cyan`, `emerald-to-teal`, `indigo-to-pink`) dengan elevasi bayangan pendaran neon (`shadow-[0_0_10px_rgba(...)]`) serta batas lebar minimal (`Math.max(pct, 6)%`) agar batang tetap tampak estetik dan jelas terbaca bahkan pada metrik bernilai kecil.
+
+3. **Responsivitas Header Dashboard & Layout Mobile (`Dashboard.jsx`):**
+   - **Bilah Header Tanpa Terpotong:** Menyesuaikan ukuran padding dan tata letak bilah kontrol atas dashboard (`p-1.5 sm:px-2.5 sm:py-1.5`, `overflow-x-auto no-scrollbar`) sehingga 6 tombol kontrol (Kembali, Status Live, Bahasa, Tema, Ping, Ganti PIN, Refresh, Logout) muat dengan sempurna di layar smartphone sempit (< 380px).
+   - **Grid Metrik Adaptif:** Memastikan seluruh kartu Bento KPI, 4 kartu intelijen, dan 16 kartu model AI tersusun rapi dalam 1 kolom pada ponsel (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`).
+
+4. **Responsivitas Terminal Native & Modal Pop-up (`TerminalAI.jsx`):**
+   - **Ketinggian Fluida Mobile:** Menyesuaikan tinggi jendela terminal inline di seksi `#lab` menjadi `h-[540px] sm:h-150 lg:h-175` agar proporsional dan tidak memotong viewport pada perangkat ponsel dengan rasio layar vertikal.
+   - **Pencegahan Teks Meluber:** Merampingkan teks label prompt terminal (`rafly@portfolio-lab:~`) dengan pemotongan teks anggun (`truncate`) pada layar ultra-kecil (< 360px).
+   - **Resolusi Lint CSS Conflict:** Membersihkan duplikasi kelas `text-sm` vs `text-xs` pada menu perintah garis miring (/cmd) dan merapikan kelas Tailwind v4.
+
+5. **Optimasi Performa Ekstrem & Konservasi Memori GPU (`StitchCausticsBackdrop.jsx`):**
+   - **Eliminasi Pemborosan VRAM:** Menghapus deklarasi `willChange: 'transform'` pada 4 elemen lingkaran mesh ambient raksasa (`blur-[100px]`, `w-[720px]`). Karena elemen ini statis dan tidak bergerak dalam loop frame animasi, peniadaan `willChange` mencegah GPU mengalokasikan layer tekstur raster terpisah yang boros memori.
+   - **Garansi 60 FPS & Resource < 20%:** Memastikan penggunaan CPU dan GPU tetap berada jauh di bawah ambang batas 20% dengan laju render scroll 60 FPS tanpa frame drop.

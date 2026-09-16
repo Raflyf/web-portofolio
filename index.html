@@ -4,13 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Theme pre-paint (m-4): apply saved theme before CSS/body paint to avoid flash-of-wrong-theme. -->
+    <!-- Theme & Clean URL pre-paint: strip '#' from URL immediately while saving initial scroll target -->
     <script>
       (function () {
         try {
           var saved = localStorage.getItem('portfolio-theme');
           var dark = saved === 'light' ? false : true; // default to dark
           document.documentElement.classList.toggle('dark', dark);
+
+          if (window.location.hash) {
+            window.__initialTargetHash = window.location.hash.replace('#', '');
+            window.history.replaceState(null, '', window.location.href.split('#')[0]);
+          }
         } catch (e) {}
       })();
     </script>
