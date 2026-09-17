@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useScroll } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
@@ -16,15 +16,17 @@ const SECTION_IDS = [
 export default function ScrollStoryline() {
   const { t } = useLanguage();
   const [activeSection, setActiveSection] = useState('hero');
+  const activeSectionRef = useRef('hero');
   const [percent, setPercent] = useState(0);
+  const lastPercentRef = useRef(0);
   const [showActiveLabel, setShowActiveLabel] = useState(false);
   const prevSectionRef = useRef(null);
   const { scrollYProgress } = useScroll();
 
-  const sections = SECTION_IDS.map(id => ({
+  const sections = useMemo(() => SECTION_IDS.map(id => ({
     id,
     label: t(`storyline.${id}`)
-  }));
+  })), [t]);
 
   // Auto-hide label seksi: hanya tampil sejenak (1.8s) saat ada perpindahan seksi, lalu otomatis disembunyikan
   useEffect(() => {
@@ -41,7 +43,11 @@ export default function ScrollStoryline() {
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (latest) => {
-      setPercent(Math.min(100, Math.max(0, Math.round(latest * 100))));
+      const p = Math.min(100, Math.max(0, Math.round(latest * 100)));
+      if (p !== lastPercentRef.current) {
+        lastPercentRef.current = p;
+        setPercent(p);
+      }
     });
     return () => unsubscribe();
   }, [scrollYProgress]);
@@ -61,9 +67,15 @@ export default function ScrollStoryline() {
           const docHeight = document.documentElement.scrollHeight;
 
           if (scrollY < 120) {
-            setActiveSection('hero');
+            if (activeSectionRef.current !== 'hero') {
+              activeSectionRef.current = 'hero';
+              setActiveSection('hero');
+            }
           } else if (scrollBottom >= docHeight - 80) {
-            setActiveSection('contact');
+            if (activeSectionRef.current !== 'contact') {
+              activeSectionRef.current = 'contact';
+              setActiveSection('contact');
+            }
           } else {
             let current = 'hero';
             for (const section of sections) {
@@ -75,7 +87,10 @@ export default function ScrollStoryline() {
                 }
               }
             }
-            setActiveSection(current);
+            if (current !== activeSectionRef.current) {
+              activeSectionRef.current = current;
+              setActiveSection(current);
+            }
           }
           ticking = false;
         });

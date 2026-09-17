@@ -106,14 +106,8 @@ const STACK_BADGES = [
   { name: "Flask & WebSockets", icon: Command }
 ];
 
-export default function HorizonHero() {
-  const { language, t } = useLanguage();
-  const containerRef = useRef(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+function HeroLiveClock({ language }) {
   const [clockTime, setClockTime] = useState('');
-
-  const showcaseProjects = HERO_SHOWCASE_PROJECTS_I18N[language] || HERO_SHOWCASE_PROJECTS_I18N.id;
 
   // Live WIB clock (UTC+7), paused when the tab is hidden
   useEffect(() => {
@@ -145,6 +139,24 @@ export default function HorizonHero() {
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [language]);
+
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
+      <Clock className="w-3.5 h-3.5 text-cyan-400" />
+      <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
+        {clockTime}
+      </span>
+    </div>
+  );
+}
+
+export default function HorizonHero() {
+  const { language, t } = useLanguage();
+  const containerRef = useRef(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const showcaseProjects = HERO_SHOWCASE_PROJECTS_I18N[language] || HERO_SHOWCASE_PROJECTS_I18N.id;
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -224,12 +236,7 @@ export default function HorizonHero() {
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
                 </span>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
-                  {clockTime}
-                </span>
-              </div>
+              <HeroLiveClock language={language} />
             </div>
 
             <h1 
