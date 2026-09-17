@@ -75,7 +75,7 @@ export default function CertificatesGrid() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-12"
       >
@@ -95,7 +95,7 @@ export default function CertificatesGrid() {
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.8 }}
+        viewport={{ once: true, amount: 0.8 }}
         className="flex justify-center mb-12"
       >
         <div className="stitch-capsule-group">
@@ -129,7 +129,7 @@ export default function CertificatesGrid() {
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              viewport={{ once: false, amount: 0.15 }}
+              viewport={{ once: true, amount: 0.15 }}
               transition={{ 
                 duration: 0.5, 
                 ease: [0.16, 1, 0.3, 1],
