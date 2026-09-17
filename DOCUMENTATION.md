@@ -3407,3 +3407,17 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - Memanggil `e.currentTarget.blur()` sesaat setelah tombol bulatan storyline diklik, menghapus cincin `:focus-visible` persisten setelah navigasi mouse sembari tetap mempertahankan aksesibilitas navigasi keyboard via Tab (`focus-visible:ring-1.5 focus-visible:ring-cyan-400/80`).
    - Menyelaraskan offset lompatan scroll pada Lenis menjadi `-70px` agar judul seksi tidak tertutup oleh navbar yang melayang.
 
+---
+
+### v10.698.0 — Restorasi Footer Full-Width Rata Tepi & Eliminasi Distorsi Kapsul Bulat (`Footer.jsx`, `stitch.css`) (2026-09-17)
+
+1. **Akar Masalah Distorsi Footer Menjadi Kapsul Bulat:**
+   - Di `stitch.css`, selektor global `.stitch-liquid-theme .liquid-glass-nav` dan `@media (max-width: 768px) .liquid-glass-nav` memaksakan properti `border-radius: 9999px !important;` serta garis tepi samping `border: 1px solid rgba(255, 255, 255, 0.26) !important;` yang mulanya dimaksudkan untuk pil melayang navbar.
+   - Karena komponen `Footer.jsx` sebelumnya menggunakan kelas `.liquid-glass-nav` di dalam tema `.stitch-liquid-theme`, peramban memaksakan radius 9999px pada kontainer selebar layar penuh (`w-full`), mengubah kedua ujung kiri dan kanan footer menjadi setengah lingkaran raksasa (*giant floating stadium pill*) yang melengkung masuk dan meninggalkan celah visual kosong di dasar layar.
+
+2. **Perbaikan & Isolasi Lingkup CSS (`stitch.css`, `Footer.jsx`):**
+   - **Isolasi Selektor Navigasi:** Mengubah selektor kapsul bulat di `stitch.css` menjadi `.stitch-liquid-theme header.liquid-glass-nav` dan `.stitch-liquid-theme header .liquid-glass-nav`, sehingga aturan `border-radius: 9999px !important;` hanya berlaku khusus untuk header/navbar dan tidak pernah merembet ke elemen footer.
+   - **Komponen Footer Presisi (`.stitch-footer`):** Mengganti kelas footer di `Footer.jsx` menjadi `.stitch-footer` dengan penetapan eksplisit `border-radius: 0 !important;`, `border-left: none !important;`, `border-right: none !important;`, dan `border-bottom: none !important;`.
+   - **Estetika Kaca Cair Penuh:** Footer kini membentang rata 100% dari tepi ke tepi (*edge-to-edge full-width*) dengan lapisan dasar kaca optik visionOS pekat (`linear-gradient(180deg, rgba(14, 22, 50, 0.50) 0%, rgba(6, 8, 16, 0.95) 100%)`), garis kilau pembagi atas (`border-top: 1px solid rgba(255, 255, 255, 0.12)` + gradien sian), dan bayangan elevasi atas yang menyatu mulus di dasar dokumen tanpa lengkungan anomali.
+
+

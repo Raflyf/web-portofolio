@@ -132,7 +132,8 @@ div.stitch-liquid-theme:not(.relative),
    3. Floating Liquid Glass Navigation (Apple visionOS Crystal Frosted Pill)
    -------------------------------------------------------------------------- */
 .stitch-glass-nav,
-.stitch-liquid-theme .liquid-glass-nav,
+.stitch-liquid-theme header.liquid-glass-nav,
+.stitch-liquid-theme header .liquid-glass-nav,
 .stitch-dashboard-container header {
   background: 
     linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.42) 75%, rgba(8, 12, 28, 0.62) 100%) !important;
@@ -146,6 +147,27 @@ div.stitch-liquid-theme:not(.relative),
     0 24px 54px -10px rgba(0, 0, 0, 0.80),
     0 4px 16px 0 rgba(0, 0, 0, 0.45),
     0 0 28px -4px rgba(56, 189, 248, 0.18) !important;
+}
+
+/* --------------------------------------------------------------------------
+   3b. Full-Width Edge-to-Edge Liquid Glass Footer (Flush Bottom, Zero Pill Arc)
+   -------------------------------------------------------------------------- */
+footer,
+.stitch-footer,
+.stitch-liquid-theme footer,
+.stitch-liquid-theme .stitch-footer {
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: 
+    linear-gradient(180deg, rgba(14, 22, 50, 0.50) 0%, rgba(6, 8, 16, 0.95) 100%) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.20),
+    0 -12px 32px -8px rgba(0, 0, 0, 0.65) !important;
 }
 
 /* Navbar Links 3D Liquid Hover Pill */
@@ -528,7 +550,8 @@ button.stitch-btn-glass:active,
 /* Mobile Navbar Pill Solid Backing on Viewports <= 768px (Zero Text Bleedthrough during Scroll) */
 @media (max-width: 768px) {
   .stitch-glass-nav,
-  .liquid-glass-nav {
+  header.liquid-glass-nav,
+  header .liquid-glass-nav {
     background: 
       linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(10, 15, 32, 0.97) 65%, rgba(5, 7, 16, 0.99) 100%) !important;
     backdrop-filter: blur(44px) saturate(220%) contrast(110%) !important;
