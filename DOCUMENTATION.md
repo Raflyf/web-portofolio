@@ -3457,3 +3457,16 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - **Akar Masalah Jam Berhenti / Beku:** Pada implementasi sebelumnya, listener `visibilitychange` yang bermaksud menghemat CPU saat tab tersembunyi memanggil `clearInterval(timer)`. Namun saat tab aktif kembali, fungsi hanya memanggil `updateClock()` satu kali tanpa membuat ulang `setInterval(updateClock, 1000)`. Akibatnya, saat pengguna berpindah jendela (misal membuka Task Manager, DevTools, atau tab lain) dan kembali ke portofolio, jam langsung mati permanen dan tidak berdetik lagi.
    - **Solusi Tahan Banting (Continuous Resilient Interval):** Timer `setInterval(updateClock, 1000)` kini dibiarkan berdetik secara kontinu tanpa pernah dihentikan paksa. Ditambahkan handler `onWakeSync` pada event `visibilitychange` dan `window.focus` untuk menyinkronkan detik secara instan saat peramban kembali aktif, menjamin jam selalu berdetik secara realtime, akurat hingga milidetik, dan bebas risiko macet (*zero-freeze*).
    - **Isolasi Beban CPU Tetap Terjaga:** Karena jam tetap terisolasi di dalam sub-komponen `<HeroLiveClock />`, pembaruan detik tidak pernah merembet ke komponen induk `HorizonHero`, sehingga pohon DOM utama tetap hening tanpa lonjakan beban CPU.
+
+---
+
+### v10.698.3 — Restorasi Densitas Kristal Asap (Smoked Crystal 82%–95%) & Bevel Spekular Ganda Navbar Liquid Glass (`stitch.css`, `index.css`, `StitchNav.jsx`) (2026-09-17)
+
+1. **Akar Masalah Tampilan Kaca Transparan Biasa:**
+   - Pada perubahan sebelumnya, gradien latar belakang `.stitch-glass-nav` dan `.liquid-glass-nav` secara keliru diubah menjadi opasitas tipis `rgba(14, 22, 50, 0.42) 75%, rgba(8, 12, 28, 0.62) 100%`.
+   - Pada opasitas rendah 42%–62%, material kehilangan bobot fisik dan densitas partikel kaca kristal sehingga tampak seperti kaca transparan biasa (*plain transparent glass*) tanpa kedalaman optik kristal es.
+2. **Restorasi Penuh Formula visionOS Smoked Liquid Crystal:**
+   - **Gradien Kristal Asap Berat (82%–95% Opacity):** Mengembalikan gradien navbar menjadi `linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 28%, rgba(14, 22, 54, 0.82) 72%, rgba(8, 12, 28, 0.95) 100%)`. Konten di balik navbar kini dibaurkan dengan pekat tanpa transparansi hampa, menghasilkan efek kristal visionOS yang solid dan mewah.
+   - **Ketebalan Difusi Optik 40px:** Mengembalikan `backdrop-filter: blur(40px) saturate(220%) contrast(108%)` dan `-webkit-backdrop-filter: blur(40px) saturate(220%)`.
+   - **Dual-Bevel Spekular 3D & Caustics Safir:** Mengembalikan pantulan rim atas `inset 0 1.5px 2.5px 0 rgba(255, 255, 255, 0.75)`, bayangan bawah `inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.60)`, dan pendaran internal `inset 0 0 32px 0 rgba(56, 189, 248, 0.12)`.
+   - **Sinkronisasi Kartu & Tombol:** Menyelaraskan seluruh kartu (`.stitch-glass`, `.liquid-glass`, `.liquid-glass-strong`), tombol `.stitch-btn-glass`, dan pil tautan aktif `.stitch-nav-link-active` ke formula material kristal pekat yang seragam.
