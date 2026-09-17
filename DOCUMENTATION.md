@@ -3438,4 +3438,22 @@ Telah dieksekusi audit sistem menyeluruh dari hulu ke hilir berbasis 4 sub-agent
    - **Native Lenis `autoRaf: true` (`App.jsx`):** Mengaktifkan `autoRaf: true` pada Lenis dan menghapus loop RAF manual. Lenis kini secara otonom tidur (*idle sleep*) saat tidak ada pergerakan inersia dan hanya berjalan saat ada input scroll pengguna.
    - **Pencegahan Layout Thrashing (`scroll-storyline.jsx`, `StitchNav.jsx`):** Membungkus `sections` dengan `useMemo([t])`, menjaga pembaruan state `setActiveSection`, `setPercent`, dan `setNavVisible` dengan `useRef` guard agar re-render hanya terjadi jika nilai benar-benar berpindah, serta mem-bypass listener `FloatingNavbar` pada rute beranda `/`.
 
+---
 
+### v10.698.2 — Restorasi Penuh Liquid Glass Crystal Blur 36px–48px & Perbaikan Jam Realtime Anti-Freeze (`horizon-hero.jsx`, `stitch.css`, `index.css`) (2026-09-17)
+
+1. **Restorasi Penuh Efek Liquid Glass Crystal Blur Asli (Apple visionOS Material):**
+   - **Pemulihan Radius & Densitas Optik:** Mengembalikan seluruh spesifikasi optik kaca kristal asli ke standar visionOS:
+     - `.stitch-glass`, `.liquid-glass`, `.liquid-glass-strong`: `blur(36px) saturate(220%) contrast(106%)`
+     - `.stitch-glass-nav` (Floating Navbar Pill): `blur(36px) saturate(220%) contrast(106%)`
+     - `.stitch-nav-mobile-sheet` (Mobile Menu Sheet): `blur(48px) saturate(220%) contrast(110%)`
+     - Header Mobile: `blur(44px) saturate(220%) contrast(110%)`
+     - `footer`, `.stitch-footer`: `blur(32px) saturate(200%)`
+     - `.stitch-terminal-window`: `blur(36px) saturate(220%) contrast(106%)`
+     - Token CSS dasar (`index.css`): `--glass-blur: blur(36px) saturate(220%) contrast(106%);` dan `--glass-blur-lg: blur(36px) saturate(220%) contrast(106%);`
+   - **Penghapusan Selektor Pemotong Blur Tombol:** Menghapus aturan `.liquid-glass .stitch-btn-glass:not(:hover) { backdrop-filter: none !important; }` yang sebelumnya secara agresif meniadakan efek kaca pada tombol di dalam navbar dan kartu. Seluruh tombol `.stitch-btn-glass` kini kembali berkilau dengan efek kaca cair 3D multi-layer (`blur(24px) saturate(200%)`) tanpa celah transparansi kosong.
+
+2. **Penyelamatan & Perbaikan Total Jam WIB Real-Time Anti-Freeze (`HeroLiveClock` di `horizon-hero.jsx`):**
+   - **Akar Masalah Jam Berhenti / Beku:** Pada implementasi sebelumnya, listener `visibilitychange` yang bermaksud menghemat CPU saat tab tersembunyi memanggil `clearInterval(timer)`. Namun saat tab aktif kembali, fungsi hanya memanggil `updateClock()` satu kali tanpa membuat ulang `setInterval(updateClock, 1000)`. Akibatnya, saat pengguna berpindah jendela (misal membuka Task Manager, DevTools, atau tab lain) dan kembali ke portofolio, jam langsung mati permanen dan tidak berdetik lagi.
+   - **Solusi Tahan Banting (Continuous Resilient Interval):** Timer `setInterval(updateClock, 1000)` kini dibiarkan berdetik secara kontinu tanpa pernah dihentikan paksa. Ditambahkan handler `onWakeSync` pada event `visibilitychange` dan `window.focus` untuk menyinkronkan detik secara instan saat peramban kembali aktif, menjamin jam selalu berdetik secara realtime, akurat hingga milidetik, dan bebas risiko macet (*zero-freeze*).
+   - **Isolasi Beban CPU Tetap Terjaga:** Karena jam tetap terisolasi di dalam sub-komponen `<HeroLiveClock />`, pembaruan detik tidak pernah merembet ke komponen induk `HorizonHero`, sehingga pohon DOM utama tetap hening tanpa lonjakan beban CPU.

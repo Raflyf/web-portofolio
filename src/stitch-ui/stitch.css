@@ -39,8 +39,8 @@ div.stitch-liquid-theme:not(.relative),
 .stitch-dashboard-container .liquid-glass {
   background: 
     linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.46) 75%, rgba(8, 12, 28, 0.66) 100%) !important;
-  backdrop-filter: blur(20px) saturate(180%) contrast(104%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(36px) saturate(220%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) !important;
   border: 1px solid rgba(255, 255, 255, 0.26) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70),
@@ -61,8 +61,8 @@ div.stitch-liquid-theme:not(.relative),
 .stitch-dashboard-container .liquid-glass-strong {
   background: 
     linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 30%, rgba(16, 26, 58, 0.52) 75%, rgba(10, 14, 32, 0.72) 100%) !important;
-  backdrop-filter: blur(20px) saturate(180%) contrast(104%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(36px) saturate(220%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) !important;
   border: 1px solid rgba(255, 255, 255, 0.28) !important;
   box-shadow: 
     inset 0 1.6px 2.2px 0 rgba(255, 255, 255, 0.75),
@@ -137,8 +137,8 @@ div.stitch-liquid-theme:not(.relative),
 .stitch-dashboard-container header {
   background: 
     linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.42) 75%, rgba(8, 12, 28, 0.62) 100%) !important;
-  backdrop-filter: blur(20px) saturate(180%) contrast(104%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(36px) saturate(220%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) !important;
   border: 1px solid rgba(255, 255, 255, 0.26) !important;
   border-radius: 9999px !important;
   box-shadow: 
@@ -164,8 +164,8 @@ footer,
   border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
   background: 
     linear-gradient(180deg, rgba(14, 22, 50, 0.50) 0%, rgba(6, 8, 16, 0.95) 100%) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
   box-shadow: 
     inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.20),
     0 -12px 32px -8px rgba(0, 0, 0, 0.65) !important;
@@ -537,8 +537,8 @@ button.stitch-btn-glass:active,
 .stitch-nav-mobile-sheet {
   background: 
     linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 20%, rgba(10, 15, 32, 0.98) 60%, rgba(5, 7, 16, 0.99) 100%) !important;
-  backdrop-filter: blur(24px) saturate(180%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  backdrop-filter: blur(48px) saturate(220%) contrast(110%) !important;
+  -webkit-backdrop-filter: blur(48px) saturate(220%) !important;
   border: 1px solid rgba(255, 255, 255, 0.28) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70),
@@ -555,8 +555,8 @@ button.stitch-btn-glass:active,
   header .liquid-glass-nav {
     background: 
       linear-gradient(145deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 25%, rgba(10, 15, 32, 0.97) 65%, rgba(5, 7, 16, 0.99) 100%) !important;
-    backdrop-filter: blur(24px) saturate(180%) contrast(106%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    backdrop-filter: blur(44px) saturate(220%) contrast(110%) !important;
+    -webkit-backdrop-filter: blur(44px) saturate(220%) !important;
     border-radius: 9999px !important;
   }
 }
@@ -632,8 +632,8 @@ button.stitch-btn-glass:active,
 .stitch-terminal-window {
   background: 
     linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.46) 75%, rgba(8, 12, 28, 0.66) 100%) !important;
-  backdrop-filter: blur(20px) saturate(180%) contrast(104%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(36px) saturate(220%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(36px) saturate(220%) !important;
   border: 1px solid rgba(255, 255, 255, 0.26) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70),
@@ -670,8 +670,8 @@ button.stitch-btn-glass:active,
   background: 
     linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
     rgba(8, 12, 24, 0.75) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }
@@ -698,8 +698,8 @@ button.stitch-btn-glass:active,
 .fixed .stitch-terminal-window {
   background: 
     linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 25%, rgba(12, 17, 36, 0.95) 60%, rgba(6, 9, 20, 0.99) 100%) !important;
-  backdrop-filter: blur(24px) saturate(180%) contrast(106%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  backdrop-filter: blur(44px) saturate(220%) contrast(110%) !important;
+  -webkit-backdrop-filter: blur(44px) saturate(220%) !important;
   border: 1px solid rgba(255, 255, 255, 0.28) !important;
   box-shadow: 
     inset 0 1.6px 2.2px 0 rgba(255, 255, 255, 0.75),
@@ -712,8 +712,8 @@ button.stitch-btn-glass:active,
 .stitch-terminal-dialog-card {
   background: 
     linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(14, 22, 50, 0.85) 75%, rgba(8, 12, 28, 0.96) 100%) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(32px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
   border: 1px solid rgba(255, 255, 255, 0.22) !important;
   box-shadow: 
     inset 0 1.2px 1.5px 0 rgba(255, 255, 255, 0.55),
@@ -728,8 +728,8 @@ button.stitch-btn-glass:active,
   background: 
     linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 55%, rgba(14, 22, 48, 0.40) 100%),
     rgba(10, 16, 36, 0.65) !important;
-  backdrop-filter: blur(20px) saturate(180%) contrast(104%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(28px) saturate(200%) contrast(106%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
   border: 1px solid rgba(255, 255, 255, 0.32) !important;
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.75),
@@ -757,8 +757,8 @@ button.stitch-btn-glass:active,
   background: 
     linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(56, 189, 248, 0.30) 100%),
     rgba(14, 28, 64, 0.65) !important;
-  backdrop-filter: blur(20px) saturate(180%) contrast(104%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  backdrop-filter: blur(28px) saturate(220%) contrast(108%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(220%) !important;
   border: 1px solid rgba(255, 255, 255, 0.42) !important;
   box-shadow: 
     inset 0 1.6px 2.2px 0 rgba(255, 255, 255, 0.90),
@@ -785,23 +785,14 @@ button.stitch-btn-glass:active,
 }
 
 /* ==========================================================================
-   9. Marquee & Nested Component Performance Hardware Acceleration Engine
-   Eliminates infinite software rasterization and offscreen convolution kernels
+   9. Marquee Hardware Compositor Promotion Engine
    ========================================================================== */
-.animate-marquee-left *,
-.animate-marquee-right *,
-.animate-marquee-left .stitch-btn-glass,
-.animate-marquee-right .stitch-btn-glass {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Eliminate expensive recursive backdrop filters inside already-frosted cards */
-.liquid-glass .stitch-btn-glass:not(:hover):not(:focus-visible),
-.liquid-glass-strong .stitch-btn-glass:not(:hover):not(:focus-visible),
-.stitch-glass .stitch-btn-glass:not(:hover):not(:focus-visible) {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+.animate-marquee-left,
+.animate-marquee-right {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  contain: layout paint;
 }
 
 

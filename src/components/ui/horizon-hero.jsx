@@ -109,7 +109,7 @@ const STACK_BADGES = [
 function HeroLiveClock({ language }) {
   const [clockTime, setClockTime] = useState('');
 
-  // Live WIB clock (UTC+7), paused when the tab is hidden
+  // Live WIB clock (UTC+7), continuously running and auto-synced on visibility/focus
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
@@ -124,19 +124,23 @@ function HeroLiveClock({ language }) {
       const tzLabel = language === 'id' ? 'WIB (UTC+7)' : 'UTC+7 (WIB)';
       setClockTime(`${tzLabel} • ${timeStr}`);
     };
+
     updateClock();
     const timer = setInterval(updateClock, 1000);
-    const onVisibility = () => {
-      if (document.hidden) {
-        clearInterval(timer);
-      } else {
+
+    const onWakeSync = () => {
+      if (!document.hidden) {
         updateClock();
       }
     };
-    document.addEventListener('visibilitychange', onVisibility);
+
+    document.addEventListener('visibilitychange', onWakeSync);
+    window.addEventListener('focus', onWakeSync);
+
     return () => {
       clearInterval(timer);
-      document.removeEventListener('visibilitychange', onVisibility);
+      document.removeEventListener('visibilitychange', onWakeSync);
+      window.removeEventListener('focus', onWakeSync);
     };
   }, [language]);
 
