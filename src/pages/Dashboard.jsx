@@ -297,7 +297,7 @@ const CustomSelect = ({ value, onChange, options }) => {
           role="listbox"
           data-lenis-prevent="true"
           style={{ position: 'absolute', top: '100%', right: 0 }}
-          className="!absolute top-full right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-2xl focus:outline-none overflow-hidden backdrop-blur-2xl"
+          className="absolute! top-full right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-2xl focus:outline-none overflow-hidden backdrop-blur-2xl"
         >
           <div 
             data-lenis-prevent="true" 

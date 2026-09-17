@@ -171,7 +171,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
         <div 
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window shadow-2xl z-[100] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl border border-white/20"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window shadow-2xl z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl border border-white/20"
         >
           <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-200/50 dark:border-white/5 font-semibold">
             Reasoning Effort
@@ -1199,7 +1199,7 @@ export default function TerminalAI({ onClose } = {}) {
                 title={isTerminalPopupOpen ? "Tutup Modal Terminal" : "Bersihkan Percakapan / Reset"}
                 aria-label={isTerminalPopupOpen ? "Tutup Modal" : "Reset Percakapan"}
               >
-                <X className="w-2 h-2 text-rose-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-[3]" />
+                <X className="w-2 h-2 text-rose-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-3" />
               </button>
               <button
                 type="button"
@@ -1217,7 +1217,7 @@ export default function TerminalAI({ onClose } = {}) {
                 title={isTerminalPopupOpen ? "Kembalikan Ukuran Normal" : "Buka Mode Pop-up Layar Penuh"}
                 aria-label="Toggle Fullscreen Pop-up"
               >
-                <Maximize2 className="w-1.5 h-1.5 text-emerald-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-[3]" />
+                <Maximize2 className="w-1.5 h-1.5 text-emerald-950 opacity-0 group-hover/dot:opacity-100 transition-opacity stroke-3" />
               </button>
             </div>
 
@@ -1351,7 +1351,7 @@ export default function TerminalAI({ onClose } = {}) {
                     <User className="w-3 h-3 text-emerald-400" />
                   </div>
                 </div>
-                <div className="w-fit max-w-full rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] sm:text-sm text-emerald-100 backdrop-blur-xl border border-emerald-400/35 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)] bg-gradient-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75">
+                <div className="w-fit max-w-full rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] sm:text-sm text-emerald-100 backdrop-blur-xl border border-emerald-400/35 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)] bg-linear-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75">
                   {/* Render attachments preview if present */}
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
