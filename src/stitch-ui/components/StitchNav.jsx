@@ -36,16 +36,12 @@ export default function StitchNav() {
   const [navVisible, setNavVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
-  const activeSectionRef = useRef('hero');
-  const navVisibleRef = useRef(true);
   const lastScrollY = useRef(0);
 
   // Scroll to section with Lenis Smooth Scroll or native fallback (Clean URL without hash #)
   const scrollToSection = (e, id) => {
     if (e) e.preventDefault();
-    activeSectionRef.current = id;
     setActiveSection(id);
-    navVisibleRef.current = true;
     setNavVisible(true);
     setMobileMenuOpen(false);
     
@@ -65,65 +61,55 @@ export default function StitchNav() {
     }
   };
 
-  // Synchronize active nav highlight with viewport scroll
+  // Synchronize active nav highlight with viewport scroll via zero-reflow IntersectionObserver
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(prev => (prev !== entry.target.id ? entry.target.id : prev));
+          }
+        }
+      },
+      {
+        rootMargin: '-20% 0px -55% 0px',
+        threshold: 0.1
+      }
+    );
+
+    NAV_ITEMS.forEach(item => {
+      const el = document.getElementById(item.id);
+      if (el) observer.observe(el);
+    });
+
+    const heroEl = document.getElementById('hero');
+    if (heroEl) observer.observe(heroEl);
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Smart Auto-Hide: Lightweight scroll handler with zero DOM layout queries
   useEffect(() => {
     let ticking = false;
 
     const handleScroll = () => {
-      const currentY = window.scrollY;
-      const delta = currentY - lastScrollY.current;
-
-      // Smart Auto-Hide: Match dashboard navbar behavior (slide up on scroll down, reveal on scroll up)
-      if (currentY < 70 || mobileMenuOpen) {
-        if (!navVisibleRef.current) {
-          navVisibleRef.current = true;
-          setNavVisible(true);
-        }
-      } else if (Math.abs(delta) > 8) {
-        if (delta > 0 && navVisibleRef.current) {
-          navVisibleRef.current = false;
-          setNavVisible(false); // Scrolling down: slide up out of view
-        } else if (delta < 0 && !navVisibleRef.current) {
-          navVisibleRef.current = true;
-          setNavVisible(true);  // Scrolling up: reveal navbar
-        }
-        lastScrollY.current = currentY;
-      }
-
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const scrollY = window.scrollY;
-          const viewportHeight = window.innerHeight;
-          const triggerLine = viewportHeight * 0.35;
-          const scrollBottom = viewportHeight + scrollY;
-          const docHeight = document.documentElement.scrollHeight;
+          const currentY = window.scrollY;
+          const delta = currentY - lastScrollY.current;
 
-          if (scrollY < 120) {
-            if (activeSectionRef.current !== 'hero') {
-              activeSectionRef.current = 'hero';
-              setActiveSection('hero');
-            }
-          } else if (scrollBottom >= docHeight - 80) {
-            if (activeSectionRef.current !== 'contact') {
-              activeSectionRef.current = 'contact';
-              setActiveSection('contact');
-            }
-          } else {
-            let currentActive = 'hero';
-            for (const item of NAV_ITEMS) {
-              const el = document.getElementById(item.id);
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                if (rect.top <= triggerLine) {
-                  currentActive = item.id;
-                }
-              }
-            }
-            if (currentActive !== activeSectionRef.current) {
-              activeSectionRef.current = currentActive;
-              setActiveSection(currentActive);
-            }
+          if (currentY < 70 || mobileMenuOpen) {
+            setNavVisible(prev => (prev !== true ? true : prev));
+          } else if (Math.abs(delta) > 8) {
+            const shouldBeVisible = delta <= 0;
+            setNavVisible(prev => (prev !== shouldBeVisible ? shouldBeVisible : prev));
+            lastScrollY.current = currentY;
           }
+
+          if (currentY < 100) {
+            setActiveSection(prev => (prev !== 'hero' ? 'hero' : prev));
+          }
+
           ticking = false;
         });
         ticking = true;
@@ -197,7 +183,7 @@ export default function StitchNav() {
       <header className={`fixed top-0 inset-x-0 z-50 flex flex-col items-center pt-2 sm:pt-3 px-3 sm:px-6 pointer-events-none transition-transform duration-300 ease-in-out ${
         navVisible ? 'translate-y-0' : '-translate-y-32'
       }`}>
-        <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav liquid-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
+        <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
         {/* Brand & Status Indicator */}
         <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
           <a 

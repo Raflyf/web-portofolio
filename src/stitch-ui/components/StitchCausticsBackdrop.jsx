@@ -66,14 +66,21 @@ export default function StitchCausticsBackdrop() {
           }}
         />
 
-        {/* Crisp Dot Matrix Grid (visionOS Texture) */}
+        {/* Crisp Dot Matrix Grid (visionOS Texture - GPU Composited) */}
         <div 
           className="absolute inset-0 pointer-events-none opacity-35"
           style={{
             backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px)',
             backgroundSize: '24px 24px',
-            maskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 50%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at 50% 50%, black 50%, transparent 100%)'
+            transform: 'translateZ(0)'
+          }}
+        />
+        {/* Periphery Vignette Overlay (eliminates CPU mask-image rasterization) */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 50%, #080b11 100%)',
+            transform: 'translateZ(0)'
           }}
         />
       </div>

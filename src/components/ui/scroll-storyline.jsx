@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useScroll } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
@@ -16,17 +16,15 @@ const SECTION_IDS = [
 export default function ScrollStoryline() {
   const { t } = useLanguage();
   const [activeSection, setActiveSection] = useState('hero');
-  const activeSectionRef = useRef('hero');
   const [percent, setPercent] = useState(0);
-  const lastPercentRef = useRef(0);
   const [showActiveLabel, setShowActiveLabel] = useState(false);
   const prevSectionRef = useRef(null);
   const { scrollYProgress } = useScroll();
 
-  const sections = useMemo(() => SECTION_IDS.map(id => ({
+  const sections = SECTION_IDS.map(id => ({
     id,
     label: t(`storyline.${id}`)
-  })), [t]);
+  }));
 
   // Auto-hide label seksi: hanya tampil sejenak (1.8s) saat ada perpindahan seksi, lalu otomatis disembunyikan
   useEffect(() => {
@@ -42,66 +40,51 @@ export default function ScrollStoryline() {
   }, [activeSection]);
 
   useEffect(() => {
+    let lastPercent = -1;
     const unsubscribe = scrollYProgress.on('change', (latest) => {
       const p = Math.min(100, Math.max(0, Math.round(latest * 100)));
-      if (p !== lastPercentRef.current) {
-        lastPercentRef.current = p;
+      if (p !== lastPercent) {
+        lastPercent = p;
         setPercent(p);
       }
     });
     return () => unsubscribe();
   }, [scrollYProgress]);
 
+  // Synchronize active section via zero-reflow IntersectionObserver
   useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      // Storyline sidebar is only visible on >= 1280px (xl:flex); skip reflows on mobile/tablet
-      if (window.innerWidth < 1280) return;
-
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const scrollY = window.scrollY;
-          const viewportHeight = window.innerHeight;
-          const triggerLine = viewportHeight * 0.35;
-          const scrollBottom = viewportHeight + scrollY;
-          const docHeight = document.documentElement.scrollHeight;
-
-          if (scrollY < 120) {
-            if (activeSectionRef.current !== 'hero') {
-              activeSectionRef.current = 'hero';
-              setActiveSection('hero');
-            }
-          } else if (scrollBottom >= docHeight - 80) {
-            if (activeSectionRef.current !== 'contact') {
-              activeSectionRef.current = 'contact';
-              setActiveSection('contact');
-            }
-          } else {
-            let current = 'hero';
-            for (const section of sections) {
-              const el = document.getElementById(section.id);
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                if (rect.top <= triggerLine) {
-                  current = section.id;
-                }
-              }
-            }
-            if (current !== activeSectionRef.current) {
-              activeSectionRef.current = current;
-              setActiveSection(current);
-            }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(prev => (prev !== entry.target.id ? entry.target.id : prev));
           }
-          ticking = false;
-        });
-        ticking = true;
+        }
+      },
+      {
+        rootMargin: '-20% 0px -55% 0px',
+        threshold: 0.1
+      }
+    );
+
+    SECTION_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Top of page boundary check (zero layout queries)
+  useEffect(() => {
+    const handleTopScroll = () => {
+      if (window.scrollY < 100) {
+        setActiveSection(prev => (prev !== 'hero' ? 'hero' : prev));
       }
     };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [sections]);
+    window.addEventListener('scroll', handleTopScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleTopScroll);
+  }, []);
 
   const scrollTo = (e, id) => {
     if (e && e.currentTarget) {

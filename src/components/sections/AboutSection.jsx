@@ -68,7 +68,7 @@ export default function AboutSection() {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.2 }}
         variants={containerVariants}
         className="text-center space-y-4 mb-16"
       >
@@ -88,7 +88,7 @@ export default function AboutSection() {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.15 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={containerVariants}
         className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch"
       >

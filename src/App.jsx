@@ -46,10 +46,11 @@ function FloatingNavbar() {
     telemetry.logEvent('theme_toggle', 'mode_switch', `Ubah Mode Tema Tampilan ke ${nextDark ? 'gelap' : 'terang'}`);
   };
 
-  const isHiddenRoute = location.pathname === '/' || location.pathname.startsWith('/preview-stitch') || location.pathname.includes('dashboard');
-
   useEffect(() => {
-    if (isHiddenRoute) return;
+    if (location.pathname === '/' || location.pathname.startsWith('/preview-stitch') || location.pathname.includes('dashboard')) {
+      return;
+    }
+
     const threshold = 10;
     let ticking = false;
 
@@ -84,7 +85,7 @@ function FloatingNavbar() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [mobileMenuOpen, isHiddenRoute]);
+  }, [mobileMenuOpen]);
 
   // Accessibility: Close mobile menu on Escape key press
   useEffect(() => {
@@ -323,20 +324,16 @@ function GlobalScrollProgressBar() {
   );
 }
 
-export default function App() {
-  const { setIsTerminalPopupOpen } = useTerminal();
-  const { t } = useLanguage();
-  const location = useLocation();
+function BackToTopButton({ t }) {
   const [showBackToTop, setShowBackToTop] = useState(false);
 
-  // Monitor scroll position: tombol Back to Top hanya tampil saat ada pergerakan/scroll (posisi > 250px)
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
-          setShowBackToTop(scrollPos > 180);
+          const shouldShow = (window.scrollY || 0) > 180;
+          setShowBackToTop((prev) => (prev !== shouldShow ? shouldShow : prev));
           ticking = false;
         });
         ticking = true;
@@ -345,14 +342,41 @@ export default function App() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
-
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  return (
+    <button 
+      onClick={() => {
+        if (window.__lenis) {
+          window.__lenis.scrollTo(0, { duration: 1.2 });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }}
+      style={{
+        opacity: showBackToTop ? 1 : 0,
+        transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.65)',
+        pointerEvents: showBackToTop ? 'auto' : 'none',
+        transition: 'opacity 450ms cubic-bezier(0.16, 1, 0.3, 1), transform 450ms cubic-bezier(0.16, 1, 0.3, 1)'
+      }}
+      className="w-12 h-12 rounded-full stitch-floating-fab-backtotop flex items-center justify-center cursor-pointer select-none will-change-[transform,opacity] text-slate-200 hover:text-white"
+      aria-label={t('nav.backToTop')}
+      title={t('nav.backToTop')}
+    >
+      <svg className="w-5 h-5 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M5 15l7-7 7 7" /></svg>
+    </button>
+  );
+}
+
+export default function App() {
+  const { setIsTerminalPopupOpen } = useTerminal();
+  const { t } = useLanguage();
+  const location = useLocation();
 
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
     const lenis = new Lenis({
-      autoRaf: true,
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
@@ -366,7 +390,19 @@ export default function App() {
 
     window.__lenis = lenis;
 
+    // RAF loop with a stored id so it is actually canceled on unmount
+    // (lenis.destroy() alone does not stop our own loop).
+    let rafId = 0;
+    function raf(time) {
+      if (!document.hidden) {
+        lenis.raf(time);
+      }
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+
     return () => {
+      cancelAnimationFrame(rafId);
       lenis.destroy();
       delete window.__lenis;
     };
@@ -503,26 +539,7 @@ export default function App() {
         {/* Floating Action Buttons */}
         {!location.pathname.includes('dashboard') && (
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
-            <button 
-              onClick={() => {
-                if (window.__lenis) {
-                  window.__lenis.scrollTo(0, { duration: 1.2 });
-                } else {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              style={{
-                opacity: showBackToTop ? 1 : 0,
-                transform: showBackToTop ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.65)',
-                pointerEvents: showBackToTop ? 'auto' : 'none',
-                transition: 'opacity 450ms cubic-bezier(0.16, 1, 0.3, 1), transform 450ms cubic-bezier(0.16, 1, 0.3, 1)'
-              }}
-              className="w-12 h-12 rounded-full stitch-floating-fab-backtotop flex items-center justify-center cursor-pointer select-none will-change-[transform,opacity] text-slate-200 hover:text-white"
-              aria-label={t('nav.backToTop')}
-              title={t('nav.backToTop')}
-            >
-              <svg className="w-5 h-5 text-cyan-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M5 15l7-7 7 7" /></svg>
-            </button>
+            <BackToTopButton t={t} />
             
             <button
               onClick={() => {

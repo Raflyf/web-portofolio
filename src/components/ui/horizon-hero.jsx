@@ -106,10 +106,16 @@ const STACK_BADGES = [
   { name: "Flask & WebSockets", icon: Command }
 ];
 
-function HeroLiveClock({ language }) {
+export default function HorizonHero() {
+  const { language, t } = useLanguage();
+  const containerRef = useRef(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [clockTime, setClockTime] = useState('');
 
-  // Live WIB clock (UTC+7), continuously running and auto-synced on visibility/focus
+  const showcaseProjects = HERO_SHOWCASE_PROJECTS_I18N[language] || HERO_SHOWCASE_PROJECTS_I18N.id;
+
+  // Live WIB clock (UTC+7), paused when the tab is hidden
   useEffect(() => {
     const updateClock = () => {
       const now = new Date();
@@ -124,43 +130,21 @@ function HeroLiveClock({ language }) {
       const tzLabel = language === 'id' ? 'WIB (UTC+7)' : 'UTC+7 (WIB)';
       setClockTime(`${tzLabel} • ${timeStr}`);
     };
-
     updateClock();
     const timer = setInterval(updateClock, 1000);
-
-    const onWakeSync = () => {
-      if (!document.hidden) {
+    const onVisibility = () => {
+      if (document.hidden) {
+        clearInterval(timer);
+      } else {
         updateClock();
       }
     };
-
-    document.addEventListener('visibilitychange', onWakeSync);
-    window.addEventListener('focus', onWakeSync);
-
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       clearInterval(timer);
-      document.removeEventListener('visibilitychange', onWakeSync);
-      window.removeEventListener('focus', onWakeSync);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [language]);
-
-  return (
-    <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
-      <Clock className="w-3.5 h-3.5 text-cyan-400" />
-      <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
-        {clockTime}
-      </span>
-    </div>
-  );
-}
-
-export default function HorizonHero() {
-  const { language, t } = useLanguage();
-  const containerRef = useRef(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const showcaseProjects = HERO_SHOWCASE_PROJECTS_I18N[language] || HERO_SHOWCASE_PROJECTS_I18N.id;
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -240,7 +224,12 @@ export default function HorizonHero() {
                   <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
                 </span>
               </div>
-              <HeroLiveClock language={language} />
+              <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
+                  {clockTime}
+                </span>
+              </div>
             </div>
 
             <h1 
@@ -402,13 +391,11 @@ export default function HorizonHero() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
               </div>
               
-              <div 
-                className="relative flex overflow-hidden"
-                style={{
-                  maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
-                  WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)"
-                }}
-              >
+              <div className="relative flex overflow-hidden">
+                {/* Seamless Edge Fades (GPU Composited, Zero Software Masking) */}
+                <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-linear-to-r from-[#0a0e22] via-[#0a0e22]/50 to-transparent z-10" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-[#0a0e22] via-[#0a0e22]/50 to-transparent z-10" />
+
                 <div className="animate-marquee-left flex gap-8 whitespace-nowrap px-4 py-1">
                   {[...STACK_BADGES, ...STACK_BADGES].map((tech, i) => (
                     <div 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Cpu, Network, Server, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.jsx';
@@ -30,13 +30,28 @@ const badgeVariants = {
 
 export default function SkillsBento() {
   const { t } = useLanguage();
+  const sectionRef = useRef(null);
+  const [isInView, setIsInView] = useState(true);
+
+  // Viewport-Aware Animation Gating: Jeda animasi marquee saat di luar viewport untuk hemat CPU
+  useEffect(() => {
+    if (!sectionRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { rootMargin: '250px 0px' }
+    );
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
+    <section ref={sectionRef} id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.2 }}
         variants={containerVariants}
         className="text-center space-y-4 mb-14"
       >
@@ -55,12 +70,18 @@ export default function SkillsBento() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.8 }}
+        viewport={{ once: true, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.1 }}
         className="relative overflow-hidden flex w-full mb-4" 
-        style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
       >
-        <div className="animate-marquee-left flex gap-3 whitespace-nowrap py-1">
+        {/* Seamless Edge Fades (GPU-Composited, Zero Software Masking) */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-linear-to-r from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-l from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
+
+        <div 
+          className="animate-marquee-left flex gap-3 whitespace-nowrap py-1"
+          style={{ animationPlayState: isInView ? 'running' : 'paused' }}
+        >
           {[...Array(2)].map((_, i) => (
             <React.Fragment key={i}>
               {["PyTorch Core", "Prompt Engineering", "Sentence-Transformers", "IndoBERT & RoBERTa", "Whisper AI Audio", "NLP Cosine Metrics", "Scikit-Learn ML", "MediaPipe Tasks Vision", "OpenCV Python", "XGBoost & Naive Bayes", "Pandas & NumPy"].map((skill, j) => (
@@ -78,12 +99,18 @@ export default function SkillsBento() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.8 }}
+        viewport={{ once: true, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="relative overflow-hidden flex w-full mb-16" 
-        style={{ maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)", WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)" }}
       >
-        <div className="animate-marquee-right flex gap-3 whitespace-nowrap py-1">
+        {/* Seamless Edge Fades (GPU-Composited, Zero Software Masking) */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-linear-to-r from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-l from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
+
+        <div 
+          className="animate-marquee-right flex gap-3 whitespace-nowrap py-1"
+          style={{ animationPlayState: isInView ? 'running' : 'paused' }}
+        >
           {[...Array(2)].map((_, i) => (
             <React.Fragment key={i}>
               {["MikroTik RouterOS v7", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filtering", "Flask-SocketIO", "Supabase Postgres RAG", "TypeScript & Node.js", "JavaScript ES2024", "RESTful APIs Architecture", "Linux & Git Workflow"].map((skill, j) => (
@@ -101,7 +128,7 @@ export default function SkillsBento() {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: false, amount: 0.15 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={containerVariants}
         className="grid grid-cols-1 md:grid-cols-12 gap-6"
       >
