@@ -197,7 +197,7 @@ export default function StitchNav() {
       <header className={`fixed top-0 inset-x-0 z-50 flex flex-col items-center pt-2 sm:pt-3 px-3 sm:px-6 pointer-events-none transition-transform duration-300 ease-in-out ${
         navVisible ? 'translate-y-0' : '-translate-y-32'
       }`}>
-        <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
+        <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav liquid-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
         {/* Brand & Status Indicator */}
         <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
           <a 
