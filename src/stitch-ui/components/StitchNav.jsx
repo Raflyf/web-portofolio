@@ -36,12 +36,16 @@ export default function StitchNav() {
   const [navVisible, setNavVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
+  const activeSectionRef = useRef('hero');
+  const navVisibleRef = useRef(true);
   const lastScrollY = useRef(0);
 
   // Scroll to section with Lenis Smooth Scroll or native fallback (Clean URL without hash #)
   const scrollToSection = (e, id) => {
     if (e) e.preventDefault();
+    activeSectionRef.current = id;
     setActiveSection(id);
+    navVisibleRef.current = true;
     setNavVisible(true);
     setMobileMenuOpen(false);
     
@@ -71,11 +75,16 @@ export default function StitchNav() {
 
       // Smart Auto-Hide: Match dashboard navbar behavior (slide up on scroll down, reveal on scroll up)
       if (currentY < 70 || mobileMenuOpen) {
-        setNavVisible(true);
+        if (!navVisibleRef.current) {
+          navVisibleRef.current = true;
+          setNavVisible(true);
+        }
       } else if (Math.abs(delta) > 8) {
-        if (delta > 0) {
+        if (delta > 0 && navVisibleRef.current) {
+          navVisibleRef.current = false;
           setNavVisible(false); // Scrolling down: slide up out of view
-        } else {
+        } else if (delta < 0 && !navVisibleRef.current) {
+          navVisibleRef.current = true;
           setNavVisible(true);  // Scrolling up: reveal navbar
         }
         lastScrollY.current = currentY;
@@ -90,9 +99,15 @@ export default function StitchNav() {
           const docHeight = document.documentElement.scrollHeight;
 
           if (scrollY < 120) {
-            setActiveSection('hero');
+            if (activeSectionRef.current !== 'hero') {
+              activeSectionRef.current = 'hero';
+              setActiveSection('hero');
+            }
           } else if (scrollBottom >= docHeight - 80) {
-            setActiveSection('contact');
+            if (activeSectionRef.current !== 'contact') {
+              activeSectionRef.current = 'contact';
+              setActiveSection('contact');
+            }
           } else {
             let currentActive = 'hero';
             for (const item of NAV_ITEMS) {
@@ -104,7 +119,10 @@ export default function StitchNav() {
                 }
               }
             }
-            setActiveSection(currentActive);
+            if (currentActive !== activeSectionRef.current) {
+              activeSectionRef.current = currentActive;
+              setActiveSection(currentActive);
+            }
           }
           ticking = false;
         });

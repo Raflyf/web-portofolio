@@ -56,8 +56,8 @@
   --glass-bg-nav: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.42) 75%, rgba(8, 12, 28, 0.62) 100%);
   --glass-border: 1px solid rgba(255, 255, 255, 0.26);
   --glass-border-strong: 1px solid rgba(255, 255, 255, 0.28);
-  --glass-blur: blur(36px) saturate(220%) contrast(106%);
-  --glass-blur-lg: blur(36px) saturate(220%) contrast(106%);
+  --glass-blur: blur(20px) saturate(180%) contrast(104%);
+  --glass-blur-lg: blur(22px) saturate(180%) contrast(104%);
   --glass-shadow: inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70), inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50), inset 0 0 32px 0 rgba(56, 189, 248, 0.09), 0 24px 54px -10px rgba(0, 0, 0, 0.80), 0 4px 16px 0 rgba(0, 0, 0, 0.45), 0 0 28px -4px rgba(56, 189, 248, 0.18);
   --glass-shadow-strong: inset 0 1.6px 2.2px 0 rgba(255, 255, 255, 0.75), inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50), inset 0 0 36px 0 rgba(56, 189, 248, 0.10), 0 24px 56px -10px rgba(0, 0, 0, 0.82), 0 6px 20px -2px rgba(0, 0, 0, 0.45), 0 0 28px -4px rgba(56, 189, 248, 0.18);
   --glass-radius: 1.75rem;
@@ -134,19 +134,23 @@
 
 /* Hardware-Accelerated Infinite Marquee Engine */
 @keyframes marquee-left {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0%, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 @keyframes marquee-right {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0%); }
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0%, 0, 0); }
 }
 
 .animate-marquee-left {
   display: flex;
   width: max-content;
   animation: marquee-left 25s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  contain: layout paint;
 }
 
 .animate-marquee-left:hover {
@@ -157,6 +161,10 @@
   display: flex;
   width: max-content;
   animation: marquee-right 25s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  contain: layout paint;
 }
 
 .animate-marquee-right:hover {
@@ -204,8 +212,8 @@
 .liquid-glass-nav {
   background: var(--glass-bg-nav);
   border: var(--glass-border);
-  backdrop-filter: blur(36px) saturate(220%) contrast(106%);
-  -webkit-backdrop-filter: blur(36px) saturate(220%) contrast(106%);
+  backdrop-filter: blur(20px) saturate(180%) contrast(104%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%) contrast(104%);
   box-shadow: 
     inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70),
     inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50),

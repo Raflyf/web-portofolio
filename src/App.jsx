@@ -46,7 +46,10 @@ function FloatingNavbar() {
     telemetry.logEvent('theme_toggle', 'mode_switch', `Ubah Mode Tema Tampilan ke ${nextDark ? 'gelap' : 'terang'}`);
   };
 
+  const isHiddenRoute = location.pathname === '/' || location.pathname.startsWith('/preview-stitch') || location.pathname.includes('dashboard');
+
   useEffect(() => {
+    if (isHiddenRoute) return;
     const threshold = 10;
     let ticking = false;
 
@@ -81,7 +84,7 @@ function FloatingNavbar() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, isHiddenRoute]);
 
   // Accessibility: Close mobile menu on Escape key press
   useEffect(() => {
@@ -349,6 +352,7 @@ export default function App() {
   // Momentum Inertia Smooth Wheel Physics Engine (Lenis)
   useEffect(() => {
     const lenis = new Lenis({
+      autoRaf: true,
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
@@ -362,19 +366,7 @@ export default function App() {
 
     window.__lenis = lenis;
 
-    // RAF loop with a stored id so it is actually canceled on unmount
-    // (lenis.destroy() alone does not stop our own loop).
-    let rafId = 0;
-    function raf(time) {
-      if (!document.hidden) {
-        lenis.raf(time);
-      }
-      rafId = requestAnimationFrame(raf);
-    }
-    rafId = requestAnimationFrame(raf);
-
     return () => {
-      cancelAnimationFrame(rafId);
       lenis.destroy();
       delete window.__lenis;
     };
