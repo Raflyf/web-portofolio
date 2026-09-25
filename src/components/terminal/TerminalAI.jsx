@@ -171,7 +171,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
         <div 
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window shadow-2xl z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl border border-white/20"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window shadow-2xl z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md border border-white/20"
         >
           <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-200/50 dark:border-white/5 font-semibold">
             Reasoning Effort
@@ -1167,7 +1167,7 @@ export default function TerminalAI({ onClose } = {}) {
   const terminalContent = (
     <div 
       className={cn(
-        isTerminalPopupOpen ? "stitch-liquid-theme fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-2xl glass-backdrop-in p-2 sm:p-4" : "relative w-full bg-transparent"
+        isTerminalPopupOpen ? "stitch-liquid-theme fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-md glass-backdrop-in p-2 sm:p-4" : "relative w-full bg-transparent"
       )}
       onClick={(e) => {
         if (isTerminalPopupOpen && e.target === e.currentTarget) {
@@ -1351,7 +1351,7 @@ export default function TerminalAI({ onClose } = {}) {
                     <User className="w-3 h-3 text-emerald-400" />
                   </div>
                 </div>
-                <div className="w-fit max-w-full rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] sm:text-sm text-emerald-100 backdrop-blur-xl border border-emerald-400/35 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)] bg-linear-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75">
+                <div className="w-fit max-w-full rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] sm:text-sm text-emerald-100 backdrop-blur-md border border-emerald-400/35 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)] bg-linear-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75">
                   {/* Render attachments preview if present */}
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
@@ -1539,7 +1539,7 @@ export default function TerminalAI({ onClose } = {}) {
       {showHistoryModal && (
         <div 
           data-lenis-prevent="true"
-          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-2xl glass-backdrop-in p-4"
+          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-md glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -1578,7 +1578,7 @@ export default function TerminalAI({ onClose } = {}) {
               onTouchMove={(e) => e.stopPropagation()}
             >
                {/* Sesi Aktif */}
-               <div className="p-4 bg-white/5 backdrop-blur-2xl border border-cyan-500/35 hover:border-cyan-400/60 rounded-xl cursor-pointer hover:bg-white/10 transition group relative shadow-sm">
+               <div className="p-4 bg-white/5 backdrop-blur-md border border-cyan-500/35 hover:border-cyan-400/60 rounded-xl cursor-pointer hover:bg-white/10 transition group relative shadow-sm">
                  <div className="flex items-center justify-between gap-2 mb-1.5">
                    <div className="flex items-center gap-2 min-w-0">
                      <span className="px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase rounded bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 shrink-0">
@@ -1605,7 +1605,7 @@ export default function TerminalAI({ onClose } = {}) {
                      setMessages(hist.messages);
                      setShowHistoryModal(false);
                    }} 
-                   className="p-4 bg-white/2 backdrop-blur-2xl border border-white/10 hover:border-white/25 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between shadow-sm"
+                   className="p-4 bg-white/2 backdrop-blur-md border border-white/10 hover:border-white/25 rounded-xl cursor-pointer hover:bg-white/5 transition group flex items-center justify-between shadow-sm"
                  >
                    <div className="flex-1 min-w-0 pr-3">
                      <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -1632,7 +1632,7 @@ export default function TerminalAI({ onClose } = {}) {
                ))}
 
                {historyList.length === 0 && (
-                 <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-xl">
+                 <div className="text-center py-10 mt-6 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-md">
                     <p className="text-sm text-zinc-300 font-medium">Belum ada riwayat sesi terdahulu tersimpan.</p>
                  </div>
                )}
@@ -1645,7 +1645,7 @@ export default function TerminalAI({ onClose } = {}) {
       {showCheckpointModal && (
         <div 
           data-lenis-prevent="true"
-          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-2xl glass-backdrop-in p-4"
+          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-md glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -1694,7 +1694,7 @@ export default function TerminalAI({ onClose } = {}) {
               {checkpoints.map((cp) => (
                 <div 
                   key={cp.id} 
-                  className="p-4 bg-white/5 backdrop-blur-2xl border border-amber-500/20 hover:border-amber-400/50 rounded-xl transition group flex items-center justify-between shadow-sm"
+                  className="p-4 bg-white/5 backdrop-blur-md border border-amber-500/20 hover:border-amber-400/50 rounded-xl transition group flex items-center justify-between shadow-sm"
                 >
                   <div className="flex-1 min-w-0 pr-3">
                     <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -1742,7 +1742,7 @@ export default function TerminalAI({ onClose } = {}) {
               ))}
 
               {checkpoints.length === 0 && (
-                <div className="text-center py-10 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-xl">
+                <div className="text-center py-10 border border-dashed border-white/10 rounded-xl bg-white/2 backdrop-blur-md">
                   <p className="text-sm text-zinc-300 font-medium">Belum ada checkpoint percakapan tersimpan.</p>
                 </div>
               )}
@@ -1755,7 +1755,7 @@ export default function TerminalAI({ onClose } = {}) {
       {selectedImagePreview && (
         <div 
           data-lenis-prevent="true"
-          className="fixed inset-0 z-200 flex items-center justify-center bg-black/85 backdrop-blur-2xl p-4"
+          className="fixed inset-0 z-200 flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
           onClick={() => setSelectedImagePreview(null)}
         >
           <div className="relative max-w-4xl max-h-[85vh] p-2 bg-zinc-950/90 border border-white/20 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center">

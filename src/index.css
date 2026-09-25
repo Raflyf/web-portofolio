@@ -51,15 +51,17 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   /* ============ Liquid-glass design tokens (iOS 26 & Stitch material) ============ */
-  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.46) 75%, rgba(8, 12, 28, 0.66) 100%);
-  --glass-bg-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 30%, rgba(16, 26, 58, 0.52) 75%, rgba(10, 14, 32, 0.72) 100%);
-  --glass-bg-nav: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 32%, rgba(14, 22, 50, 0.42) 75%, rgba(8, 12, 28, 0.62) 100%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.26);
-  --glass-border-strong: 1px solid rgba(255, 255, 255, 0.28);
-  --glass-blur: blur(36px) saturate(220%) contrast(106%);
-  --glass-blur-lg: blur(36px) saturate(220%) contrast(106%);
-  --glass-shadow: inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70), inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50), inset 0 0 32px 0 rgba(56, 189, 248, 0.09), 0 24px 54px -10px rgba(0, 0, 0, 0.80), 0 4px 16px 0 rgba(0, 0, 0, 0.45), 0 0 28px -4px rgba(56, 189, 248, 0.18);
-  --glass-shadow-strong: inset 0 1.6px 2.2px 0 rgba(255, 255, 255, 0.75), inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50), inset 0 0 36px 0 rgba(56, 189, 248, 0.10), 0 24px 56px -10px rgba(0, 0, 0, 0.82), 0 6px 20px -2px rgba(0, 0, 0, 0.45), 0 0 28px -4px rgba(56, 189, 248, 0.18);
+  /* Diseragamkan dengan material kartu konten (25 Sep): blur 12px/14px polos,
+     rim tipis, tanpa saturate/contrast, tanpa glow cyan. */
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.018) 38%, rgba(28, 28, 30, 0.26) 75%, rgba(16, 16, 18, 0.36) 100%);
+  --glass-bg-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.095) 0%, rgba(255, 255, 255, 0.026) 34%, rgba(30, 30, 32, 0.30) 75%, rgba(18, 18, 20, 0.42) 100%);
+  --glass-bg-nav: linear-gradient(135deg, rgba(255, 255, 255, 0.095) 0%, rgba(255, 255, 255, 0.026) 34%, rgba(30, 30, 32, 0.30) 75%, rgba(18, 18, 20, 0.42) 100%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.11);
+  --glass-border-strong: 1px solid rgba(255, 255, 255, 0.13);
+  --glass-blur: blur(12px);
+  --glass-blur-lg: blur(14px);
+  --glass-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.13), 0 10px 24px -10px rgba(0, 0, 0, 0.50), 0 2px 6px 0 rgba(0, 0, 0, 0.24);
+  --glass-shadow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 12px 26px -10px rgba(0, 0, 0, 0.52), 0 3px 8px 0 rgba(0, 0, 0, 0.26);
   --glass-radius: 1.75rem;
   --glass-radius-sm: 0.875rem;
   --glass-radius-lg: 2rem;
@@ -200,8 +202,8 @@
 .liquid-glass-inset {
   background: linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 100%);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
   border-radius: var(--glass-radius-sm);
 }
@@ -210,13 +212,12 @@
 .liquid-glass-nav {
   background: var(--glass-bg-nav);
   border: var(--glass-border);
-  backdrop-filter: blur(36px) saturate(220%) contrast(106%);
-  -webkit-backdrop-filter: blur(36px) saturate(220%) contrast(106%);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   box-shadow: 
-    inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.70),
-    inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.50),
-    0 20px 48px -8px rgba(0, 0, 0, 0.75),
-    0 4px 16px rgba(0, 0, 0, 0.40);
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+    0 12px 26px -10px rgba(0, 0, 0, 0.52),
+    0 3px 8px 0 rgba(0, 0, 0, 0.26);
 }
 
 /* Hover lift + glow transition - pair with .liquid-glass or .liquid-glass-strong */
@@ -405,14 +406,18 @@
   }
 }
 
-/* Reveal: fade + slide up (scroll-triggered via IntersectionObserver / framer) */
+/* Reveal: slide up (scroll-triggered via IntersectionObserver / framer).
+   PENTING (fix blur-delay, 25 Sep): JANGAN animasikan `opacity` pada elemen
+   kaca / ber-backdrop-filter ATAU leluhurnya. Chromium membentuk "backdrop
+   root" saat opacity < 1 → backdrop-filter kehilangan sampel latar → blur
+   MATI selama transisi lalu "pop" saat opacity mencapai 1 (keluhan user:
+   "card transparan lalu langsung blur"). Transform aman — terukur blur tetap
+   aktif sepanjang animasi (dx 0.14 vs 4.7+ saat opacity dianimasikan). */
 @keyframes glass-reveal {
   from {
-    opacity: 0;
     transform: translateY(24px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -421,18 +426,16 @@
   animation: glass-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Modal spring entrance (CSS spring approximation) */
+/* Modal spring entrance: scale + translate saja, TANPA opacity (opacity
+   mematikan backdrop-filter selama animasi — lihat catatan glass-reveal). */
 @keyframes glass-spring-in {
   0% {
-    opacity: 0;
     transform: scale(0.92) translateY(16px);
   }
   60% {
-    opacity: 1;
     transform: scale(1.02) translateY(-2px);
   }
   100% {
-    opacity: 1;
     transform: scale(1) translateY(0);
   }
 }
@@ -441,10 +444,15 @@
   animation: glass-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* Backdrop fade (modals/dialogs) */
+/* Backdrop modal: animasikan `background-color`, BUKAN `opacity`.
+   Opacity mematikan backdrop-filter selama animasi (blur "pop" di akhir);
+   background-color aman (terukur: blur tetap aktif sepanjang animasi).
+   Hanya `from` → nilai `to` implisit = warna latar elemen (0.72 dari
+   stitch.css / bg-black Tailwind), jadi berlaku untuk semua overlay. */
 @keyframes glass-backdrop-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    background-color: rgba(0, 0, 0, 0);
+  }
 }
 
 .glass-backdrop-in {

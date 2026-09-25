@@ -36,7 +36,7 @@ export default function Footer() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center md:items-start space-y-3"
           >
@@ -60,7 +60,7 @@ export default function Footer() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.3 }}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-3"
           >
@@ -85,7 +85,7 @@ export default function Footer() {
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: false, amount: 0.5 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-6 pt-6 border-t border-white/5 flex justify-center"
         >

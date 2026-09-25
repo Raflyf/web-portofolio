@@ -107,7 +107,7 @@ export default function ScrollStoryline() {
 
       {/* Floating Scrollytelling Sidebar Navigation */}
       <aside className="fixed right-5 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col items-end gap-2 pointer-events-auto select-none" aria-label="Navigasi Cerita">
-        <div className="flex flex-col items-center gap-2 p-1.5 rounded-full bg-[#080c18]/70 backdrop-blur-xl border border-white/12 shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
+        <div className="flex flex-col items-center gap-2 p-1.5 rounded-full bg-[#080c18]/70 backdrop-blur-md border border-white/12 shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
           {sections.map((sec) => {
             const isActive = activeSection === sec.id;
             return (

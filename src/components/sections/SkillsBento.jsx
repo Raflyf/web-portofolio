@@ -4,9 +4,8 @@ import { Cpu, Network, Server, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: {
-    opacity: 1,
     transition: {
       staggerChildren: 0.1,
       delayChildren: 0.1
@@ -15,17 +14,16 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  hidden: { y: 20 },
+  visible: {
     y: 0,
     transition: { duration: 0.5, staggerChildren: 0.05 }
   }
 };
 
 const badgeVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } }
+  hidden: { scale: 0.8 },
+  visible: { scale: 1, transition: { duration: 0.2 } }
 };
 
 export default function SkillsBento() {
@@ -51,11 +49,11 @@ export default function SkillsBento() {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: false, amount: 0.2 }}
         variants={containerVariants}
         className="text-center space-y-4 mb-14"
       >
-        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('skills.badge')}</span>
         </motion.div>
         <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -68,9 +66,9 @@ export default function SkillsBento() {
 
       {/* Infinite Marquee 1 (Left Scrolling) */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.8 }}
+        initial={{ y: 20 }}
+        whileInView={{ y: 0 }}
+        viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.1 }}
         className="relative overflow-hidden flex w-full mb-4" 
       >
@@ -97,9 +95,9 @@ export default function SkillsBento() {
 
       {/* Infinite Marquee 2 (Right Scrolling) */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.8 }}
+        initial={{ y: 20 }}
+        whileInView={{ y: 0 }}
+        viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="relative overflow-hidden flex w-full mb-16" 
       >
@@ -128,7 +126,7 @@ export default function SkillsBento() {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
+        viewport={{ once: false, amount: 0.15 }}
         variants={containerVariants}
         className="grid grid-cols-1 md:grid-cols-12 gap-6"
       >

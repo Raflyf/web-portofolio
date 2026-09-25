@@ -133,13 +133,13 @@ export default function ContactSection() {
     <section id="contact" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       {/* Header Section */}
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
+        initial={{ y: 20 }}
+        whileInView={{ y: 0 }}
+        viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-16"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('contact.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -157,9 +157,9 @@ export default function ContactSection() {
         <div className="lg:col-span-5 space-y-3">
           {/* Email Direct Copy Card */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
+            initial={{ x: -30 }}
+            whileInView={{ x: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
           >
@@ -197,9 +197,9 @@ export default function ContactSection() {
 
           {/* WhatsApp Direct Chat Card */}
           <motion.a
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
+            initial={{ x: -30 }}
+            whileInView={{ x: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             href={DEVELOPER_PROFILE.whatsappUrl}
             target="_blank"
@@ -229,9 +229,9 @@ export default function ContactSection() {
 
           {/* GitHub Profile Card */}
           <motion.a
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
+            initial={{ x: -30 }}
+            whileInView={{ x: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             href={DEVELOPER_PROFILE.github}
             target="_blank"
@@ -265,9 +265,9 @@ export default function ContactSection() {
 
         {/* Right Column: Contact Form with FormSubmit */}
         <motion.div 
-          initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
+          initial={{ x: 30 }}
+          whileInView={{ x: 0 }}
+          viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.6 }}
           className="lg:col-span-7 p-8 sm:p-10 liquid-glass-strong relative overflow-hidden"
         >

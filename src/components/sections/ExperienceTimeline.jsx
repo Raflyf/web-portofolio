@@ -22,9 +22,9 @@ export default function ExperienceTimeline() {
   return (
     <section id="timeline" ref={containerRef} className="relative px-4 sm:px-6 w-full max-w-4xl mx-auto pt-24 pb-24">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
+        initial={{ y: 20 }}
+        whileInView={{ y: 0 }}
+        viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-16"
       >
@@ -57,9 +57,9 @@ export default function ExperienceTimeline() {
             return (
               <motion.div 
                 key={index} 
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0.15 }}
+                initial={{ y: 30, scale: 0.95 }}
+                whileInView={{ y: 0, scale: 1 }}
+                viewport={{ once: false, amount: 0.15 }}
                 transition={{ duration: 0.6, delay: index * 0.08 }}
                 className={`relative flex flex-col sm:flex-row items-start sm:items-center ${isLeft ? 'sm:justify-start' : 'sm:justify-end'} group`}
               >

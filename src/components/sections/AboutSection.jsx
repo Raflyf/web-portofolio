@@ -5,9 +5,8 @@ import { useLanguage } from '../../context/LanguageContext.jsx';
 import { Brain, Network, Eye, ShieldCheck } from 'lucide-react';
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: {
-    opacity: 1,
     transition: {
       staggerChildren: 0.12,
       delayChildren: 0.1
@@ -16,9 +15,8 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 25 },
-  visible: { 
-    opacity: 1, 
+  hidden: { y: 25 },
+  visible: {
     y: 0,
     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
   }
@@ -68,7 +66,7 @@ export default function AboutSection() {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: false, amount: 0.2 }}
         variants={containerVariants}
         className="text-center space-y-4 mb-16"
       >
@@ -88,7 +86,7 @@ export default function AboutSection() {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
+        viewport={{ once: false, amount: 0.15 }}
         variants={containerVariants}
         className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch"
       >

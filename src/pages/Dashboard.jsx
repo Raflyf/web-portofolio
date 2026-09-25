@@ -297,7 +297,7 @@ const CustomSelect = ({ value, onChange, options }) => {
           role="listbox"
           data-lenis-prevent="true"
           style={{ position: 'absolute', top: '100%', right: 0 }}
-          className="absolute! top-full right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-2xl focus:outline-none overflow-hidden backdrop-blur-2xl"
+          className="absolute! top-full right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-2xl focus:outline-none overflow-hidden backdrop-blur-md"
         >
           <div 
             data-lenis-prevent="true" 
@@ -1721,7 +1721,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 1. 5 BENTO KPI METRIC CARDS WITH TIME RANGE FILTER */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
+        <motion.section initial={{ y: 20 }} whileInView={{ y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-cyan-400" />
@@ -1822,7 +1822,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 2. TOP ROW CHARTS: TRAFFIC VELOCITY & CLICK DISTRIBUTION */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <motion.section initial={{ y: 20 }} whileInView={{ y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Chart 1: Traffic Velocity Line Chart */}
           <div className="lg:col-span-7 p-6 liquid-glass space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -1877,7 +1877,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 3. 4-CARD INTELLIGENCE GRID: PLATFORM, PROJECTS, CERTS, REFERRERS */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
+        <motion.section initial={{ y: 20 }} whileInView={{ y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Radar className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
@@ -2026,7 +2026,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 4. AI MODELS MULTI-TIER MATRIX & INFERENCE MONITORING */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-6">
+        <motion.section initial={{ y: 20 }} whileInView={{ y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -2063,7 +2063,7 @@ export default function Dashboard({ isStitch = true } = {}) {
           </div>
 
           {/* Standalone Full-Width Auto Gateway Router Banner */}
-          <div className="p-5 rounded-2xl border border-cyan-300 dark:border-cyan-500/30 auto-gateway-router-banner bg-linear-to-r from-cyan-50 dark:from-cyan-950/40 via-indigo-50 dark:via-slate-900/50 to-purple-50 dark:to-indigo-950/40 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="p-5 rounded-2xl border border-cyan-300 dark:border-cyan-500/30 auto-gateway-router-banner bg-linear-to-r from-cyan-50 dark:from-cyan-950/40 via-indigo-50 dark:via-slate-900/50 to-purple-50 dark:to-indigo-950/40 backdrop-blur-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
@@ -2132,7 +2132,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 5. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG) */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-5">
+        <motion.section initial={{ y: 20 }} whileInView={{ y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -2248,7 +2248,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 6. REAL-TIME ACTIVITY STREAM TABLE & EXPORT */}
         {/* ========================================================================= */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-5">
+        <motion.section initial={{ y: 20 }} whileInView={{ y: 0 }} viewport={{ once: false, amount: 0.1 }} transition={{ duration: 0.5 }} className="p-6 liquid-glass space-y-5">
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -2405,7 +2405,7 @@ export default function Dashboard({ isStitch = true } = {}) {
       {/* MODAL: UBAH MASTER PIN */}
       {/* ========================================================================= */}
       {isChangePinOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl glass-backdrop-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md glass-backdrop-in">
           <div className="w-full max-w-md liquid-glass-strong p-6 space-y-5 relative">
             <div className="flex justify-between items-center pb-3 border-b border-white/10">
               <div className="flex items-center gap-2">

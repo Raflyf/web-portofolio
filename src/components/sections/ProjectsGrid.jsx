@@ -12,16 +12,15 @@ const GithubIcon = ({ className = "w-5 h-5" }) => (
 );
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: {
-    opacity: 1,
     transition: { staggerChildren: 0.08 }
   }
 };
 
 const tabVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } }
+  hidden: { scale: 0.9 },
+  visible: { scale: 1, transition: { duration: 0.3 } }
 };
 
 const GITHUB_STARS_CACHE_KEY = 'portfolio_github_stars_v2';
@@ -129,13 +128,13 @@ export default function ProjectsGrid() {
   return (
     <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
+        initial={{ y: 20 }}
+        whileInView={{ y: 0 }}
+        viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         className="text-center space-y-4 mb-12"
       >
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('projects.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -151,7 +150,7 @@ export default function ProjectsGrid() {
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.8 }}
+        viewport={{ once: false, amount: 0.8 }}
         className="flex justify-center mb-12"
       >
         <div className="stitch-capsule-group">
@@ -183,9 +182,9 @@ export default function ProjectsGrid() {
       {/* Featured Project Showcase Card (HANYA tampil pada tab 'Semua Proyek') */}
       {featuredProject && (
         <motion.div 
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
+          initial={{ y: 28 }}
+          whileInView={{ y: 0 }}
+          viewport={{ once: false, amount: 0.15 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group"
         >
@@ -269,10 +268,10 @@ export default function ProjectsGrid() {
             <motion.div 
               layout
               key={project.id}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ y: 28 }}
+              whileInView={{ y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              viewport={{ once: true, amount: 0.15 }}
+              viewport={{ once: false, amount: 0.15 }}
               transition={{ 
                 duration: 0.5, 
                 ease: [0.16, 1, 0.3, 1],
