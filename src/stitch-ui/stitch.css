@@ -828,7 +828,8 @@ button.stitch-btn-glass:active,
    Permintaan user 25 Sep: "style dropdown ya belum di singkronnkan" — sebelumnya
    memakai stitch-terminal-window (0.30/0.42) + backdrop-blur-md sehingga lebih
    transparan dari dropdown lain. */
-.stitch-terminal-window .stitch-dropdown-panel {
+.stitch-dropdown-panel,
+.stitch-terminal-window.stitch-dropdown-panel {
   background:
     linear-gradient(135deg, rgba(30, 32, 40, 0.965) 0%, rgba(22, 24, 30, 0.96) 30%, rgba(16, 16, 20, 0.97) 60%, rgba(10, 10, 14, 0.98) 100%) !important;
   -webkit-backdrop-filter: blur(14px) !important;
