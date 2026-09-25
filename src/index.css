@@ -416,6 +416,31 @@
   -webkit-mask-image: linear-gradient(to right, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%);
 }
+/* ==========================================================================
+   Reveal berbasis CSS transition (compositor) — lihat components/ui/Reveal.jsx.
+   Terukur: mengganti reveal framer (JS main thread) -> +10 FPS & 0 frame jank.
+   Transform-only (tanpa opacity) supaya backdrop-filter elemen kaca tetap
+   hidup selama animasi (fix blur pop-in). `.reveal-fade` hanya utk non-kaca.
+   ========================================================================== */
+.reveal-init {
+  opacity: 1;
+  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 0px), 0) scale(var(--rv-scale, 1));
+  will-change: transform;
+  transition: transform var(--rv-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
+}
+
+.reveal-init.reveal-fade {
+  opacity: 0;
+  transition: opacity var(--rv-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s),
+              transform var(--rv-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
+}
+
+.reveal-init.revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: auto;
+}
+
 /* Reveal: slide up (scroll-triggered via IntersectionObserver / framer).
    PENTING (fix blur-delay, 25 Sep): JANGAN animasikan `opacity` pada elemen
    kaca / ber-backdrop-filter ATAU leluhurnya. Chromium membentuk "backdrop

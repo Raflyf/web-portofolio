@@ -4,6 +4,7 @@ import { getCertificatesData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
 import { FileText, Award, Calendar, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { telemetry } from '../../lib/telemetry';
+import Reveal from '../ui/Reveal.jsx';
 
 const containerVariants = {
   hidden: {},
@@ -71,13 +72,7 @@ export default function CertificatesGrid() {
 
   return (
     <section id="certificates" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <motion.div 
-        initial={{ y: 20 }}
-        whileInView={{ y: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 0.6 }}
-        className="text-center space-y-4 mb-12"
-      >
+      <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-12">
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('certificates.badge')}</span>
         </div>
@@ -87,7 +82,7 @@ export default function CertificatesGrid() {
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
           {t('certificates.subtitle')}
         </p>
-      </motion.div>
+      </Reveal>
 
       {/* Filter Tabs */}
       <motion.div 

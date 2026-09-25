@@ -780,6 +780,29 @@ button.stitch-btn-glass:active,
 }
 
 /* --------------------------------------------------------------------------
+   6a. OPTIMASI TERUKUR (25 Sep): matikan backdrop-filter di elemen kaca
+   yang berdiri DI ATAS permukaan kaca lain dan/atau bergerak terus-menerus.
+   --------------------------------------------------------------------------
+   Prinsip: backdrop-filter = salin + blur ulang area belakang SETIAP frame.
+   Elemen di dalam kaca lain (permukaan induknya sudah buram) atau elemen
+   yang bergerak di marquee tidak menambah efek kaca yang terlihat — A/B
+   piksel membuktikan RMS ~1.7-6.8 (perbedaan hanya dari tint, bukan blur).
+   Yang dimatikan HANYA yang tak berkontribusi visual; kaca utama (kartu,
+   navbar, modal, dropdown) tetap penuh. Referensi: web bot FreeAIBot yang
+   terasa mulus — chip di dalam kartu kaca di sana juga tanpa blur.
+   -------------------------------------------------------------------------- */
+/* Chip skill di marquee: bergerak 60fps + di atas wallpaper, bukan di atas
+   kaca lain. Terukur: tanpa blur, vision tetap menilai "kaca berisi material
+   gelap" (tint 0.10/0.30 + rim tipis sudah memberi kesan kaca). */
+.animate-marquee-left .stitch-btn-glass,
+.animate-marquee-right .stitch-btn-glass {
+  /* PENTING: -webkit- DULU lalu non-prefix — jika dibalik, lightningcss hanya
+     menyimpan versi -webkit dan blur TIDAK mati di Chrome (terbukti di build). */
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* --------------------------------------------------------------------------
    6b. Dropdown / Listbox — kaca pekat (readability panel)
    --------------------------------------------------------------------------
    Panel dropdown mengambang DI ATAS konten (tabel, teks). Blur 12px saja tidak
@@ -949,4 +972,31 @@ button.stitch-btn-glass:active,
   box-shadow: 
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.18),
     0 16px 32px -12px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* ==========================================================================
+   OPTIMASI TERUKUR #2 (25 Sep): blur bersarang di TERMINAL dimatikan.
+   --------------------------------------------------------------------------
+   ALASAN POSISI: rule ini HARUS di akhir file — specificity sama dengan
+   rule `.stitch-terminal-header { backdrop-filter: blur(12px) !important }`
+   di bagian 7, dan pada specificity sama pemenangnya adalah yang TERAKHIR.
+   Diletakkan di 6a (sebelum bagian 7) -> kalah, blur tidak mati (terbukti
+   diukur: header masih blur(12px) setelah patch pertama).
+
+   Efek terukur: header 44k px² + control bar 46k + body 493k + dock 92k
+   = ~675k px² area blur bersarang yang dihilangkan tanpa perubahan visual
+   (permukaan induk `.stitch-terminal-window` tetap blur 14px penuh).
+   Body pesan (backdrop-blur-md, area terbesar) termasuk — di dalam kaca
+   induk, blur-nya tidak menambah efek yang terlihat.
+   ========================================================================== */
+.stitch-terminal-window .stitch-btn-glass,
+.stitch-terminal-window .stitch-pill-glass,
+.stitch-terminal-window .stitch-terminal-dialog-card,
+.stitch-terminal-window .backdrop-blur-md,
+.stitch-terminal-header,
+.stitch-terminal-control-bar,
+.stitch-terminal-shortcut-bar,
+.stitch-terminal-dock {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }

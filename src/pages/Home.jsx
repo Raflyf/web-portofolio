@@ -13,6 +13,7 @@ import CertificatesGrid from '../components/sections/CertificatesGrid';
 import ExperienceTimeline from '../components/sections/ExperienceTimeline';
 import ContactSection from '../components/sections/ContactSection';
 import Footer from '../components/layout/Footer';
+import Reveal from '../components/ui/Reveal.jsx';
 
 export default function Home() {
   const { t } = useLanguage();
@@ -44,13 +45,7 @@ export default function Home() {
 
         {/* Terminal & Interactive AI Lab */}
         <section className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-12 pb-24" id="lab">
-          <motion.div 
-            initial={{ y: 20 }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: false, amount: 0.2 }}
-            transition={{ duration: 0.6 }}
-            className="text-center space-y-4 mb-12"
-          >
+          <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-12">
             <div className="inline-flex items-center gap-2 liquid-glass-inset liquid-glass-pill px-3.5 py-1.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('lab.badge')}</span>
             </div>
@@ -60,16 +55,11 @@ export default function Home() {
             <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
               {t('lab.subtitle')}
             </p>
-          </motion.div>
+          </Reveal>
           
-          <motion.div
-            initial={{ y: 30 }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: false, amount: 0.15 }}
-            transition={{ duration: 0.7 }}
-          >
+          <Reveal y={30} duration={0.7} amount={0.15} >
             <TerminalAI />
-          </motion.div>
+          </Reveal>
         </section>
 
         {/* Contact Form & Information */}

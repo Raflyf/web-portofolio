@@ -3,6 +3,7 @@ import { motion, useScroll, useSpring } from 'framer-motion';
 import { getTimelineData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
 import { Briefcase, GraduationCap } from 'lucide-react';
+import Reveal from '../ui/Reveal.jsx';
 
 export default function ExperienceTimeline() {
   const { language, t } = useLanguage();
@@ -21,13 +22,7 @@ export default function ExperienceTimeline() {
 
   return (
     <section id="timeline" ref={containerRef} className="relative px-4 sm:px-6 w-full max-w-4xl mx-auto pt-24 pb-24">
-      <motion.div 
-        initial={{ y: 20 }}
-        whileInView={{ y: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 0.6 }}
-        className="text-center space-y-4 mb-16"
-      >
+      <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-16">
         <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('timeline.badge')}</span>
         </div>
@@ -37,7 +32,7 @@ export default function ExperienceTimeline() {
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
           {t('timeline.subtitle')}
         </p>
-      </motion.div>
+      </Reveal>
 
       <div className="relative pl-8 sm:pl-0">
         {/* Base Timeline Line (Gray) */}
@@ -55,14 +50,8 @@ export default function ExperienceTimeline() {
             const isEducation = item.type === 'education';
 
             return (
-              <motion.div 
-                key={index} 
-                initial={{ y: 30, scale: 0.95 }}
-                whileInView={{ y: 0, scale: 1 }}
-                viewport={{ once: false, amount: 0.15 }}
-                transition={{ duration: 0.6, delay: index * 0.08 }}
-                className={`relative flex flex-col sm:flex-row items-start sm:items-center ${isLeft ? 'sm:justify-start' : 'sm:justify-end'} group`}
-              >
+              <Reveal y={30} scale={0.95} duration={0.6} delay={index * 0.08} amount={0.15} key={index} 
+                className={`relative flex flex-col sm:flex-row items-start sm:items-center ${isLeft ? 'sm:justify-start' : 'sm:justify-end'} group`}>
                 
                 {/* Timeline Dot */}
                 <div className="absolute left-0 sm:left-1/2 w-8 h-8 rounded-full border border-white/20 liquid-glass-inset liquid-glass-pill flex items-center justify-center transform -translate-x-1/2 sm:-translate-x-1/2 z-10 shadow-[0_0_15px_rgba(0,0,0,0.8)] group-hover:scale-125 transition-all duration-300">
@@ -92,7 +81,7 @@ export default function ExperienceTimeline() {
                   </motion.div>
                 </div>
 
-              </motion.div>
+              </Reveal>
             );
           })}
         </div>

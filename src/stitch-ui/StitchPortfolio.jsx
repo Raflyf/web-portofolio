@@ -15,6 +15,7 @@ import ExperienceTimeline from '../components/sections/ExperienceTimeline.jsx';
 import TerminalAI from '../components/terminal/TerminalAI.jsx';
 import ContactSection from '../components/sections/ContactSection.jsx';
 import Footer from '../components/layout/Footer.jsx';
+import Reveal from '../components/ui/Reveal.jsx';
 
 export default function StitchPortfolio() {
   const { t } = useLanguage();
@@ -52,13 +53,7 @@ export default function StitchPortfolio() {
 
         {/* Terminal & Interactive AI Lab */}
         <section className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-12 pb-24 section-contain" id="lab">
-          <motion.div 
-            initial={{ y: 20 }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: false, amount: 0.2 }}
-            transition={{ duration: 0.6 }}
-            className="text-center space-y-4 mb-12"
-          >
+          <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-12">
             <div className="inline-flex items-center gap-2 liquid-glass-inset liquid-glass-pill px-3.5 py-1.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-cyan-300 font-mono">{t('lab.badge')}</span>
             </div>
@@ -68,16 +63,11 @@ export default function StitchPortfolio() {
             <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
               {t('lab.subtitle')}
             </p>
-          </motion.div>
+          </Reveal>
           
-          <motion.div
-            initial={{ y: 30 }}
-            whileInView={{ y: 0 }}
-            viewport={{ once: false, amount: 0.15 }}
-            transition={{ duration: 0.7 }}
-          >
+          <Reveal y={30} duration={0.7} amount={0.15} >
             <TerminalAI />
-          </motion.div>
+          </Reveal>
         </section>
 
         {/* Contact Form & Information */}

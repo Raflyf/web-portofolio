@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Cpu, Network, Server, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.jsx';
+import Reveal from '../ui/Reveal.jsx';
 
 const containerVariants = {
   hidden: {},
@@ -65,13 +66,7 @@ export default function SkillsBento() {
       </motion.div>
 
       {/* Infinite Marquee 1 (Left Scrolling) */}
-      <motion.div 
-        initial={{ y: 20 }}
-        whileInView={{ y: 0 }}
-        viewport={{ once: false, amount: 0.8 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="relative overflow-hidden flex w-full mb-4 marquee-mask-x" 
-      >
+      <Reveal y={20} duration={0.5} delay={0.1} amount={0.8} className="relative overflow-hidden flex w-full mb-4 marquee-mask-x">
         <div 
           className="animate-marquee-left flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}
@@ -87,16 +82,10 @@ export default function SkillsBento() {
             </React.Fragment>
           ))}
         </div>
-      </motion.div>
+      </Reveal>
 
       {/* Infinite Marquee 2 (Right Scrolling) */}
-      <motion.div 
-        initial={{ y: 20 }}
-        whileInView={{ y: 0 }}
-        viewport={{ once: false, amount: 0.8 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="relative overflow-hidden flex w-full mb-16 marquee-mask-x" 
-      >
+      <Reveal y={20} duration={0.5} delay={0.2} amount={0.8} className="relative overflow-hidden flex w-full mb-16 marquee-mask-x">
         <div 
           className="animate-marquee-right flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}
@@ -112,7 +101,7 @@ export default function SkillsBento() {
             </React.Fragment>
           ))}
         </div>
-      </motion.div>
+      </Reveal>
 
       {/* Bento Grid with Uniform Obsidian Liquid Glass & Lucide SVG Icons */}
       <motion.div 

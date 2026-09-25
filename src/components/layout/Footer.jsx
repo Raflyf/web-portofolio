@@ -4,6 +4,7 @@ import { Mail } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
 import { telemetry } from '../../lib/telemetry';
+import Reveal from '../ui/Reveal.jsx';
 
 const socialLinks = [
   {
@@ -33,13 +34,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
           {/* Brand Block */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-center md:items-start space-y-3"
-          >
+          <Reveal y={0} fade duration={0.55} amount={0.3} className="flex flex-col items-center md:items-start space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-linear-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
                 <span className="text-xs font-bold text-white tracking-tight">RF</span>
@@ -54,16 +49,10 @@ export default function Footer() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </Reveal>
 
           {/* Social Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center gap-3"
-          >
+          <Reveal y={0} fade duration={0.55} delay={0.1} amount={0.3} className="flex items-center gap-3">
             {socialLinks.map(({ icon: Icon, label, href, color }) => (
               <a
                 key={label}
@@ -77,22 +66,16 @@ export default function Footer() {
                 <Icon className="w-4 h-4" />
               </a>
             ))}
-          </motion.div>
+          </Reveal>
 
         </div>
 
         {/* Bottom Bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: false, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-6 pt-6 border-t border-white/5 flex justify-center"
-        >
+        <Reveal y={0} fade duration={0.6} delay={0.2} amount={0.5} className="mt-6 pt-6 border-t border-white/5 flex justify-center">
           <p className="text-xs text-zinc-500 font-mono text-center">
             &copy; {year} Rafly Firmansyah. {t('footer.rights')}
           </p>
-        </motion.div>
+        </Reveal>
       </div>
     </footer>
   );

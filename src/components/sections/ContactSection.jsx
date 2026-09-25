@@ -4,6 +4,7 @@ import { Mail, MessageSquare, Copy, Check, Send, AlertCircle, ArrowUpRight, Shie
 import { DEVELOPER_PROFILE } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
 import { telemetry } from '../../lib/telemetry';
+import Reveal from '../ui/Reveal.jsx';
 
 export default function ContactSection() {
   const { language, t } = useLanguage();
@@ -132,13 +133,7 @@ export default function ContactSection() {
   return (
     <section id="contact" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       {/* Header Section */}
-      <motion.div 
-        initial={{ y: 20 }}
-        whileInView={{ y: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 0.6 }}
-        className="text-center space-y-4 mb-16"
-      >
+      <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-16">
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('contact.badge')}</span>
         </div>
@@ -148,7 +143,7 @@ export default function ContactSection() {
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
           {t('contact.subtitle')}
         </p>
-      </motion.div>
+      </Reveal>
 
       {/* Grid Layout: Contact Cards & Form */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -156,13 +151,7 @@ export default function ContactSection() {
         {/* Left Column: Direct Action Cards */}
         <div className="lg:col-span-5 space-y-3">
           {/* Email Direct Copy Card */}
-          <motion.div 
-            initial={{ x: -30 }}
-            whileInView={{ x: 0 }}
-            viewport={{ once: false, amount: 0.2 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
-          >
+          <Reveal x={-30} duration={0.5} delay={0.1} amount={0.2} className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group">
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
                 <Mail className="w-5 h-5" />
@@ -193,20 +182,14 @@ export default function ContactSection() {
                 </>
               )}
             </button>
-          </motion.div>
+          </Reveal>
 
           {/* WhatsApp Direct Chat Card */}
-          <motion.a
-            initial={{ x: -30 }}
-            whileInView={{ x: 0 }}
-            viewport={{ once: false, amount: 0.2 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            href={DEVELOPER_PROFILE.whatsappUrl}
+          <Reveal as="a" x={-30} duration={0.5} delay={0.2} amount={0.2} href={DEVELOPER_PROFILE.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => telemetry.logEvent('link_click', 'whatsapp', 'Klik Tombol Chat WhatsApp')}
-            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
-          >
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group">
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                 <MessageSquare className="w-5 h-5" />
@@ -225,20 +208,14 @@ export default function ContactSection() {
               <span>{t('contact.openWhatsapp')}</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
-          </motion.a>
+          </Reveal>
 
           {/* GitHub Profile Card */}
-          <motion.a
-            initial={{ x: -30 }}
-            whileInView={{ x: 0 }}
-            viewport={{ once: false, amount: 0.2 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            href={DEVELOPER_PROFILE.github}
+          <Reveal as="a" x={-30} duration={0.5} delay={0.3} amount={0.2} href={DEVELOPER_PROFILE.github}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => telemetry.logEvent('link_click', 'github_profile', 'Klik Profil GitHub')}
-            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
-          >
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group">
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -259,18 +236,12 @@ export default function ContactSection() {
               <span>{language === 'id' ? 'Kunjungi Profil GitHub' : 'Visit GitHub Profile'}</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
-          </motion.a>
+          </Reveal>
 
         </div>
 
         {/* Right Column: Contact Form with FormSubmit */}
-        <motion.div 
-          initial={{ x: 30 }}
-          whileInView={{ x: 0 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.6 }}
-          className="lg:col-span-7 p-8 sm:p-10 liquid-glass-strong relative overflow-hidden"
-        >
+        <Reveal x={30} duration={0.6} amount={0.2} className="lg:col-span-7 p-8 sm:p-10 liquid-glass-strong relative overflow-hidden">
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
@@ -400,7 +371,7 @@ export default function ContactSection() {
               )}
             </button>
           </form>
-        </motion.div>
+        </Reveal>
 
       </div>
     </section>

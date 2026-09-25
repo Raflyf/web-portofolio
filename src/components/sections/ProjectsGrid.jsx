@@ -4,6 +4,7 @@ import { getProjectsData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import { Star, ExternalLink } from 'lucide-react';
 import { telemetry } from '../../lib/telemetry';
+import Reveal from '../ui/Reveal.jsx';
 
 const GithubIcon = ({ className = "w-5 h-5" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -127,13 +128,7 @@ export default function ProjectsGrid() {
 
   return (
     <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <motion.div 
-        initial={{ y: 20 }}
-        whileInView={{ y: 0 }}
-        viewport={{ once: false, amount: 0.2 }}
-        transition={{ duration: 0.6 }}
-        className="text-center space-y-4 mb-12"
-      >
+      <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-12">
         <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('projects.badge')}</span>
         </div>
@@ -143,7 +138,7 @@ export default function ProjectsGrid() {
         <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
           {t('projects.subtitle')}
         </p>
-      </motion.div>
+      </Reveal>
 
       {/* Filter Tabs */}
       <motion.div 
@@ -181,13 +176,7 @@ export default function ProjectsGrid() {
 
       {/* Featured Project Showcase Card (HANYA tampil pada tab 'Semua Proyek') */}
       {featuredProject && (
-        <motion.div 
-          initial={{ y: 28 }}
-          whileInView={{ y: 0 }}
-          viewport={{ once: false, amount: 0.15 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group"
-        >
+        <Reveal y={28} duration={0.5} amount={0.15} className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group">
           <div className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
@@ -258,7 +247,7 @@ export default function ProjectsGrid() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </Reveal>
       )}
 
       {/* Projects Grid */}
