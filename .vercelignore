@@ -1,0 +1,41 @@
+# ============================================================================
+# .vercelignore — file yang TIDAK di-upload ke Vercel (25 Sep 2026)
+# ============================================================================
+# Vite hanya men-serve isi dist/, jadi file di bawah ini sebenarnya sudah tidak
+# pernah tampil di produksi (URL-nya jatuh ke SPA fallback index.html). Namun
+# file-file ini tetap IKUT ter-upload ke Vercel saat build. Daftar ini
+# memastikan mereka tidak pernah meninggalkan mesin lokal.
+#
+# CATATAN: file-file ini TETAP ADA di repo GitHub (version control aman) —
+# hanya dikecualikan dari upload/deploy Vercel.
+# ============================================================================
+
+# Arsip versi lama (vanilla HTML/CSS/JS + snapshot komponen V1)
+archive_v1/
+backup_v1/
+
+# Dokumentasi internal & laporan audit (jangan pernah publik)
+DOCUMENTATION.md
+AUDIT_REPORT.md
+prompt.md
+
+# Skrip SQL migrasi (berisi detail skema; tidak dibutuhkan runtime)
+database/
+
+# File pengembangan lokal
+*.log
+_dev.log
+.env.local
+.env.local.bak_25sep
+.env.prod
+.env.vercel
+.vercel/
+
+# Konfigurasi agen/AI (tidak relevan untuk deploy)
+.agents/
+.system_generated/
+skills-lock.json
+.mcp.json
+.roo/
+.claude-flow/
+scratch/
