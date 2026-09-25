@@ -1804,7 +1804,7 @@ export default function TerminalAI({ onClose } = {}) {
           )}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full relative">
             <span className="hidden sm:block text-cyan-400 font-semibold text-xs whitespace-nowrap pl-1 font-mono">rafly@Lab:~$</span>
-            <div className="flex-1 relative flex items-center w-full rounded-2xl bg-black/50 border border-white/15 focus-within:border-cyan-400/60 focus-within:ring-1 focus-within:ring-cyan-400/40 transition-all pl-2 pr-1.5 py-1 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.12),0_4px_16px_rgba(0,0,0,0.4)]">
+            <div className="flex-1 relative flex items-center w-full rounded-2xl bg-white/[0.06] border border-white/15 focus-within:border-cyan-400/60 focus-within:ring-1 focus-within:ring-cyan-400/40 transition-all pl-2 pr-1.5 py-1 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.12),0_4px_16px_rgba(0,0,0,0.4)]">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}

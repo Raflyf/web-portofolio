@@ -406,6 +406,16 @@
   }
 }
 
+
+/* Marquee edge fade: mask transparan (bukan gradient warna solid).
+   PENTING (fix 25 Sep): edge fade lama memakai `from-[#06080d]` (warna solid
+   halaman) — di atas wallpaper terlihat sebagai BAR HITAM di tepi kiri/kanan
+   (keluhan: "pinggirannya ada hitamnya"). Mask membuat elemen benar-benar
+   memudar ke transparan sehingga wallpaper tetap terlihat. */
+.marquee-mask-x {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%);
+}
 /* Reveal: slide up (scroll-triggered via IntersectionObserver / framer).
    PENTING (fix blur-delay, 25 Sep): JANGAN animasikan `opacity` pada elemen
    kaca / ber-backdrop-filter ATAU leluhurnya. Chromium membentuk "backdrop

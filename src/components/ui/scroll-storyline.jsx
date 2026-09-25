@@ -51,28 +51,39 @@ export default function ScrollStoryline() {
     return () => unsubscribe();
   }, [scrollYProgress]);
 
-  // Synchronize active section via zero-reflow IntersectionObserver
+  // Synchronize active section with viewport scroll.
+  // PENTING (fix 25 Sep): IntersectionObserver '-20%/-55%' gagal untuk section
+  // tinggi (strip hanya 25% viewport) — sidebar tertinggal di section lama.
+  // Ganti ke picker deterministik: section terakhir yang top-nya <= 40% viewport.
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveSection(prev => (prev !== entry.target.id ? entry.target.id : prev));
-          }
-        }
-      },
-      {
-        rootMargin: '-20% 0px -55% 0px',
-        threshold: 0.1
+    let ticking = false;
+
+    const pick = () => {
+      ticking = false;
+      const line = window.innerHeight * 0.4;
+      let current = SECTION_IDS[0];
+      for (const id of SECTION_IDS) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= line) current = id;
       }
-    );
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        current = SECTION_IDS[SECTION_IDS.length - 1];
+      }
+      setActiveSection(prev => (prev !== current ? current : prev));
+    };
 
-    SECTION_IDS.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
+    const onScroll = () => {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(pick); }
+    };
 
-    return () => observer.disconnect();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    pick();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, []);
 
   // Top of page boundary check (zero layout queries)

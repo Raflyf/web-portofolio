@@ -70,12 +70,8 @@ export default function SkillsBento() {
         whileInView={{ y: 0 }}
         viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="relative overflow-hidden flex w-full mb-4" 
+        className="relative overflow-hidden flex w-full mb-4 marquee-mask-x" 
       >
-        {/* Seamless Edge Fades (GPU-Composited, Zero Software Masking) */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-linear-to-r from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-l from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
-
         <div 
           className="animate-marquee-left flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}
@@ -99,12 +95,8 @@ export default function SkillsBento() {
         whileInView={{ y: 0 }}
         viewport={{ once: false, amount: 0.8 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="relative overflow-hidden flex w-full mb-16" 
+        className="relative overflow-hidden flex w-full mb-16 marquee-mask-x" 
       >
-        {/* Seamless Edge Fades (GPU-Composited, Zero Software Masking) */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-linear-to-r from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-l from-[#06080d] via-[#06080d]/60 to-transparent z-10" />
-
         <div 
           className="animate-marquee-right flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}

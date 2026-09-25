@@ -61,31 +61,45 @@ export default function StitchNav() {
     }
   };
 
-  // Synchronize active nav highlight with viewport scroll via zero-reflow IntersectionObserver
+  // Synchronize active nav highlight with viewport scroll.
+  // PENTING (fix 25 Sep): IntersectionObserver dengan rootMargin '-20%/-55%'
+  // GAGAL untuk section tinggi — strip pengamatan hanya 25% viewport, jadi
+  // section seperti Projects/Certificates/Timeline tidak pernah memicu dan
+  // navbar tertinggal di section sebelumnya (keluhan: "navbar tidak sinkron").
+  // Solusi: pilih section TERAKHIR yang tepi atasnya sudah melewati garis
+  // 40% viewport — deterministik untuk semua tinggi section, tanpa reflow
+  // (hanya getBoundingClientRect saat scroll, di-throttle via rAF).
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveSection(prev => (prev !== entry.target.id ? entry.target.id : prev));
-          }
-        }
-      },
-      {
-        rootMargin: '-20% 0px -55% 0px',
-        threshold: 0.1
+    const ids = ['hero', ...NAV_ITEMS.map(i => i.id)];
+    let ticking = false;
+
+    const pick = () => {
+      ticking = false;
+      const line = window.innerHeight * 0.4;
+      let current = ids[0];
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= line) current = id;
       }
-    );
+      // Di dasar halaman: paksa section terakhir (contact) aktif.
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        current = ids[ids.length - 1];
+      }
+      setActiveSection(prev => (prev !== current ? current : prev));
+    };
 
-    NAV_ITEMS.forEach(item => {
-      const el = document.getElementById(item.id);
-      if (el) observer.observe(el);
-    });
+    const onScroll = () => {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(pick); }
+    };
 
-    const heroEl = document.getElementById('hero');
-    if (heroEl) observer.observe(heroEl);
-
-    return () => observer.disconnect();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    pick();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, []);
 
   // Smart Auto-Hide: Lightweight scroll handler with zero DOM layout queries

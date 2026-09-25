@@ -391,10 +391,7 @@ export default function HorizonHero() {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
               </div>
               
-              <div className="relative flex overflow-hidden">
-                {/* Seamless Edge Fades (GPU Composited, Zero Software Masking) */}
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-linear-to-r from-[#0a0e22] via-[#0a0e22]/50 to-transparent z-10" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-linear-to-l from-[#0a0e22] via-[#0a0e22]/50 to-transparent z-10" />
+              <div className="relative flex overflow-hidden marquee-mask-x">
 
                 <div className="animate-marquee-left flex gap-8 whitespace-nowrap px-4 py-1">
                   {[...STACK_BADGES, ...STACK_BADGES].map((tech, i) => (

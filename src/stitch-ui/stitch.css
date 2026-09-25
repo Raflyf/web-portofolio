@@ -120,38 +120,41 @@ body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
      sebelum: 74 fps, p95 22 ms, frame terburuk 47 ms
      sesudah: 84 fps, p95 18 ms  -> +14% fps, +18% p95
 
+   PENTING (fix 25 Sep): dropdown (`role="listbox"`) dan dialog DIKECUALIKAN —
+   keduanya harus tetap ber-blur karena berada DI ATAS kaca dan konten di
+   belakangnya terlihat menembus tanpa blur (keluhan: dropdown "tembus pandang").
    Yang dimatikan HANYA blur milik elemen yang berada DI DALAM kaca lain.
    Kaca tingkat atas (kartu, panel, navbar, modal) tetap penuh blur-nya —
    efek kaca yang diminta pemilik produk tidak dikurangi sedikit pun.
    -------------------------------------------------------------------------- */
-.stitch-liquid-theme .liquid-glass .liquid-glass,
-.stitch-liquid-theme .liquid-glass .liquid-glass-strong,
-.stitch-liquid-theme .liquid-glass .liquid-glass-inset,
-.stitch-liquid-theme .liquid-glass .stitch-glass,
-.stitch-liquid-theme .liquid-glass .stitch-btn-glass,
-.stitch-liquid-theme .liquid-glass .stitch-pill-glass,
-.stitch-liquid-theme .liquid-glass .backdrop-blur-md,
-.stitch-liquid-theme .liquid-glass .backdrop-blur-xl,
-.stitch-liquid-theme .liquid-glass .backdrop-blur-sm,
-.stitch-liquid-theme .liquid-glass .backdrop-blur-2xl,
-.stitch-liquid-theme .liquid-glass-strong .liquid-glass,
-.stitch-liquid-theme .liquid-glass-strong .liquid-glass-strong,
-.stitch-liquid-theme .liquid-glass-strong .liquid-glass-inset,
-.stitch-liquid-theme .liquid-glass-strong .stitch-glass,
-.stitch-liquid-theme .liquid-glass-strong .stitch-btn-glass,
-.stitch-liquid-theme .liquid-glass-strong .stitch-pill-glass,
-.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-md,
-.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-xl,
-.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-sm,
-.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-2xl,
-.stitch-dashboard-container .liquid-glass .liquid-glass,
-.stitch-dashboard-container .liquid-glass .liquid-glass-inset,
-.stitch-dashboard-container .liquid-glass .stitch-btn-glass,
-.stitch-dashboard-container .liquid-glass .backdrop-blur-md,
-.stitch-dashboard-container .liquid-glass-strong .liquid-glass,
-.stitch-dashboard-container .liquid-glass-strong .liquid-glass-inset,
-.stitch-dashboard-container .liquid-glass-strong .stitch-btn-glass,
-.stitch-dashboard-container .liquid-glass-strong .backdrop-blur-md {
+.stitch-liquid-theme .liquid-glass .liquid-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .liquid-glass-strong:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .liquid-glass-inset:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .stitch-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .stitch-btn-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .stitch-pill-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .backdrop-blur-md:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .backdrop-blur-xl:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .backdrop-blur-sm:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass .backdrop-blur-2xl:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .liquid-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .liquid-glass-strong:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .liquid-glass-inset:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .stitch-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .stitch-btn-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .stitch-pill-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-md:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-xl:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-sm:not([role="listbox"]):not([role="dialog"]),
+.stitch-liquid-theme .liquid-glass-strong .backdrop-blur-2xl:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass .liquid-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass .liquid-glass-inset:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass .stitch-btn-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass .backdrop-blur-md:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass-strong .liquid-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass-strong .liquid-glass-inset:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass-strong .stitch-btn-glass:not([role="listbox"]):not([role="dialog"]),
+.stitch-dashboard-container .liquid-glass-strong .backdrop-blur-md:not([role="listbox"]):not([role="dialog"]) {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -248,11 +251,16 @@ body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
 .stitch-blueprint-cavity,
 .stitch-liquid-theme .liquid-glass-inset,
 .stitch-dashboard-container .liquid-glass-inset {
-  background: rgba(12, 12, 14, 0.72) !important;
+  /* Kaca cavity (fix 25 Sep): sebelumnya flat rgba(12,12,14,0.72) -> tampak
+     "gelap solid" seperti kotak hitam (keluhan: BASIS DATA box, input form,
+     terminal input). Sekarang gradient kaca + alpha lebih ringan + inset
+     shadow lembut: tetap terlihat "cekung" tapi materialnya = kaca, bukan solid. */
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.014) 40%, rgba(20, 20, 22, 0.30) 75%, rgba(12, 12, 14, 0.46) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.10) !important;
   box-shadow: 
-    inset 0 2px 6px 0 rgba(0, 0, 0, 0.55),
-    inset 0 1px 2px 0 rgba(0, 0, 0, 0.65),
+    inset 0 2px 6px 0 rgba(0, 0, 0, 0.35),
+    inset 0 1px 2px 0 rgba(0, 0, 0, 0.45),
     0 1px 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
@@ -276,7 +284,7 @@ body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
   /* PENTING (25 Sep): material diseragamkan dengan kartu konten .liquid-glass-strong
      (blur 14px, rim tipis, tanpa saturate) - permintaan "seragamkan dengan card". */
   background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.095) 0%, rgba(255, 255, 255, 0.026) 34%, rgba(30, 30, 32, 0.30) 75%, rgba(18, 18, 20, 0.42) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.03) 24%, rgba(30, 30, 32, 0.32) 58%, rgba(18, 18, 20, 0.48) 100%) !important;
   -webkit-backdrop-filter: blur(14px) !important;
   backdrop-filter: blur(14px) !important;
   border: 1px solid rgba(255, 255, 255, 0.13) !important;
@@ -325,7 +333,7 @@ footer,
 /* Active Nav Link 3D Liquid Glass Pill (Dynamic Sync with Viewport Scroll) */
 .stitch-glass-nav nav a.stitch-nav-link-active {
   background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.095) 0%, rgba(255, 255, 255, 0.026) 34%, rgba(30, 30, 32, 0.30) 75%, rgba(56, 189, 248, 0.10) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.03) 24%, rgba(30, 30, 32, 0.32) 58%, rgba(56, 189, 248, 0.12) 100%) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   color: #ffffff !important;
@@ -355,7 +363,8 @@ footer,
 
 /* 4a. Capsule Switcher Container (Stitch App / Web switcher model) */
 .stitch-capsule-group {
-  background: rgba(16, 16, 18, 0.50) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 35%, rgba(18, 18, 20, 0.36) 70%, rgba(12, 12, 14, 0.48) 100%) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -389,7 +398,7 @@ footer,
 .stitch-capsule-group .stitch-tab-active,
 .stitch-tab-active {
   background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.095) 0%, rgba(255, 255, 255, 0.026) 34%, rgba(30, 30, 32, 0.30) 75%, rgba(56, 189, 248, 0.10) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.03) 24%, rgba(30, 30, 32, 0.32) 58%, rgba(56, 189, 248, 0.12) 100%) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
@@ -409,8 +418,12 @@ a.stitch-btn-glass,
 button.stitch-btn-glass,
 .stitch-liquid-theme a[href="#lab"].liquid-glass-inset {
   /* Material seragam dengan kartu konten (blur 12px, rim tipis, tanpa saturate). */
+  /* Elemen kecil (fix 25 Sep): gradient kartu dipadatkan agar stops gelap
+     dominan — di elemen kecil gradient kartu hanya menampilkan bagian
+     transparan (0.075/0.018) sehingga terlihat "masih transparan"
+     (keluhan: pill hero, tombol CTA). Resep kartu tetap, stop digeser. */
   background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.018) 38%, rgba(28, 28, 30, 0.26) 75%, rgba(16, 16, 18, 0.36) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 24%, rgba(28, 28, 30, 0.30) 58%, rgba(16, 16, 18, 0.44) 100%) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.11) !important;
@@ -463,7 +476,7 @@ button.stitch-btn-glass:active,
 .stitch-liquid-theme a[href="#projects"].bg-linear-to-b,
 .stitch-dashboard-container button[type="submit"] {
   background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 38%, rgba(30, 30, 32, 0.30) 72%, rgba(56, 189, 248, 0.16) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 24%, rgba(30, 30, 32, 0.34) 58%, rgba(56, 189, 248, 0.20) 100%) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
@@ -767,6 +780,27 @@ button.stitch-btn-glass:active,
 }
 
 /* --------------------------------------------------------------------------
+   6b. Dropdown / Listbox — kaca pekat (readability panel)
+   --------------------------------------------------------------------------
+   Panel dropdown mengambang DI ATAS konten (tabel, teks). Blur 12px saja tidak
+   cukup: teks tabel tetap terbaca menembus (keluhan 25 Sep: dropdown "tembus
+   pandang"). Alpha dinaikkan agar teks di belakang tidak bocor — sama seperti
+   terminal popup window. Ini tetap material kaca (gradient + blur + rim tipis),
+   hanya lebih pekat karena fungsinya sebagai panel baca. */
+.stitch-liquid-theme .liquid-glass[role="listbox"],
+.stitch-dashboard-container .liquid-glass[role="listbox"],
+.liquid-glass[role="listbox"] {
+  background:
+    linear-gradient(135deg, rgba(30, 32, 40, 0.965) 0%, rgba(22, 24, 30, 0.96) 30%, rgba(16, 16, 20, 0.97) 60%, rgba(10, 10, 14, 0.98) 100%) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.13),
+    0 16px 40px -12px rgba(0, 0, 0, 0.70) !important;
+}
+
+/* --------------------------------------------------------------------------
    7. Terminal AI & Developer Lab Liquid Glass System
    -------------------------------------------------------------------------- */
 .stitch-terminal-window {
@@ -783,16 +817,18 @@ button.stitch-btn-glass:active,
 }
 
 .stitch-terminal-header {
+  /* Fix 25 Sep: 0.78 -> 0.55 agar tidak tampak gelap solid. */
   background: 
     linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%),
-    rgba(16, 16, 18, 0.78) !important;
+    rgba(16, 16, 18, 0.55) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
 }
 
 .stitch-terminal-control-bar {
-  background: rgba(12, 12, 14, 0.60) !important;
+  /* Fix 25 Sep: 0.60 -> 0.40 (jangan gelap solid). */
+  background: rgba(12, 12, 14, 0.40) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -806,7 +842,7 @@ button.stitch-btn-glass:active,
 .stitch-terminal-dock {
   background: 
     linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
-    rgba(16, 16, 18, 0.75) !important;
+    rgba(16, 16, 18, 0.55) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -865,7 +901,7 @@ button.stitch-btn-glass:active,
    -------------------------------------------------------------------------- */
 .stitch-floating-fab-backtotop {
   background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.018) 38%, rgba(28, 28, 30, 0.26) 75%, rgba(16, 16, 18, 0.36) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 24%, rgba(28, 28, 30, 0.30) 58%, rgba(16, 16, 18, 0.44) 100%) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -890,7 +926,7 @@ button.stitch-btn-glass:active,
 
 .stitch-floating-fab-terminal {
   background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 38%, rgba(28, 28, 30, 0.28) 72%, rgba(56, 189, 248, 0.14) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 24%, rgba(28, 28, 30, 0.32) 58%, rgba(56, 189, 248, 0.18) 100%) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
