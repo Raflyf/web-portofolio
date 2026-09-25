@@ -32,3 +32,7 @@ scratch/
 # Vite build output (never commit generated artifacts)
 dist/
 dist-v2/
+
+# Backup env
+*.bak*
+.env.local.bak_25sep

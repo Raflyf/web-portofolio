@@ -851,6 +851,8 @@ export default function TerminalAI({ onClose } = {}) {
           query: userQuery,
           model: currentChosenModel,
           reasoningEffort: effort,
+          sessionId: telemetry.sessionId || 'sess_anon',
+          sessionLanguage: (typeof document !== 'undefined' && document.documentElement.lang === 'en') ? 'en' : 'id',
           history: messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
           attachments: payloadAttachments
         })

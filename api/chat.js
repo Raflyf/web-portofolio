@@ -12,6 +12,15 @@
 
 import fs from 'fs';
 import path from 'path';
+import { aiChat, providerStatus, AI_CONFIG, AI_MODELS } from './_providers.js';
+import {
+  saveMessage as memSaveMessage,
+  getContext as memGetContext,
+  saveSummary as memSaveSummary,
+  saveCorrection as memSaveCorrection,
+  countMessages as memCountMessages,
+  isResetCommand,
+} from './_memory.js';
 
 export const config = {
   maxDuration: 60
@@ -252,6 +261,19 @@ ${identityInstruction}
 
 ${languageDirective}
 ${effortDirective}
+
+[PERSONA: AI AGENT ASISTEN — BUKAN BOT CHAT]:
+Anda adalah AI AGENT ASISTEN: proaktif, berorientasi tugas, dan tuntas. Beda dari bot chat biasa:
+1. INISIATIF AGENT: jika pertanyaan kurang spesifik, ambil inisiatif yang masuk akal
+   (mis. langsung berikan jawaban + langkah berikutnya yang relevan) alih-alih balik bertanya kaku.
+2. BERORIENTASI HASIL: setiap jawaban harus memberi sesuatu yang bisa langsung dipakai —
+   fakta terverifikasi, langkah konkret, contoh, atau tautan sumber.
+3. TUNTAS & RINGKAS: selesaikan permintaan sampai tuntas, lalu berhenti. Jangan menggantung,
+   jangan mengulang-ulang tawaran bantuan.
+4. KONSISTEN LINTAS PERCAKAPAN: ingat konteks sesi (riwayat & memori) dan lanjutkan alur
+   kerja pengguna tanpa meminta mereka mengulang informasi yang sudah diberikan.
+5. DILARANG berperilaku seperti template CS/bot: tidak ada sapaan berulang di setiap balasan,
+   tidak ada "Ada lagi yang bisa saya bantu?" di setiap akhir pesan, tidak ada basa-basi kosong.
 
 [PERSONA, NADA BICARA & HUMAN-CENTRIC CONVERSATION]:
 1. Hangat, Ramah, Friendly, dan Sangat Membantu (Helpful & Welcoming):
@@ -2596,10 +2618,21 @@ export default async function handler(req, res) {
     const hasOpenCode = resolvedKeys.opencode.length > 0;
     const hasOllama = resolvedKeys.ollama.length > 0;
     const hasMiniMax = resolvedKeys.minimax.length > 0;
+    const poolStatus = providerStatus();
     return res.status(200).json({ 
-      version: 'v10.584.0',
+      version: 'v11.0.0-chatbot-pool',
       status: 'online', 
       keys: { hasOpenRouter, hasOpenCode, hasOllama, hasMiniMax },
+      providerPool: poolStatus,
+      models: {
+        xkiro: AI_MODELS.xkiroPrimary,
+        cloudflare: AI_MODELS.cfPrimary,
+        groq: AI_MODELS.groqPrimary,
+        openrouter: AI_MODELS.orPrimary,
+        dahl: AI_MODELS.dahlPrimary,
+        gemini: AI_MODELS.geminiPrimary,
+      },
+      memory: { serverSide: true, tables: ['messages', 'summaries', 'corrections', 'ai_memories'] },
       timestamp: Date.now() 
     });
   }
@@ -2630,6 +2663,70 @@ export default async function handler(req, res) {
     if (!query && (!attachments || attachments.length === 0)) {
       return res.status(400).json({ error: 'Query prompt or file attachment is required' });
     }
+
+    // ========================================================================
+    // MEMORI & RIWAYAT SERVER-SIDE (port dari chatbot: messages/summaries/corrections)
+    // ========================================================================
+    // Ambil konteks percakapan dari Supabase (bukan hanya dari client) supaya
+    // riwayat tetap utuh lintas-refresh, lintas-device, dan lintasan memori
+    // jangka-panjang tetap konsisten. Client `history` tetap dipakai sebagai
+    // pelengkap bila server belum punya data.
+    let serverContext = { messages: [], summary: '', corrections: [] };
+    let clientRequestedReset = false;
+    try {
+      clientRequestedReset = isResetCommand(query);
+      if (sessionId && !clientRequestedReset) {
+        serverContext = await Promise.race([
+          memGetContext(sessionId, 24),
+          new Promise((resolve) => setTimeout(() => resolve({ messages: [], summary: '', corrections: [] }), 2500)),
+        ]);
+      }
+    } catch (_) {
+      // Tanpa DB = tetap jalan dengan history dari client
+    }
+    // Gabungkan: riwayat server dulu, lalu isi yang belum ada dari client
+    const mergedHistory = (() => {
+      const srv = Array.isArray(serverContext.messages) ? serverContext.messages : [];
+      const cli = Array.isArray(history) ? history.filter((h) => h && h.content) : [];
+      if (srv.length === 0) return cli;
+      const seen = new Set(srv.map((m) => `${m.role}:${String(m.content).slice(0, 120)}`));
+      const extra = cli.filter((m) => !seen.has(`${m.role}:${String(m.content).slice(0, 120)}`));
+      return [...srv, ...extra].slice(-24);
+    })();
+    // Simpan pesan pengguna (fire-and-forget, tanpa menambah latensi)
+    try {
+      if (sessionId && query && !clientRequestedReset) {
+        Promise.race([
+          memSaveMessage({ sessionId, role: 'user', content: String(query).slice(0, 8000) }),
+          new Promise((resolve) => setTimeout(resolve, 1200)),
+        ]).catch(() => {});
+      }
+      // Perintah reset: hapus riwayat sesi (checkpoint baru)
+      if (sessionId && clientRequestedReset) {
+        Promise.race([
+          (async () => {
+            const c = (process.env.SUPABASE_URL || 'https://rphyzcqwpkxtzllvymss.supabase.co').replace(/\/+$/, '');
+            const k = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || '';
+            if (k) {
+              await fetch(`${c}/rest/v1/messages?chat_id=eq.${encodeURIComponent(String(sessionId).slice(0, 128))}&platform=eq.web`, {
+                method: 'DELETE',
+                headers: { apikey: k, Authorization: `Bearer ${k}` },
+              });
+            }
+          })(),
+          new Promise((resolve) => setTimeout(resolve, 1500)),
+        ]).catch(() => {});
+      }
+    } catch (_) {}
+
+    const serverHistoryBlock = (() => {
+      const parts = [];
+      if (serverContext.summary) parts.push(`[RINGKASAN PERCAKAPAN SEBELUMNYA]:\n${serverContext.summary}`);
+      if (serverContext.corrections && serverContext.corrections.length > 0) {
+        parts.push(`[KOREKSI PENGGUNA YANG HARUS DIINGAT]:\n${serverContext.corrections.map((c) => `- ${c}`).join('\n')}`);
+      }
+      return parts.length ? `\n\n${parts.join('\n\n')}` : '';
+    })();
 
     // Sanitize user-provided keys against CRLF injection
     const cleanCustomKey = typeof customKey === 'string' ? customKey.replace(/[\r\n]/g, '').trim().slice(0, 256) : '';
@@ -2787,6 +2884,32 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
           }
         }
       }
+
+      // ======================================================================
+      // MEMORI & RIWAYAT SERVER-SIDE (port dari chatbot)
+      // Setiap pertukaran disimpan ke tabel `messages` supaya riwayat tetap
+      // utuh lintas-refresh/device, lalu tiap 8 pesan diringkas ke `summaries`.
+      // Fire-and-forget dengan batas waktu agar tidak menambah latensi respons.
+      // ======================================================================
+      try {
+        if (sessionId && !clientRequestedReset) {
+          const latency = Date.now() - requestStartTime;
+          await Promise.race([
+            (async () => {
+              await memSaveMessage({ sessionId, role: 'assistant', content: cleaned.slice(0, 8000), via: modelName, latencyMs: latency });
+              const total = await memCountMessages(sessionId);
+              if (total > 0 && total % 8 === 0) {
+                const ctx = await memGetContext(sessionId, 16);
+                const convo = ctx.messages.map((m) => `${m.role === 'user' ? 'Pengguna' : 'Asisten'}: ${String(m.content).slice(0, 240)}`).join('\n');
+                if (convo.length > 80) {
+                  await memSaveSummary(sessionId, `Ringkasan otomatis (${new Date().toISOString().slice(0, 10)}):\n${convo.slice(0, 2400)}`);
+                }
+              }
+            })(),
+            new Promise((resolve) => setTimeout(resolve, 1500)),
+          ]);
+        }
+      } catch (_) {}
 
       const textWithoutTags = cleaned.replace(/\[SAVE_MEMORY:\s*[\s\S]*?\]/gi, '').trim();
       if (/^(?:User Safety:\s*\w+[\s\S]*?Response Safety:\s*\w+|Safety:\s*safe)$/i.test(cleaned) || !textWithoutTags.trim()) {
@@ -3333,7 +3456,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
     }
 
     const finalUserPrompt = assembledQuery;
-    const baseTextMessages = assembleDynamicMessages(systemPromptWithSearch, history, finalUserPrompt);
+    const baseTextMessages = assembleDynamicMessages(`${systemPromptWithSearch}${serverHistoryBlock}`, mergedHistory, finalUserPrompt);
 
     // Multimodal payload for OpenRouter / OpenAI compatible Vision APIs
     let openRouterMessages = baseTextMessages;
@@ -3898,11 +4021,32 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
     }
 
     async function executePipelineWithPriorityRace(pipeline) {
-      if (!pipeline || pipeline.length === 0) return null;
-
+      // ======================================================================
+      // RANTAI UTAMA (25 Sep): pool provider dari proyek chatbot
+      // xKiro -> Cloudflare -> Groq -> OpenRouter -> Dahl -> Gemini
+      // Menangani rotasi key, cooldown 429, latensi model, dan guard timeout
+      // adaptif. Jika seluruh pool gagal, baru jatuh ke pipeline lama di bawah.
+      // ======================================================================
       const elapsedBase = Date.now() - requestStartTime;
       const remainingMs = 58000 - elapsedBase;
       if (remainingMs <= 1500) return null;
+
+      try {
+        const aiResult = await aiChat(openRouterMessages, {
+          vision: hasImages,
+          totalTimeoutMs: Math.max(8000, Math.min(remainingMs - 1500, 52000)),
+        });
+        if (aiResult && aiResult.text) {
+          const r = await sendSuccess(aiResult.text, aiResult.model || aiResult.via, `Chatbot Pool (${aiResult.provider || 'auto'})`);
+          if (r) return r;
+        }
+      } catch (poolErr) {
+        providerErrors.push(`[ChatbotPool] ${(poolErr && poolErr.message) || 'failed'}`);
+        if (poolErr && Array.isArray(poolErr.details)) {
+          for (const d of poolErr.details.slice(-6)) providerErrors.push(`[ChatbotPool] ${d}`);
+        }
+      }
+      if (res.headersSent) return null;
 
       // ===== MODE AUTO =====
       // Penting: urutan prioritas pengguna bisa panjang (11+ langkah). Executor lama hanya
