@@ -823,6 +823,22 @@ button.stitch-btn-glass:active,
     0 16px 40px -12px rgba(0, 0, 0, 0.70) !important;
 }
 
+/* Dropdown panel di dalam terminal (Model/Effort): material SAMA dengan
+   dropdown dashboard (`[role="listbox"]`) — kaca pekat alpha 0.96-0.98 blur 14px.
+   Permintaan user 25 Sep: "style dropdown ya belum di singkronnkan" — sebelumnya
+   memakai stitch-terminal-window (0.30/0.42) + backdrop-blur-md sehingga lebih
+   transparan dari dropdown lain. */
+.stitch-terminal-window .stitch-dropdown-panel {
+  background:
+    linear-gradient(135deg, rgba(30, 32, 40, 0.965) 0%, rgba(22, 24, 30, 0.96) 30%, rgba(16, 16, 20, 0.97) 60%, rgba(10, 10, 14, 0.98) 100%) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.13),
+    0 16px 40px -12px rgba(0, 0, 0, 0.70) !important;
+}
+
 /* --------------------------------------------------------------------------
    7. Terminal AI & Developer Lab Liquid Glass System
    -------------------------------------------------------------------------- */

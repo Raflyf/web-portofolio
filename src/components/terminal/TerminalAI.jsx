@@ -171,7 +171,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
         <div 
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window shadow-2xl z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md border border-white/20"
+          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window stitch-dropdown-panel shadow-2xl z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
         >
           <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-200/50 dark:border-white/5 font-semibold">
             Reasoning Effort
@@ -1332,9 +1332,9 @@ export default function TerminalAI({ onClose } = {}) {
       </div>
 
       {/* Terminal Body (Messages) */}
-      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3.5 sm:p-5 space-y-4 scroll-smooth bg-slate-950/40 backdrop-blur-md">
+      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3 sm:p-4 space-y-3 scroll-smooth bg-slate-950/40 backdrop-blur-md">
         {messages.map((msg, idx) => (
-          <div key={idx} className={cn("flex flex-col w-full mb-2", msg.role === 'user' ? "items-end" : "items-start")}>
+          <div key={idx} className={cn("flex flex-col w-full mb-1.5", msg.role === 'user' ? "items-end" : "items-start")}>
             
             {msg.role === 'user' ? (
               // User Bubble
@@ -1353,7 +1353,7 @@ export default function TerminalAI({ onClose } = {}) {
                     <User className="w-3 h-3 text-emerald-400" />
                   </div>
                 </div>
-                <div className="w-fit max-w-full rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] sm:text-sm text-emerald-100 backdrop-blur-md border border-emerald-400/35 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)] bg-linear-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75">
+                <div className="w-fit max-w-full rounded-2xl rounded-tr-sm px-3 py-2 text-[12px] sm:text-[13px] text-emerald-100 backdrop-blur-md border border-emerald-400/35 shadow-[inset_0_1.5px_2px_rgba(255,255,255,0.40),inset_0_-1.2px_1.5px_rgba(0,0,0,0.50),0_6px_20px_-2px_rgba(0,0,0,0.55),0_0_22px_rgba(16,185,129,0.22)] bg-linear-to-b from-emerald-500/22 via-emerald-950/45 to-slate-950/75">
                   {/* Render attachments preview if present */}
                   {msg.attachments && msg.attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
@@ -1455,7 +1455,7 @@ export default function TerminalAI({ onClose } = {}) {
                   </div>
                 )}
                 
-                <div className="w-fit max-w-full liquid-glass rounded-2xl rounded-tl-sm px-4 py-3 sm:px-5.5 text-zinc-200">
+                <div className="w-fit max-w-full liquid-glass rounded-2xl rounded-tl-sm px-3 py-2.5 sm:px-4 text-zinc-200">
                   <div className="markdown-body max-w-none leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {formatMessageContent(msg.content)}

@@ -89,176 +89,134 @@ async function sha256(message) {
 
 // 16 Individual AI Models Definition (Ported from archive_v1)
 const INDIVIDUAL_MODELS = [
-  // PRIORITAS UTAMA
+  // ==========================================================================
+  // 12 MODEL DARI SISTEM AI AGENT AKTIF (disinkronkan 25 Sep 2026)
+  // Sumber kebenaran: api/_providers.js (pool dari proyek chatbot)
+  //   Tier 1 xKiro -> Tier 2 Cloudflare -> Tier 3 Groq
+  //   -> Tier 4 OpenRouter -> Tier 5 Dahl -> Tier 6 Gemini
+  // Matcher mencocokkan string "via" dari server (format: "provider:model").
+  // ==========================================================================
+
+  // --- TIER 1: xKiro Gateway (primary teks, round-robin 8 key) ---
   {
-    id: 'ollama-nemotron-nano',
-    name: 'Nemotron 3 Nano (Ollama Cloud)',
-    desc: 'Prioritas #1 - Model text-to-text dense 30B inferensi instan',
-    provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => (s.includes('ollama') && (s.includes('nano') || s.includes('30b') || s.includes('nemotron'))) || s.includes('nemotron-3-nano') || s.includes('nano:30b') || s.includes('nano-30b') || /\bnano\b/.test(s)
+    id: 'xkiro-qwen-max',
+    name: 'Qwen 3.8 Max (xKiro)',
+    desc: 'Tier 1 - Model teks utama, round-robin 8 kunci',
+    provider: 'XKIRO',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    matcher: (s) => s.includes('qwen3.8-max') || s.includes('qwen/qwen3.8-max')
   },
   {
-    id: 'ollama-gemma4',
-    name: 'Gemma 4 31B (Ollama Cloud)',
-    desc: 'Prioritas #2 - Model Google Gemma 4 31B dense, respons kilat',
-    provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    matcher: (s) => (s.includes('ollama') && s.includes('gemma')) || s.includes('gemma4') || s.includes('gemma-4') || s.includes('31b')
+    id: 'xkiro-qwen-36',
+    name: 'Qwen 3.6 Max Preview (xKiro)',
+    desc: 'Tier 1 backup - Qwen generasi 3.6 (paling gesit)',
+    provider: 'XKIRO',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    matcher: (s) => s.includes('qwen3.6-max')
   },
   {
-    id: 'openrouter-gemma4',
-    name: 'Gemma 4 31B (OpenRouter)',
-    desc: 'Cadangan Gemma 4 31B via OpenRouter free',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    matcher: (s) => s.includes('openrouter') && s.includes('gemma')
+    id: 'xkiro-qwen-37',
+    name: 'Qwen 3.7 Max (xKiro)',
+    desc: 'Tier 1 backup - Qwen generasi 3.7',
+    provider: 'XKIRO',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    matcher: (s) => s.includes('qwen3.7-max')
+  },
+
+  // --- TIER 2: Cloudflare Workers AI (3 key) ---
+  {
+    id: 'cf-qwen-38',
+    name: 'Qwen 3.8 27B (Cloudflare)',
+    desc: 'Tier 2 - Workers AI, kepatuhan penuh & hemat',
+    provider: 'CLOUDFLARE',
+    badgeClass: 'bg-orange-100 dark:bg-orange-500/20 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-500/30',
+    iconColor: 'text-orange-600 dark:text-orange-400',
+    matcher: (s) => s.includes('@cf/qwen')
   },
   {
-    id: 'openrouter-nemotron-lightning',
-    name: 'Nemotron 3.5 Lightning (OpenRouter)',
-    desc: 'Prioritas #3 - Model berkecepatan tinggi OpenRouter Cloud',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => (s.includes('openrouter') || !s.includes('opencode')) && (s.includes('lightning') || s.includes('lighting'))
+    id: 'cf-nemotron-120b',
+    name: 'Nemotron 3 120B (Cloudflare)',
+    desc: 'Tier 2 backup - dense 120B via Workers AI',
+    provider: 'CLOUDFLARE',
+    badgeClass: 'bg-orange-100 dark:bg-orange-500/20 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-500/30',
+    iconColor: 'text-orange-600 dark:text-orange-400',
+    matcher: (s) => s.includes('@cf/nvidia/nemotron-3-120b') || s.includes('nemotron-3-120b-a12b')
+  },
+
+  // --- TIER 3: Groq Cloud (5 key, tercepat) ---
+  {
+    id: 'groq-qwen-38',
+    name: 'Qwen 3.8 27B (Groq LPU)',
+    desc: 'Tier 3 - Groq LPU, tercepat (763ms terukur)',
+    provider: 'GROQ',
+    badgeClass: 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/30',
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    matcher: (s) => s.includes('groq') && s.includes('qwen3.8-27b')
   },
   {
-    id: 'openrouter-nemotron-nano-omni',
+    id: 'groq-gpt-oss',
+    name: 'GPT-OSS 120B (Groq)',
+    desc: 'Tier 3 backup - open-weight 120B di LPU',
+    provider: 'GROQ',
+    badgeClass: 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/30',
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    matcher: (s) => s.includes('gpt-oss-120b')
+  },
+
+  // --- TIER 4: OpenRouter (5 key, katalog :free) ---
+  {
+    id: 'or-nemotron-nano-omni',
     name: 'Nemotron 3 Nano Omni (OpenRouter)',
-    desc: 'Prioritas #5 - Model multimodal & penalaran CoT 30B',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('omni') || s.includes('30b-a3b') || s.includes('reasoning:free')
-  },
-
-  // SISA MODEL (TIER OPENROUTER)
-  {
-    id: 'openrouter-free',
-    name: 'OpenRouter Free (Auto SOTA Pool)',
-    desc: 'Dynamic SOTA Free router otomatis',
+    desc: 'Tier 4 - Multimodal & penalaran CoT 30B (597ms)',
     provider: 'OPENROUTER',
     badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('openrouter/free') || s.includes('openrouter_free') || (s.includes('openrouter') && s.includes('free') && !s.includes('nemotron') && !s.includes('minimax') && !s.includes('ultra'))
+    matcher: (s) => s.includes('openrouter') && s.includes('nano-omni')
   },
   {
-    id: 'openrouter-deepseek',
-    name: 'DeepSeek Chat V3 (OpenRouter)',
-    desc: 'Frontier Intelligence logika koding',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('deepseek')
-  },
-  {
-    id: 'openrouter-nemotron-super',
-    name: 'Nemotron 3 Super 120B (OpenRouter)',
-    desc: 'Model penalaran dense 120B teroptimasi latensi rendah',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => (s.includes('openrouter') && (s.includes('super-120b') || s.includes('super:120b') || s.includes('a12b'))) || (s.includes('super') && !s.includes('ollama'))
-  },
-  {
-    id: 'openrouter-nemotron-ultra',
+    id: 'or-nemotron-ultra',
     name: 'Nemotron 3 Ultra 550B (OpenRouter)',
-    desc: 'Arsitektur MoE 550B parameter penuh',
+    desc: 'Tier 4 - MoE 550B parameter penuh (663ms)',
     provider: 'OPENROUTER',
     badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => (s.includes('openrouter') && (s.includes('ultra-550b') || s.includes('ultra:550b') || s.includes('a55b'))) || (s.includes('ultra') && !s.includes('ollama') && !s.includes('opencode'))
+    matcher: (s) => s.includes('openrouter') && s.includes('ultra-550b')
   },
   {
-    id: 'openrouter-minimax',
-    name: 'MiniMax M3 Free (OpenRouter)',
-    desc: 'Model multimodal untuk pemrosesan teks dan citra',
+    id: 'or-gemma-4',
+    name: 'Gemma 4 26B/31B (OpenRouter)',
+    desc: 'Tier 4 - Multimodal Google Gemma 4 (1.0-1.3s)',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => (s.includes('openrouter') && s.includes('minimax')) || (s.includes('minimax') && !s.includes('ollama'))
-  },
-  {
-    id: 'openrouter-cohere',
-    name: 'Cohere North Mini Code (OpenRouter)',
-    desc: 'Model penalaran logika kode',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('cohere') || s.includes('north-mini')
+    badgeClass: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/30',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    matcher: (s) => s.includes('openrouter') && s.includes('gemma-4')
   },
 
-  // SISA MODEL (TIER OLLAMA)
+  // --- TIER 5: Dahl Global (10 key, saldo besar) ---
   {
-    id: 'ollama-nemotron-ultra',
-    name: 'Nemotron 3 Ultra (Ollama Cloud)',
-    desc: 'Model frontier reasoning di Ollama Cloud AI Gateway',
-    provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('ollama') && s.includes('ultra')
-  },
-  {
-    id: 'ollama-nemotron-super',
-    name: 'Nemotron 3 Super (Ollama Cloud)',
-    desc: 'Model dense 120B teroptimasi latensi rendah',
-    provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('ollama') && s.includes('super')
-  },
-  {
-    id: 'ollama-minimax',
-    name: 'MiniMax M3 (Ollama Cloud)',
-    desc: 'Multimodal vision and text model',
-    provider: 'OLLAMA CLOUD',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('ollama') && s.includes('minimax')
+    id: 'dahl-deepseek',
+    name: 'DeepSeek V4 Flash (Dahl)',
+    desc: 'Tier 5 - Saldo 1M token, latensi ~0.23s',
+    provider: 'DAHL',
+    badgeClass: 'bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-300 border-violet-300 dark:border-violet-500/30',
+    iconColor: 'text-violet-600 dark:text-violet-400',
+    matcher: (s) => s.includes('dahl') || s.includes('deepseek-v4-flash')
   },
 
-  // TIER OPENCODE ZEN DIRECT MODELS
+  // --- TIER 6: Google Gemini (1 key, konteks 1M) ---
   {
-    id: 'opencode-nemotron-lightning',
-    name: 'Nemotron 3.5 Lightning (OpenCode)',
-    desc: 'Model super kilat via endpoint langsung OpenCode Zen API',
-    provider: 'OPENCODE',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('opencode') && (s.includes('lightning') || s.includes('lighting'))
-  },
-  {
-    id: 'opencode-nemotron-ultra',
-    name: 'Nemotron 3 Ultra Free (OpenCode)',
-    desc: 'Frontier reasoning engine via direct endpoint OpenCode Zen',
-    provider: 'OPENCODE',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('opencode') && s.includes('ultra')
-  },
-  {
-    id: 'opencode-laguna',
-    name: 'Laguna S 2.1 Free (OpenCode)',
-    desc: 'Engine penalaran dan arsitektur kode presisi dari OpenCode Zen Gateway',
-    provider: 'OPENCODE',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('laguna') || s.includes('poolside')
-  },
-  {
-    id: 'opencode-mimo',
-    name: 'Mimo v2.5 Free (OpenCode)',
-    desc: 'Model multimodal untuk analisis citra dan teks via OpenCode Zen API',
-    provider: 'OPENCODE',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('mimo') || (s.includes('opencode') && s.includes('vision'))
+    id: 'gemini-flash',
+    name: 'Gemini 3.8 Flash (Google)',
+    desc: 'Tier 6 - Jaring terakhir, konteks 1M',
+    provider: 'GEMINI',
+    badgeClass: 'bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-500/30',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    matcher: (s) => s.includes('gemini')
   }
-];
+];;
 
 const CustomSelect = ({ value, onChange, options }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -1295,11 +1253,11 @@ export default function Dashboard({ isStitch = true } = {}) {
             break;
           }
         }
-        // Atribusi riwayat lama: Jika tidak ada matcher spesifik,
-        // atribusikan ke prioritas default #1 (Nemotron 3 Nano - Ollama Cloud)
+        // Atribusi riwayat lama: jika tidak ada matcher spesifik, atribusikan ke
+        // prioritas default #1 sistem baru (xKiro Qwen 3.8 Max — Tier 1 pool).
         if (!matched) {
-          modelCounts['ollama-nemotron-nano']++;
-          if (ts > modelLastUsed['ollama-nemotron-nano']) modelLastUsed['ollama-nemotron-nano'] = ts;
+          modelCounts['xkiro-qwen-max']++;
+          if (ts > modelLastUsed['xkiro-qwen-max']) modelLastUsed['xkiro-qwen-max'] = ts;
         }
       }
     });
