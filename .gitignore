@@ -36,3 +36,6 @@ dist-v2/
 # Backup env
 *.bak*
 .env.local.bak_25sep
+
+.vercel
+.env*
