@@ -466,7 +466,15 @@ export default async function handler(req, res) {
     }
     const query = req.query || {};
     const params = { ...query, ...body };
-    const action = params.action || 'get_auth_state';
+    // SECURITY (fix audit 25 Sep): JANGAN default ke 'get_auth_state'.
+    // Sebelumnya POST tanpa body mengembalikan state auth internal
+    // (lockout_attempts, locked_until, has_active_otp, updated_at) — informasi
+    // gratis bagi penyerang untuk memetakan jadwal lockout. Sekarang action
+    // WAJIB eksplisit; tanpa action -> 400.
+    const action = typeof params.action === 'string' ? params.action.trim() : '';
+    if (!action) {
+      return res.status(400).json({ success: false, message: 'Parameter "action" wajib diisi.' });
+    }
 
     // =========================================================================
     // 1. GET CURRENT AUTH STATE FROM SUPABASE (Zero PIN Hash Exposure)

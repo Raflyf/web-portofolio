@@ -87,6 +87,29 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ success: false, message: 'Method tidak diizinkan.' });
 
+  // ========================================================================
+  // SECURITY GATE (fix audit 25 Sep — RAG POISONING):
+  // Sebelumnya origin hanya di-set sebagai header CORS, TIDAK PERNAH dicek.
+  // Akibatnya curl/script dari mana pun bisa POST fakta palsu ke ai_memories,
+  // dan AI membacanya kembali saat menjawab pengunjung (terbukti live: fakta
+  // uji "AUDIT_POISON_TEST_12345" tersimpan dan terulang dalam jawaban AI).
+  //
+  // Sekarang: request WAJIB membawa header Origin yang cocok dengan allowlist.
+  // Browser selalu mengirim Origin untuk cross-origin POST; script/curl tidak
+  // bisa memalsukan Origin ke nilai yang tidak mereka miliki.
+  // (Defense-in-depth: origin + rate limit + content guard tetap berlaku.)
+  // ========================================================================
+  const reqOrigin = String(req.headers.origin || '').trim();
+  const allowList = [
+    process.env.ALLOWED_ORIGIN,
+    'https://raflyfirmansyah-portofolio.vercel.app',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+  ].filter(Boolean);
+  if (!reqOrigin || !allowList.includes(reqOrigin)) {
+    return res.status(403).json({ success: false, message: 'Origin tidak diizinkan.' });
+  }
+
   // Body size cap before any parsing: reject oversized payloads (413).
   const contentLength = Number(req.headers['content-length']);
   if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
