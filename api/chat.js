@@ -2697,17 +2697,14 @@ export default async function handler(req, res) {
       const extra = cli.filter((m) => !seen.has(`${m.role}:${String(m.content).slice(0, 120)}`));
       return [...srv, ...extra].slice(-24);
     })();
-    // Simpan pesan pengguna (fire-and-forget, tanpa menambah latensi)
-    try {
-      if (sessionId && query && !clientRequestedReset) {
-        Promise.race([
-          memSaveMessage({ sessionId, role: 'user', content: String(query).slice(0, 8000) }),
-          new Promise((resolve) => setTimeout(resolve, 1200)),
-        ]).catch(() => {});
-      }
-      // Perintah reset: hapus riwayat sesi (checkpoint baru)
-      if (sessionId && clientRequestedReset) {
-        Promise.race([
+    // PENTING (serverless): jangan fire-and-forget promise di Vercel — runtime
+    // membekukan proses begitu response terkirim, sehingga penyimpanan yang belum
+    // selesai ikut mati. Penyimpanan pesan user DIPINDAH ke sendSuccess (di-await
+    // sebelum response). Perintah /reset tetap di-await di sini karena harus
+    // selesai SEBELUM konteks dibaca (kalau tidak, riwayat lama ikut terbaca).
+    if (sessionId && clientRequestedReset) {
+      try {
+        await Promise.race([
           (async () => {
             const c = (process.env.SUPABASE_URL || 'https://rphyzcqwpkxtzllvymss.supabase.co').replace(/\/+$/, '');
             const k = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || '';
@@ -2719,9 +2716,9 @@ export default async function handler(req, res) {
             }
           })(),
           new Promise((resolve) => setTimeout(resolve, 1500)),
-        ]).catch(() => {});
-      }
-    } catch (_) {}
+        ]);
+      } catch (_) {}
+    }
 
     const serverHistoryBlock = (() => {
       const parts = [];
@@ -2895,12 +2892,20 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
       // utuh lintas-refresh/device, lalu tiap 8 pesan diringkas ke `summaries`.
       // Fire-and-forget dengan batas waktu agar tidak menambah latensi respons.
       // ======================================================================
+      // Simpan KEDUA pesan (user + assistant) SEBELUM response dikirim.
+      // Wajib await: di Vercel serverless, promise yang belum selesai dibekukan
+      // begitu response keluar (sebelumnya fire-and-forget -> pesan tidak pernah
+      // tersimpan, terukur countMessages=0 setelah 3 percakapan).
       try {
         if (sessionId && !clientRequestedReset) {
           const latency = Date.now() - requestStartTime;
           await Promise.race([
             (async () => {
+              if (query && String(query).trim()) {
+                await memSaveMessage({ sessionId, role: 'user', content: String(query).slice(0, 8000) });
+              }
               await memSaveMessage({ sessionId, role: 'assistant', content: cleaned.slice(0, 8000), via: modelName, latencyMs: latency });
+              // Distilasi ringkasan tiap 8 pesan
               const total = await memCountMessages(sessionId);
               if (total > 0 && total % 8 === 0) {
                 const ctx = await memGetContext(sessionId, 16);
@@ -2910,7 +2915,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
                 }
               }
             })(),
-            new Promise((resolve) => setTimeout(resolve, 1500)),
+            new Promise((resolve) => setTimeout(resolve, 2500)),
           ]);
         }
       } catch (_) {}
