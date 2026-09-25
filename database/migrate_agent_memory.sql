@@ -34,9 +34,14 @@ create table if not exists public.messages (
   created_at timestamptz not null default now()
 );
 
-create index if not exists messages_chat_idx on public.messages (chat_id, created_at desc);
+-- Index utama: (platform, chat_id, created_at desc) menutupi SELURUH pola query
+-- nyata (getContext, countMessages, reset — semuanya memfilter platform='web').
+-- Dua index tambahan (messages_chat_idx & idx_messages_platform_msg_id) DIHAPUS
+-- 25 Sep setelah ditandai "Unused Index" oleh Advisor:
+--   - messages_chat_idx redundan (prefix-nya sudah tercakup index di bawah).
+--   - idx_messages_platform_msg_id khusus dedupe msg_id Telegram/WhatsApp,
+--     sedangkan alur web tidak pernah menulis msg_id.
 create index if not exists messages_platform_chat_idx on public.messages (platform, chat_id, created_at desc);
-create unique index if not exists idx_messages_platform_msg_id on public.messages (platform, msg_id) where msg_id is not null;
 
 -- ----------------------------------------------------------------------------
 -- 2. summaries — ringkasan konteks per sesi

@@ -432,8 +432,11 @@ DROP POLICY IF EXISTS "Allow service role all rate_limits" ON public.rate_limits
 CREATE POLICY "Allow service role all rate_limits" ON public.rate_limits
 FOR ALL TO service_role USING (true) WITH CHECK (true);
 
-CREATE INDEX IF NOT EXISTS idx_rate_limits_window
-ON public.rate_limits (window_start DESC);
+-- DIHAPUS 25 Sep (Supabase Advisor: Unused Index): seluruh query rate_limits
+-- memakai PRIMARY KEY (client_ip, window_start); index window_start hanya akan
+-- berguna bila job cleanup harian di bawah diaktifkan. Bila diaktifkan nanti,
+-- buat ulang dengan:
+--   CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON public.rate_limits (window_start DESC);
 
 -- To prevent unbounded growth of rate_limits (per-request rows, no natural TTL),
 -- schedule a daily cleanup job (matches the telemetry-cleanup pattern below):
