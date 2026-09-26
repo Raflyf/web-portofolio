@@ -65,8 +65,13 @@ export const AI_CONFIG = {
 // Model katalog — SAMA dengan env.ts bot
 // ---------------------------------------------------------------------------
 export const AI_MODELS = {
-  xkiroPrimary: 'qwen/qwen3.8-max:free',
-  xkiroBackup: ['qwen/qwen3.6-max-preview:free', 'qwen/qwen3.7-max:free'],
+  // DIUJI & DIPERBARUI 25 Sep (katalog Cohere baru di xKiro):
+  // Command A+ menang telak pada benchmark nyata — 10/10 sukses, rata-rata 430ms
+  // (vs Qwen 3.8 Max 3849ms), vision akurat (4/4 angka tabel, 2x lebih cepat dari
+  // Qwen VL Plus), dan patuh pada persona/aturan sistem.
+  // Qwen tetap dipertahankan sebagai backup (sudah terbukti andal sejak awal).
+  xkiroPrimary: 'cohere/command-a-plus',
+  xkiroBackup: ['cohere/command-a', 'qwen/qwen3.8-max:free', 'qwen/qwen3.6-max-preview:free', 'qwen/qwen3.7-max:free'],
   cfPrimary: '@cf/qwen/qwen3.8-27b',
   cfBackup: ['@cf/nvidia/nemotron-3-120b-a12b', '@cf/openai/gpt-oss-20b'],
   groqPrimary: 'qwen/qwen3.8-27b',
@@ -90,8 +95,12 @@ export const AI_MODELS = {
   geminiPrimary: 'gemini-3.8-flash',
   geminiBackup: ['gemini-3.1-flash-lite'],
   // Rantai vision eksplisit (urutan dihormati mutlak, sama dengan bot)
+  // Vision: Command A Vision ditambahkan di posisi 2 — terukur 4/4 akurat untuk
+  // OCR tabel angka (2557ms), jauh lebih cepat dari Qwen VL Plus (4828ms) dan
+  // menutup kelemahan model Cloudflare yang lemah baca digit halus.
   visionChain: [
     { kind: 'groq', model: 'qwen/qwen3.8-27b' },
+    { kind: 'xkiro', model: 'cohere/command-a-vision' },
     { kind: 'cloudflare', model: '@cf/qwen/qwen3.8-27b' },
     { kind: 'gemini', model: 'gemini-3.1-flash-lite' },
     { kind: 'gemini', model: 'gemini-2.5-flash' },

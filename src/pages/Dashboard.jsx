@@ -90,7 +90,7 @@ async function sha256(message) {
 // 16 Individual AI Models Definition (Ported from archive_v1)
 const INDIVIDUAL_MODELS = [
   // ==========================================================================
-  // 12 MODEL DARI SISTEM AI AGENT AKTIF (disinkronkan 25 Sep 2026)
+  // 14 MODEL DARI SISTEM AI AGENT AKTIF (disinkronkan 25 Sep 2026)
   // Sumber kebenaran: api/_providers.js (pool dari proyek chatbot)
   //   Tier 1 xKiro -> Tier 2 Cloudflare -> Tier 3 Groq
   //   -> Tier 4 OpenRouter -> Tier 5 Dahl -> Tier 6 Gemini
@@ -99,31 +99,40 @@ const INDIVIDUAL_MODELS = [
 
   // --- TIER 1: xKiro Gateway (primary teks, round-robin 8 key) ---
   {
+    id: 'xkiro-command-a-plus',
+    name: 'Command A+ (xKiro)',
+    desc: 'Tier 1 - Model teks utama, 430ms rata-rata (tercepat)',
+    provider: 'XKIRO',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    matcher: (s) => s.includes('command-a-plus') || s.includes('cohere/command-a-plus')
+  },
+  {
+    id: 'xkiro-command-a',
+    name: 'Command A (xKiro)',
+    desc: 'Tier 1 backup - 111B open-weights, 5/5 andal',
+    provider: 'XKIRO',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    matcher: (s) => s.includes('cohere/command-a') && !s.includes('command-a-plus') && !s.includes('command-a-vision')
+  },
+  {
+    id: 'xkiro-command-a-vision',
+    name: 'Command A Vision (xKiro)',
+    desc: 'Vision - OCR tabel 4/4 akurat, 2.557ms',
+    provider: 'XKIRO',
+    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
+    iconColor: 'text-cyan-600 dark:text-cyan-400',
+    matcher: (s) => s.includes('command-a-vision')
+  },
+  {
     id: 'xkiro-qwen-max',
     name: 'Qwen 3.8 Max (xKiro)',
-    desc: 'Tier 1 - Model teks utama, round-robin 8 kunci',
+    desc: 'Tier 1 backup - Qwen generasi 3.8',
     provider: 'XKIRO',
     badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
     iconColor: 'text-cyan-600 dark:text-cyan-400',
     matcher: (s) => s.includes('qwen3.8-max') || s.includes('qwen/qwen3.8-max')
-  },
-  {
-    id: 'xkiro-qwen-36',
-    name: 'Qwen 3.6 Max Preview (xKiro)',
-    desc: 'Tier 1 backup - Qwen generasi 3.6 (paling gesit)',
-    provider: 'XKIRO',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('qwen3.6-max')
-  },
-  {
-    id: 'xkiro-qwen-37',
-    name: 'Qwen 3.7 Max (xKiro)',
-    desc: 'Tier 1 backup - Qwen generasi 3.7',
-    provider: 'XKIRO',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('qwen3.7-max')
   },
 
   // --- TIER 2: Cloudflare Workers AI (3 key) ---
