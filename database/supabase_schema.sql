@@ -399,18 +399,31 @@ $$;
 -- ============================================================================
 -- RPC EXECUTION GRANTS (Resilient Architecture)
 -- ----------------------------------------------------------------------------
--- Seluruh fungsi RPC autentikasi di bawah berstatus SECURITY DEFINER dan memvalidasi
--- bukti kriptografis sendiri (p_otp_hash atau p_current_pin_hash) sehingga aman
--- dieksekusi baik oleh service_role maupun anon gateway.
+-- HARDENED 25 Sep (Security Advisor audit): SEMUA fungsi admin di bawah HANYA
+-- boleh dieksekusi service_role. Meski memvalidasi bukti kriptografis sendiri,
+-- paparan EXECUTE ke anon membuat permukaan serangan lebih luas (dan ditandai
+-- CRITICAL oleh Supabase Advisor). api/admin-otp.js memanggil semuanya dengan
+-- Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>, jadi anon tidak dibutuhkan.
 -- ============================================================================
-GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_pin(text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_request_otp(text, timestamptz) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp(text, text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_change_pin(text, text) TO anon, authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_pin(text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_request_otp(text, timestamptz) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_verify_otp(text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_change_pin(text, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) TO service_role;
+
+-- Cabut EXECUTE dari peran publik (defense-in-depth; PostgreSQL memberi EXECUTE
+-- ke PUBLIC secara default saat fungsi dibuat).
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_verify_pin(text) FROM anon, authenticated, public;
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_save_otp(text, timestamptz) FROM anon, authenticated, public;
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_request_otp(text, timestamptz) FROM anon, authenticated, public;
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_verify_otp_and_reset_pin(text, text) FROM anon, authenticated, public;
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_verify_otp(text, text) FROM anon, authenticated, public;
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_update_pin(text, text) FROM anon, authenticated, public;
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_change_pin(text, text) FROM anon, authenticated, public;
+REVOKE EXECUTE ON FUNCTION public.rpc_admin_reset_lockout(text) FROM anon, authenticated, public;
 
 -- ============================================================================
 -- 8. PERSISTED RATE LIMITING (AGENTS.md §9b)
@@ -555,7 +568,9 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.rpc_get_telemetry_summary_90d() TO anon, authenticated, service_role;
+-- Telemetry adalah data PRIVAT: cabut dari anon/authenticated (temuan audit 25 Sep).
+REVOKE EXECUTE ON FUNCTION public.rpc_get_telemetry_summary_90d() FROM anon, authenticated, public;
+GRANT EXECUTE ON FUNCTION public.rpc_get_telemetry_summary_90d() TO service_role;
 
 
 

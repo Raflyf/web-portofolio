@@ -4,8 +4,6 @@ Landing page portofolio profesional dan *Developer Lab* interaktif untuk **Rafly
 
 Aplikasi ini dibangun menggunakan **React 19**, **Vite**, **Tailwind CSS v4**, **React Router**, **Chart.js**, **Lenis Scroll**, **Framer Motion**, dan **ReactMarkdown**, dengan backend **Vercel Serverless Functions** dan **Supabase PostgreSQL**. Dirancang dengan fokus pada aksesibilitas **WCAG 2.2 AA**, efisiensi bundle melalui *lazy-loading* dan *code-splitting*, serta arsitektur keamanan *fail-closed* dengan *Row Level Security* (RLS) privat.
 
-Arsip implementasi awal berbasis vanilla HTML/CSS/JS tersimpan di direktori [`archive_v1/`](archive_v1/) sebagai rekam jejak historis; versi aktif yang berjalan di produksi sepenuhnya berbasis React.
-
 ---
 
 ## Showcase Proyek Rekayasa & Riset
@@ -43,7 +41,7 @@ Situs ini memuat dokumentasi arsitektur dan demonstrasi teknis dari proyek-proye
 
 ### 1. Terminal AI & Smart Gateway (`api/chat.js`)
 
-- **Multi-Provider Failover Gateway:** Terintegrasi dengan berbagai penyedia API model AI publik (Ollama Cloud, OpenRouter, OpenCode, MiniMax, NVIDIA NIM) dengan mekanisme *priority race* dan *failover cascade* otomatis saat terjadi antrean atau limitasi.
+- **Multi-Provider Failover Gateway:** Terintegrasi dengan 6 tier penyedia API model AI publik (xKiro Gateway, Cloudflare Workers AI, Groq Cloud, OpenRouter, Dahl Global, Google Gemini) dengan rotasi kunci *round-robin* per pool, *failover cascade* otomatis, pelacakan latensi model, dan *cooldown* kunci saat limit tercapai.
 - **Surgical Portfolio Ground-Truth Router:** Kueri mengenai proyek, riset skripsi, riwayat pendidikan, dan lisensi sertifikasi (BNSP Analis Program 2025, MikroTik MTCNA 2025, Cisco PCAP 2024) dipetakan langsung ke basis data lokal terverifikasi (*0ms bypass*), mengeliminasi latensi pencarian eksternal dan mencegah halusinasi data.
 - **Dynamic Multi-Stage Pipeline Progress Indicator:** Antarmuka terminal menampilkan status pemrosesan dinamis yang mencerminkan fase backend yang sedang berjalan (*Query Parser*, *Portfolio RAG*, *Live Web Search*, *Scraping & Rerank*, *API Gateway*, *Thinking / Deep Reasoning*, hingga *Synthesis*).
 - **Pemisahan Waktu Respon Koneksi & Waktu Berpikir:** 
@@ -94,17 +92,19 @@ Situs ini memuat dokumentasi arsitektur dan demonstrasi teknis dari proyek-proye
 │       └── ui/                  # HorizonHero, ScrollStoryline, selektor interaktif
 ├── api/
 │   ├── chat.js                  # Gateway AI serverless, failover cascade, web grounding & RAG
+│   ├── _providers.js            # Pool 6-tier provider AI + rotasi kunci round-robin
+│   ├── _memory.js               # Memori server-side (messages/summaries/corrections)
 │   ├── admin-otp.js             # Autentikasi Master PIN/OTP serverless & manajemen token sesi
-│   └── dashboard-data.js        # Endpoint pembacaan telemetri privat (service_role)
+│   ├── dashboard-data.js        # Endpoint pembacaan telemetri privat (service_role)
+│   └── save-memory.js           # Penyimpanan fakta RAG (origin-gated)
 ├── database/
-│   └── supabase_schema.sql      # DDL skema database, aturan RLS privat & RPC SECURITY DEFINER
+│   ├── supabase_schema.sql      # DDL skema database, aturan RLS privat & RPC SECURITY DEFINER
+│   └── migrate_agent_memory.sql # Migrasi tabel memori AI agent (messages/summaries/corrections)
 ├── public/                      # Aset statis: favicon, gambar sertifikat, dokumen CV
-├── archive_v1/                  # Berkas kode versi vanilla HTML/CSS/JS (arsip historis)
 ├── .github/workflows/deploy.yml # Pipeline deployment otomatis ke GitHub Pages
 ├── vercel.json                  # Konfigurasi routing SPA, header keamanan, dan maxDuration
 ├── netlify.toml                 # Konfigurasi build dan direktori publikasi Netlify
 ├── .env.example                 # Panduan variabel lingkungan lokal dan serverless
-├── DOCUMENTATION.md             # Catatan teknis arsitektur dan riwayat versi lengkap
 └── README.md                    # Dokumentasi utama proyek
 ```
 
