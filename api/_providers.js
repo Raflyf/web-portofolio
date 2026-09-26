@@ -494,7 +494,12 @@ export function buildChain() {
       run: (k, m, msgs, opts) =>
         openAiChat('https://api.xkiro.com/v1', k, m, msgs, {
           ...opts,
-          extraBody: { reasoning: { effort: 'minimal' }, ...(opts?.extraBody || {}) },
+          // PENTING (temuan uji 25 Sep): `reasoning: { effort: 'minimal' }` membuat
+          // model Cohere membakar SELURUH anggaran token di penalaran internal lalu
+          // mengembalikan content KOSONG dengan finish_reason 'length' — terukur
+          // 6 dari 9 request gagal (max_tokens 500 habis tanpa satu kata pun output).
+          // `effort: 'none'` menghentikan itu: 3/3 sukses, output 460-628 token normal.
+          extraBody: { reasoning: { effort: 'none' }, ...(opts?.extraBody || {}) },
         }),
     },
     {
