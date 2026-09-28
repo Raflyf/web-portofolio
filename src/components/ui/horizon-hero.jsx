@@ -49,6 +49,20 @@ const HERO_SHOWCASE_PROJECTS_I18N = {
       spec: "MediaPipe & OpenCV"
     },
     {
+      id: "chat-bot",
+      tag: "AI Agent · WhatsApp & Telegram",
+      title: "FreeAiBot (chat-bot)",
+      desc: "Asisten AI multimodal 24/7 di WhatsApp & Telegram dengan failover otomatis 4 provider LLM, transkripsi suara Whisper, dan pemrosesan dokumen.",
+      spec: "TypeScript & Vercel Serverless"
+    },
+    {
+      id: "solar-system",
+      tag: "Computational Astronomy / WebGL",
+      title: "Tata Surya 3D — Skala 1:1",
+      desc: "Simulator tata surya 3D berskala 1:1 dengan tekstur asli NASA/USGS/Hubble dan efemeris JPL terverifikasi (selisih sudut 0,0005°–0,15°).",
+      spec: "Three.js & JPL Horizons"
+    },
+    {
       id: "web-portofolio",
       tag: "Frontend & Systems",
       title: "Web Portofolio & AI Platform",
@@ -84,6 +98,20 @@ const HERO_SHOWCASE_PROJECTS_I18N = {
       title: "FotoKitaBlur",
       desc: "Real-time client-side hand gesture and facial tracking via MediaPipe Tasks Vision & OpenCV.",
       spec: "MediaPipe & OpenCV"
+    },
+    {
+      id: "chat-bot",
+      tag: "AI Agent · WhatsApp & Telegram",
+      title: "FreeAiBot (chat-bot)",
+      desc: "24/7 multimodal AI assistant on WhatsApp & Telegram with 4-provider LLM failover, Whisper transcription, and document processing.",
+      spec: "TypeScript & Vercel Serverless"
+    },
+    {
+      id: "solar-system",
+      tag: "Computational Astronomy / WebGL",
+      title: "3D Solar System — 1:1 Scale",
+      desc: "True 1:1-scale solar system simulator with authentic NASA/USGS/Hubble textures and verified JPL ephemerides (0.0005°–0.15° angular deviation).",
+      spec: "Three.js & JPL Horizons"
     },
     {
       id: "web-portofolio",
