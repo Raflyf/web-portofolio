@@ -98,7 +98,7 @@ export const PROJECTS_DATA_I18N = {
       ],
       techStack: ["JavaScript ES Modules", "Three.js", "GLSL Shader", "JPL Horizons DE441", "IAU WGCCRE 2015", "Katalog HYG v3.8", "Node.js Build Pipeline"],
       githubUrl: "https://github.com/Raflyf/solar_system",
-      demoUrl: null,
+      demoUrl: "https://solarsystem3d-simulation.vercel.app/",
       stars: 1
     },
     {
@@ -239,7 +239,7 @@ export const PROJECTS_DATA_I18N = {
       ],
       techStack: ["JavaScript ES Modules", "Three.js", "GLSL Shader", "JPL Horizons DE441", "IAU WGCCRE 2015", "HYG v3.8 Catalogue", "Node.js Build Pipeline"],
       githubUrl: "https://github.com/Raflyf/solar_system",
-      demoUrl: null,
+      demoUrl: "https://solarsystem3d-simulation.vercel.app/",
       stars: 1
     },
     {
