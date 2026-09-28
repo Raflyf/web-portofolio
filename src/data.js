@@ -86,7 +86,7 @@ export const PROJECTS_DATA_I18N = {
       category: "tools",
       categoryLabel: "Computational Astronomy / WebGL",
       badge: "Real-Scale NASA Simulation",
-      description: "Simulator tata surya 3D berskala 1:1 sebenarnya dengan tekstur asli NASA/USGS/Hubble. Bisa diterbangi dan di-zoom sampai permukaan planet seperti Google Earth, lengkap dengan efemeris JPL terverifikasi.",
+      description: "Simulator tata surya 3D berskala 1:1 sebenarnya dengan tekstur asli NASA/USGS/Hubble. Dilengkapi dengan efemeris JPL terverifikasi untuk pergerakan benda langit yang akurat.",
       longDescription: "Proyek edukasi astronomi berbasis three.js yang memodelkan Matahari, 8 planet, 12 satelit alami, cincin Saturnus ber-Divisi Cassini, sabuk asteroid 2.400 batuan, serta Bima Sakti nyata sebagai latar. Seluruh jarak dan radius memakai skala 1:1 tanpa pembesaran — diverifikasi langsung terhadap JPL Horizons, IAU WGCCRE, dan katalog HYG v3.8. Posisi planet cocok dalam selisih 0,0005°–0,15°, Bulan dalam 3–13 detik busur, dan 16 gerhana terdeteksi penuh vs katalog NASA.",
       keyFeatures: [
         "Skala 1:1 murni tanpa pembesaran — verifikasi terukur vs JPL Horizons (selisih sudut 0,0005°–0,15°)",
@@ -94,7 +94,7 @@ export const PROJECTS_DATA_I18N = {
         "Shader khusus Bumi siang/malam dengan lampu kota & awan 8K bergerak",
         "Cincin Saturnus dengan Divisi Cassini (ketebalan, pencahayaan, bayangan planet)",
         "Efemeris Keplerian valid 1800–2050 + resonansi Laplace Io-Europa-Ganymede (simpangan maks 0,018°)",
-        "Tur terpandu keliling sistem + zoom sampai menyentuh permukaan planet"
+        "Tur terpandu keliling tata surya dengan navigasi ruang angkasa"
       ],
       techStack: ["JavaScript ES Modules", "Three.js", "GLSL Shader", "JPL Horizons DE441", "IAU WGCCRE 2015", "Katalog HYG v3.8", "Node.js Build Pipeline"],
       githubUrl: "https://github.com/Raflyf/solar_system",
@@ -227,7 +227,7 @@ export const PROJECTS_DATA_I18N = {
       category: "tools",
       categoryLabel: "Computational Astronomy / WebGL",
       badge: "Real-Scale NASA Simulation",
-      description: "True 1:1-scale 3D solar system simulator with authentic NASA/USGS/Hubble surface textures. Flyable and zoomable down to planetary surfaces like Google Earth, backed by verified JPL ephemerides.",
+      description: "True 1:1-scale 3D solar system simulator with authentic NASA/USGS/Hubble surface textures, backed by verified JPL ephemerides for accurate celestial motion.",
       longDescription: "Educational astronomy project built on three.js modelling the Sun, 8 planets, 12 natural satellites, Saturn's rings with Cassini Division, a 2,400-rock asteroid belt, and a real Milky Way backdrop. Every distance and radius uses true 1:1 scale without enlargement — verified directly against JPL Horizons, IAU WGCCRE, and the HYG v3.8 catalogue. Planetary positions match within 0.0005°–0.15°, the Moon within 3–13 arcseconds, and all 16 eclipses are detected versus the NASA eclipse catalogue.",
       keyFeatures: [
         "Pure 1:1 scale with zero enlargement — measured verification vs JPL Horizons (angular deviation 0.0005°–0.15°)",
@@ -235,7 +235,7 @@ export const PROJECTS_DATA_I18N = {
         "Custom day/night Earth shader with city lights and drifting 8K cloud layer",
         "Saturn's rings with Cassini Division (thickness, illumination, planet shadowing)",
         "Keplerian ephemeris valid 1800–2050 + Laplace resonance Io-Europa-Ganymede (max deviation 0.018°)",
-        "Guided tour across the system + zoom down to touch planetary surfaces"
+        "Guided tour of the solar system with space navigation controls"
       ],
       techStack: ["JavaScript ES Modules", "Three.js", "GLSL Shader", "JPL Horizons DE441", "IAU WGCCRE 2015", "HYG v3.8 Catalogue", "Node.js Build Pipeline"],
       githubUrl: "https://github.com/Raflyf/solar_system",
