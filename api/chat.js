@@ -2629,12 +2629,14 @@ export default async function handler(req, res) {
       keys: { hasOpenRouter, hasOpenCode, hasOllama, hasMiniMax },
       providerPool: poolStatus,
       models: {
-        xkiro: AI_MODELS.xkiroPrimary,
+        dreamprompting: AI_MODELS.dpPrimary,
         cloudflare: AI_MODELS.cfPrimary,
-        groq: AI_MODELS.groqPrimary,
+        opencode: AI_MODELS.opencodePrimary,
         openrouter: AI_MODELS.orPrimary,
-        dahl: AI_MODELS.dahlPrimary,
+        nvidia: AI_MODELS.nvidiaPrimary,
+        groq: AI_MODELS.groqPrimary,
         gemini: AI_MODELS.geminiPrimary,
+        dahl: AI_MODELS.dahlPrimary,
       },
       memory: { serverSide: true, tables: ['messages', 'summaries', 'corrections', 'ai_memories'] },
       timestamp: Date.now() 
@@ -4031,10 +4033,10 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
 
     async function executePipelineWithPriorityRace(pipeline) {
       // ======================================================================
-      // RANTAI UTAMA (25 Sep): pool provider dari proyek chatbot
-      // xKiro -> Cloudflare -> Groq -> OpenRouter -> Dahl -> Gemini
-      // Menangani rotasi key, cooldown 429, latensi model, dan guard timeout
-      // adaptif. Jika seluruh pool gagal, baru jatuh ke pipeline lama di bawah.
+      // RANTAI UTAMA (17 Okt): 8-Tier Pool & Balapan Model dari Proyek Chatbot
+      // DreamPrompting -> Cloudflare -> OpenCode -> OpenRouter -> NVIDIA NIM -> Groq -> Gemini -> Dahl
+      // Menangani rotasi key round-robin, balapan model dalam tier (stagger 400ms),
+      // cooldown presisi TPM vs TPD, dan latensi model EWMA.
       // ======================================================================
       const elapsedBase = Date.now() - requestStartTime;
       const remainingMs = 58000 - elapsedBase;
@@ -4043,6 +4045,7 @@ Ada bagian atau proyek tertentu yang ingin Anda ketahui lebih dalam?`;
       try {
         const aiResult = await aiChat(openRouterMessages, {
           vision: hasImages,
+          model: targetModel || model,
           totalTimeoutMs: Math.max(8000, Math.min(remainingMs - 1500, 52000)),
         });
         if (aiResult && aiResult.text) {

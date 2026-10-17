@@ -38,39 +38,48 @@ const COMMAND_REGISTRY = {
     ...CERTIFICATES_DATA.map(cert => `- ${cert.title} (${cert.date}) — ${cert.issuer}`)
   ],
   benchmarks: () => [
-    "--- AI BENCHMARKS ---",
-    "Nemotron 3 Nano (Ollama): Latensi ~3s, Logika Menengah",
-    "OpenCode x-preview-f-free: Latensi ~1s, Coding Expert",
-    "DeepSeek R1 Free: Latensi ~4s, Deep Reasoning"
+    "--- AI ENGINE BENCHMARKS (CHATBOT SOTA POOL) ---",
+    "Tier 1 DreamPrompting (Qwen 3.6 27B): Latensi ~400ms, Akurasi SOTA",
+    "Tier 2 Cloudflare AI (Qwen 3.8 27B / Nemotron 120B): Latensi ~600ms, Edge Serverless",
+    "Tier 3 OpenCode Free (Muse Spark 1.3 / Mimo 2.6): Latensi ~780ms, Coding SOTA",
+    "Tier 4 OpenRouter (Nemotron 3 Ultra 550B): Latensi ~650ms, MoE Frontier",
+    "Tier 5 NVIDIA NIM (DiffusionGemma 26B): Latensi ~590ms, Fast Inference",
+    "Tier 6 Groq Cloud API (Qwen 3.8 27B): Latensi ~480ms, LPU Ultra-Fast",
+    "Tier 7 Google Gemini (Gemini 3.8 Flash): Latensi ~850ms, 1M Context Window",
+    "Tier 8 Dahl Global (DeepSeek V4 Flash): Latensi ~1.2s, 1B Token Reservoir"
   ],
   models: () => [
-    "[KATALOG MODEL AI MODERN (PRIORITAS)]",
+    "[RANTAI FAILOVER 8-TIER & BALAPAN MODEL SOTA]",
     "----------------------------------------------------------------",
-    "1. PRIORITAS UTAMA:",
-    "   - nemotron-3-nano:30b (Ollama Cloud | Sub-5s Fast Conversational - PRIORITAS #1)",
-    "   - lightning (OpenRouter | Nemotron 3.5 Lightning Berkecepatan Tinggi - PRIORITAS #2)",
-    "   - nemotron-3-nano-omni (OpenRouter | Model multimodal & penalaran CoT 30B - PRIORITAS #3)",
+    "Mode Default: AUTO (Balapan Model aktif: Utama & Cadangan diluncurkan",
+    "bersamaan dengan jeda 400ms, respons tercepat menang via Promise.any)",
     "",
-    "2. OPENROUTER CLOUD SOTA POOL:",
-    "   - deepseek-chat (DeepSeek V3 | Fast Analytical)",
-    "   - openrouter/free (Universal SOTA Auto Router)",
-    "   - super-120b (Nemotron 3 Super 120B | Teroptimasi latensi rendah)",
-    "   - ultra-550b (Nemotron 3 Ultra 550B | MoE 550B parameter penuh)",
-    "   - minimax (MiniMax M3 Free | Multimodal vision & text)",
-    "   - cohere (Cohere North Mini Code | Penalaran logika kode)",
+    "1. TIER 1: DreamPrompting (100 RPM Rolling Free Tier)",
+    "   - Utama: groq/qwen/qwen3.6-27b | Cadangan: groq/openai/gpt-oss-120b",
     "",
-    "3. OLLAMA CLOUD SOTA HUB:",
-    "   - ultra (Nemotron 3 Ultra | Frontier reasoning)",
-    "   - super (Nemotron 3 Super | 120B CoT Reasoning)",
-    "   - minimax (MiniMax M3 | Multimodal)",
+    "2. TIER 2: Cloudflare Workers AI (Global Edge Inference)",
+    "   - Utama: @cf/qwen/qwen3.8-27b | Cadangan: @cf/nvidia/nemotron-3-120b-a12b",
+    "   - Vision: @cf/meta/llama-4-scout-17b-16e-instruct",
     "",
-    "4. OPENCODE ZEN DIRECT MODELS:",
-    "   - opencode-lightning (Nemotron 3.5 Lightning)",
-    "   - opencode-ultra (Nemotron 3 Ultra Free)",
-    "   - laguna / opencode-laguna (Poolside Laguna S 2.1 Free)",
-    "   - mimo / opencode-mimo (Mimo v2.5 Free Multimodal)",
+    "3. TIER 3: OpenCode Free (Direct Zen Gateway)",
+    "   - Utama: muse-spark-1.3-contributor-free | Cadangan: mimo-v2.6-flash-free",
     "",
-    "Perintah Penggantian: Ketik 'model <nama>' (contoh: model nano / model laguna / model auto)."
+    "4. TIER 4: OpenRouter Free Pool",
+    "   - Utama: nvidia/nemotron-3-ultra-550b-a55b:free | Cadangan: ling-3.0-flash",
+    "",
+    "5. TIER 5: NVIDIA NIM (1.000 Free Credits / Key)",
+    "   - Utama: google/diffusiongemma-26b-a4b-it | Cadangan: llama-3.2-11b-vision",
+    "",
+    "6. TIER 6: Groq Cloud API (LPU Ultra-Fast Inference)",
+    "   - Utama: qwen/qwen3.8-27b | Cadangan: openai/gpt-oss-120b",
+    "",
+    "7. TIER 7: Google Gemini API (1M Konteks Multimodal)",
+    "   - Utama: gemini-3.8-flash | Cadangan: gemini-flash-lite-latest",
+    "",
+    "8. TIER 8: Dahl Global (Saldo 1 Miliar Token)",
+    "   - Utama: deepseek-ai/DeepSeek-V4-Flash-0731 | Cadangan: zai-org/GLM-5.3-Flash",
+    "",
+    "Perintah Penggantian: Ketik 'model <nama>' (contoh: model qwen / model gemini / model auto)."
   ],
   'ai-status': () => [
     "--- AI ENGINE STATUS ---",
@@ -486,7 +495,20 @@ export default function TerminalAI({ onClose } = {}) {
     getCurrentTime, initialMsg
   } = useTerminal();
   
-  const VALID_MODELS = ['auto', 'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'deepseek', 'free', 'codex', 'antigravity', 'vision', 'laguna', 'opencode-laguna', 'mimo', 'opencode-mimo'];
+  const VALID_MODELS = [
+    'auto',
+    'dreamprompting', 'qwen', 'gpt-oss',
+    'cloudflare', 'nemotron', 'scout',
+    'opencode', 'muse-spark', 'mimo',
+    'openrouter', 'ling',
+    'nvidia', 'diffusiongemma', 'llama',
+    'groq',
+    'gemini',
+    'dahl', 'deepseek', 'glm',
+    'vision',
+    // Backwards compatibility aliases
+    'nano', 'lightning', 'omni', 'super', 'ultra', 'minimax', 'cohere', 'free', 'codex', 'antigravity', 'laguna', 'opencode-laguna', 'opencode-mimo'
+  ];
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(null); // { badge, text, color, icon }
