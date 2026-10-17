@@ -87,145 +87,177 @@ async function sha256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// 16 Individual AI Models Definition (Ported from archive_v1)
+// 16 Individual AI Models Definition (Sinkron dengan Rantai 8-Tier SOTA Pool)
 const INDIVIDUAL_MODELS = [
   // ==========================================================================
-  // 14 MODEL DARI SISTEM AI AGENT AKTIF (disinkronkan 25 Sep 2026)
+  // 16 MODEL DARI SISTEM AI AGENT AKTIF (disinkronkan 17 Okt 2026)
   // Sumber kebenaran: api/_providers.js (pool dari proyek chatbot)
-  //   Tier 1 xKiro -> Tier 2 Cloudflare -> Tier 3 Groq
-  //   -> Tier 4 OpenRouter -> Tier 5 Dahl -> Tier 6 Gemini
-  // Matcher mencocokkan string "via" dari server (format: "provider:model").
+  //   Tier 1 DreamPrompting -> Tier 2 Cloudflare -> Tier 3 OpenCode
+  //   -> Tier 4 OpenRouter -> Tier 5 NVIDIA NIM -> Tier 6 Groq
+  //   -> Tier 7 Google Gemini -> Tier 8 Dahl Global
+  // Matcher mencocokkan string "via" / target dari server (format: "provider:model").
   // ==========================================================================
 
-  // --- TIER 1: xKiro Gateway (primary teks, round-robin 8 key) ---
+  // --- TIER 1: DreamPrompting (100 RPM Rolling Free Tier, balapan paralel) ---
   {
-    id: 'xkiro-command-a-plus',
-    name: 'Command A+ (xKiro)',
-    desc: 'Tier 1 - Model teks utama, 430ms rata-rata (tercepat)',
-    provider: 'XKIRO',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('command-a-plus') || s.includes('cohere/command-a-plus')
+    id: 'dp-qwen-36',
+    name: 'Qwen 3.6 27B (DreamPrompting)',
+    desc: 'Tier 1 - Primary LPU, rolling free tier 100 RPM (~400ms)',
+    provider: 'DREAMPROMPTING',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    matcher: (s) => s.includes('qwen3.6-27b') || (s.includes('dreamprompting') && s.includes('qwen')) || (s.includes('qwen') && !s.includes('3.8') && !s.includes('@cf') && !s.includes('groq:'))
   },
   {
-    id: 'xkiro-command-a',
-    name: 'Command A (xKiro)',
-    desc: 'Tier 1 backup - 111B open-weights, 5/5 andal',
-    provider: 'XKIRO',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('cohere/command-a') && !s.includes('command-a-plus') && !s.includes('command-a-vision')
-  },
-  {
-    id: 'xkiro-command-a-vision',
-    name: 'Command A Vision (xKiro)',
-    desc: 'Vision - OCR tabel 4/4 akurat, 2.557ms',
-    provider: 'XKIRO',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('command-a-vision')
-  },
-  {
-    id: 'xkiro-qwen-max',
-    name: 'Qwen 3.8 Max (xKiro)',
-    desc: 'Tier 1 backup - Qwen generasi 3.8',
-    provider: 'XKIRO',
-    badgeClass: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    matcher: (s) => s.includes('qwen3.8-max') || s.includes('qwen/qwen3.8-max')
+    id: 'dp-gpt-oss',
+    name: 'GPT-OSS 120B (DreamPrompting)',
+    desc: 'Tier 1 backup - Open-weight dense 120B via DreamPrompting',
+    provider: 'DREAMPROMPTING',
+    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    matcher: (s) => (s.includes('dreamprompting') && s.includes('gpt-oss')) || s.includes('dp-gpt')
   },
 
-  // --- TIER 2: Cloudflare Workers AI (3 key) ---
+  // --- TIER 2: Cloudflare Workers AI (Global Edge Inference) ---
   {
     id: 'cf-qwen-38',
-    name: 'Qwen 3.8 27B (Cloudflare)',
-    desc: 'Tier 2 - Workers AI, kepatuhan penuh & hemat',
+    name: 'Qwen 3.8 27B (Cloudflare Edge)',
+    desc: 'Tier 2 - Workers AI Global Edge, kepatuhan penuh & hemat (~600ms)',
     provider: 'CLOUDFLARE',
     badgeClass: 'bg-orange-100 dark:bg-orange-500/20 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-500/30',
     iconColor: 'text-orange-600 dark:text-orange-400',
-    matcher: (s) => s.includes('@cf/qwen')
+    matcher: (s) => s.includes('@cf/qwen') || (s.includes('cloudflare') && s.includes('qwen')) || s.includes('scout')
   },
   {
     id: 'cf-nemotron-120b',
-    name: 'Nemotron 3 120B (Cloudflare)',
-    desc: 'Tier 2 backup - dense 120B via Workers AI',
+    name: 'Nemotron 3 120B (Cloudflare Edge)',
+    desc: 'Tier 2 backup - Dense MoE 120B via Workers AI Serverless',
     provider: 'CLOUDFLARE',
     badgeClass: 'bg-orange-100 dark:bg-orange-500/20 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-500/30',
     iconColor: 'text-orange-600 dark:text-orange-400',
-    matcher: (s) => s.includes('@cf/nvidia/nemotron-3-120b') || s.includes('nemotron-3-120b-a12b')
+    matcher: (s) => s.includes('@cf/nvidia/nemotron-3-120b') || s.includes('nemotron-3-120b-a12b') || (s.includes('cloudflare') && s.includes('nemotron'))
   },
 
-  // --- TIER 3: Groq Cloud (5 key, tercepat) ---
+  // --- TIER 3: OpenCode Free (Direct Gateway) ---
   {
-    id: 'groq-qwen-38',
-    name: 'Qwen 3.8 27B (Groq LPU)',
-    desc: 'Tier 3 - Groq LPU, tercepat (763ms terukur)',
-    provider: 'GROQ',
-    badgeClass: 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/30',
-    iconColor: 'text-rose-600 dark:text-rose-400',
-    matcher: (s) => s.includes('groq') && s.includes('qwen3.8-27b')
+    id: 'opencode-muse-spark',
+    name: 'Muse Spark 1.3 (OpenCode)',
+    desc: 'Tier 3 - SOTA Coding & reasoning via opencode.ai direct (~780ms)',
+    provider: 'OPENCODE',
+    badgeClass: 'bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-500/30',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    matcher: (s) => s.includes('muse-spark') || (s.includes('opencode') && !s.includes('mimo'))
   },
   {
-    id: 'groq-gpt-oss',
-    name: 'GPT-OSS 120B (Groq)',
-    desc: 'Tier 3 backup - open-weight 120B di LPU',
-    provider: 'GROQ',
-    badgeClass: 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/30',
-    iconColor: 'text-rose-600 dark:text-rose-400',
-    matcher: (s) => s.includes('gpt-oss-120b')
+    id: 'opencode-mimo',
+    name: 'Mimo v2.6 Flash (OpenCode)',
+    desc: 'Tier 3 backup - Model cepat hemat latensi via OpenCode Free',
+    provider: 'OPENCODE',
+    badgeClass: 'bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-500/30',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    matcher: (s) => s.includes('mimo-v2.6') || s.includes('mimo')
   },
 
-  // --- TIER 4: OpenRouter (5 key, katalog :free) ---
-  {
-    id: 'or-nemotron-nano-omni',
-    name: 'Nemotron 3 Nano Omni (OpenRouter)',
-    desc: 'Tier 4 - Multimodal & penalaran CoT 30B (597ms)',
-    provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('openrouter') && s.includes('nano-omni')
-  },
+  // --- TIER 4: OpenRouter Free Pool ---
   {
     id: 'or-nemotron-ultra',
     name: 'Nemotron 3 Ultra 550B (OpenRouter)',
-    desc: 'Tier 4 - MoE 550B parameter penuh (663ms)',
+    desc: 'Tier 4 - Frontier MoE 550B parameter penuh (:free pool) (~650ms)',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    matcher: (s) => s.includes('openrouter') && s.includes('ultra-550b')
+    badgeClass: 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-500/30',
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    matcher: (s) => (s.includes('openrouter') && s.includes('ultra-550b')) || s.includes('nemotron-3-ultra') || (s.includes('ultra') && s.includes('openrouter'))
   },
   {
-    id: 'or-gemma-4',
-    name: 'Gemma 4 26B/31B (OpenRouter)',
-    desc: 'Tier 4 - Multimodal Google Gemma 4 (1.0-1.3s)',
+    id: 'or-ling-flash',
+    name: 'Ling 3.0 Flash (OpenRouter)',
+    desc: 'Tier 4 backup - InclusionAI Ling 3.0 Flash Sante (:free pool)',
     provider: 'OPENROUTER',
-    badgeClass: 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/30',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    matcher: (s) => s.includes('openrouter') && s.includes('gemma-4')
+    badgeClass: 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-500/30',
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    matcher: (s) => s.includes('ling-3.0-flash') || s.includes('ling')
   },
 
-  // --- TIER 5: Dahl Global (10 key, saldo besar) ---
+  // --- TIER 5: NVIDIA NIM (1.000 Free Credits / Key) ---
   {
-    id: 'dahl-deepseek',
-    name: 'DeepSeek V4 Flash (Dahl)',
-    desc: 'Tier 5 - Saldo 1M token, latensi ~0.23s',
-    provider: 'DAHL',
-    badgeClass: 'bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-300 border-violet-300 dark:border-violet-500/30',
-    iconColor: 'text-violet-600 dark:text-violet-400',
-    matcher: (s) => s.includes('dahl') || s.includes('deepseek-v4-flash')
+    id: 'nvidia-diffusiongemma',
+    name: 'DiffusionGemma 26B (NVIDIA NIM)',
+    desc: 'Tier 5 - Google DiffusionGemma 26B A4B IT via NIM cloud (~590ms)',
+    provider: 'NVIDIA',
+    badgeClass: 'bg-lime-100 dark:bg-lime-500/20 text-lime-800 dark:text-lime-300 border-lime-300 dark:border-lime-500/30',
+    iconColor: 'text-lime-600 dark:text-lime-400',
+    matcher: (s) => s.includes('diffusiongemma') || (s.includes('nvidia') && (s.includes('gemma') || s.includes('diffusion')))
+  },
+  {
+    id: 'nvidia-llama-vision',
+    name: 'Llama 3.2 11B Vision (NVIDIA NIM)',
+    desc: 'Tier 5 backup / Vision - Multimodal OCR 11B via NVIDIA NIM',
+    provider: 'NVIDIA',
+    badgeClass: 'bg-lime-100 dark:bg-lime-500/20 text-lime-800 dark:text-lime-300 border-lime-300 dark:border-lime-500/30',
+    iconColor: 'text-lime-600 dark:text-lime-400',
+    matcher: (s) => (s.includes('nvidia') && s.includes('llama')) || (s.includes('llama-3.2-11b-vision') && !s.includes('@cf'))
   },
 
-  // --- TIER 6: Google Gemini (1 key, konteks 1M) ---
+  // --- TIER 6: Groq Cloud API (LPU Ultra-Fast Inference) ---
+  {
+    id: 'groq-qwen-38',
+    name: 'Qwen 3.8 27B (Groq LPU)',
+    desc: 'Tier 6 - LPU ultra-fast hardware inference (~480ms)',
+    provider: 'GROQ',
+    badgeClass: 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/30',
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    matcher: (s) => (s.includes('groq') && s.includes('qwen3.8-27b')) || (s.includes('groq') && !s.includes('dreamprompting') && s.includes('qwen'))
+  },
+  {
+    id: 'groq-gpt-oss',
+    name: 'GPT-OSS 120B (Groq LPU)',
+    desc: 'Tier 6 backup - Open-weight 120B LPU hardware acceleration',
+    provider: 'GROQ',
+    badgeClass: 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-500/30',
+    iconColor: 'text-rose-600 dark:text-rose-400',
+    matcher: (s) => (s.includes('groq') && s.includes('gpt-oss-120b')) || (s.includes('gpt-oss') && !s.includes('dreamprompting'))
+  },
+
+  // --- TIER 7: Google Gemini API (1M Konteks Multimodal) ---
   {
     id: 'gemini-flash',
     name: 'Gemini 3.8 Flash (Google)',
-    desc: 'Tier 6 - Jaring terakhir, konteks 1M',
+    desc: 'Tier 7 - Jaring 1M context window & multimodal frontier (~850ms)',
     provider: 'GEMINI',
     badgeClass: 'bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-500/30',
     iconColor: 'text-sky-600 dark:text-sky-400',
-    matcher: (s) => s.includes('gemini')
+    matcher: (s) => s.includes('gemini-3.8-flash') || (s.includes('gemini') && !s.includes('lite') && !s.includes('3.6'))
+  },
+  {
+    id: 'gemini-flash-lite',
+    name: 'Gemini Flash Lite (Google)',
+    desc: 'Tier 7 backup - Latensi ultra-rendah & kuota tinggi Google Cloud',
+    provider: 'GEMINI',
+    badgeClass: 'bg-sky-100 dark:bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-500/30',
+    iconColor: 'text-sky-600 dark:text-sky-400',
+    matcher: (s) => s.includes('gemini-flash-lite') || s.includes('flash-lite') || s.includes('gemini-3.6-flash')
+  },
+
+  // --- TIER 8: Dahl Global (Saldo 1 Miliar Token Reservoir) ---
+  {
+    id: 'dahl-deepseek',
+    name: 'DeepSeek V4 Flash (Dahl Global)',
+    desc: 'Tier 8 - Saldo 1M token reservoir, deep reasoning (~1.2s)',
+    provider: 'DAHL',
+    badgeClass: 'bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-300 border-violet-300 dark:border-violet-500/30',
+    iconColor: 'text-violet-600 dark:text-violet-400',
+    matcher: (s) => s.includes('deepseek-v4-flash') || (s.includes('dahl') && s.includes('deepseek')) || s.includes('deepseek')
+  },
+  {
+    id: 'dahl-glm',
+    name: 'GLM 5.3 Flash (Dahl Global)',
+    desc: 'Tier 8 backup - Zhipu GLM 5.3 Flash via Dahl Global API',
+    provider: 'DAHL',
+    badgeClass: 'bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-300 border-violet-300 dark:border-violet-500/30',
+    iconColor: 'text-violet-600 dark:text-violet-400',
+    matcher: (s) => s.includes('glm-5.3-flash') || (s.includes('dahl') && s.includes('glm')) || s.includes('glm')
   }
-];;
+];
 
 const CustomSelect = ({ value, onChange, options }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -1263,10 +1295,10 @@ export default function Dashboard({ isStitch = true } = {}) {
           }
         }
         // Atribusi riwayat lama: jika tidak ada matcher spesifik, atribusikan ke
-        // prioritas default #1 sistem baru (xKiro Qwen 3.8 Max — Tier 1 pool).
+        // prioritas default #1 sistem baru (DreamPrompting Qwen 3.6 27B — Tier 1 pool).
         if (!matched) {
-          modelCounts['xkiro-qwen-max']++;
-          if (ts > modelLastUsed['xkiro-qwen-max']) modelLastUsed['xkiro-qwen-max'] = ts;
+          modelCounts['dp-qwen-36']++;
+          if (ts > modelLastUsed['dp-qwen-36']) modelLastUsed['dp-qwen-36'] = ts;
         }
       }
     });
