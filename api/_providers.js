@@ -128,14 +128,20 @@ export const AI_MODELS = {
   dahlPrimary: 'deepseek-ai/DeepSeek-V4-Flash-0731',
   dahlBackup: ['zai-org/GLM-5.3-Flash'],
 
-  // Rantai Vision Eksplisit (diurutkan berdasarkan bukti uji akurasi baca OCR)
+  // Rantai Vision Eksplisit (diurutkan berdasarkan bukti uji akurasi baca OCR - Identik dengan Chatbot 12 Okt)
   visionChain: [
     { kind: 'groq', model: 'qwen/qwen3.8-27b' },
-    { kind: 'cloudflare', model: '@cf/meta/llama-4-scout-17b-16e-instruct' },
-    { kind: 'cloudflare', model: '@cf/qwen/qwen3.8-27b' },
+    { kind: 'nvidia', model: 'meta/llama-3.2-11b-vision-instruct' },
     { kind: 'gemini', model: 'gemini-flash-lite-latest' },
     { kind: 'gemini', model: 'gemini-3.6-flash' },
-    { kind: 'nvidia', model: 'meta/llama-3.2-11b-vision-instruct' },
+    { kind: 'cloudflare', model: '@cf/qwen/qwen3.8-27b' },
+    { kind: 'cloudflare', model: '@cf/meta/llama-4-scout-17b-16e-instruct' },
+    { kind: 'cloudflare', model: '@cf/meta/llama-3.2-11b-vision-instruct' },
+    { kind: 'gemini', model: 'gemini-2.5-flash' },
+    { kind: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free' },
+    { kind: 'opencode', model: 'mimo-v2.6-flash-free' },
+    { kind: 'opencode', model: 'big-pickle' },
+    { kind: 'opencode', model: 'mimo-v2.5-free' },
   ],
 };
 
@@ -320,6 +326,21 @@ function messagesContainImage(messages) {
     }
   }
   return false;
+}
+
+export function ringkasUntukGroqVision(msgs) {
+  if (!msgs || !Array.isArray(msgs)) return msgs;
+  return msgs.map((m) => {
+    if (m.role !== 'system' || typeof m.content !== 'string') return m;
+    const aturanTugas = m.content.match(/\[[^\]]{4,200}\][\s\S]{0,2500}/);
+    return {
+      role: 'system',
+      content: [
+        'Kamu asisten yang membantu dan ramah. Jawab langsung, akurat, tanpa pembuka klise.',
+        aturanTugas ? aturanTugas[0] : m.content.slice(-2500),
+      ].join('\n'),
+    };
+  });
 }
 
 /**
@@ -1141,12 +1162,30 @@ export async function aiChat(messages, opts = {}) {
   const chain = buildChain();
 
   // 1. Rantai Vision Khusus vs Teks
+  let imgMime = '';
+  if (messages) {
+    for (const m of messages) {
+      if (Array.isArray(m.content)) {
+        for (const part of m.content) {
+          const url = part && part.type === 'image_url' ? part.image_url?.url ?? '' : '';
+          const match = /^data:(image\/[a-z0-9.+-]+);base64,/i.exec(url);
+          if (match) { imgMime = match[1].toLowerCase(); break; }
+        }
+      }
+      if (imgMime) break;
+    }
+  }
+
+  const isNeedVision = vision === true || (requestedModel && requestedModel.toLowerCase().includes('vision')) || messagesContainImage(messages);
+
   let stepsToRun = [];
-  if (vision) {
+  if (isNeedVision) {
     const byKind = new Map(chain.map((s) => [s.kind, s]));
     for (const v of AI_MODELS.visionChain) {
       const base = byKind.get(v.kind);
       if (!base || base.keys.length === 0) continue;
+      // Groq menolak WebP dengan HTTP 400 "invalid image data". Lewati Groq untuk WebP.
+      if (imgMime === 'image/webp' && v.kind === 'groq') continue;
       stepsToRun.push({ ...base, models: [v.model] });
     }
   } else {
@@ -1173,14 +1212,17 @@ export async function aiChat(messages, opts = {}) {
     for (const step of stepsToRun) {
       if (Date.now() >= deadline - 1500) break;
 
-      const models = vision ? step.models : orderModelsByLatency(step.kind, step.models);
+      const models = isNeedVision ? step.models : orderModelsByLatency(step.kind, step.models);
+      const stepMessages = (isNeedVision && step.kind === 'groq')
+        ? ringkasUntukGroqVision(messages)
+        : messages;
 
       // --- BALAPAN MODEL DALAM TIER (Bila raceModels aktif, teks, & model > 1) ---
-      if (AI_CONFIG.raceModels > 0 && !vision && models.length > 1) {
+      if (AI_CONFIG.raceModels > 0 && !isNeedVision && models.length > 1) {
         const eligible = models.filter((m) => allowCoolingPass || !isModelCoolingDown(step.kind, m));
         if (eligible.length > 0) {
           try {
-            const menang = await balapanModelDalamTier(step, eligible, messages, deadline, allowCoolingPass);
+            const menang = await balapanModelDalamTier(step, eligible, stepMessages, deadline, allowCoolingPass);
             return {
               text: menang.text,
               via: `${step.kind}:${menang.model}`,
@@ -1208,7 +1250,7 @@ export async function aiChat(messages, opts = {}) {
           const remainingMs = deadline - Date.now();
 
           try {
-            const res = await step.run(key, model, messages, Math.min(remainingMs, AI_CONFIG.timeoutMs));
+            const res = await step.run(key, model, stepMessages, Math.min(remainingMs, AI_CONFIG.timeoutMs));
             recordKeySuccess(step.kind, key, model);
             recordModelLatency(step.kind, model, Date.now() - attemptStart);
 
@@ -1224,8 +1266,15 @@ export async function aiChat(messages, opts = {}) {
             errors.push(`${step.kind}:${model}#${ki + 1} ${msg.slice(0, 80)}`);
             recordKeyFailure(step.kind, key, e);
 
-            // Jika error adalah model tidak ditemukan / format buruk, pindah model
-            if (msg.includes('404') || msg.includes('ModelError') || msg.includes('EMPTY_RESPONSE')) {
+            // Jika error adalah model tidak ditemukan / format buruk / gambar ditolak, pindah model
+            if (
+              msg.includes('404') ||
+              msg.includes('ModelError') ||
+              msg.includes('EMPTY_RESPONSE') ||
+              msg.includes('NO_IMAGE_DATA_FOR_VISION') ||
+              msg.includes('BAD_IMAGE') ||
+              msg.includes('PROVIDER_422')
+            ) {
               recordModelFailure(step.kind, model, 60000);
               break;
             }
