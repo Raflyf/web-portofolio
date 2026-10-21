@@ -13,6 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import { aiChat, providerStatus, AI_CONFIG, AI_MODELS } from './_providers.js';
+import { PROJECTS_DATA_I18N } from '../src/data.js';
 import {
   saveMessage as memSaveMessage,
   getContext as memGetContext,
@@ -25,6 +26,17 @@ import {
 export const config = {
   maxDuration: 60
 };
+
+// Satu sumber kebenaran daftar proyek: src/data.js (dipakai juga oleh galeri frontend).
+function portfolioProjects(lang = 'id') {
+  return PROJECTS_DATA_I18N[lang] || PROJECTS_DATA_I18N.id;
+}
+
+function portfolioProjectBullets(lang = 'id') {
+  return portfolioProjects(lang)
+    .map((p) => `     * **${p.title}**: ${p.description}`)
+    .join('\n');
+}
 
 // Automatic local environment loader (reads .env.local / .env for local testing)
 function loadLocalEnv() {
@@ -141,11 +153,8 @@ Website ini adalah landing page portofolio interaktif resmi Rafly Firmansyah. Ji
    - Latar belakang pendidikan formal di Universitas Bina Sarana Informatika (S1 Teknologi Informasi, lulus dengan IPK 3.93).
    - Fokus keahlian utama pada Machine Learning (penanganan concept drift & covariate shift), arsitektur backend, Computer Vision, dan IoT.
 3. **Projects Showcase (Galeri Proyek Unggulan)**:
-   - Menampilkan 4 karya rekayasa nyata dengan filter kategori, kartu interaktif, live GitHub stars, dan tautan demo/repositori:
-     * **Spam-Email Detection System**: Riset skripsi adaptasi domain email spam menggunakan Complement Naive Bayes (CNB) dan XGBoost.
-     * **OpenPlagiarismChecker**: Mesin pendeteksi plagiarisme akademik lokal/offline berbasis SBERT semantic similarity dan N-Gram Shingling.
-     * **laser_pointer_PPT**: Pengendali presentasi PowerPoint nirsentuh berbasis sensor gyroscope smartphone via WebSocket.
-     * **FotoKitaBlur**: Edge AI Computer Vision di peramban untuk proteksi privasi wajah menggunakan gestur tangan (MediaPipe).
+   - Menampilkan ${portfolioProjects(sessionLanguage).length} karya rekayasa nyata dengan filter kategori, kartu interaktif, live GitHub stars, dan tautan demo/repositori:
+${portfolioProjectBullets(sessionLanguage)}
 4. **Skills & Tech Stack (Keahlian & Teknologi)**:
    - Rangkuman teknologi yang dikuasai: Python, JavaScript, PHP, C++, TensorFlow, PyTorch, Scikit-learn, React, Tailwind CSS, PostgreSQL, Docker, MikroTik, Linux.
 5. **Experience & Leadership Timeline (Pengalaman & Organisasi)**:
@@ -3108,10 +3117,7 @@ Pencarian web real-time tidak menemukan bukti terkini yang memadai untuk pertany
 1. **Hero Section (Home)**: Introduction to Rafly Firmansyah as a Software Engineer & AI Researcher, current availability status, and quick access to download CV or view projects.
 2. **About Me**: Academic background at Universitas Bina Sarana Informatika (B.S. in Information Technology, 3.93 GPA) focusing on Machine Learning, Backend Architecture, and IoT.
 3. **Projects Showcase**: Interactive gallery of featured engineering works:
-   - *Spam-Email Detection*: Thesis research on domain adaptation for concept drift using Complement Naive Bayes (CNB) & XGBoost.
-   - *OpenPlagiarismChecker*: Offline academic text plagiarism detector (SBERT & N-Gram Shingling).
-   - *laser_pointer_PPT*: Touchless presentation controller using smartphone gyroscope via WebSocket.
-   - *FotoKitaBlur*: Browser Edge AI Computer Vision for face privacy streaming using hand gestures.
+${portfolioProjectBullets('en')}
 4. **Skills & Tech Stack**: Core technologies (Python, JavaScript, React, Tailwind CSS, PostgreSQL, Docker, MikroTik, PyTorch, Linux).
 5. **Experience & Leadership**: Career timeline, computer laboratory assistantships, and campus student organization roles.
 6. **Official Certifications**: Verified credentials from BNSP Program Analyst (2025), MikroTik MTCNA (2025), and Cisco PCAP (2024).
@@ -3123,10 +3129,7 @@ Is there a specific section or project you would like to explore further?`
 1. **Hero Section (Beranda Utama)**: Profil pembuka Rafly Firmansyah sebagai Software Engineer & AI Researcher, status ketersediaan kerja, dan akses unduh CV.
 2. **About Me (Tentang Rafly)**: Latar belakang pendidikan S1 Teknologi Informasi di Universitas Bina Sarana Informatika (IPK 3.93) serta fokus riset pada Machine Learning, Arsitektur Backend, dan IoT.
 3. **Projects Showcase (Galeri Proyek Unggulan)**: Galeri proyek nyata interaktif, meliputi:
-   - *Spam-Email Detection*: Riset skripsi adaptasi domain email spam (Complement Naive Bayes & XGBoost).
-   - *OpenPlagiarismChecker*: Pendeteksi plagiarisme akademik lokal/offline (SBERT & N-Gram).
-   - *laser_pointer_PPT*: Pengendali presentasi IoT nirsentuh via sensor giroskop smartphone.
-   - *FotoKitaBlur*: Edge AI Vision di peramban untuk proteksi privasi wajah dengan gestur tangan.
+${portfolioProjectBullets('id')}
 4. **Skills & Tech Stack**: Penguasaan teknologi (Python, JavaScript, React, PostgreSQL, Docker, MikroTik, PyTorch, Linux, dll).
 5. **Experience & Leadership**: Rekam jejak magang, asisten laboratorium komputer, dan kepengurusan organisasi mahasiswa.
 6. **Sertifikasi Resmi**: Sertifikat kompetensi terverifikasi BNSP Analis Program (2025), MikroTik MTCNA (2025), dan Cisco PCAP (2024).

@@ -690,7 +690,7 @@ body::-webkit-scrollbar,
 }
 
 .markdown-body strong {
-  color: #67e8f9;
+  color: #f4f4f5;
 }
 
 .markdown-body hr {
@@ -863,7 +863,7 @@ body::-webkit-scrollbar,
   color: rgb(24 24 27);
 }
 :root:not(.dark) .markdown-body strong {
-  color: rgb(14 116 144);
+  color: rgb(9 9 11);
 }
 
 :root:not(.dark) .markdown-body a {
@@ -871,8 +871,8 @@ body::-webkit-scrollbar,
 }
 
 :root:not(.dark) .markdown-body code {
-  color: rgb(8 145 178);
-  background: rgba(8, 145, 178, 0.1);
+  color: rgb(24 24 27);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 :root:not(.dark) .markdown-body pre {
@@ -909,7 +909,7 @@ body::-webkit-scrollbar,
 :root:not(.dark) .liquid-glass-inset .markdown-body strong,
 :root:not(.dark) .liquid-glass .markdown-body strong,
 :root:not(.dark) .liquid-glass-strong .markdown-body strong {
-  color: rgb(14 116 144);
+  color: rgb(9 9 11);
 }
 
 :root:not(.dark) .liquid-glass-inset .markdown-body a,
@@ -921,8 +921,8 @@ body::-webkit-scrollbar,
 :root:not(.dark) .liquid-glass-inset .markdown-body code,
 :root:not(.dark) .liquid-glass .markdown-body code,
 :root:not(.dark) .liquid-glass-strong .markdown-body code {
-  color: rgb(8 145 178);
-  background: rgba(8, 145, 178, 0.1);
+  color: rgb(24 24 27);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 /* ==========================================================================
@@ -946,7 +946,7 @@ body::-webkit-scrollbar,
 }
 .markdown-body strong {
   font-weight: 600;
-  color: #67e8f9;
+  color: #f4f4f5;
 }
 .markdown-body em {
   font-style: italic;
@@ -1053,7 +1053,7 @@ body::-webkit-scrollbar,
 :root:not(.dark) .markdown-body,
 :root:not(.dark) .markdown-body li,
 :root:not(.dark) .markdown-body em {
-  color: #18181b;
+  color: #27272a;
 }
 :root:not(.dark) .markdown-body h1,
 :root:not(.dark) .markdown-body h2,
@@ -1063,7 +1063,7 @@ body::-webkit-scrollbar,
   color: #09090b;
 }
 :root:not(.dark) .markdown-body strong {
-  color: #0e7490;
+  color: #09090b;
 }
 :root:not(.dark) .markdown-body code {
   color: #18181b;
