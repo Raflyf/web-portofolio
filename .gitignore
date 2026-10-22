@@ -83,3 +83,6 @@ logs/
 
 # Git backup folders
 .git-backup-*/
+
+# Video hasil render (23 MB, tidak dirujuk kode)
+video/
