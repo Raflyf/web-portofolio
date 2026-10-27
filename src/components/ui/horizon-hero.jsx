@@ -264,7 +264,7 @@ export default function HorizonHero() {
               className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-medium tracking-tighter leading-[0.95]"
             >
               Rafly<br />
-              <span className="bg-linear-to-br from-white via-zinc-100 to-zinc-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(255,255,255,0.2)]">
+              <span className="bg-linear-to-br from-white via-zinc-100 to-zinc-500 bg-clip-text text-transparent">
                 Firmansyah
               </span>
             </h1>

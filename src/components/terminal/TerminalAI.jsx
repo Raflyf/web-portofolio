@@ -1561,7 +1561,10 @@ export default function TerminalAI({ onClose } = {}) {
 
       {/* History Modal */}
       {showHistoryModal && (
-        <div 
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Riwayat Percakapan"
           data-lenis-prevent="true"
           className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-md glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
@@ -1667,7 +1670,10 @@ export default function TerminalAI({ onClose } = {}) {
 
       {/* Checkpoint & Restore Modal */}
       {showCheckpointModal && (
-        <div 
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Checkpoint & Restore State"
           data-lenis-prevent="true"
           className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-md glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
@@ -1776,12 +1782,15 @@ export default function TerminalAI({ onClose } = {}) {
       )}
 
       {/* Fullscreen Image Preview Modal */}
-      {selectedImagePreview && (
-        <div 
-          data-lenis-prevent="true"
-          className="fixed inset-0 z-200 flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
-          onClick={() => setSelectedImagePreview(null)}
-        >
+            {selectedImagePreview && (
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="Preview Gambar Lampiran"
+                data-lenis-prevent="true"
+                className="fixed inset-0 z-200 flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
+                onClick={() => setSelectedImagePreview(null)}
+              >
           <div className="relative max-w-4xl max-h-[85vh] p-2 bg-zinc-950/90 border border-white/20 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center">
             <button 
               onClick={() => setSelectedImagePreview(null)}
@@ -1855,7 +1864,7 @@ export default function TerminalAI({ onClose } = {}) {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={attachments.length > 0 ? "Tambahkan pesan atau langsung kirim lampiran..." : "Ketik perintah atau tanya sesuatu... (misal: 'berita terbaru apa hari ini')"}
-                className="flex-1 min-w-0 bg-transparent border-none text-white px-2.5 py-1.5 focus:outline-none placeholder-zinc-500 text-xs sm:text-sm font-sans"
+                className="flex-1 min-w-0 bg-transparent border-none text-white px-2.5 py-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 placeholder-zinc-500 text-xs sm:text-sm font-sans"
                 disabled={isLoading}
               />
               

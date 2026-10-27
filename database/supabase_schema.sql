@@ -146,12 +146,6 @@ ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS otp_blocked_until 
 ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS session_token TEXT;
 ALTER TABLE public.admin_auth_config ADD COLUMN IF NOT EXISTS session_expires_at TIMESTAMPTZ;
 
--- Seed initial master PIN hash (nilai awal; WAJIB dirotasi via dashboard setelah deploy)
--- M10: DO NOTHING — re-running the schema must NEVER overwrite a PIN the owner already set.
-INSERT INTO public.admin_auth_config (id, pin_hash, lockout_attempts, locked_until)
-VALUES ('master_auth', 'db533e5fe9b399627eb386c19c967aa171dbc121a43fda2fa583c0a731aba78c', 0, NULL)
-ON CONFLICT (id) DO NOTHING;
-
 ALTER TABLE public.admin_auth_config ENABLE ROW LEVEL SECURITY;
 
 -- C4 (SECURITY): NO anon policies on admin_auth_config at all.

@@ -291,7 +291,7 @@ export default function StitchNav() {
           {/* Mobile Hamburger Toggle Button (Active on < lg screens) */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-full stitch-btn-glass text-slate-200 hover:text-white transition-all cursor-pointer flex items-center justify-center lg:hidden"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-full stitch-btn-glass text-slate-200 hover:text-white transition-all cursor-pointer flex items-center justify-center lg:hidden"
             aria-label={mobileMenuOpen ? 'Tutup Menu Navigasi' : 'Buka Menu Navigasi'}
             aria-expanded={mobileMenuOpen}
           >

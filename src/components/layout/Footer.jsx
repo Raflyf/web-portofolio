@@ -72,7 +72,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <Reveal y={0} fade duration={0.6} delay={0.2} amount={0.5} className="mt-6 pt-6 border-t border-white/5 flex justify-center">
-          <p className="text-xs text-zinc-500 font-mono text-center">
+          <p className="text-xs text-zinc-700 dark:text-zinc-400 font-mono text-center">
             &copy; {year} Rafly Firmansyah. {t('footer.rights')}
           </p>
         </Reveal>

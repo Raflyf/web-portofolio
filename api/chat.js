@@ -916,12 +916,13 @@ async function scrapeDirectWebpageContent(url) {
       if (subMatch && subMatch[1]) {
         try {
           const subUrl = new URL(subMatch[1], url).href;
-          const subRes = await fetchJsonWithTimeout(subUrl, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7'
-            }
-          }, 4500);
+          if (isSafePublicUrl(subUrl)) {
+            const subRes = await fetchJsonWithTimeout(subUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/plain;q=0.8,*/*;q=0.7'
+              }
+            }, 4500);
           if (subRes.ok && subRes.text) {
             // Check RSC stream on subpage
             if (subRes.text.includes('self.__next_f.push')) {
@@ -969,6 +970,7 @@ async function scrapeDirectWebpageContent(url) {
             }
             const subParsed = extractFitMarkdownContent(subRes.text, subUrl);
             if (subParsed && subParsed.length > 100) return subParsed;
+          }
           }
         } catch (_) {}
       }
@@ -1965,10 +1967,15 @@ async function isRateLimited(clientIp) {
  * Reads ai_memories with SUPABASE_SERVICE_ROLE_KEY — the client can never
  * inject memory directly; only /api/save-memory (server) writes it.
  */
-const SUPABASE_DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwaHl6Y3F3cGt4dHpsbHZ5bXNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4OTcxOTAsImV4cCI6MjEwMjQ3MzE5MH0.vriAsg-XyDPvxpZgGlmgyKd2U9M4AtyuGgWncP2xJvU';
+const SUPABASE_DEFAULT_ANON_KEY = 'eyJhbG...xJvU';
 
 function getSupabaseKey() {
-  return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || SUPABASE_DEFAULT_ANON_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  if (!key) {
+    // FAIL-CLOSED: hardcoded default removed. Caller must handle missing key.
+    return null;
+  }
+  return key;
 }
 
 // Serverless in-memory cache for Supabase ai_memories (TTL 60s - Sub-Millisecond Retrieval)

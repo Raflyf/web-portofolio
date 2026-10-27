@@ -278,7 +278,7 @@ export default function ContactSection() {
                 placeholder={t('contact.formNamePlaceholder')}
                 autoComplete="name"
                 required
-                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
+                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 transition-all"
               />
             </div>
 
@@ -295,7 +295,7 @@ export default function ContactSection() {
                 placeholder={t('contact.formEmailPlaceholder')}
                 autoComplete="email"
                 required
-                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all"
+                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 transition-all"
               />
             </div>
 
@@ -312,7 +312,7 @@ export default function ContactSection() {
                 placeholder={t('contact.formMessagePlaceholder')}
                 autoComplete="off"
                 required
-                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none transition-all resize-none"
+                className="w-full px-4 py-3.5 liquid-glass-inset focus:border-cyan-400/50 text-white placeholder-zinc-500 text-sm outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 transition-all resize-none"
               />
             </div>
 

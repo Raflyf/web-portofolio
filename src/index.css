@@ -402,7 +402,8 @@
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
-    animation-play-state: running !important;
+    animation-play-state: paused !important;
+    transition-duration: 0.01s !important;
   }
 }
 

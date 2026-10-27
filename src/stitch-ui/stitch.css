@@ -569,11 +569,6 @@ button.stitch-btn-glass:active,
   line-height: 1.65;
 }
 
-/* Remove gaudy drop-shadows on hero title */
-.stitch-liquid-theme .drop-shadow-\[0_0_35px_rgba\(255\,255\,255\,0\.2\)\] {
-  filter: none !important;
-}
-
 /* Ambient nebula: soft, soothing and quiet */
 .stitch-liquid-theme #hero .blur-\[120px\],
 .stitch-liquid-theme #hero .blur-\[100px\] {
