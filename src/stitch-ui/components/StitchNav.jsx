@@ -33,19 +33,14 @@ const NAV_ITEMS = [
 export default function StitchNav() {
   const { language, toggleLanguage, t } = useLanguage();
   const [copied, setCopied] = useState(false);
-  const [navVisible, setNavVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
-  const lastScrollY = useRef(0);
-  const isProgrammaticScroll = useRef(false);
 
   // Scroll to section with Lenis Smooth Scroll or native fallback (Clean URL without hash #)
   const scrollToSection = (e, id) => {
     if (e) e.preventDefault();
     setActiveSection(id);
-    setNavVisible(true);
     setMobileMenuOpen(false);
-    isProgrammaticScroll.current = true;
     
     // Maintain clean URL without '#'
     if (window.location.hash) {
@@ -54,27 +49,12 @@ export default function StitchNav() {
 
     const el = document.getElementById(id);
     if (el) {
-      const onScrollComplete = () => {
-        // Reset lock after animation finishes
-        setTimeout(() => {
-          isProgrammaticScroll.current = false;
-          lastScrollY.current = window.scrollY;
-        }, 150);
-      };
-
       if (window.__lenis) {
-        window.__lenis.scrollTo(el, { 
-          duration: 1.2, 
-          offset: -70,
-          onComplete: onScrollComplete
-        });
+        window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 });
       } else {
         const top = el.getBoundingClientRect().top + window.scrollY - 70;
         window.scrollTo({ top, behavior: 'smooth' });
-        setTimeout(onScrollComplete, 1200);
       }
-    } else {
-      isProgrammaticScroll.current = false;
     }
   };
 
@@ -118,47 +98,6 @@ export default function StitchNav() {
       window.removeEventListener('resize', onScroll);
     };
   }, []);
-
-  // Smart Auto-Hide: Lightweight scroll handler with zero DOM layout queries
-  useEffect(() => {
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentY = window.scrollY;
-          const delta = currentY - lastScrollY.current;
-
-          // Jika scroll dipicu oleh klik navbar (programmatic scroll), jangan sembunyikan navbar!
-          if (isProgrammaticScroll.current) {
-            setNavVisible(true);
-            lastScrollY.current = currentY;
-            ticking = false;
-            return;
-          }
-
-          if (currentY < 70 || mobileMenuOpen) {
-            setNavVisible(prev => (prev !== true ? true : prev));
-          } else if (Math.abs(delta) > 8) {
-            const shouldBeVisible = delta <= 0;
-            setNavVisible(prev => (prev !== shouldBeVisible ? shouldBeVisible : prev));
-            lastScrollY.current = currentY;
-          }
-
-          if (currentY < 100) {
-            setActiveSection(prev => (prev !== 'hero' ? 'hero' : prev));
-          }
-
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [mobileMenuOpen]);
 
   // Accessibility: close mobile menu on Escape key press or window resize
   useEffect(() => {
@@ -219,9 +158,7 @@ export default function StitchNav() {
         />
       )}
 
-      <header className={`fixed top-0 inset-x-0 z-50 flex flex-col items-center pt-2 sm:pt-3 px-3 sm:px-6 pointer-events-none transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        navVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
-      }`}>
+      <header className="fixed top-0 inset-x-0 z-50 flex flex-col items-center pt-2 sm:pt-3 px-3 sm:px-6 pointer-events-none">
         <div className="pointer-events-auto h-13 max-w-310 w-full stitch-glass-nav rounded-full px-3.5 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 relative">
         {/* Brand & Status Indicator */}
         <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
