@@ -37,6 +37,7 @@ export default function StitchNav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
   const lastScrollY = useRef(0);
+  const isProgrammaticScroll = useRef(false);
 
   // Scroll to section with Lenis Smooth Scroll or native fallback (Clean URL without hash #)
   const scrollToSection = (e, id) => {
@@ -44,6 +45,7 @@ export default function StitchNav() {
     setActiveSection(id);
     setNavVisible(true);
     setMobileMenuOpen(false);
+    isProgrammaticScroll.current = true;
     
     // Maintain clean URL without '#'
     if (window.location.hash) {
@@ -52,12 +54,27 @@ export default function StitchNav() {
 
     const el = document.getElementById(id);
     if (el) {
+      const onScrollComplete = () => {
+        // Reset lock after animation finishes
+        setTimeout(() => {
+          isProgrammaticScroll.current = false;
+          lastScrollY.current = window.scrollY;
+        }, 150);
+      };
+
       if (window.__lenis) {
-        window.__lenis.scrollTo(el, { duration: 1.2, offset: -70 });
+        window.__lenis.scrollTo(el, { 
+          duration: 1.2, 
+          offset: -70,
+          onComplete: onScrollComplete
+        });
       } else {
         const top = el.getBoundingClientRect().top + window.scrollY - 70;
         window.scrollTo({ top, behavior: 'smooth' });
+        setTimeout(onScrollComplete, 1200);
       }
+    } else {
+      isProgrammaticScroll.current = false;
     }
   };
 
@@ -111,6 +128,14 @@ export default function StitchNav() {
         window.requestAnimationFrame(() => {
           const currentY = window.scrollY;
           const delta = currentY - lastScrollY.current;
+
+          // Jika scroll dipicu oleh klik navbar (programmatic scroll), jangan sembunyikan navbar!
+          if (isProgrammaticScroll.current) {
+            setNavVisible(true);
+            lastScrollY.current = currentY;
+            ticking = false;
+            return;
+          }
 
           if (currentY < 70 || mobileMenuOpen) {
             setNavVisible(prev => (prev !== true ? true : prev));
