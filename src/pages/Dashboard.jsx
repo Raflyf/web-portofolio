@@ -34,9 +34,7 @@ import {
   Sparkles,
   Smartphone,
   Monitor,
-  Tablet,
-  Sun,
-  Moon
+  Tablet
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -355,21 +353,6 @@ const alwaysShowDataLabelPlugin = {
 
 export default function Dashboard({ isStitch = true } = {}) {
   const { language, setLanguage, toggleLanguage, t } = useLanguage();
-
-  // Theme State
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return document.documentElement.classList.contains('dark') || localStorage.getItem('portfolio-theme') !== 'light';
-  });
-
-
-  const handleThemeToggle = () => {
-    const nextDark = !isDark;
-    document.documentElement.classList.toggle('dark', nextDark);
-    localStorage.setItem('portfolio-theme', nextDark ? 'dark' : 'light');
-    setIsDark(nextDark);
-    telemetry.logEvent('theme_toggle', 'admin_switch', `Ubah Tema Admin ke ${nextDark ? 'gelap' : 'terang'}`);
-  };
 
   // Authentication State with Instant Synchronous Session Restore (Eliminates PIN Screen Flash on Refresh)
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -1638,12 +1621,12 @@ export default function Dashboard({ isStitch = true } = {}) {
 
             {/* Theme Toggle Button */}
             <button
-              onClick={handleThemeToggle}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-              title={isDark ? t('nav.lightMode') : t('nav.darkMode')}
+              onClick={() => setIsChangePinOpen(true)}
+              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              title={t('dashboard.header.changePinTitle')}
             >
-              {isDark ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-500" />}
-              <span className="hidden sm:inline">{isDark ? "Light" : "Dark"}</span>
+              <KeyRound className="w-3 h-3 text-purple-500 dark:text-purple-400" />
+              <span className="hidden sm:inline">{t('dashboard.header.changePin')}</span>
             </button>
 
             <button
@@ -1653,15 +1636,6 @@ export default function Dashboard({ isStitch = true } = {}) {
             >
               <Zap className="w-3 h-3 text-cyan-500 dark:text-cyan-400" />
               <span className="hidden sm:inline">{t('dashboard.header.testPing')}</span>
-            </button>
-
-            <button
-              onClick={() => setIsChangePinOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-100 dark:bg-white/5 hover:bg-zinc-200 dark:hover:bg-white/10 border border-zinc-300 dark:border-white/10 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-              title={t('dashboard.header.changePinTitle')}
-            >
-              <KeyRound className="w-3 h-3 text-purple-500 dark:text-purple-400" />
-              <span className="hidden sm:inline">{t('dashboard.header.changePin')}</span>
             </button>
 
             <button
