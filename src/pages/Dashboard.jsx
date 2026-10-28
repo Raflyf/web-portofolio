@@ -337,7 +337,7 @@ const CustomSelect = ({ value, onChange, options }) => {
         >
           <div 
             data-lenis-prevent="true" 
-            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/8 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/8 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map((option) => (
               <button

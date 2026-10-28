@@ -220,14 +220,14 @@ const CustomSelectEffort = ({ value, onChange }) => {
             width: `${menuPos.width}px`,
             zIndex: 9999
           }}
-          className="rounded-2xl liquid-glass stitch-dropdown-panel shadow-2xl py-1.5 overflow-hidden font-mono"
+          className="rounded-2xl liquid-glass stitch-dropdown-panel shadow-2xl overflow-hidden font-mono"
         >
-          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-400/90 uppercase tracking-wider border-b border-white/10 font-semibold">
+          <div className="px-3.5 py-2 text-[10px] font-mono text-cyan-400/90 uppercase tracking-wider border-b border-white/10 font-semibold">
             Reasoning Effort
           </div>
           <div 
             data-lenis-prevent="true"
-            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/8 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/8 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map(opt => (
               <button
