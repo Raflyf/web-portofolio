@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 import { DEVELOPER_PROFILE } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
 import { telemetry } from '../../lib/telemetry';
+import Reveal from '../ui/Reveal';
 
 const socialLinks = [
   {
@@ -24,7 +25,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative z-10 w-full mt-16 stitch-footer">
+    <footer className="relative z-10 w-full mt-16 overflow-hidden stitch-footer">
       {/* Glow divider top */}
       <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-cyan-500/40 to-transparent" />
 
@@ -32,7 +33,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
           {/* Brand Block */}
-          <div className="flex flex-col items-center md:items-start space-y-3">
+          <Reveal y={24} className="flex flex-col items-center md:items-start space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-linear-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
                 <span className="text-xs font-bold text-white tracking-tight">RF</span>
@@ -47,10 +48,10 @@ export default function Footer() {
                 </p>
               </div>
             </div>
-          </div>
+          </Reveal>
 
           {/* Social Links */}
-          <div className="flex items-center gap-3">
+          <Reveal y={24} delay={0.06} className="flex items-center gap-3">
             {socialLinks.map(({ icon: Icon, label, href, color }) => (
               <a
                 key={label}
@@ -64,16 +65,16 @@ export default function Footer() {
                 <Icon className="w-4 h-4" />
               </a>
             ))}
-          </div>
+          </Reveal>
 
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-6 pt-6 border-t border-white/5 flex justify-center">
+        <Reveal y={24} delay={0.12} className="mt-6 pt-6 border-t border-white/5 flex justify-center">
           <p className="text-xs text-zinc-700 dark:text-zinc-400 font-mono text-center">
             &copy; {year} Rafly Firmansyah. {t('footer.rights')}
           </p>
-        </div>
+        </Reveal>
       </div>
     </footer>
   );

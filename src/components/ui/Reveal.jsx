@@ -33,7 +33,13 @@ function getSharedObserver() {
           }
         } else {
           const visiblePx = entry.intersectionRect ? entry.intersectionRect.height : 0;
-          if (entry.intersectionRatio >= 0.14 || visiblePx >= 64 || entry.boundingClientRect.height > vh * 0.5) {
+          const isFooterItem = el.closest && Boolean(el.closest('footer'));
+          if (
+            isFooterItem ||
+            entry.intersectionRatio >= 0.14 ||
+            visiblePx >= 64 ||
+            entry.boundingClientRect.height > vh * 0.5
+          ) {
             el.classList.add('revealed');
           }
         }
