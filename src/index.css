@@ -435,19 +435,19 @@
    ========================================================================== */
 .reveal-init {
   opacity: 1;
-  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 26px), 0);
+  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 56px), 0);
   backface-visibility: hidden;
   transition: none !important;
 }
 
 .reveal-init.reveal-from-top {
-  transform: translate3d(var(--rv-x, 0px), calc(var(--rv-y, 26px) * -1), 0);
+  transform: translate3d(var(--rv-x, 0px), calc(var(--rv-y, 56px) * -1), 0);
 }
 
 .reveal-init.revealed {
   opacity: 1;
   transform: translateZ(0);
-  transition: transform var(--rv-duration, 0.62s) cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0s);
+  transition: transform var(--rv-duration, 0.78s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
 }
 
 .reveal-init.revealed.liquid-glass-hover:hover {

@@ -912,25 +912,26 @@ button.stitch-btn-glass:active,
 /* ==========================================================================
    10. Pure Transform Scroll Reveal Guarantee (Zero Opacity / Zero Scale Lag)
    - Menjamin `.reveal-init` dan `.reveal-init.revealed` berjalan dengan `opacity: 1`
-     dan murni `translate3d` tanpa mengubah ukuran FBO blur atau membentuk Backdrop Root.
+     dan murni `translate3d` (56px bidirectional glide) tanpa mengubah ukuran FBO blur
+     atau membentuk Backdrop Root.
    ========================================================================== */
 .stitch-liquid-theme .reveal-init:not(.revealed),
 .stitch-dashboard-container .reveal-init:not(.revealed) {
   opacity: 1 !important;
-  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 26px), 0) !important;
+  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 56px), 0) !important;
   transition: none !important;
 }
 
 .stitch-liquid-theme .reveal-init.reveal-from-top:not(.revealed),
 .stitch-dashboard-container .reveal-init.reveal-from-top:not(.revealed) {
-  transform: translate3d(var(--rv-x, 0px), calc(var(--rv-y, 26px) * -1), 0) !important;
+  transform: translate3d(var(--rv-x, 0px), calc(var(--rv-y, 56px) * -1), 0) !important;
 }
 
 .stitch-liquid-theme .reveal-init.revealed,
 .stitch-dashboard-container .reveal-init.revealed {
   opacity: 1 !important;
   transform: translateZ(0) !important;
-  transition: transform var(--rv-duration, 0.62s) cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0s) !important;
+  transition: transform var(--rv-duration, 0.78s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s) !important;
 }
 
 .stitch-liquid-theme .reveal-init.revealed.liquid-glass-hover:hover,

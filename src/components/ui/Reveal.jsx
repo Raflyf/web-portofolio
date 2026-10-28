@@ -1,56 +1,70 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * Shared IntersectionObserver Pool with Offscreen Hysteresis (Zero React Re-Renders on Scroll)
- * - Satu observer dibagi oleh seluruh elemen Reveal di halaman.
- * - Begitu 1% kartu menyentuh viewport (`entry.isIntersecting`), `.revealed` langsung aktif
- *   sehingga kartu meluncur mulus (cubic-bezier(0.22, 1, 0.36, 1)) tanpa jeda kaku.
- * - Reset (`revealed` dilepas & arah `reveal-from-top` disetel) HANYA terjadi saat kartu 100%
- *   keluar dari viewport (`!entry.isIntersecting`) dengan `transition: none` (biaya GPU 0ms).
- * - Murni menganimasikan `translate3d` pada compositor GPU (tanpa mengubah `opacity` atau `scale`
- *   pada kartu ber-backdrop-filter) sehingga Chromium tidak pernah membuat Backdrop Root
- *   perantara atau mengalokasikan ulang tekstur FBO blur saat scroll.
+ * Dual-Observer Bidirectional Scroll Reveal Engine (Zero React Re-Renders, 60fps Compositor-Only)
+ * - `enterObserver` (`rootMargin: '-9% 0px -9% 0px'`): Mengaktifkan `.revealed` tepat ketika
+ *   kartu sudah masuk ~9% ke dalam layar (area pandang mata pengguna), sehingga gerakan meluncur
+ *   56px dari bawah ke atas (saat scroll down) maupun dari atas ke bawah (saat scroll up)
+ *   benar-benar terlihat jelas dan halus.
+ * - `exitObserver` (`rootMargin: '0px'`): Mereset `.revealed` dan menyetel arah `.reveal-from-top`
+ *   HANYA saat kartu 100% keluar dari batas layar dengan `transition: none` (biaya GPU 0ms).
+ * - Murni menganimasikan `translate3d` pada compositor GPU dengan `opacity: 1` konstan,
+ *   sehingga Chromium tidak pernah mengalokasikan ulang tekstur FBO `backdrop-filter` saat scroll.
  */
-let sharedObserver = null;
+let sharedEnterObserver = null;
+let sharedExitObserver = null;
 
-function getSharedObserver() {
-  if (sharedObserver) {
-    return sharedObserver;
+function getSharedObservers() {
+  if (sharedEnterObserver && sharedExitObserver) {
+    return { enterObserver: sharedEnterObserver, exitObserver: sharedExitObserver };
   }
 
-  sharedObserver = new IntersectionObserver(
+  sharedEnterObserver = new IntersectionObserver(
+    (entries) => {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        if (entry.isIntersecting && entry.intersectionRatio > 0) {
+          entry.target.classList.add('revealed');
+        }
+      }
+    },
+    {
+      threshold: [0.01],
+      rootMargin: '-9% 0px -9% 0px',
+    }
+  );
+
+  sharedExitObserver = new IntersectionObserver(
     (entries) => {
       for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
         const el = entry.target;
 
-        if (!entry.isIntersecting || entry.intersectionRatio <= 0) {
+        if (!entry.isIntersecting && entry.intersectionRatio <= 0) {
           el.classList.remove('revealed');
           if (entry.boundingClientRect.top < 0) {
             el.classList.add('reveal-from-top');
           } else {
             el.classList.remove('reveal-from-top');
           }
-        } else {
-          el.classList.add('revealed');
         }
       }
     },
     {
-      threshold: [0, 0.01],
+      threshold: [0],
       rootMargin: '0px',
     }
   );
 
-  return sharedObserver;
+  return { enterObserver: sharedEnterObserver, exitObserver: sharedExitObserver };
 }
 
 export default function Reveal({
-  y = 26,
+  y = 56,
   x = 0,
   scale = null,
   fade = false,
-  duration = 0.62,
+  duration = 0.78,
   delay = 0,
   amount = 0.01,
   as: Tag = 'div',
@@ -68,10 +82,12 @@ export default function Reveal({
       return;
     }
 
-    const io = getSharedObserver();
-    io.observe(el);
+    const { enterObserver, exitObserver } = getSharedObservers();
+    exitObserver.observe(el);
+    enterObserver.observe(el);
     return () => {
-      io.unobserve(el);
+      enterObserver.unobserve(el);
+      exitObserver.unobserve(el);
     };
   }, [amount]);
 

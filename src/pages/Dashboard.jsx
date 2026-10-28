@@ -1733,7 +1733,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 1. 5 BENTO KPI METRIC CARDS WITH TIME RANGE FILTER */}
         {/* ========================================================================= */}
-        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="space-y-4">
+        <Reveal as="section" className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-cyan-400" />
@@ -1834,7 +1834,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 2. TOP ROW CHARTS: TRAFFIC VELOCITY & CLICK DISTRIBUTION */}
         {/* ========================================================================= */}
-        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <Reveal as="section" className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Chart 1: Traffic Velocity Line Chart */}
           <div className="lg:col-span-7 p-6 liquid-glass space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -1889,7 +1889,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 3. 4-CARD INTELLIGENCE GRID: PLATFORM, PROJECTS, CERTS, REFERRERS */}
         {/* ========================================================================= */}
-        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="space-y-4">
+        <Reveal as="section" className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Radar className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
@@ -2038,7 +2038,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 4. AI MODELS MULTI-TIER MATRIX & INFERENCE MONITORING */}
         {/* ========================================================================= */}
-        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="p-6 liquid-glass space-y-6">
+        <Reveal as="section" className="p-6 liquid-glass space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -2144,7 +2144,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 5. AI LONG-TERM MEMORY EXPLORER (Supabase Continuous RAG) */}
         {/* ========================================================================= */}
-        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="p-6 liquid-glass space-y-5">
+        <Reveal as="section" className="p-6 liquid-glass space-y-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
@@ -2260,7 +2260,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 6. REAL-TIME ACTIVITY STREAM TABLE & EXPORT */}
         {/* ========================================================================= */}
-        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="p-6 liquid-glass space-y-5 relative z-20">
+        <Reveal as="section" className="p-6 liquid-glass space-y-5 relative z-20">
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
