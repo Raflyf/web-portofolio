@@ -606,7 +606,7 @@ button.stitch-btn-glass:active,
 }
 
 .section-contain {
-  contain: layout style;
+  contain: style;
 }
 
 /* Optimasi GPU Mobile (<= 768px): seluruh kartu, nav, & dropdown menggunakan blur tipis seragam (8px) */

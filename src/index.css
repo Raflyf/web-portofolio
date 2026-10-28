@@ -243,9 +243,9 @@
   box-shadow: 0 18px 38px -10px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
-/* High-Performance Rendering & Containment */
+/* High-Performance Rendering & Containment (Tanpa contain: layout agar tidak menjebak position: fixed modal terhadap tinggi section) */
 .section-contain {
-  contain: layout style;
+  contain: style;
 }
 
 /* Light-mode liquid glass overrides (white translucent, dark text) */

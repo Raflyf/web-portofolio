@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence } from 'framer-motion';
 import { getCertificatesData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
@@ -28,18 +29,35 @@ export default function CertificatesGrid() {
   const closeCertModal = () => {
     setSelectedCert(null);
     setSelectedPage(0);
-    // FIX M6: return focus to the trigger card (if it is still mounted).
+    // FIX M6: return focus to the trigger card without scrolling the viewport.
     if (triggerRef.current && typeof triggerRef.current.focus === 'function') {
-      triggerRef.current.focus();
+      triggerRef.current.focus({ preventScroll: true });
     }
     triggerRef.current = null;
   };
 
-  // FIX M6: focus the dialog container when it opens.
+  // FIX M6: focus the dialog container when it opens without scrolling, and lock Lenis scroll.
   useEffect(() => {
-    if (selectedCert && modalRef.current) {
-      modalRef.current.focus();
+    if (selectedCert) {
+      if (modalRef.current) {
+        modalRef.current.focus({ preventScroll: true });
+      }
+      if (window.__lenis) {
+        try { window.__lenis.stop(); } catch {}
+      }
+      document.body.style.overflow = 'hidden';
+    } else {
+      if (window.__lenis) {
+        try { window.__lenis.start(); } catch {}
+      }
+      document.body.style.overflow = '';
     }
+    return () => {
+      if (window.__lenis) {
+        try { window.__lenis.start(); } catch {}
+      }
+      document.body.style.overflow = '';
+    };
   }, [selectedCert]);
 
   const filteredCertificates = useMemo(() => {
@@ -173,91 +191,99 @@ export default function CertificatesGrid() {
         ))}
       </div>
 
-      {/* Certificate Viewer Modal (Multi-Page Support) */}
-      <AnimatePresence>
-        {selectedCert && (
-          <div
-            ref={modalRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${t('certificates.previewTitle')} ${selectedCert.title}`}
-            tabIndex={-1}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md glass-backdrop-in"
-            onClick={closeCertModal}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.stopPropagation();
-                closeCertModal();
-              } else if (e.key === 'ArrowLeft') {
-                setSelectedPage((p) => Math.max(0, p - 1));
-              } else if (e.key === 'ArrowRight') {
-                const total = (selectedCert.images && selectedCert.images.length) || 1;
-                setSelectedPage((p) => Math.min(total - 1, p + 1));
-              }
-            }}
-          >
-            <div className="relative max-w-4xl w-full max-h-[90vh] liquid-glass-strong glass-spring-in p-4 overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-              {/* Modal Header */}
-              <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10 mb-3 shrink-0">
-                <div className="min-w-0">
-                  <h3 className="text-sm sm:text-base font-bold text-white truncate">{selectedCert.title}</h3>
-                  <p className="text-[11px] text-zinc-400 truncate">{selectedCert.issuer} · {selectedCert.date}</p>
-                </div>
-                <button
-                  onClick={closeCertModal}
-                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white cursor-pointer shrink-0"
-                  aria-label={t('certificates.close')}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Multi-Page Image Area */}
-              {(() => {
-                const pages = (selectedCert.images && selectedCert.images.length > 0)
-                  ? selectedCert.images
-                  : [selectedCert.imageUrl].filter(Boolean);
-                const pageIndex = Math.min(selectedPage, pages.length - 1);
-                const currentPage = pages[pageIndex];
-
-                return (
-                  <div className="relative flex-1 min-h-0 overflow-hidden">
-                    <img
-                      src={currentPage}
-                      alt={`${selectedCert.title} - ${t('certificates.page')} ${pageIndex + 1}`}
-                      className="w-full h-auto max-h-[70vh] object-contain rounded-2xl mx-auto"
-                    />
-
-                    {pages.length > 1 && (
-                      <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-white/10">
-                        <button
-                          onClick={() => setSelectedPage((p) => Math.max(0, p - 1))}
-                          disabled={pageIndex === 0}
-                          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white cursor-pointer"
-                          aria-label={t('certificates.prevPage')}
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <span className="text-xs font-mono text-zinc-300">
-                          {t('certificates.page')} {pageIndex + 1} / {pages.length}
-                        </span>
-                        <button
-                          onClick={() => setSelectedPage((p) => Math.min(pages.length - 1, p + 1))}
-                          disabled={pageIndex === pages.length - 1}
-                          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white cursor-pointer"
-                          aria-label={t('certificates.nextPage')}
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
+      {/* Certificate Viewer Modal (Top-Level Portal agar fixed terhadap layar saat ini, bukan terhadap .section-contain) */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {selectedCert && (
+            <div
+              ref={modalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${t('certificates.previewTitle')} ${selectedCert.title}`}
+              tabIndex={-1}
+              data-lenis-prevent="true"
+              className="stitch-liquid-theme fixed inset-0 z-100 flex items-center justify-center p-4 glass-backdrop-in focus:outline-none"
+              onClick={closeCertModal}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.stopPropagation();
+                  closeCertModal();
+                } else if (e.key === 'ArrowLeft') {
+                  setSelectedPage((p) => Math.max(0, p - 1));
+                } else if (e.key === 'ArrowRight') {
+                  const total = (selectedCert.images && selectedCert.images.length) || 1;
+                  setSelectedPage((p) => Math.min(total - 1, p + 1));
+                }
+              }}
+            >
+              <div
+                data-lenis-prevent="true"
+                className="relative max-w-4xl w-full max-h-[90vh] liquid-glass-strong glass-spring-in p-4 sm:p-5 overflow-hidden flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10 mb-3 shrink-0">
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-white truncate">{selectedCert.title}</h3>
+                    <p className="text-[11px] text-zinc-400 truncate">{selectedCert.issuer} · {selectedCert.date}</p>
                   </div>
-                );
-              })()}
+                  <button
+                    onClick={closeCertModal}
+                    className="w-9 h-9 rounded-full stitch-btn-glass flex items-center justify-center text-white cursor-pointer shrink-0"
+                    aria-label={t('certificates.close')}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Multi-Page Image Area */}
+                {(() => {
+                  const pages = (selectedCert.images && selectedCert.images.length > 0)
+                    ? selectedCert.images
+                    : [selectedCert.imageUrl].filter(Boolean);
+                  const pageIndex = Math.min(selectedPage, pages.length - 1);
+                  const currentPage = pages[pageIndex];
+
+                  return (
+                    <div className="relative flex-1 min-h-0 overflow-hidden">
+                      <img
+                        src={currentPage}
+                        alt={`${selectedCert.title} - ${t('certificates.page')} ${pageIndex + 1}`}
+                        className="w-full h-auto max-h-[70vh] object-contain rounded-2xl mx-auto"
+                      />
+
+                      {pages.length > 1 && (
+                        <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-white/10">
+                          <button
+                            onClick={() => setSelectedPage((p) => Math.max(0, p - 1))}
+                            disabled={pageIndex === 0}
+                            className="w-8 h-8 rounded-full stitch-btn-glass disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white cursor-pointer"
+                            aria-label={t('certificates.prevPage')}
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                          <span className="text-xs font-mono text-zinc-300">
+                            {t('certificates.page')} {pageIndex + 1} / {pages.length}
+                          </span>
+                          <button
+                            onClick={() => setSelectedPage((p) => Math.min(pages.length - 1, p + 1))}
+                            disabled={pageIndex === pages.length - 1}
+                            className="w-8 h-8 rounded-full stitch-btn-glass disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white cursor-pointer"
+                            aria-label={t('certificates.nextPage')}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
-          </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </section>
   );
 }

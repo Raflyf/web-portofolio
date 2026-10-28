@@ -1600,14 +1600,14 @@ export default function TerminalAI({ onClose } = {}) {
         )}
       </div>
 
-      {/* History Modal */}
-      {showHistoryModal && (
+      {/* History Modal (Top-Level Portal agar fixed terhadap layar saat ini) */}
+      {showHistoryModal && typeof document !== 'undefined' && createPortal(
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Riwayat Percakapan"
           data-lenis-prevent="true"
-          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-md glass-backdrop-in p-4"
+          className="stitch-liquid-theme fixed inset-0 z-150 flex items-center justify-center glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -1706,17 +1706,18 @@ export default function TerminalAI({ onClose } = {}) {
                )}
             </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
-      {/* Checkpoint & Restore Modal */}
-      {showCheckpointModal && (
+      {/* Checkpoint & Restore Modal (Top-Level Portal agar fixed terhadap layar saat ini) */}
+      {showCheckpointModal && typeof document !== 'undefined' && createPortal(
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Checkpoint & Restore State"
           data-lenis-prevent="true"
-          className="fixed inset-0 z-150 flex items-center justify-center bg-black/60 backdrop-blur-md glass-backdrop-in p-4"
+          className="stitch-liquid-theme fixed inset-0 z-150 flex items-center justify-center glass-backdrop-in p-4"
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -1819,23 +1820,24 @@ export default function TerminalAI({ onClose } = {}) {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Fullscreen Image Preview Modal */}
-            {selectedImagePreview && (
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-label="Preview Gambar Lampiran"
-                data-lenis-prevent="true"
-                className="fixed inset-0 z-200 flex items-center justify-center bg-black/85 backdrop-blur-md p-4"
-                onClick={() => setSelectedImagePreview(null)}
-              >
-          <div className="relative max-w-4xl max-h-[85vh] p-2 bg-zinc-950/90 border border-white/20 rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center">
+      {/* Fullscreen Image Preview Modal (Top-Level Portal agar fixed terhadap layar saat ini) */}
+      {selectedImagePreview && typeof document !== 'undefined' && createPortal(
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Preview Gambar Lampiran"
+          data-lenis-prevent="true"
+          className="stitch-liquid-theme fixed inset-0 z-200 flex items-center justify-center glass-backdrop-in p-4"
+          onClick={() => setSelectedImagePreview(null)}
+        >
+          <div className="relative max-w-4xl max-h-[85vh] p-3 liquid-glass-strong rounded-2xl overflow-hidden shadow-2xl flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <button 
               onClick={() => setSelectedImagePreview(null)}
-              className="absolute top-3 right-3 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer z-10"
+              className="absolute top-3 right-3 p-2 rounded-full stitch-btn-glass text-white transition cursor-pointer z-10"
               title="Tutup Preview"
             >
               <X className="w-4 h-4" />
@@ -1846,7 +1848,8 @@ export default function TerminalAI({ onClose } = {}) {
               className="max-h-[78vh] max-w-full object-contain rounded-lg shadow-md"
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Terminal Input Area */}
