@@ -26,7 +26,7 @@ export default function StitchPortfolio() {
   }, []);
 
   return (
-    <div className="stitch-liquid-theme min-h-screen bg-[#06080d] text-slate-100 selection:bg-cyan-500/20 font-sans relative overflow-x-hidden">
+    <div className="stitch-liquid-theme min-h-screen bg-[#06080d] text-slate-100 selection:bg-cyan-500/20 font-sans relative overflow-x-clip">
       {/* 1. Liquid Caustics & Organic Mesh Backdrop (Google Stitch) */}
       <StitchCausticsBackdrop />
 
@@ -34,7 +34,7 @@ export default function StitchPortfolio() {
       <StitchNav />
 
       {/* 3. Main Authentic Content Sections in Exact Layout & Order */}
-      <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-hidden pt-6">
+      <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-clip pt-6">
         {/* Scrollytelling Progress & HUD */}
         <ScrollStoryline />
 

@@ -27,7 +27,7 @@ export default function Home() {
       {/* Full-Page Continuous Interactive Scroll Background (Hero to Footer) */}
       <InteractiveScrollBackground />
 
-      <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-hidden">
+      <main className="w-full relative z-10 flex flex-col space-y-24 overflow-x-clip">
         {/* Scrollytelling Progress & HUD */}
         <ScrollStoryline />
 

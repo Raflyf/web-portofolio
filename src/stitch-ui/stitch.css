@@ -77,6 +77,14 @@ body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
 
 .stitch-liquid-theme.relative {
   background-color: transparent !important;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
+.stitch-liquid-theme > main,
+.stitch-dashboard-container > div > main {
+  overflow-x: clip !important;
+  overflow-y: visible !important;
 }
 
 /* Isolate layout and composite surfaces for zero-framedrop 60fps scrolling. */
