@@ -114,7 +114,7 @@ export default function ProjectsGrid() {
 
   return (
     <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-12">
+      <Reveal className="text-center space-y-4 mb-12">
         <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('projects.badge')}</span>
         </div>
@@ -127,7 +127,7 @@ export default function ProjectsGrid() {
       </Reveal>
 
       {/* Filter Tabs */}
-      <Reveal y={24} duration={0.55} delay={0.05} amount={0.15} className="flex justify-center mb-12">
+      <Reveal delay={0.06} className="flex justify-center mb-12">
         <div className="stitch-capsule-group">
           {[
             { id: 'all', label: t('projects.tabAll') },
@@ -155,7 +155,7 @@ export default function ProjectsGrid() {
 
       {/* Featured Project Showcase Card (HANYA tampil pada tab 'Semua Proyek') */}
       {featuredProject && (
-        <Reveal y={24} duration={0.55} amount={0.15} className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group">
+        <Reveal className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group">
           <div
             className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full pointer-events-none"
             style={{
@@ -240,10 +240,7 @@ export default function ProjectsGrid() {
         {displayProjects.map((project, index) => (
           <Reveal 
             key={project.id}
-            y={24}
-            duration={0.55}
-            delay={(index % 2) * 0.06}
-            amount={0.15}
+            delay={(index % 2) * 0.08}
             className="liquid-glass liquid-glass-hover p-7 group flex flex-col justify-between"
           >
             <div className="space-y-4">

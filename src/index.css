@@ -227,18 +227,21 @@
 
 /* Hover lift + glow transition - pair with .liquid-glass or .liquid-glass-strong */
 .liquid-glass-hover {
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.3s ease,
-              box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-              background 0.3s ease;
-  transform: translateZ(0);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   backface-visibility: hidden;
 }
 
+.liquid-glass-hover:not(.reveal-init) {
+  transform: translateZ(0);
+}
+
 .liquid-glass-hover:hover {
-  transform: translateY(-4px) translateZ(0);
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  transform: translate3d(0, -5px, 0) scale(1.008);
+  border-color: rgba(255, 255, 255, 0.34);
+  box-shadow: 0 24px 52px -12px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.36);
 }
 
 /* High-Performance Rendering & Containment */
@@ -422,31 +425,43 @@
   mask-image: linear-gradient(to right, transparent 0, #000 3rem, #000 calc(100% - 3rem), transparent 100%);
 }
 /* ==========================================================================
-   Reveal berbasis CSS transition (compositor) — lihat components/ui/Reveal.jsx.
-   Terukur: mengganti reveal framer (JS main thread) -> +10 FPS & 0 frame jank.
-   Transform-only (tanpa opacity) supaya backdrop-filter elemen kaca tetap
-   hidup selama animasi (fix blur pop-in). `.reveal-fade` hanya utk non-kaca.
+   Luxury Spatial Reveal (CSS Compositor GPU) — lihat components/ui/Reveal.jsx.
+   - Berjalan langsung pada elemen kartu kaca (tanpa wrapper perantara ber-opacity < 1
+     sehingga backdrop-filter mem-blur latar secara langsung sejak frame pertama).
+   - Mendukung animasi dua arah (scroll down & scroll up) dengan skala + meluncur
+     halus (cubic-bezier(0.22, 1, 0.36, 1)).
+   - Saat off-screen (:not(.revealed)), reset terjadi instan (0.01s) tanpa membebani GPU.
    ========================================================================== */
 .reveal-init {
-  opacity: 1;
-  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 24px), 0) scale(var(--rv-scale, 1));
+  opacity: 0;
+  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 36px), 0) scale(var(--rv-scale, 0.955));
   backface-visibility: hidden;
-  transition: transform var(--rv-duration, 0.55s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
+  transition: opacity 0.01s linear 0s, transform 0.01s linear 0s !important;
 }
 
 .reveal-init.reveal-from-top {
-  transform: translate3d(var(--rv-x, 0px), calc(var(--rv-y, 24px) * -1), 0) scale(var(--rv-scale, 1));
-}
-
-.reveal-init.reveal-fade {
-  opacity: 0;
-  transition: opacity var(--rv-duration, 0.55s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s),
-              transform var(--rv-duration, 0.55s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
+  transform: translate3d(var(--rv-x, 0px), calc(var(--rv-y, 36px) * -1), 0) scale(var(--rv-scale, 0.955));
 }
 
 .reveal-init.revealed {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
+  transform: none;
+  transition:
+    opacity calc(var(--rv-duration, 0.78s) * 0.68) cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0s),
+    transform var(--rv-duration, 0.78s) cubic-bezier(0.22, 1, 0.36, 1) var(--rv-delay, 0s),
+    background 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.reveal-init.revealed.liquid-glass-hover:hover {
+  transform: translate3d(0, -5px, 0) scale(1.008) !important;
+  transition:
+    opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1) 0s,
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1) 0s,
+    background 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0s,
+    border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0s,
+    box-shadow 0.38s cubic-bezier(0.22, 1, 0.36, 1) 0s !important;
 }
 
 /* Reveal: slide up (scroll-triggered via IntersectionObserver / framer).

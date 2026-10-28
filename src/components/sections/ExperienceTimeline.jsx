@@ -16,7 +16,7 @@ export default function ExperienceTimeline() {
 
   return (
     <section id="timeline" ref={containerRef} className="relative px-4 sm:px-6 w-full max-w-4xl mx-auto pt-24 pb-24">
-      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-16">
+      <Reveal className="text-center space-y-4 mb-16">
         <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('timeline.badge')}</span>
         </div>
@@ -44,12 +44,8 @@ export default function ExperienceTimeline() {
             const isEducation = item.type === 'education';
 
             return (
-              <Reveal
+              <div
                 key={index}
-                y={24}
-                duration={0.55}
-                delay={(index % 2) * 0.06}
-                amount={0.15}
                 className={`relative flex flex-col sm:flex-row items-start sm:items-center ${isLeft ? 'sm:justify-start' : 'sm:justify-end'} group`}
               >
                 {/* Timeline Dot */}
@@ -59,7 +55,10 @@ export default function ExperienceTimeline() {
 
                 {/* Content Card */}
                 <div className={`w-full sm:w-[45%] pl-8 sm:pl-0 ${isLeft ? 'sm:pr-12 sm:text-right' : 'sm:pl-12 sm:text-left'}`}>
-                  <div className="liquid-glass liquid-glass-hover p-6 sm:p-7 relative overflow-hidden text-left">
+                  <Reveal
+                    delay={(index % 2) * 0.08}
+                    className="liquid-glass liquid-glass-hover p-6 sm:p-7 relative overflow-hidden text-left"
+                  >
                     <div className="flex items-center gap-3 mb-3">
                       <span className="px-3 py-1 text-[10px] font-semibold tracking-wider text-cyan-300 stitch-btn-glass rounded-full uppercase">
                         {item.period}
@@ -74,9 +73,9 @@ export default function ExperienceTimeline() {
                     <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
                       {item.description}
                     </p>
-                  </div>
+                  </Reveal>
                 </div>
-              </Reveal>
+              </div>
             );
           })}
         </div>

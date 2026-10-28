@@ -45,7 +45,7 @@ export default function AboutSection() {
 
   return (
     <section id="about" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-16">
+      <Reveal className="text-center space-y-4 mb-16">
         <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('about.badge')}</span>
         </div>
@@ -62,9 +62,6 @@ export default function AboutSection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         {/* Main Bio Card */}
         <Reveal 
-          y={24}
-          duration={0.55}
-          amount={0.15}
           className="lg:col-span-6 space-y-6 text-base sm:text-lg text-zinc-300 leading-relaxed p-8 sm:p-10 liquid-glass-strong liquid-glass-hover relative overflow-hidden flex flex-col justify-center"
         >
           <div
@@ -103,10 +100,7 @@ export default function AboutSection() {
           {pillars.map((pillar, i) => (
             <Reveal 
               key={i} 
-              y={24}
-              duration={0.55}
-              delay={(i % 2) * 0.06}
-              amount={0.15}
+              delay={(i % 2) * 0.08}
               className="p-6 liquid-glass liquid-glass-hover group cursor-default relative overflow-hidden flex flex-col justify-between"
             >
               <div className="relative z-10">

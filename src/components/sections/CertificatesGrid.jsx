@@ -60,7 +60,7 @@ export default function CertificatesGrid() {
 
   return (
     <section id="certificates" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-12">
+      <Reveal className="text-center space-y-4 mb-12">
         <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('certificates.badge')}</span>
         </div>
@@ -73,7 +73,7 @@ export default function CertificatesGrid() {
       </Reveal>
 
       {/* Filter Tabs */}
-      <Reveal y={24} duration={0.55} delay={0.05} amount={0.15} className="flex justify-center mb-12">
+      <Reveal delay={0.06} className="flex justify-center mb-12">
         <div className="stitch-capsule-group">
           {filterTabs.map(tab => (
             <button
@@ -99,10 +99,7 @@ export default function CertificatesGrid() {
         {filteredCertificates.map((cert, index) => (
           <Reveal 
             key={cert.id} 
-            y={24}
-            duration={0.55}
-            delay={(index % 3) * 0.06}
-            amount={0.15}
+            delay={(index % 3) * 0.08}
             className="liquid-glass liquid-glass-hover group flex flex-col justify-between relative overflow-hidden p-6"
           >
             <div>

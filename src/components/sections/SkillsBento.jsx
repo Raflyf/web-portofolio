@@ -23,7 +23,7 @@ export default function SkillsBento() {
 
   return (
     <section ref={sectionRef} id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-14">
+      <Reveal className="text-center space-y-4 mb-14">
         <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('skills.badge')}</span>
         </div>
@@ -36,7 +36,7 @@ export default function SkillsBento() {
       </Reveal>
 
       {/* Infinite Marquee 1 (Left Scrolling) */}
-      <Reveal y={24} duration={0.55} delay={0.05} amount={0.15} className="relative overflow-hidden flex w-full mb-4 marquee-mask-x">
+      <Reveal delay={0.06} className="relative overflow-hidden flex w-full mb-4 marquee-mask-x">
         <div 
           className="animate-marquee-left flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}
@@ -55,7 +55,7 @@ export default function SkillsBento() {
       </Reveal>
 
       {/* Infinite Marquee 2 (Right Scrolling) */}
-      <Reveal y={24} duration={0.55} delay={0.1} amount={0.15} className="relative overflow-hidden flex w-full mb-16 marquee-mask-x">
+      <Reveal delay={0.12} className="relative overflow-hidden flex w-full mb-16 marquee-mask-x">
         <div 
           className="animate-marquee-right flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}
@@ -78,9 +78,6 @@ export default function SkillsBento() {
         
         {/* Machine Learning & NLP */}
         <Reveal 
-          y={24}
-          duration={0.55}
-          amount={0.15}
           className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
@@ -101,10 +98,7 @@ export default function SkillsBento() {
 
         {/* Network & Infrastructure */}
         <Reveal 
-          y={24}
-          duration={0.55}
-          delay={0.06}
-          amount={0.15}
+          delay={0.08}
           className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
@@ -125,9 +119,6 @@ export default function SkillsBento() {
 
         {/* Backend & Full-Stack */}
         <Reveal 
-          y={24}
-          duration={0.55}
-          amount={0.15}
           className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
@@ -148,10 +139,7 @@ export default function SkillsBento() {
 
         {/* Computer Vision & Interactive Tools */}
         <Reveal 
-          y={24}
-          duration={0.55}
-          delay={0.06}
-          amount={0.15}
+          delay={0.08}
           className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />

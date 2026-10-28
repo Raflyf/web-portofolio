@@ -52,7 +52,7 @@ export default function StitchPortfolio() {
 
         {/* Terminal & Interactive AI Lab */}
         <section className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-12 pb-24 section-contain" id="lab">
-          <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-12">
+          <Reveal className="text-center space-y-4 mb-12">
             <div className="inline-flex items-center gap-2 liquid-glass-inset liquid-glass-pill px-3.5 py-1.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-cyan-300 font-mono">{t('lab.badge')}</span>
             </div>
@@ -64,7 +64,7 @@ export default function StitchPortfolio() {
             </p>
           </Reveal>
           
-          <Reveal y={24} duration={0.55} delay={0.06} amount={0.15}>
+          <Reveal delay={0.08}>
             <TerminalAI />
           </Reveal>
         </section>

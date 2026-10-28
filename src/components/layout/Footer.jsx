@@ -33,7 +33,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
           {/* Brand Block */}
-          <Reveal y={24} duration={0.55} amount={0.15} className="flex flex-col items-center md:items-start space-y-3">
+          <Reveal className="flex flex-col items-center md:items-start space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-linear-to-tr from-cyan-500/30 to-indigo-500/30 border border-cyan-400/50 flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]">
                 <span className="text-xs font-bold text-white tracking-tight">RF</span>
@@ -51,7 +51,7 @@ export default function Footer() {
           </Reveal>
 
           {/* Social Links */}
-          <Reveal y={24} duration={0.55} delay={0.06} amount={0.15} className="flex items-center gap-3">
+          <Reveal delay={0.08} className="flex items-center gap-3">
             {socialLinks.map(({ icon: Icon, label, href, color }) => (
               <a
                 key={label}
@@ -70,7 +70,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <Reveal y={24} duration={0.55} delay={0.12} amount={0.15} className="mt-6 pt-6 border-t border-white/5 flex justify-center">
+        <Reveal delay={0.16} className="mt-6 pt-6 border-t border-white/5 flex justify-center">
           <p className="text-xs text-zinc-700 dark:text-zinc-400 font-mono text-center">
             &copy; {year} Rafly Firmansyah. {t('footer.rights')}
           </p>

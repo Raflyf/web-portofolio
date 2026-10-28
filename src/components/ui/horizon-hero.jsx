@@ -271,7 +271,7 @@ export default function HorizonHero() {
             style={{ y: heroTextY }}
             className="lg:col-span-7"
           >
-            <Reveal y={24} duration={0.55} amount={0.15} className="flex flex-col justify-center space-y-8">
+            <Reveal className="flex flex-col justify-center space-y-8">
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
                   <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
@@ -326,7 +326,7 @@ export default function HorizonHero() {
             onBlur={() => setIsPaused(false)}
           >
             {/* Dynamic Project Showcase Canvas */}
-            <Reveal y={24} duration={0.55} delay={0.06} amount={0.15} className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7 rounded-3xl">
+            <Reveal delay={0.08} className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7 rounded-3xl">
               <div 
                 className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full pointer-events-none" 
                 style={{
@@ -436,7 +436,7 @@ export default function HorizonHero() {
             </Reveal>
 
             {/* Marquee Tech Brand Pod */}
-            <Reveal y={24} duration={0.55} delay={0.12} amount={0.15} className="relative overflow-hidden liquid-glass py-4 rounded-2xl">
+            <Reveal delay={0.16} className="relative overflow-hidden liquid-glass py-4 rounded-2xl">
               <div className="mb-2.5 px-6 flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Core Engineering Stack</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />

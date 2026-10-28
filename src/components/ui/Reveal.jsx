@@ -1,42 +1,51 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * Shared IntersectionObserver Pool (Zero React Re-Renders on Scroll)
- * - Satu observer per nilai threshold (default 0.15), dibagi oleh seluruh kartu di halaman.
- * - Memodifikasi class DOM (`revealed` & `reveal-from-top`) secara langsung tanpa memicu
- *   React `setState` / re-render saat pengguna sedang melakukan scroll.
- * - Mendukung animasi dua arah (bidirectional scroll up & down) yang 100% konsisten:
- *   - Saat di-scroll ke bawah (elemen masuk dari bawah): meluncur naik (+24px -> 0)
- *   - Saat di-scroll ke atas (elemen masuk dari atas): meluncur turun (-24px -> 0)
+ * Shared IntersectionObserver Pool with Hysteresis (Zero React Re-Renders on Scroll)
+ * - Satu observer per nilai threshold (default 0.08), dibagi oleh seluruh kartu di halaman.
+ * - Menggunakan hysteresis multi-threshold `[0, 0.02, targetRatio]`:
+ *   - Kartu langsung mulai reveal saat 6-8% bagiannya menyentuh viewport (atau 2% untuk kartu tinggi di mobile).
+ *   - Reset (`revealed` dilepas & arah `reveal-from-top` disetel) HANYA terjadi saat kartu 100%
+ *     keluar dari viewport (`!entry.isIntersecting || entry.intersectionRatio === 0`).
+ *     Hasilnya: kartu tidak pernah melompat/reset saat masih terlihat di layar, dan selalu
+ *     siap memainkan animasi reveal mewah yang konsisten baik saat di-scroll ke bawah maupun ke atas.
  */
 const observerPool = new Map();
 
 function getSharedObserver(threshold) {
-  const key = Math.min(1, Math.max(0.01, Number(threshold) || 0.15)).toFixed(2);
+  const targetRatio = Math.min(0.5, Math.max(0.02, Number(threshold) || 0.08));
+  const key = targetRatio.toFixed(2);
   if (observerPool.has(key)) {
     return observerPool.get(key);
   }
 
+  const thresholds = Array.from(new Set([0, 0.02, targetRatio])).sort((a, b) => a - b);
+
   const io = new IntersectionObserver(
     (entries) => {
+      const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
       for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
         const el = entry.target;
-        if (entry.isIntersecting) {
-          el.classList.add('revealed');
-        } else {
+
+        if (!entry.isIntersecting || entry.intersectionRatio <= 0) {
           el.classList.remove('revealed');
           if (entry.boundingClientRect.top < 0) {
             el.classList.add('reveal-from-top');
           } else {
             el.classList.remove('reveal-from-top');
           }
+        } else if (
+          entry.intersectionRatio >= targetRatio ||
+          (entry.intersectionRatio >= 0.02 && entry.boundingClientRect.height > vh * 0.65)
+        ) {
+          el.classList.add('revealed');
         }
       }
     },
     {
-      threshold: Number(key),
-      rootMargin: '-12px 0px -12px 0px',
+      threshold: thresholds,
+      rootMargin: '0px 0px -3% 0px',
     }
   );
 
@@ -45,13 +54,13 @@ function getSharedObserver(threshold) {
 }
 
 export default function Reveal({
-  y = 24,
+  y = 36,
   x = 0,
-  scale = null,
-  fade = false,
-  duration = 0.55,
+  scale = 0.955,
+  fade = true,
+  duration = 0.78,
   delay = 0,
-  amount = 0.15,
+  amount = 0.08,
   as: Tag = 'div',
   className = '',
   style,
