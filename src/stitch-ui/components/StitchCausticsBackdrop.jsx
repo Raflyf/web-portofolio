@@ -24,8 +24,8 @@ export default function StitchCausticsBackdrop() {
 
   return (
     <div 
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#080b11] stitch-backdrop-root"
-      style={{ contain: 'strict' }}
+      className="fixed inset-x-0 top-0 pointer-events-none z-0 overflow-hidden bg-[#080b11] stitch-backdrop-root"
+      style={{ contain: 'layout style paint' }}
       aria-hidden="true"
     >
       {/* Wallpaper foto — substrat bertekstur untuk backdrop-filter.

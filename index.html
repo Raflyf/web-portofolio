@@ -1,16 +1,19 @@
 <!doctype html>
-<html lang="id" class="dark">
+<html lang="id" class="dark" style="color-scheme: dark; background-color: #080b11;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
 
     <!-- Theme & Clean URL pre-paint: strip '#' from URL immediately while saving initial scroll target -->
     <script>
       (function () {
         try {
+          var isLegacyArchive = window.location.pathname.indexOf('/archive-v1') === 0;
           var saved = localStorage.getItem('portfolio-theme');
-          var dark = saved === 'light' ? false : true; // default to dark
+          var dark = isLegacyArchive ? (saved === 'light' ? false : true) : true; // default & Stitch routes forced to dark
           document.documentElement.classList.toggle('dark', dark);
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
 
           if (window.location.hash) {
             window.__initialTargetHash = window.location.hash.replace('#', '');
@@ -34,7 +37,10 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#080a11" />
+    <meta name="theme-color" content="#080b11" />
+    <meta name="theme-color" content="#080b11" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#080b11" media="(prefers-color-scheme: light)" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
@@ -98,7 +104,7 @@
     ]
     </script>
   </head>
-  <body>
+  <body style="background-color: #080b11;">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

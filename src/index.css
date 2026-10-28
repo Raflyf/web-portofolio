@@ -101,6 +101,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
@@ -126,6 +127,10 @@
 @layer base {
   * {
     border-color: var(--color-border);
+  }
+  html {
+    background-color: #080b11;
+    color-scheme: dark;
   }
   body {
     background-color: var(--color-background);

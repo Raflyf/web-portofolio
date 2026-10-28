@@ -99,7 +99,40 @@ div.stitch-liquid-theme:not(.relative),
    ikut mengenai overlay dan menghapus latarnya (rgba(4,6,12,0.72) -> transparan)
    karena !important. Dengan `> #root`, hanya pohon React utama yang dibuat
    transparan; overlay portal tetap memakai latarnya sendiri. */
-body:has(.stitch-backdrop-root),
+/* --------------------------------------------------------------------------
+   1c. BUKA JALUR BLUR & KANVAS GELAP MOBILE:
+   - `html` dan `body` wajib berwarna `#080b11` dengan `color-scheme: dark` agar
+     kanvas root browser dan bilah gestur sistem (Android/iOS) selalu gelap serta
+     tidak pernah bocor warna putih (#ffffff) saat URL bar mobile mengecil/scroll.
+     Dalam urutan render CSS, latar `html`/`body` berada di lapisan kanvas paling
+     bawah (di belakang `z-index: 0` `.stitch-backdrop-root`), sehingga TIDAK
+     pernah menutupi wallpaper.
+   - Sebaliknya, wrapper React (`#root` dan `.min-h-screen.bg-background`) berada
+     di dalam body dan dibuat transparan agar kartu `.liquid-glass` (`z-10`)
+     dapat langsung mem-blur `.stitch-backdrop-root` (`z-0`).
+   -------------------------------------------------------------------------- */
+html:has(.stitch-backdrop-root),
+body:has(.stitch-backdrop-root) {
+  background-color: #080b11 !important;
+  color-scheme: dark !important;
+}
+
+.stitch-backdrop-root {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: -120px !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  min-height: 100lvh !important;
+  min-height: calc(100lvh + 120px) !important;
+  background-color: #080b11 !important;
+  contain: layout style paint !important;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
 body:has(.stitch-backdrop-root) > #root,
 body:has(.stitch-backdrop-root) > #root > .min-h-screen.bg-background,
 body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
@@ -307,6 +340,7 @@ footer,
   border-right: none !important;
   border-bottom: none !important;
   border-top: 1px solid rgba(255, 255, 255, 0.11) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: 
     linear-gradient(180deg, rgba(28, 28, 30, 0.42) 0%, rgba(10, 10, 12, 0.95) 100%) !important;
   -webkit-backdrop-filter: blur(14px) !important;

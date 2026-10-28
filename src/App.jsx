@@ -26,8 +26,21 @@ function FloatingNavbar() {
   const location = useLocation();
 
   useEffect(() => {
+    const isStitchDarkRoute =
+      location.pathname === '/' ||
+      location.pathname.startsWith('/preview-stitch') ||
+      location.pathname.includes('dashboard');
+
+    if (isStitchDarkRoute) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
+      setIsDark(true);
+      return;
+    }
+
     const applyTheme = (dark) => {
       document.documentElement.classList.toggle('dark', dark);
+      document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
       localStorage.setItem('portfolio-theme', dark ? 'dark' : 'light');
       setIsDark(dark);
     };
@@ -36,7 +49,7 @@ function FloatingNavbar() {
     if (saved === 'light' || saved === 'dark') {
       applyTheme(saved === 'dark');
     }
-  }, []);
+  }, [location.pathname]);
 
   const handleThemeToggle = () => {
     const nextDark = !isDark;
@@ -538,7 +551,10 @@ export default function App() {
       
         {/* Floating Action Buttons */}
         {!location.pathname.includes('dashboard') && (
-          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+          <div
+            className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3"
+            style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
+          >
             <BackToTopButton t={t} />
             
             <button
