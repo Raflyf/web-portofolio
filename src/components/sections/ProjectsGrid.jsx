@@ -156,14 +156,6 @@ export default function ProjectsGrid() {
       {/* Featured Project Showcase Card (HANYA tampil pada tab 'Semua Proyek') */}
       {featuredProject && (
         <Reveal className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group">
-          <div
-            className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full pointer-events-none"
-            style={{
-              background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.16) 0%, transparent 70%)',
-              transform: 'translateZ(0)'
-            }}
-          />
-          
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             <div className="lg:col-span-8 space-y-6">
               <div className="flex flex-wrap items-center gap-3">

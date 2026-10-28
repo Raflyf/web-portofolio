@@ -97,46 +97,31 @@ body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
 }
 
 /* --------------------------------------------------------------------------
-   2. Pure Single-Sheet Optical Glass Primitives (Zero Layered Fog, 60fps GPU)
-   - Satu permukaan gradien halus per kartu (tanpa radial-gradient berlapis,
-     tanpa inner cloud shadow, tanpa double top border).
+   2. Pure Single-Sheet Optical Glass Primitives (100% Uniform Thin Blur)
+   - Seluruh kartu (.liquid-glass, .liquid-glass-strong, .stitch-glass) memiliki
+     ketebalan blur tipis (10px) dan transparansi yang 100% identik di setiap sudut.
    - Urutan WAJIB: `-webkit-backdrop-filter` DULU, lalu `backdrop-filter`
      agar LightningCSS mempertahankan keduanya di bundle produksi.
    -------------------------------------------------------------------------- */
 .stitch-glass,
 .stitch-liquid-theme .liquid-glass,
-.stitch-dashboard-container .liquid-glass {
+.stitch-dashboard-container .liquid-glass,
+.stitch-liquid-theme .liquid-glass-strong,
+.stitch-dashboard-container .liquid-glass-strong {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.025) 38%, rgba(26, 28, 34, 0.30) 75%, rgba(14, 16, 22, 0.40) 100%) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.18) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
-    0 12px 28px -10px rgba(0, 0, 0, 0.50),
-    0 2px 6px 0 rgba(0, 0, 0, 0.24) !important;
+    0 12px 28px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
   border-radius: 1.75rem !important;
 }
 
 .stitch-liquid-theme .liquid-glass:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
-.stitch-dashboard-container .liquid-glass:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]) {
-  position: relative;
-}
-
-.stitch-liquid-theme .liquid-glass-strong,
-.stitch-dashboard-container .liquid-glass-strong {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 36%, rgba(28, 30, 38, 0.34) 75%, rgba(16, 18, 24, 0.44) 100%) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
-  backdrop-filter: blur(22px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 14px 32px -10px rgba(0, 0, 0, 0.52),
-    0 3px 8px 0 rgba(0, 0, 0, 0.26) !important;
-  border-radius: 1.75rem !important;
-}
-
+.stitch-dashboard-container .liquid-glass:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
 .stitch-liquid-theme .liquid-glass-strong:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]),
 .stitch-dashboard-container .liquid-glass-strong:not(.absolute):not(.fixed):not([role="listbox"]):not([role="dialog"]) {
   position: relative;
@@ -158,30 +143,27 @@ body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
 .stitch-liquid-theme .liquid-glass-hover.reveal-init.revealed:hover,
 .stitch-dashboard-container .liquid-glass-hover.reveal-init.revealed:hover {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.115) 0%, rgba(255, 255, 255, 0.032) 38%, rgba(24, 26, 34, 0.36) 75%, rgba(14, 16, 22, 0.46) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.105) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(15, 20, 30, 0.22) 100%) !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
-    0 18px 36px -10px rgba(0, 0, 0, 0.58),
-    0 4px 12px -2px rgba(0, 0, 0, 0.30) !important;
+    0 18px 36px -10px rgba(0, 0, 0, 0.52),
+    0 4px 12px -2px rgba(0, 0, 0, 0.26) !important;
   transform: translate3d(0, -3px, 0) !important;
 }
 
-/* Inset Blueprint Cavities for Code, Input, and Sub-containers
-   Top-level `.liquid-glass-inset` (seperti badge section & node timeline) tetap memiliki
-   blur(12px), sedangkan `.liquid-glass-inset` yang bersarang di dalam kartu dimatikan
-   oleh aturan Section 9 di bawah. */
+/* Inset Blueprint Cavities for Code, Input, and Sub-containers */
 .stitch-blueprint-cavity,
 .stitch-liquid-theme .liquid-glass-inset,
 .stitch-dashboard-container .liquid-glass-inset {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.025) 40%, rgba(18, 20, 26, 0.36) 75%, rgba(12, 14, 18, 0.48) 100%) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  backdrop-filter: blur(18px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.025) 50%, rgba(15, 20, 30, 0.20) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-    inset 0 2px 5px 0 rgba(0, 0, 0, 0.28) !important;
+    inset 0 2px 5px 0 rgba(0, 0, 0, 0.24) !important;
 }
 
 /* 3D Tactile Liquid Glass Pills */
@@ -195,22 +177,22 @@ body:has(.stitch-backdrop-root) > #root > div > .min-h-screen.bg-background {
 }
 
 /* --------------------------------------------------------------------------
-   3. Floating Liquid Glass Navigation (Apple visionOS Crystal Frosted Pill)
+   3. Floating Liquid Glass Navigation (Consistent Thin Blur)
    -------------------------------------------------------------------------- */
 .stitch-glass-nav,
 .stitch-liquid-theme header.liquid-glass-nav,
 .stitch-liquid-theme header .liquid-glass-nav,
 .stitch-dashboard-container header {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.105) 0%, rgba(255, 255, 255, 0.03) 30%, rgba(26, 28, 36, 0.36) 65%, rgba(16, 18, 24, 0.48) 100%) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  backdrop-filter: blur(16px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.035) 50%, rgba(15, 20, 30, 0.22) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.13) !important;
   border-radius: 9999px !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
-    0 14px 30px -10px rgba(0, 0, 0, 0.52),
-    0 3px 8px 0 rgba(0, 0, 0, 0.26) !important;
+    0 14px 30px -10px rgba(0, 0, 0, 0.48),
+    0 3px 8px 0 rgba(0, 0, 0, 0.22) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -227,12 +209,12 @@ footer,
   border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background:
-    linear-gradient(180deg, rgba(24, 26, 34, 0.44) 0%, rgba(8, 11, 17, 0.94) 100%) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  backdrop-filter: blur(14px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.22) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-    0 -12px 26px -10px rgba(0, 0, 0, 0.50) !important;
+    0 -12px 26px -10px rgba(0, 0, 0, 0.45) !important;
 }
 
 /* Navbar Links 3D Liquid Hover Pill */
@@ -290,14 +272,14 @@ footer,
 /* 4a. Capsule Switcher Container */
 .stitch-capsule-group {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.025) 38%, rgba(18, 20, 26, 0.36) 72%, rgba(12, 14, 18, 0.46) 100%) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  backdrop-filter: blur(20px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.18) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-    0 10px 24px -10px rgba(0, 0, 0, 0.48),
-    0 2px 6px 0 rgba(0, 0, 0, 0.22) !important;
+    0 10px 24px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
   border-radius: 9999px !important;
   padding: 4px !important;
   display: inline-flex !important;
@@ -343,14 +325,14 @@ a.stitch-btn-glass,
 button.stitch-btn-glass,
 .stitch-liquid-theme a[href="#lab"].liquid-glass-inset {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.032) 32%, rgba(26, 28, 34, 0.34) 68%, rgba(16, 18, 22, 0.46) 100%) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  backdrop-filter: blur(18px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.18) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.13) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
-    0 10px 24px -10px rgba(0, 0, 0, 0.48),
-    0 2px 6px 0 rgba(0, 0, 0, 0.22) !important;
+    0 10px 24px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
   color: #f1f5f9 !important;
   border-radius: 9999px !important;
   position: relative;
@@ -367,12 +349,12 @@ a.stitch-btn-glass:hover,
 button.stitch-btn-glass:hover,
 .stitch-liquid-theme a[href="#lab"].liquid-glass-inset:hover {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 255, 255, 0.04) 38%, rgba(28, 30, 38, 0.34) 72%, rgba(16, 18, 24, 0.46) 100%) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(15, 20, 30, 0.22) 100%) !important;
   border-color: rgba(255, 255, 255, 0.22) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
-    0 14px 28px -10px rgba(0, 0, 0, 0.54),
-    0 2px 6px 0 rgba(0, 0, 0, 0.24) !important;
+    0 14px 28px -10px rgba(0, 0, 0, 0.50),
+    0 2px 6px 0 rgba(0, 0, 0, 0.22) !important;
   color: #ffffff !important;
   transform: translate3d(0, -1.5px, 0) !important;
 }
@@ -384,10 +366,9 @@ button.stitch-btn-glass:active,
 .stitch-liquid-theme a[href="#lab"].liquid-glass-inset:active {
   transform: translate3d(0, 1px, 0) scale(0.98) !important;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%),
-    rgba(16, 18, 22, 0.48) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(15, 20, 30, 0.24) 100%) !important;
   box-shadow:
-    inset 0 2px 4px 0 rgba(0, 0, 0, 0.40),
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.35),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.10) !important;
 }
 
@@ -396,14 +377,14 @@ button.stitch-btn-glass:active,
 .stitch-liquid-theme a[href="#projects"].bg-linear-to-b,
 .stitch-dashboard-container button[type="submit"] {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 28%, rgba(28, 32, 42, 0.34) 62%, rgba(56, 189, 248, 0.20) 100%) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  backdrop-filter: blur(18px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(56, 189, 248, 0.18) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.20),
-    0 10px 24px -10px rgba(0, 0, 0, 0.50),
-    0 2px 6px 0 rgba(0, 0, 0, 0.24) !important;
+    0 10px 24px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
   color: #ffffff !important;
   border-radius: 9999px !important;
   font-weight: 600 !important;
@@ -580,13 +561,13 @@ button.stitch-btn-glass:active,
 /* Mobile Liquid Glass Sheet — Jernih & Konsisten dengan Kartu Utama */
 .stitch-nav-mobile-sheet {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 36%, rgba(24, 28, 38, 0.42) 75%, rgba(14, 16, 22, 0.52) 100%) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
-  backdrop-filter: blur(22px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.22) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 24px 48px -10px rgba(0, 0, 0, 0.65) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 24px 48px -10px rgba(0, 0, 0, 0.55) !important;
   border-radius: 1.75rem !important;
 }
 
@@ -594,27 +575,23 @@ button.stitch-btn-glass:active,
   contain: layout style;
 }
 
-/* Optimasi GPU Mobile (<= 768px): tetap jernih & tajam (blur 14px-18px) */
+/* Optimasi GPU Mobile (<= 768px): seluruh kartu & tombol menggunakan blur tipis seragam (8px) */
 @media (max-width: 768px) {
   .stitch-glass,
   .stitch-liquid-theme .liquid-glass,
   .stitch-dashboard-container .liquid-glass,
-  .stitch-btn-glass,
-  .stitch-btn-primary,
-  .stitch-capsule-group {
-    -webkit-backdrop-filter: blur(14px) !important;
-    backdrop-filter: blur(14px) !important;
-  }
-
   .stitch-liquid-theme .liquid-glass-strong,
   .stitch-dashboard-container .liquid-glass-strong,
   .stitch-glass-nav,
   header.liquid-glass-nav,
   header .liquid-glass-nav,
   .stitch-nav-mobile-sheet,
-  .stitch-terminal-window {
-    -webkit-backdrop-filter: blur(18px) !important;
-    backdrop-filter: blur(18px) !important;
+  .stitch-terminal-window,
+  .stitch-btn-glass,
+  .stitch-btn-primary,
+  .stitch-capsule-group {
+    -webkit-backdrop-filter: blur(8px) !important;
+    backdrop-filter: blur(8px) !important;
   }
 }
 
@@ -682,7 +659,7 @@ button.stitch-btn-glass:active,
 }
 
 /* --------------------------------------------------------------------------
-   6b. Dropdown / Listbox — Unified Clear Frosted Glass Panel (Desktop & Mobile)
+   6b. Dropdown / Listbox — Unified Clear Thin Glass Panel (Desktop & Mobile)
    -------------------------------------------------------------------------- */
 .stitch-liquid-theme .liquid-glass[role="listbox"],
 .stitch-dashboard-container .liquid-glass[role="listbox"],
@@ -690,28 +667,28 @@ button.stitch-btn-glass:active,
 .stitch-dropdown-panel,
 .stitch-terminal-window.stitch-dropdown-panel {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 38%, rgba(20, 24, 34, 0.56) 75%, rgba(12, 15, 22, 0.66) 100%) !important;
-  -webkit-backdrop-filter: blur(24px) !important;
-  backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(14, 18, 28, 0.42) 100%) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 18px 40px -10px rgba(0, 0, 0, 0.65) !important;
+    0 18px 40px -10px rgba(0, 0, 0, 0.58) !important;
 }
 
 /* --------------------------------------------------------------------------
-   7. Terminal AI & Developer Lab Liquid Glass System
+   7. Terminal AI & Developer Lab Liquid Glass System (100% Identik dengan Kartu Utama)
    -------------------------------------------------------------------------- */
 .stitch-terminal-window {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 36%, rgba(24, 28, 38, 0.36) 75%, rgba(14, 16, 22, 0.46) 100%) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
-  backdrop-filter: blur(22px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.18) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 14px 32px -10px rgba(0, 0, 0, 0.52),
-    0 3px 8px 0 rgba(0, 0, 0, 0.26) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 12px 28px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
 }
 
 .stitch-terminal-window:not(.reveal-init) {
@@ -719,28 +696,24 @@ button.stitch-btn-glass:active,
 }
 
 .stitch-terminal-header {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%),
-    rgba(18, 20, 28, 0.24) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
 }
 
 .stitch-terminal-control-bar {
-  background: rgba(14, 16, 22, 0.18) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
 }
 
 .stitch-terminal-shortcut-bar {
-  background: rgba(12, 14, 20, 0.20) !important;
+  background: transparent !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .stitch-terminal-dock {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
-    rgba(18, 20, 28, 0.24) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 .stitch-capsule-badge {
@@ -751,37 +724,37 @@ button.stitch-btn-glass:active,
 
 .stitch-pill-glass {
   background: rgba(255, 255, 255, 0.06) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
-    0 10px 24px -10px rgba(0, 0, 0, 0.48),
-    0 2px 6px 0 rgba(0, 0, 0, 0.22) !important;
+    0 10px 24px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
 }
 
 /* Terminal Popup Modal */
 .fixed .stitch-terminal-window {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 36%, rgba(24, 28, 38, 0.40) 75%, rgba(14, 16, 22, 0.50) 100%) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
-  backdrop-filter: blur(22px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.20) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 24px 48px -12px rgba(0, 0, 0, 0.65) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 24px 48px -12px rgba(0, 0, 0, 0.60) !important;
 }
 
 /* Terminal Internal Dialog & Modal Cards */
 .stitch-terminal-dialog-card {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.04) 36%, rgba(20, 24, 34, 0.56) 75%, rgba(12, 15, 22, 0.66) 100%) !important;
-  -webkit-backdrop-filter: blur(22px) !important;
-  backdrop-filter: blur(22px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(14, 18, 28, 0.42) 100%) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 16px 36px -10px rgba(0, 0, 0, 0.60) !important;
+    0 16px 36px -10px rgba(0, 0, 0, 0.55) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -789,14 +762,14 @@ button.stitch-btn-glass:active,
    -------------------------------------------------------------------------- */
 .stitch-floating-fab-backtotop {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 24%, rgba(28, 28, 30, 0.30) 58%, rgba(16, 16, 18, 0.44) 100%) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.18) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
-    0 10px 24px -10px rgba(0, 0, 0, 0.50),
-    0 2px 6px 0 rgba(0, 0, 0, 0.24) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 10px 24px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
   border-radius: 9999px !important;
   transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
               box-shadow 0.24s ease,
@@ -814,14 +787,14 @@ button.stitch-btn-glass:active,
 
 .stitch-floating-fab-terminal {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 24%, rgba(28, 28, 30, 0.32) 58%, rgba(56, 189, 248, 0.18) 100%) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  backdrop-filter: blur(12px) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.035) 50%, rgba(56, 189, 248, 0.16) 100%) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-    0 10px 24px -10px rgba(0, 0, 0, 0.50),
-    0 2px 6px 0 rgba(0, 0, 0, 0.24) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+    0 10px 24px -10px rgba(0, 0, 0, 0.45),
+    0 2px 6px 0 rgba(0, 0, 0, 0.20) !important;
   border-radius: 9999px !important;
   color: #38bdf8 !important;
   transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),

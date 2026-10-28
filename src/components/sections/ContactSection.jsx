@@ -250,14 +250,6 @@ export default function ContactSection() {
 
         {/* Right Column: Contact Form with FormSubmit */}
         <Reveal delay={0.08} className="lg:col-span-7 p-8 sm:p-10 liquid-glass-strong liquid-glass-hover relative overflow-hidden">
-          <div
-            className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full pointer-events-none"
-            style={{
-              background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.14) 0%, transparent 70%)',
-              transform: 'translateZ(0)'
-            }}
-          />
-
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
             {language === 'id' ? 'Kirimkan Pesan Langsung' : 'Send a Direct Message'}
           </h3>

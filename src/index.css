@@ -51,17 +51,16 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   /* ============ Liquid-glass design tokens (iOS 26 & Stitch material) ============ */
-  /* Diseragamkan dengan material kartu konten (25 Sep): blur 12px/14px polos,
-     rim tipis, tanpa saturate/contrast, tanpa glow cyan. */
-  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.018) 38%, rgba(28, 28, 30, 0.26) 75%, rgba(16, 16, 18, 0.36) 100%);
-  --glass-bg-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.095) 0%, rgba(255, 255, 255, 0.026) 34%, rgba(30, 30, 32, 0.30) 75%, rgba(18, 18, 20, 0.42) 100%);
-  --glass-bg-nav: linear-gradient(135deg, rgba(255, 255, 255, 0.095) 0%, rgba(255, 255, 255, 0.026) 34%, rgba(30, 30, 32, 0.30) 75%, rgba(18, 18, 20, 0.42) 100%);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.11);
+  /* Diseragamkan dengan material kartu konten: blur tipis 10px merata di seluruh kartu */
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.18) 100%);
+  --glass-bg-strong: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.18) 100%);
+  --glass-bg-nav: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.035) 50%, rgba(15, 20, 30, 0.22) 100%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.13);
   --glass-border-strong: 1px solid rgba(255, 255, 255, 0.13);
-  --glass-blur: blur(12px);
-  --glass-blur-lg: blur(14px);
-  --glass-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.13), 0 10px 24px -10px rgba(0, 0, 0, 0.50), 0 2px 6px 0 rgba(0, 0, 0, 0.24);
-  --glass-shadow-strong: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 12px 26px -10px rgba(0, 0, 0, 0.52), 0 3px 8px 0 rgba(0, 0, 0, 0.26);
+  --glass-blur: blur(10px);
+  --glass-blur-lg: blur(10px);
+  --glass-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16), 0 12px 28px -10px rgba(0, 0, 0, 0.45), 0 2px 6px 0 rgba(0, 0, 0, 0.20);
+  --glass-shadow-strong: inset 0 1px 0 0 rgba(255, 255, 255, 0.16), 0 12px 28px -10px rgba(0, 0, 0, 0.45), 0 2px 6px 0 rgba(0, 0, 0, 0.20);
   --glass-radius: 1.75rem;
   --glass-radius-sm: 0.875rem;
   --glass-radius-lg: 2rem;

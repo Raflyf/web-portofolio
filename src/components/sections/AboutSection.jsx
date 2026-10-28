@@ -64,13 +64,6 @@ export default function AboutSection() {
         <Reveal 
           className="lg:col-span-6 space-y-6 text-base sm:text-lg text-zinc-300 leading-relaxed p-8 sm:p-10 liquid-glass-strong liquid-glass-hover relative overflow-hidden flex flex-col justify-center"
         >
-          <div
-            className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full pointer-events-none"
-            style={{
-              background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.14) 0%, transparent 70%)',
-              transform: 'translateZ(0)'
-            }}
-          />
           <p className="relative z-10">
             {language === 'id' ? (
               <>

@@ -302,14 +302,6 @@ export default function HorizonHero() {
           >
             {/* Dynamic Project Showcase Canvas */}
             <Reveal delay={0.08} className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7 rounded-3xl">
-              <div 
-                className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full pointer-events-none" 
-                style={{
-                  background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.14) 0%, transparent 70%)',
-                  transform: 'translateZ(0)'
-                }}
-              />
-
               {/* Showcase Window Header */}
               <div className="flex items-center justify-between pb-5 border-b border-white/10 mb-5 relative z-10">
                 <div className="flex items-center gap-3">
