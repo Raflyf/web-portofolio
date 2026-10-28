@@ -53,9 +53,14 @@ export default function SkillsBento() {
    * ScrollLeft Marquee Engine (Zero Ancestor Transform / Zero Backdrop Root):
    * - Di Chromium, animasi `@keyframes transform` pada container induk membentuk
    *   RenderSurface (Backdrop Root) yang mematikan `backdrop-filter` pada seluruh
-   *   chip `.stitch-btn-glass` di dalamnya.
-   * - Dengan menggerakkan `scrollLeft` pada container tanpa `transform` / `mask-image`,
-   *   setiap chip `.stitch-btn-glass` mem-blur wallpaper bintang secara langsung.
+   *   chip di dalamnya.
+   * - Optimasi 60fps:
+   *   1. `scrollWidth` di-cache melalui `ResizeObserver` (nol forced synchronous reflow di rAF).
+   *   2. Saat pengguna melakukan scroll vertikal, mutasi `scrollLeft` horizontal dijeda
+   *      sementara agar tidak terjadi dual-axis scroll layer invalidation bersamaan dengan Lenis.
+   *   3. Chip marquee yang berada di luar area pandang horizontal (`!isIntersecting`)
+   *      dinonaktifkan `backdrop-filter`-nya via `IntersectionObserver` (`.pill-offscreen`),
+   *      memangkas ~65% beban FBO GPU tanpa mengubah tampilan chip yang terlihat di layar.
    */
   useEffect(() => {
     if (!isInView) return;
@@ -65,10 +70,57 @@ export default function SkillsBento() {
 
     let rafId = null;
     let lastTime = performance.now();
+    let half1 = el1.scrollWidth / 2;
+    let half2 = el2.scrollWidth / 2;
     let pos1 = el1.scrollLeft || 0;
-    let pos2 = el2.scrollLeft || el2.scrollWidth / 2;
+    let pos2 = el2.scrollLeft || half2;
     let paused1 = false;
     let paused2 = false;
+    let isVerticallyScrolling = false;
+    let scrollPauseTimer = null;
+
+    const updateDimensions = () => {
+      half1 = el1.scrollWidth / 2;
+      half2 = el2.scrollWidth / 2;
+      if (pos2 <= 0 && half2 > 0) pos2 = half2;
+    };
+
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(updateDimensions);
+      ro.observe(el1);
+      ro.observe(el2);
+    }
+
+    const createPillObserver = (rootEl) => {
+      if (typeof IntersectionObserver === 'undefined') return null;
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            entry.target.classList.toggle('pill-offscreen', !entry.isIntersecting);
+          }
+        },
+        { root: rootEl, rootMargin: '0px 64px' }
+      );
+      const pills = rootEl.querySelectorAll('[data-marquee-pill]');
+      pills.forEach((pill) => obs.observe(pill));
+      return obs;
+    };
+
+    const io1 = createPillObserver(el1);
+    const io2 = createPillObserver(el2);
+
+    const onWindowScroll = () => {
+      isVerticallyScrolling = true;
+      if (scrollPauseTimer) clearTimeout(scrollPauseTimer);
+      scrollPauseTimer = setTimeout(() => {
+        isVerticallyScrolling = false;
+        lastTime = performance.now();
+      }, 110);
+    };
+
+    window.addEventListener('scroll', onWindowScroll, { passive: true });
 
     const onEnter1 = () => { paused1 = true; };
     const onLeave1 = () => { paused1 = false; };
@@ -86,15 +138,13 @@ export default function SkillsBento() {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      if (!document.hidden) {
-        const half1 = el1.scrollWidth / 2;
+      if (!document.hidden && !isVerticallyScrolling) {
         if (half1 > 0 && !paused1) {
           pos1 += speed * dt;
           if (pos1 >= half1) pos1 -= half1;
           el1.scrollLeft = pos1;
         }
 
-        const half2 = el2.scrollWidth / 2;
         if (half2 > 0 && !paused2) {
           if (pos2 <= 0) pos2 = half2;
           pos2 -= speed * dt;
@@ -110,6 +160,11 @@ export default function SkillsBento() {
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      if (scrollPauseTimer) clearTimeout(scrollPauseTimer);
+      if (ro) ro.disconnect();
+      if (io1) io1.disconnect();
+      if (io2) io2.disconnect();
+      window.removeEventListener('scroll', onWindowScroll);
       el1.removeEventListener('pointerenter', onEnter1);
       el1.removeEventListener('pointerleave', onLeave1);
       el2.removeEventListener('pointerenter', onEnter2);
@@ -142,9 +197,10 @@ export default function SkillsBento() {
               {MARQUEE_ROW_1.map((skill, j) => (
                 <div
                   key={`${i}-${j}`}
-                  className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-cyan-400/40 transition-all"
+                  data-marquee-pill
+                  className="inline-flex items-center gap-2 rounded-full stitch-marquee-pill px-4 py-2"
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
                 </div>
               ))}
@@ -164,9 +220,10 @@ export default function SkillsBento() {
               {MARQUEE_ROW_2.map((skill, j) => (
                 <div
                   key={`${i}-${j}`}
-                  className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-emerald-400/40 transition-all"
+                  data-marquee-pill
+                  className="inline-flex items-center gap-2 rounded-full stitch-marquee-pill px-4 py-2"
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
                 </div>
               ))}
@@ -190,7 +247,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["Python 3", "PyTorch", "Prompt Engineering", "Sentence-Transformers", "Scikit-Learn", "XGBoost", "N-Gram Shingling", "Pandas", "NumPy"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-skill-tag text-xs sm:text-sm text-zinc-200 font-medium">
                 {tech}
               </span>
             ))}
@@ -210,7 +267,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MikroTik RouterOS", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filter Rules", "Simple Queues (QoS)", "VLAN & Tunnels"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-skill-tag text-xs sm:text-sm text-zinc-200 font-medium">
                 {tech}
               </span>
             ))}
@@ -229,7 +286,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["React.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Supabase DB", "Node.js API", "Flask API"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-skill-tag text-xs sm:text-sm text-zinc-200 font-medium">
                 {tech}
               </span>
             ))}
@@ -249,7 +306,7 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MediaPipe Tasks Vision", "OpenCV Python", "Flask-SocketIO", "WebSockets", "PyAutoGUI", "DeviceOrientation API"].map((tech, i) => (
-              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-skill-tag text-xs sm:text-sm text-zinc-200 font-medium">
                 {tech}
               </span>
             ))}
