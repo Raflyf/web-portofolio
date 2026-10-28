@@ -274,7 +274,7 @@ const CustomSelect = ({ value, onChange, options }) => {
   const selectedOption = options.find(opt => opt.value === value) || options[0];
 
   return (
-    <div ref={containerRef} className="relative inline-block text-left z-60">
+    <div ref={containerRef} className={`relative inline-block text-left ${isOpen ? 'z-100' : 'z-10'}`}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -1581,11 +1581,10 @@ export default function Dashboard({ isStitch = true } = {}) {
 
 
       {/* Top Header Controls Bar (Sleek Compact Navbar with Smart Auto-Hide) */}
-      <header className={`fixed top-0 inset-x-0 z-50 w-full liquid-glass-nav border-b border-white/10 transition-transform duration-300 ease-in-out ${
+      <header className={`fixed top-0 inset-x-0 z-50 liquid-glass-nav border-b border-white/10 transition-transform duration-300 ease-in-out ${
         dashboardNavVisible ? 'translate-y-0' : '-translate-y-full'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3 relative overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-r from-cyan-500/5 via-indigo-500/5 to-purple-500/5 pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-3 relative overflow-hidden">
           
           <div className="flex items-center gap-2 sm:gap-3 relative z-10 shrink-0">
             <Link
@@ -2222,7 +2221,7 @@ export default function Dashboard({ isStitch = true } = {}) {
         {/* ========================================================================= */}
         {/* 6. REAL-TIME ACTIVITY STREAM TABLE & EXPORT */}
         {/* ========================================================================= */}
-        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="p-6 liquid-glass space-y-5">
+        <Reveal as="section" y={20} duration={0.5} amount={0.1} className="p-6 liquid-glass space-y-5 relative z-20">
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">

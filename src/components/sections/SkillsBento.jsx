@@ -3,12 +3,40 @@ import { Cpu, Network, Server, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import Reveal from '../ui/Reveal.jsx';
 
+const MARQUEE_ROW_1 = [
+  "PyTorch Core",
+  "Prompt Engineering",
+  "Sentence-Transformers",
+  "IndoBERT & RoBERTa",
+  "Whisper AI Audio",
+  "NLP Cosine Metrics",
+  "Scikit-Learn ML",
+  "MediaPipe Tasks Vision",
+  "OpenCV Python",
+  "XGBoost & Naive Bayes",
+  "Pandas & NumPy",
+];
+
+const MARQUEE_ROW_2 = [
+  "MikroTik RouterOS v7",
+  "MTCNA Certified",
+  "Static & Dynamic Routing",
+  "Firewall Filtering",
+  "Flask-SocketIO",
+  "Supabase Postgres RAG",
+  "TypeScript & Node.js",
+  "JavaScript ES2024",
+  "RESTful APIs Architecture",
+  "Linux & Git Workflow",
+];
+
 export default function SkillsBento() {
   const { t } = useLanguage();
   const sectionRef = useRef(null);
+  const marquee1Ref = useRef(null);
+  const marquee2Ref = useRef(null);
   const [isInView, setIsInView] = useState(true);
 
-  // Viewport-Aware Animation Gating: Jeda animasi marquee saat di luar viewport untuk hemat CPU
   useEffect(() => {
     if (!sectionRef.current) return;
     const observer = new IntersectionObserver(
@@ -20,6 +48,74 @@ export default function SkillsBento() {
     observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
+
+  /**
+   * ScrollLeft Marquee Engine (Zero Ancestor Transform / Zero Backdrop Root):
+   * - Di Chromium, animasi `@keyframes transform` pada container induk membentuk
+   *   RenderSurface (Backdrop Root) yang mematikan `backdrop-filter` pada seluruh
+   *   chip `.stitch-btn-glass` di dalamnya.
+   * - Dengan menggerakkan `scrollLeft` pada container tanpa `transform` / `mask-image`,
+   *   setiap chip `.stitch-btn-glass` mem-blur wallpaper bintang secara langsung.
+   */
+  useEffect(() => {
+    if (!isInView) return;
+    const el1 = marquee1Ref.current;
+    const el2 = marquee2Ref.current;
+    if (!el1 || !el2) return;
+
+    let rafId = null;
+    let lastTime = performance.now();
+    let pos1 = el1.scrollLeft || 0;
+    let pos2 = el2.scrollLeft || el2.scrollWidth / 2;
+    let paused1 = false;
+    let paused2 = false;
+
+    const onEnter1 = () => { paused1 = true; };
+    const onLeave1 = () => { paused1 = false; };
+    const onEnter2 = () => { paused2 = true; };
+    const onLeave2 = () => { paused2 = false; };
+
+    el1.addEventListener('pointerenter', onEnter1, { passive: true });
+    el1.addEventListener('pointerleave', onLeave1, { passive: true });
+    el2.addEventListener('pointerenter', onEnter2, { passive: true });
+    el2.addEventListener('pointerleave', onLeave2, { passive: true });
+
+    const speed = 42; // px per detik
+
+    const tick = (now) => {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      if (!document.hidden) {
+        const half1 = el1.scrollWidth / 2;
+        if (half1 > 0 && !paused1) {
+          pos1 += speed * dt;
+          if (pos1 >= half1) pos1 -= half1;
+          el1.scrollLeft = pos1;
+        }
+
+        const half2 = el2.scrollWidth / 2;
+        if (half2 > 0 && !paused2) {
+          if (pos2 <= 0) pos2 = half2;
+          pos2 -= speed * dt;
+          if (pos2 <= 0) pos2 += half2;
+          el2.scrollLeft = pos2;
+        }
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      el1.removeEventListener('pointerenter', onEnter1);
+      el1.removeEventListener('pointerleave', onLeave1);
+      el2.removeEventListener('pointerenter', onEnter2);
+      el2.removeEventListener('pointerleave', onLeave2);
+    };
+  }, [isInView]);
 
   return (
     <section ref={sectionRef} id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
@@ -35,16 +131,19 @@ export default function SkillsBento() {
         </p>
       </Reveal>
 
-      {/* Infinite Marquee 1 (Left Scrolling) */}
-      <Reveal delay={0.06} className="relative overflow-hidden flex w-full mb-4 marquee-mask-x">
-        <div 
-          className="animate-marquee-left flex gap-3 whitespace-nowrap py-1"
-          style={{ animationPlayState: isInView ? 'running' : 'paused' }}
-        >
-          {[...Array(2)].map((_, i) => (
+      {/* Infinite Marquee 1 (Left Scrolling - Pure Optical Backdrop Blur) */}
+      <div
+        ref={marquee1Ref}
+        className="relative overflow-x-hidden flex w-full mb-4 no-scrollbar select-none"
+      >
+        <div className="flex gap-3 whitespace-nowrap py-1 w-max">
+          {[0, 1].map((i) => (
             <React.Fragment key={i}>
-              {["PyTorch Core", "Prompt Engineering", "Sentence-Transformers", "IndoBERT & RoBERTa", "Whisper AI Audio", "NLP Cosine Metrics", "Scikit-Learn ML", "MediaPipe Tasks Vision", "OpenCV Python", "XGBoost & Naive Bayes", "Pandas & NumPy"].map((skill, j) => (
-                <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-cyan-400/40 transition-all">
+              {MARQUEE_ROW_1.map((skill, j) => (
+                <div
+                  key={`${i}-${j}`}
+                  className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-cyan-400/40 transition-all"
+                >
                   <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
                 </div>
@@ -52,18 +151,21 @@ export default function SkillsBento() {
             </React.Fragment>
           ))}
         </div>
-      </Reveal>
+      </div>
 
-      {/* Infinite Marquee 2 (Right Scrolling) */}
-      <Reveal delay={0.12} className="relative overflow-hidden flex w-full mb-16 marquee-mask-x">
-        <div 
-          className="animate-marquee-right flex gap-3 whitespace-nowrap py-1"
-          style={{ animationPlayState: isInView ? 'running' : 'paused' }}
-        >
-          {[...Array(2)].map((_, i) => (
+      {/* Infinite Marquee 2 (Right Scrolling - Pure Optical Backdrop Blur) */}
+      <div
+        ref={marquee2Ref}
+        className="relative overflow-x-hidden flex w-full mb-16 no-scrollbar select-none"
+      >
+        <div className="flex gap-3 whitespace-nowrap py-1 w-max">
+          {[0, 1].map((i) => (
             <React.Fragment key={i}>
-              {["MikroTik RouterOS v7", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filtering", "Flask-SocketIO", "Supabase Postgres RAG", "TypeScript & Node.js", "JavaScript ES2024", "RESTful APIs Architecture", "Linux & Git Workflow"].map((skill, j) => (
-                <div key={`${i}-${j}`} className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-emerald-400/40 transition-all">
+              {MARQUEE_ROW_2.map((skill, j) => (
+                <div
+                  key={`${i}-${j}`}
+                  className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-4 py-2 hover:border-emerald-400/40 transition-all"
+                >
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                   <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
                 </div>
@@ -71,7 +173,7 @@ export default function SkillsBento() {
             </React.Fragment>
           ))}
         </div>
-      </Reveal>
+      </div>
 
       {/* Bento Grid with Uniform Obsidian Liquid Glass & Lucide SVG Icons */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

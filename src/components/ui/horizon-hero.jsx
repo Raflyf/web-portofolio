@@ -237,31 +237,6 @@ export default function HorizonHero() {
       ref={containerRef}
       className="relative w-full min-h-[105vh] flex flex-col justify-center items-center bg-transparent text-zinc-900 dark:text-white overflow-hidden font-sans pt-20 pb-24"
     >
-      {/* Ambient Deep Space Nebula (Pure GPU Radial Gradients, zero layout thrashing) */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden" style={{ contain: 'strict' }}>
-        <div 
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-100 rounded-full" 
-          style={{
-            background: 'radial-gradient(ellipse 65% 50% at 50% 50%, rgba(99, 102, 241, 0.16) 0%, rgba(6, 182, 212, 0.08) 45%, transparent 75%)',
-            transform: 'translateZ(0)'
-          }}
-        />
-        <div 
-          className="absolute top-1/3 left-[15%] w-96 h-72 rounded-full" 
-          style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.12) 0%, transparent 70%)',
-            transform: 'translateZ(0)'
-          }}
-        />
-        <div 
-          className="absolute top-1/3 right-[15%] w-96 h-72 rounded-full" 
-          style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.10) 0%, transparent 70%)',
-            transform: 'translateZ(0)'
-          }}
-        />
-      </div>
-
       {/* Main Grid Container */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full pt-10 md:pt-14">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8 items-center">

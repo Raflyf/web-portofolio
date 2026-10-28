@@ -186,7 +186,7 @@ export default function StitchNav() {
       {mobileMenuOpen && (
         <div 
           onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-45 pointer-events-auto transition-opacity duration-200"
+          className="fixed inset-0 bg-black/30 z-45 pointer-events-auto transition-opacity duration-200"
           aria-hidden="true"
         />
       )}

@@ -160,7 +160,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
   const selected = options.find(o => o.value === value) || options[0];
 
   return (
-    <div className="relative inline-block text-left" ref={containerRef}>
+    <div className={`relative inline-block text-left ${isOpen ? 'z-100' : 'z-20'}`} ref={containerRef}>
       <button 
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
@@ -1191,7 +1191,7 @@ export default function TerminalAI({ onClose } = {}) {
   const terminalContent = (
     <div 
       className={cn(
-        isTerminalPopupOpen ? "stitch-liquid-theme fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-md glass-backdrop-in p-2 sm:p-4" : "relative w-full bg-transparent"
+        isTerminalPopupOpen ? "stitch-liquid-theme fixed inset-0 z-100 flex items-center justify-center bg-black/30 glass-backdrop-in p-2 sm:p-4" : "relative w-full bg-transparent"
       )}
       onClick={(e) => {
         if (isTerminalPopupOpen && e.target === e.currentTarget) {
@@ -1354,7 +1354,7 @@ export default function TerminalAI({ onClose } = {}) {
       </div>
 
       {/* Terminal Body (Messages) */}
-      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3 sm:p-4 space-y-3 scroll-smooth bg-slate-950/40 backdrop-blur-md">
+      <div ref={scrollRef} data-lenis-prevent="true" className="flex-1 overflow-y-auto overscroll-contain no-scrollbar p-3 sm:p-4 space-y-3 scroll-smooth bg-transparent">
         {messages.map((msg, idx) => (
           <div key={idx} className={cn("flex flex-col w-full mb-1.5", msg.role === 'user' ? "items-end" : "items-start")}>
             
@@ -1869,7 +1869,7 @@ export default function TerminalAI({ onClose } = {}) {
               />
               
               {showSlashMenu && availableCommands.length > 0 && (
-                <div data-lenis-prevent="true" className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto overscroll-contain no-scrollbar stitch-terminal-window border border-white/20 rounded-xl shadow-2xl z-50 py-1">
+                <div role="listbox" data-lenis-prevent="true" className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto overscroll-contain no-scrollbar stitch-terminal-window stitch-dropdown-panel border border-white/20 rounded-xl shadow-2xl z-100 py-1">
                   {availableCommands.map((cmd, idx) => (
                     <div 
                       key={cmd} 
