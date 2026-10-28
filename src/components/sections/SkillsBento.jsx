@@ -186,51 +186,55 @@ export default function SkillsBento() {
         </p>
       </Reveal>
 
-      {/* Infinite Marquee 1 (Left Scrolling - Pure Optical Backdrop Blur) */}
-      <div
-        ref={marquee1Ref}
-        className="relative overflow-x-hidden flex w-full mb-4 no-scrollbar select-none"
-      >
-        <div className="flex gap-3 whitespace-nowrap py-1 w-max">
-          {[0, 1].map((i) => (
-            <React.Fragment key={i}>
-              {MARQUEE_ROW_1.map((skill, j) => (
-                <div
-                  key={`${i}-${j}`}
-                  data-marquee-pill
-                  className="inline-flex items-center gap-2 rounded-full stitch-marquee-pill px-4 py-2"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
-                </div>
-              ))}
-            </React.Fragment>
-          ))}
+      {/* Infinite Marquee 1 (Left Scrolling - Pure Optical Backdrop Blur + Bidirectional Scroll Reveal) */}
+      <Reveal delay={0.04} className="w-full mb-4">
+        <div
+          ref={marquee1Ref}
+          className="relative overflow-x-hidden flex w-full no-scrollbar select-none"
+        >
+          <div className="flex gap-3 whitespace-nowrap py-1 w-max">
+            {[0, 1].map((i) => (
+              <React.Fragment key={i}>
+                {MARQUEE_ROW_1.map((skill, j) => (
+                  <div
+                    key={`${i}-${j}`}
+                    data-marquee-pill
+                    className="inline-flex items-center gap-2 rounded-full stitch-marquee-pill px-4 py-2"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                    <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
+                  </div>
+                ))}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
-      </div>
+      </Reveal>
 
-      {/* Infinite Marquee 2 (Right Scrolling - Pure Optical Backdrop Blur) */}
-      <div
-        ref={marquee2Ref}
-        className="relative overflow-x-hidden flex w-full mb-16 no-scrollbar select-none"
-      >
-        <div className="flex gap-3 whitespace-nowrap py-1 w-max">
-          {[0, 1].map((i) => (
-            <React.Fragment key={i}>
-              {MARQUEE_ROW_2.map((skill, j) => (
-                <div
-                  key={`${i}-${j}`}
-                  data-marquee-pill
-                  className="inline-flex items-center gap-2 rounded-full stitch-marquee-pill px-4 py-2"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
-                </div>
-              ))}
-            </React.Fragment>
-          ))}
+      {/* Infinite Marquee 2 (Right Scrolling - Pure Optical Backdrop Blur + Bidirectional Scroll Reveal) */}
+      <Reveal delay={0.10} className="w-full mb-16">
+        <div
+          ref={marquee2Ref}
+          className="relative overflow-x-hidden flex w-full no-scrollbar select-none"
+        >
+          <div className="flex gap-3 whitespace-nowrap py-1 w-max">
+            {[0, 1].map((i) => (
+              <React.Fragment key={i}>
+                {MARQUEE_ROW_2.map((skill, j) => (
+                  <div
+                    key={`${i}-${j}`}
+                    data-marquee-pill
+                    className="inline-flex items-center gap-2 rounded-full stitch-marquee-pill px-4 py-2"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-xs sm:text-sm font-medium text-zinc-200">{skill}</span>
+                  </div>
+                ))}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
-      </div>
+      </Reveal>
 
       {/* Bento Grid with Uniform Obsidian Liquid Glass & Lucide SVG Icons */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
