@@ -558,17 +558,18 @@ button.stitch-btn-glass:active,
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14), 0 14px 32px -10px rgba(0, 0, 0, 0.48) !important;
 }
 
-/* Mobile Liquid Glass Sheet — Jernih & Konsisten dengan Kartu Utama */
+/* Mobile Liquid Glass Sheet — Frosted Glassy Blur yang Jernih & Tidak Bentrok dengan Teks Belakang */
 .stitch-nav-mobile-sheet {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 20, 30, 0.22) 100%) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+    linear-gradient(135deg, rgba(20, 26, 38, 0.68) 0%, rgba(12, 16, 26, 0.78) 100%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
-    0 24px 48px -10px rgba(0, 0, 0, 0.55) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+    0 24px 48px -10px rgba(0, 0, 0, 0.65) !important;
   border-radius: 1.75rem !important;
+  transform: translateZ(0) !important;
 }
 
 .section-contain {
@@ -578,15 +579,14 @@ button.stitch-btn-glass:active,
 /* Optimasi GPU Mobile (<= 768px): seluruh kartu & tombol menggunakan blur tipis seragam (8px) */
 @media (max-width: 768px) {
   .stitch-glass,
-  .stitch-liquid-theme .liquid-glass,
-  .stitch-dashboard-container .liquid-glass,
+  .stitch-liquid-theme .liquid-glass:not([role="listbox"]):not(.stitch-dropdown-panel),
+  .stitch-dashboard-container .liquid-glass:not([role="listbox"]):not(.stitch-dropdown-panel),
   .stitch-liquid-theme .liquid-glass-strong,
   .stitch-dashboard-container .liquid-glass-strong,
   .stitch-glass-nav,
   header.liquid-glass-nav,
   header .liquid-glass-nav,
-  .stitch-nav-mobile-sheet,
-  .stitch-terminal-window,
+  .stitch-terminal-window:not(.stitch-dropdown-panel),
   .stitch-btn-glass,
   .stitch-btn-primary,
   .stitch-capsule-group {
@@ -659,7 +659,10 @@ button.stitch-btn-glass:active,
 }
 
 /* --------------------------------------------------------------------------
-   6b. Dropdown / Listbox — Unified Clear Thin Glass Panel (Desktop & Mobile)
+   6b. Dropdown / Listbox — Real GPU Optical Blur Panel (Top-Level Portal)
+   - Dirender di document.body via createPortal agar TIDAK terjebak Backdrop Root
+     kartu induk (.liquid-glass / .stitch-terminal-window), sehingga benar-benar
+     mem-blur huruf/tabel di belakangnya secara nyata dan teks tidak bentrok.
    -------------------------------------------------------------------------- */
 .stitch-liquid-theme .liquid-glass[role="listbox"],
 .stitch-dashboard-container .liquid-glass[role="listbox"],
@@ -667,13 +670,14 @@ button.stitch-btn-glass:active,
 .stitch-dropdown-panel,
 .stitch-terminal-window.stitch-dropdown-panel {
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 45%, rgba(14, 18, 28, 0.42) 100%) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    linear-gradient(135deg, rgba(20, 26, 38, 0.68) 0%, rgba(12, 16, 26, 0.78) 100%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    0 18px 40px -10px rgba(0, 0, 0, 0.58) !important;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.20),
+    0 20px 44px -10px rgba(0, 0, 0, 0.65) !important;
+  transform: translateZ(0) !important;
 }
 
 /* --------------------------------------------------------------------------

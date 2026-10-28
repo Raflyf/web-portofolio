@@ -139,15 +139,46 @@ function saveAIMemory(factText, sessionId) {
 
 const CustomSelectEffort = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 208 });
   const containerRef = useRef(null);
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
   
   useEffect(() => {
+    if (!isOpen) return;
+
+    const updatePosition = () => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const menuWidth = 208;
+      const left = Math.max(8, Math.min(rect.right - menuWidth, vw - menuWidth - 8));
+      setMenuPos({
+        top: rect.bottom + 6,
+        left,
+        width: menuWidth
+      });
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+    window.addEventListener('resize', updatePosition, { passive: true });
+
     const handleClick = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) setIsOpen(false);
+      if (
+        containerRef.current && !containerRef.current.contains(e.target) &&
+        (!menuRef.current || !menuRef.current.contains(e.target))
+      ) {
+        setIsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, { capture: true });
+      window.removeEventListener('resize', updatePosition);
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, [isOpen]);
 
   const options = [
     { value: 'auto', label: 'Auto (Balanced)' },
@@ -162,6 +193,7 @@ const CustomSelectEffort = ({ value, onChange }) => {
   return (
     <div className={`relative inline-block text-left ${isOpen ? 'z-100' : 'z-20'}`} ref={containerRef}>
       <button 
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
         aria-haspopup="listbox"
@@ -176,18 +208,26 @@ const CustomSelectEffort = ({ value, onChange }) => {
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180 text-cyan-400' : 'text-zinc-400'}`} />
       </button>
       
-      {isOpen && (
+      {isOpen && typeof document !== 'undefined' && createPortal(
         <div 
+          ref={menuRef}
           role="listbox"
           data-lenis-prevent="true"
-          className="absolute right-0 top-full mt-2 w-52 origin-top-right rounded-2xl stitch-terminal-window stitch-dropdown-panel shadow-2xl z-100 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+          style={{
+            position: 'fixed',
+            top: `${menuPos.top}px`,
+            left: `${menuPos.left}px`,
+            width: `${menuPos.width}px`,
+            zIndex: 9999
+          }}
+          className="rounded-2xl liquid-glass stitch-dropdown-panel shadow-2xl py-1.5 overflow-hidden font-mono"
         >
-          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-700 dark:text-cyan-400/80 uppercase tracking-wider border-b border-zinc-200/50 dark:border-white/5 font-semibold">
+          <div className="px-3.5 py-1.5 text-[10px] font-mono text-cyan-400/90 uppercase tracking-wider border-b border-white/10 font-semibold">
             Reasoning Effort
           </div>
           <div 
             data-lenis-prevent="true"
-            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-200/50 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="py-1 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/8 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map(opt => (
               <button
@@ -198,16 +238,17 @@ const CustomSelectEffort = ({ value, onChange }) => {
                 onClick={() => { onChange(opt.value); setIsOpen(false); }}
                 className={`w-full text-left px-3.5 py-2.5 text-xs flex items-center justify-between cursor-pointer transition-colors ${
                   value === opt.value 
-                    ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-bold' 
-                    : 'text-zinc-800 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white'
+                    ? 'bg-cyan-500/20 text-cyan-300 font-bold' 
+                    : 'text-zinc-100 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 <span>{opt.label}</span>
-                {value === opt.value && <Check className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />}
+                {value === opt.value && <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
@@ -1868,22 +1909,42 @@ export default function TerminalAI({ onClose } = {}) {
                 disabled={isLoading}
               />
               
-              {showSlashMenu && availableCommands.length > 0 && (
-                <div role="listbox" data-lenis-prevent="true" className="absolute bottom-full mb-2 left-0 w-64 max-h-48 overflow-y-auto overscroll-contain no-scrollbar stitch-terminal-window stitch-dropdown-panel border border-white/20 rounded-xl shadow-2xl z-100 py-1">
-                  {availableCommands.map((cmd, idx) => (
-                    <div 
-                      key={cmd} 
-                      onClick={() => sendMessage(`/${cmd}`)}
-                      className={cn(
-                        "px-4 py-2 cursor-pointer transition-colors font-mono text-xs",
-                        idx === slashSelectedIndex ? "bg-cyan-500/20 text-cyan-300 font-semibold" : "text-zinc-300 hover:bg-white/10 hover:text-white"
-                      )}
-                    >
-                      /{cmd}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {showSlashMenu && availableCommands.length > 0 && typeof document !== 'undefined' && textInputRef.current && (() => {
+                const rect = textInputRef.current.getBoundingClientRect();
+                const left = Math.max(8, Math.min(rect.left - 36, window.innerWidth - 264));
+                const bottom = window.innerHeight - rect.top + 10;
+                return createPortal(
+                  <div
+                    role="listbox"
+                    data-lenis-prevent="true"
+                    style={{
+                      position: 'fixed',
+                      left: `${left}px`,
+                      bottom: `${bottom}px`,
+                      width: '256px',
+                      zIndex: 9999
+                    }}
+                    className="max-h-48 overflow-y-auto overscroll-contain no-scrollbar liquid-glass stitch-dropdown-panel border border-white/20 rounded-xl shadow-2xl py-1 font-mono"
+                  >
+                    {availableCommands.map((cmd, idx) => (
+                      <div 
+                        key={cmd} 
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          sendMessage(`/${cmd}`);
+                        }}
+                        className={cn(
+                          "px-4 py-2 cursor-pointer transition-colors font-mono text-xs",
+                          idx === slashSelectedIndex ? "bg-cyan-500/20 text-cyan-300 font-semibold" : "text-zinc-200 hover:bg-white/10 hover:text-white"
+                        )}
+                      >
+                        /{cmd}
+                      </div>
+                    ))}
+                  </div>,
+                  document.body
+                );
+              })()}
               {isLoading ? (
                 <button
                   type="button"

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext.jsx';
@@ -259,23 +260,53 @@ const INDIVIDUAL_MODELS = [
 
 const CustomSelect = ({ value, onChange, options }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 208 });
   const containerRef = useRef(null);
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
+    if (!isOpen) return;
+
+    const updatePosition = () => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const menuWidth = vw < 640 ? 192 : 224;
+      const left = Math.max(8, Math.min(rect.right - menuWidth, vw - menuWidth - 8));
+      setMenuPos({
+        top: rect.bottom + 6,
+        left,
+        width: menuWidth
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, { capture: true, passive: true });
+    window.addEventListener("resize", updatePosition, { passive: true });
+
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current && !containerRef.current.contains(event.target) &&
+        (!menuRef.current || !menuRef.current.contains(event.target))
+      ) {
         setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    return () => {
+      window.removeEventListener("scroll", updatePosition, { capture: true });
+      window.removeEventListener("resize", updatePosition);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const selectedOption = options.find(opt => opt.value === value) || options[0];
 
   return (
     <div ref={containerRef} className={`relative inline-block text-left ${isOpen ? 'z-100' : 'z-10'}`}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
@@ -290,16 +321,23 @@ const CustomSelect = ({ value, onChange, options }) => {
         <ChevronDown className={`w-3.5 h-3.5 ml-1 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-cyan-600 dark:text-cyan-400" : "rotate-0 text-zinc-500 dark:text-zinc-400"}`} />
       </button>
 
-      {isOpen && (
+      {isOpen && typeof document !== 'undefined' && createPortal(
         <div
+          ref={menuRef}
           role="listbox"
           data-lenis-prevent="true"
-          style={{ position: 'absolute', top: '100%', right: 0 }}
-          className="absolute! top-full right-0 z-100 mt-1.5 w-48 sm:w-56 origin-top-right rounded-2xl liquid-glass border border-zinc-200 dark:border-cyan-500/40 shadow-2xl focus:outline-none overflow-hidden backdrop-blur-md"
+          style={{
+            position: 'fixed',
+            top: `${menuPos.top}px`,
+            left: `${menuPos.left}px`,
+            width: `${menuPos.width}px`,
+            zIndex: 9999
+          }}
+          className="rounded-2xl liquid-glass stitch-dropdown-panel border border-white/15 shadow-2xl focus:outline-none overflow-hidden"
         >
           <div 
             data-lenis-prevent="true" 
-            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-zinc-200/50 dark:divide-white/5 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
+            className="py-1.5 max-h-72 overflow-y-auto overscroll-contain divide-y divide-white/8 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent"
           >
             {options.map((option) => (
               <button
@@ -312,16 +350,17 @@ const CustomSelect = ({ value, onChange, options }) => {
                 }}
                 className={`flex w-full items-center justify-between px-3.5 py-2.5 text-left text-xs transition-colors cursor-pointer ${
                   value === option.value 
-                    ? "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-bold" 
-                    : "text-zinc-800 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-white/10 hover:text-zinc-900 dark:hover:text-white"
+                    ? "bg-cyan-500/20 text-cyan-300 font-bold" 
+                    : "text-zinc-100 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <span className="truncate pr-2">{option.label}</span>
-                {value === option.value && <Check className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />}
+                {value === option.value && <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
