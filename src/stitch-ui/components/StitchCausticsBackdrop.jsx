@@ -38,55 +38,53 @@ export default function StitchCausticsBackdrop() {
           yang lebih terang dari latar sebelumnya, tanpa menutupi teksturnya. */}
       <div className="stitch-wallpaper-scrim" />
 
-      {/* Ambient Radial Mesh Glows (GPU Accelerated, Static & Performant)
-          Substrat cahaya hangat + dingin agar material Glassy V4 dapat membiaskan
-          gradien halus seperti kaca buram optik visionOS. */}
+      {/* Ambient Radial Mesh Glows (GPU Accelerated, Static & Performant) */}
       <div 
         className="absolute inset-0 w-full h-full"
         style={{ opacity: isTabVisible ? 1 : 0.35, transition: 'opacity 0.4s ease' }}
       >
-        {/* Glow 1: Warm Champagne & Pearl Light Pool (Top-Left) */}
+        {/* Glow 1: Netral Lembut (Top-Left) */}
         <div
-          className="absolute rounded-full -top-28 -left-24 w-190 h-175 pointer-events-none"
+          className="absolute rounded-full -top-24 -left-24 w-170 h-160 pointer-events-none"
           style={{
-            background: 'radial-gradient(circle at 45% 45%, rgba(254, 243, 199, 0.11) 0%, rgba(226, 232, 240, 0.065) 38%, rgba(148, 163, 184, 0.02) 62%, transparent 76%)',
+            background: 'radial-gradient(circle at 45% 45%, rgba(226, 232, 240, 0.055) 0%, rgba(203, 213, 225, 0.028) 40%, transparent 70%)',
             transform: 'translateZ(0)'
           }}
         />
 
-        {/* Glow 2: Ice Cyan & Satin Silver Light Pool (Mid-Right) */}
+        {/* Glow 2: Netral Lembut (Mid-Right) */}
         <div
-          className="absolute rounded-full top-[22%] -right-24 w-195 h-185 pointer-events-none"
+          className="absolute rounded-full top-[28%] -right-20 w-180 h-170 pointer-events-none"
           style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(186, 230, 253, 0.105) 0%, rgba(226, 232, 240, 0.055) 42%, rgba(99, 102, 241, 0.025) 65%, transparent 78%)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(226, 232, 240, 0.048) 0%, rgba(203, 213, 225, 0.022) 45%, transparent 70%)',
             transform: 'translateZ(0)'
           }}
         />
 
-        {/* Glow 3: Warm Amber-Rose & Mist Light Pool (Mid-Left / Projects & Lab Anchor) */}
+        {/* Glow 3: Netral Lembut (Interactive Lab Anchor) */}
         <div
-          className="absolute rounded-full top-[54%] -left-20 w-185 h-175 pointer-events-none"
+          className="absolute rounded-full top-[60%] -left-16 w-160 h-150 pointer-events-none"
           style={{
-            background: 'radial-gradient(circle at 45% 45%, rgba(253, 230, 138, 0.085) 0%, rgba(226, 232, 240, 0.05) 42%, rgba(125, 211, 252, 0.025) 64%, transparent 76%)',
+            background: 'radial-gradient(circle at 45% 45%, rgba(226, 232, 240, 0.045) 0%, rgba(203, 213, 225, 0.020) 45%, transparent 70%)',
             transform: 'translateZ(0)'
           }}
         />
 
-        {/* Glow 4: Soft Indigo & Pearl Horizon Pool (Bottom) */}
+        {/* Glow 4: Netral Lembut (Bottom) */}
         <div
-          className="absolute rounded-full -bottom-16 right-[10%] w-190 h-150 pointer-events-none"
+          className="absolute rounded-full bottom-0 right-[15%] w-175 h-125 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse at 50% 50%, rgba(199, 210, 254, 0.095) 0%, rgba(186, 230, 253, 0.05) 45%, transparent 75%)',
+            background: 'radial-gradient(ellipse at 50% 50%, rgba(226, 232, 240, 0.042) 0%, rgba(203, 213, 225, 0.018) 45%, transparent 70%)',
             transform: 'translateZ(0)'
           }}
         />
 
-        {/* Subtle Dot Matrix Micro-Texture (Reduced opacity so glass looks creamy, not grainy) */}
+        {/* Crisp Dot Matrix Grid (visionOS Texture - GPU Composited) */}
         <div 
-          className="absolute inset-0 pointer-events-none opacity-12"
+          className="absolute inset-0 pointer-events-none opacity-25"
           style={{
             backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
+            backgroundSize: '24px 24px',
             transform: 'translateZ(0)'
           }}
         />
@@ -94,7 +92,7 @@ export default function StitchCausticsBackdrop() {
         <div 
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: 'radial-gradient(ellipse 88% 88% at 50% 50%, transparent 54%, rgba(8, 11, 17, 0.88) 100%)',
+            background: 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 50%, #080b11 100%)',
             transform: 'translateZ(0)'
           }}
         />

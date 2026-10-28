@@ -1,29 +1,25 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * Shared IntersectionObserver Pool with Hysteresis (Zero React Re-Renders on Scroll)
- * - Satu observer per nilai threshold (default 0.08), dibagi oleh seluruh kartu di halaman.
- * - Menggunakan hysteresis multi-threshold `[0, 0.02, targetRatio]`:
- *   - Kartu langsung mulai reveal saat 6-8% bagiannya menyentuh viewport (atau 2% untuk kartu tinggi di mobile).
- *   - Reset (`revealed` dilepas & arah `reveal-from-top` disetel) HANYA terjadi saat kartu 100%
- *     keluar dari viewport (`!entry.isIntersecting || entry.intersectionRatio === 0`).
- *     Hasilnya: kartu tidak pernah melompat/reset saat masih terlihat di layar, dan selalu
- *     siap memainkan animasi reveal mewah yang konsisten baik saat di-scroll ke bawah maupun ke atas.
+ * Shared IntersectionObserver Pool with Offscreen Hysteresis (Zero React Re-Renders on Scroll)
+ * - Satu observer dibagi oleh seluruh elemen Reveal di halaman.
+ * - Begitu 1% kartu menyentuh viewport (`entry.isIntersecting`), `.revealed` langsung aktif
+ *   sehingga kartu meluncur mulus (cubic-bezier(0.22, 1, 0.36, 1)) tanpa jeda kaku.
+ * - Reset (`revealed` dilepas & arah `reveal-from-top` disetel) HANYA terjadi saat kartu 100%
+ *   keluar dari viewport (`!entry.isIntersecting`) dengan `transition: none` (biaya GPU 0ms).
+ * - Murni menganimasikan `translate3d` pada compositor GPU (tanpa mengubah `opacity` atau `scale`
+ *   pada kartu ber-backdrop-filter) sehingga Chromium tidak pernah membuat Backdrop Root
+ *   perantara atau mengalokasikan ulang tekstur FBO blur saat scroll.
  */
-const observerPool = new Map();
+let sharedObserver = null;
 
-function getSharedObserver(threshold) {
-  const targetRatio = Math.min(0.5, Math.max(0.02, Number(threshold) || 0.08));
-  const key = targetRatio.toFixed(2);
-  if (observerPool.has(key)) {
-    return observerPool.get(key);
+function getSharedObserver() {
+  if (sharedObserver) {
+    return sharedObserver;
   }
 
-  const thresholds = Array.from(new Set([0, 0.02, targetRatio])).sort((a, b) => a - b);
-
-  const io = new IntersectionObserver(
+  sharedObserver = new IntersectionObserver(
     (entries) => {
-      const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
       for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
         const el = entry.target;
@@ -35,32 +31,28 @@ function getSharedObserver(threshold) {
           } else {
             el.classList.remove('reveal-from-top');
           }
-        } else if (
-          entry.intersectionRatio >= targetRatio ||
-          (entry.intersectionRatio >= 0.02 && entry.boundingClientRect.height > vh * 0.65)
-        ) {
+        } else {
           el.classList.add('revealed');
         }
       }
     },
     {
-      threshold: thresholds,
-      rootMargin: '0px 0px -3% 0px',
+      threshold: [0, 0.01],
+      rootMargin: '0px',
     }
   );
 
-  observerPool.set(key, io);
-  return io;
+  return sharedObserver;
 }
 
 export default function Reveal({
-  y = 36,
+  y = 26,
   x = 0,
-  scale = 0.955,
-  fade = true,
-  duration = 0.78,
+  scale = null,
+  fade = false,
+  duration = 0.62,
   delay = 0,
-  amount = 0.08,
+  amount = 0.01,
   as: Tag = 'div',
   className = '',
   style,
@@ -76,7 +68,7 @@ export default function Reveal({
       return;
     }
 
-    const io = getSharedObserver(amount);
+    const io = getSharedObserver();
     io.observe(el);
     return () => {
       io.unobserve(el);
@@ -88,7 +80,7 @@ export default function Reveal({
     '--rv-delay': typeof delay === 'number' ? `${delay}s` : delay,
     '--rv-y': `${y}px`,
     '--rv-x': `${x}px`,
-    '--rv-scale': scale == null ? 1 : scale,
+    ...(scale != null ? { '--rv-scale': scale } : {}),
   };
 
   return (
