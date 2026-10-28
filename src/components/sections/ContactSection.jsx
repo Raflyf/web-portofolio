@@ -133,8 +133,8 @@ export default function ContactSection() {
   return (
     <section id="contact" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
       {/* Header Section */}
-      <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-16">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-16">
+        <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('contact.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -151,7 +151,7 @@ export default function ContactSection() {
         {/* Left Column: Direct Action Cards */}
         <div className="lg:col-span-5 space-y-3">
           {/* Email Direct Copy Card */}
-          <Reveal x={-30} duration={0.5} delay={0.1} amount={0.2} className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group">
+          <Reveal y={24} duration={0.55} delay={0} amount={0.15} className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group">
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
                 <Mail className="w-5 h-5" />
@@ -185,11 +185,18 @@ export default function ContactSection() {
           </Reveal>
 
           {/* WhatsApp Direct Chat Card */}
-          <Reveal as="a" x={-30} duration={0.5} delay={0.2} amount={0.2} href={DEVELOPER_PROFILE.whatsappUrl}
+          <Reveal
+            as="a"
+            y={24}
+            duration={0.55}
+            delay={0.06}
+            amount={0.15}
+            href={DEVELOPER_PROFILE.whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => telemetry.logEvent('link_click', 'whatsapp', 'Klik Tombol Chat WhatsApp')}
-            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group">
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
+          >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                 <MessageSquare className="w-5 h-5" />
@@ -211,11 +218,18 @@ export default function ContactSection() {
           </Reveal>
 
           {/* GitHub Profile Card */}
-          <Reveal as="a" x={-30} duration={0.5} delay={0.3} amount={0.2} href={DEVELOPER_PROFILE.github}
+          <Reveal
+            as="a"
+            y={24}
+            duration={0.55}
+            delay={0.12}
+            amount={0.15}
+            href={DEVELOPER_PROFILE.github}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => telemetry.logEvent('link_click', 'github_profile', 'Klik Profil GitHub')}
-            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group">
+            className="p-4 sm:p-5 liquid-glass liquid-glass-hover flex flex-col justify-between space-y-3 group"
+          >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -241,8 +255,14 @@ export default function ContactSection() {
         </div>
 
         {/* Right Column: Contact Form with FormSubmit */}
-        <Reveal x={30} duration={0.6} amount={0.2} className="lg:col-span-7 p-8 sm:p-10 liquid-glass-strong relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+        <Reveal y={24} duration={0.55} delay={0.06} amount={0.15} className="lg:col-span-7 p-8 sm:p-10 liquid-glass-strong relative overflow-hidden">
+          <div
+            className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.14) 0%, transparent 70%)',
+              transform: 'translateZ(0)'
+            }}
+          />
 
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
             {language === 'id' ? 'Kirimkan Pesan Langsung' : 'Send a Direct Message'}

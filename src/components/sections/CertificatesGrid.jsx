@@ -1,22 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { getCertificatesData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext';
 import { FileText, Award, Calendar, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { telemetry } from '../../lib/telemetry';
 import Reveal from '../ui/Reveal.jsx';
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.08 }
-  }
-};
-
-const tabVariants = {
-  hidden: { scale: 0.9 },
-  visible: { scale: 1, transition: { duration: 0.3 } }
-};
 
 export default function CertificatesGrid() {
   const { language, t } = useLanguage();
@@ -72,8 +60,8 @@ export default function CertificatesGrid() {
 
   return (
     <section id="certificates" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-12">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-12">
+        <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('certificates.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -85,17 +73,10 @@ export default function CertificatesGrid() {
       </Reveal>
 
       {/* Filter Tabs */}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.8 }}
-        className="flex justify-center mb-12"
-      >
+      <Reveal y={24} duration={0.55} delay={0.05} amount={0.15} className="flex justify-center mb-12">
         <div className="stitch-capsule-group">
           {filterTabs.map(tab => (
-            <motion.button
-              variants={tabVariants}
+            <button
               key={tab.id}
               onClick={() => {
                 setFilter(tab.id);
@@ -108,99 +89,91 @@ export default function CertificatesGrid() {
               }`}
             >
               {tab.label}
-            </motion.button>
+            </button>
           ))}
         </div>
-      </motion.div>
+      </Reveal>
 
-      {/* Cards Grid — whileInView per-card agar animasi individual */}
+      {/* Cards Grid — Unified GPU Reveal per-card */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredCertificates.map((cert, index) => (
-            <motion.div 
-              layout
-              key={cert.id} 
-              initial={{ y: 28 }}
-              whileInView={{ y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              viewport={{ once: false, amount: 0.15 }}
-              transition={{ 
-                duration: 0.5, 
-                ease: [0.16, 1, 0.3, 1],
-                delay: (index % 3) * 0.08
-              }}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="liquid-glass liquid-glass-hover group flex flex-col justify-between relative overflow-hidden p-6"
-            >
-              <div>
-                {/* Certificate Preview Frame */}
-                <div
-                  onClick={(e) => openCertModal(cert, e.currentTarget)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCertModal(cert, e.currentTarget); } }}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`${t('certificates.previewTitle')} ${cert.title}`}
-                  className="h-44 w-full relative overflow-hidden liquid-glass-inset mb-5 group/img cursor-pointer"
-                >
-                  <div className="absolute inset-0 flex items-center justify-center text-zinc-600 bg-slate-900/80 z-0">
-                    <Award className="w-10 h-10 opacity-30 text-cyan-400" />
-                  </div>
-                  
-                  {cert.imageUrl && (
-                    <img 
-                      src={cert.imageUrl} 
-                      alt={cert.title}
-                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover/img:scale-105 opacity-90 group-hover/img:opacity-100 z-10"
-                      loading="lazy"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                  )}
-                  
-                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent z-20" />
-                  
-                  <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-zinc-300">
-                    <Calendar className="w-3 h-3 text-cyan-400" />
-                    {cert.date}
-                  </div>
-
-                  <div className="absolute bottom-3 right-3 z-30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center gap-1 px-2.5 py-1 rounded-md bg-cyan-500/20 backdrop-blur-md border border-cyan-400/40 text-[10px] font-semibold text-cyan-300">
-                    <Eye className="w-3 h-3" />
-                    {language === 'id' ? 'Pratinjau' : 'Preview'}
-                  </div>
+        {filteredCertificates.map((cert, index) => (
+          <Reveal 
+            key={cert.id} 
+            y={24}
+            duration={0.55}
+            delay={(index % 3) * 0.06}
+            amount={0.15}
+            className="liquid-glass liquid-glass-hover group flex flex-col justify-between relative overflow-hidden p-6"
+          >
+            <div>
+              {/* Certificate Preview Frame */}
+              <div
+                onClick={(e) => openCertModal(cert, e.currentTarget)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCertModal(cert, e.currentTarget); } }}
+                role="button"
+                tabIndex={0}
+                aria-label={`${t('certificates.previewTitle')} ${cert.title}`}
+                className="h-44 w-full relative overflow-hidden liquid-glass-inset mb-5 group/img cursor-pointer"
+              >
+                <div className="absolute inset-0 flex items-center justify-center text-zinc-600 bg-slate-900/80 z-0">
+                  <Award className="w-10 h-10 opacity-30 text-cyan-400" />
+                </div>
+                
+                {cert.imageUrl && (
+                  <img 
+                    src={cert.imageUrl} 
+                    alt={cert.title}
+                    className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover/img:scale-105 opacity-90 group-hover/img:opacity-100 z-10"
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                )}
+                
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent z-20" />
+                
+                <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/75 border border-white/10 text-[10px] font-mono text-zinc-300">
+                  <Calendar className="w-3 h-3 text-cyan-400" />
+                  {cert.date}
                 </div>
 
-                {/* Certificate Details */}
-                <div className="space-y-3">
-                  <div className="text-[11px] font-semibold text-cyan-400 tracking-wide">
-                    {cert.issuer}
-                  </div>
-
-                  <h3 className="text-base sm:text-lg font-bold text-white tracking-tight leading-snug group-hover:text-cyan-300 transition-colors line-clamp-2">
-                    {cert.title}
-                  </h3>
-
-                  <p className="text-xs text-zinc-400 leading-relaxed line-clamp-3">
-                    {cert.description}
-                  </p>
+                <div className="absolute bottom-3 right-3 z-30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center gap-1 px-2.5 py-1 rounded-md bg-cyan-950/85 border border-cyan-400/40 text-[10px] font-semibold text-cyan-300">
+                  <Eye className="w-3 h-3" />
+                  {language === 'id' ? 'Pratinjau' : 'Preview'}
                 </div>
               </div>
 
-              {/* Pristine Full-Width Liquid Glass PDF Button */}
-              <div className="pt-5 mt-4 border-t border-white/10">
-                <a
-                  href={cert.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => telemetry.logEvent('cert_view', `${cert.id}_pdf`, `Buka PDF: ${cert.title}`)}
-                  className="w-full py-2.5 px-4 rounded-full stitch-btn-glass text-xs font-semibold text-zinc-200 hover:text-white flex items-center justify-center gap-2 transition-all group/btn shadow-md"
-                >
-                  <FileText className="w-4 h-4 text-cyan-400 group-hover/btn:scale-110 transition-transform" />
-                  <span>{t('certificates.viewPdf')}</span>
-                </a>
+              {/* Certificate Details */}
+              <div className="space-y-3">
+                <div className="text-[11px] font-semibold text-cyan-400 tracking-wide">
+                  {cert.issuer}
+                </div>
+
+                <h3 className="text-base sm:text-lg font-bold text-white tracking-tight leading-snug group-hover:text-cyan-300 transition-colors line-clamp-2">
+                  {cert.title}
+                </h3>
+
+                <p className="text-xs text-zinc-400 leading-relaxed line-clamp-3">
+                  {cert.description}
+                </p>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+            </div>
+
+            {/* Pristine Full-Width Liquid Glass PDF Button */}
+            <div className="pt-5 mt-4 border-t border-white/10">
+              <a
+                href={cert.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => telemetry.logEvent('cert_view', `${cert.id}_pdf`, `Buka PDF: ${cert.title}`)}
+                className="w-full py-2.5 px-4 rounded-full stitch-btn-glass text-xs font-semibold text-zinc-200 hover:text-white flex items-center justify-center gap-2 transition-all group/btn shadow-md"
+              >
+                <FileText className="w-4 h-4 text-cyan-400 group-hover/btn:scale-110 transition-transform" />
+                <span>{t('certificates.viewPdf')}</span>
+              </a>
+            </div>
+          </Reveal>
+        ))}
       </div>
 
       {/* Certificate Viewer Modal (Multi-Page Support) */}
@@ -214,6 +187,17 @@ export default function CertificatesGrid() {
             tabIndex={-1}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md glass-backdrop-in"
             onClick={closeCertModal}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                closeCertModal();
+              } else if (e.key === 'ArrowLeft') {
+                setSelectedPage((p) => Math.max(0, p - 1));
+              } else if (e.key === 'ArrowRight') {
+                const total = (selectedCert.images && selectedCert.images.length) || 1;
+                setSelectedPage((p) => Math.min(total - 1, p + 1));
+              }
+            }}
           >
             <div className="relative max-w-4xl w-full max-h-[90vh] liquid-glass-strong glass-spring-in p-4 overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
               {/* Modal Header */}
@@ -248,46 +232,31 @@ export default function CertificatesGrid() {
                     />
 
                     {pages.length > 1 && (
-                      <>
+                      <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-white/10">
                         <button
-                          onClick={() => setSelectedPage(prev => (prev - 1 + pages.length) % pages.length)}
-                          disabled={pages.length <= 1}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center text-white cursor-pointer"
+                          onClick={() => setSelectedPage((p) => Math.max(0, p - 1))}
+                          disabled={pageIndex === 0}
+                          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white cursor-pointer"
                           aria-label={t('certificates.prevPage')}
                         >
-                          <ChevronLeft className="w-5 h-5" />
+                          <ChevronLeft className="w-4 h-4" />
                         </button>
+                        <span className="text-xs font-mono text-zinc-300">
+                          {t('certificates.page')} {pageIndex + 1} / {pages.length}
+                        </span>
                         <button
-                          onClick={() => setSelectedPage(prev => (prev + 1) % pages.length)}
-                          disabled={pages.length <= 1}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center text-white cursor-pointer"
+                          onClick={() => setSelectedPage((p) => Math.min(pages.length - 1, p + 1))}
+                          disabled={pageIndex === pages.length - 1}
+                          className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white cursor-pointer"
                           aria-label={t('certificates.nextPage')}
                         >
-                          <ChevronRight className="w-5 h-5" />
+                          <ChevronRight className="w-4 h-4" />
                         </button>
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/70 border border-white/15 text-[11px] font-mono text-zinc-300">
-                          {pageIndex + 1} / {pages.length}
-                        </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 );
               })()}
-
-              {/* Footer Actions */}
-              {selectedCert.pdfUrl && (
-                <div className="pt-3 border-t border-white/10 mt-3 shrink-0">
-                  <a
-                    href={selectedCert.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-cyan-500/15 border border-white/10 hover:border-cyan-500/40 text-xs font-semibold text-zinc-300 hover:text-cyan-300 flex items-center justify-center gap-2 transition-all"
-                  >
-                    <FileText className="w-4 h-4 text-cyan-400" />
-                    <span>{t('certificates.viewPdf')}</span>
-                  </a>
-                </div>
-              )}
             </div>
           </div>
         )}

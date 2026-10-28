@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import { 
@@ -58,44 +58,77 @@ export default function StitchNav() {
     }
   };
 
-  // Synchronize active nav highlight with viewport scroll.
-  // PENTING (fix 25 Sep): IntersectionObserver dengan rootMargin '-20%/-55%'
-  // GAGAL untuk section tinggi — strip pengamatan hanya 25% viewport, jadi
-  // section seperti Projects/Certificates/Timeline tidak pernah memicu dan
-  // navbar tertinggal di section sebelumnya (keluhan: "navbar tidak sinkron").
-  // Solusi: pilih section TERAKHIR yang tepi atasnya sudah melewati garis
-  // 40% viewport — deterministik untuk semua tinggi section, tanpa reflow
-  // (hanya getBoundingClientRect saat scroll, di-throttle via rAF).
+  // Synchronize active nav highlight with viewport scroll using cached section offsets
+  // (zero getBoundingClientRect / scrollHeight layout reads during scroll frames).
   useEffect(() => {
     const ids = ['hero', ...NAV_ITEMS.map(i => i.id)];
+    let cachedOffsets = [];
+    let cachedDocHeight = 0;
     let ticking = false;
+
+    const measureOffsets = () => {
+      const scrollY = window.scrollY || 0;
+      cachedOffsets = [];
+      for (const id of ids) {
+        const el = document.getElementById(id);
+        if (el) {
+          cachedOffsets.push({ id, top: el.getBoundingClientRect().top + scrollY });
+        }
+      }
+      cachedDocHeight = document.documentElement.scrollHeight;
+    };
 
     const pick = () => {
       ticking = false;
-      const line = window.innerHeight * 0.4;
+      if (cachedOffsets.length === 0) measureOffsets();
+      const scrollY = window.scrollY || 0;
+      const vh = window.innerHeight;
+      const line = scrollY + vh * 0.4;
+
       let current = ids[0];
-      for (const id of ids) {
-        const el = document.getElementById(id);
-        if (!el) continue;
-        if (el.getBoundingClientRect().top <= line) current = id;
+      for (let i = 0; i < cachedOffsets.length; i++) {
+        if (cachedOffsets[i].top <= line) {
+          current = cachedOffsets[i].id;
+        } else {
+          break;
+        }
       }
-      // Di dasar halaman: paksa section terakhir (contact) aktif.
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+      if (vh + scrollY >= cachedDocHeight - 4) {
         current = ids[ids.length - 1];
       }
       setActiveSection(prev => (prev !== current ? current : prev));
     };
 
     const onScroll = () => {
-      if (!ticking) { ticking = true; window.requestAnimationFrame(pick); }
+      if (!ticking) {
+        ticking = true;
+        window.requestAnimationFrame(pick);
+      }
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
+    const onResize = () => {
+      measureOffsets();
+      onScroll();
+    };
+
+    measureOffsets();
     pick();
+
+    let ro = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => {
+        measureOffsets();
+        onScroll();
+      });
+      ro.observe(document.body);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', onResize);
+      if (ro) ro.disconnect();
     };
   }, []);
 

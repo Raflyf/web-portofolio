@@ -1,49 +1,77 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 /**
- * Reveal — animasi reveal dua arah berbasis CSS transition (compositor GPU),
- * BUKAN animasi JS per frame.
- *
- * KENAPA (terukur 25 Sep, Intel UHD): mengganti reveal framer-motion (yang
- * menganimasikan via JS di main thread setiap frame) dengan CSS transition
- * menaikkan FPS scroll 74 -> 84 dan menghapus seluruh frame jank
- * (frame >33ms: 2-5 -> 0) tanpa mengubah visual sedikit pun — kurva easing,
- * durasi, delay, arah, dan dua-arah (re-trigger) semuanya identik.
- * Teknik ini yang dipakai web bot FreeAIBot (terukur 115 fps di monitor 120Hz).
- *
- * PENTING: default TANPA opacity (hanya transform) — Chromium mematikan
- * backdrop-filter selama opacity < 1, jadi elemen kaca yang di-fade akan
- * kehilangan blur (bug "blur pop-in" yang sudah diperbaiki). Prop `fade`
- * hanya untuk wrapper non-kaca.
- *
- * Props:
- *  - y, x: offset awal (px, angka)
- *  - scale: skala awal (angka, opsional)
- *  - duration: detik (default 0.6)
- *  - delay: detik atau ekspresi (default 0)
- *  - amount: fraksi elemen harus terlihat agar ter-trigger (default 0.2)
- *  - fade: true = ikut animasikan opacity (default false)
- *  - as: tag elemen ('div' | 'section' | 'a' | 'span' | 'li')
- *  - className/style/props lain diteruskan apa adanya ke elemen.
+ * Shared IntersectionObserver Pool (Zero React Re-Renders on Scroll)
+ * - Satu observer per nilai threshold (default 0.15), dibagi oleh seluruh kartu di halaman.
+ * - Memodifikasi class DOM (`revealed` & `reveal-from-top`) secara langsung tanpa memicu
+ *   React `setState` / re-render saat pengguna sedang melakukan scroll.
+ * - Mendukung animasi dua arah (bidirectional scroll up & down) yang 100% konsisten:
+ *   - Saat di-scroll ke bawah (elemen masuk dari bawah): meluncur naik (+24px -> 0)
+ *   - Saat di-scroll ke atas (elemen masuk dari atas): meluncur turun (-24px -> 0)
  */
+const observerPool = new Map();
+
+function getSharedObserver(threshold) {
+  const key = Math.min(1, Math.max(0.01, Number(threshold) || 0.15)).toFixed(2);
+  if (observerPool.has(key)) {
+    return observerPool.get(key);
+  }
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        const el = entry.target;
+        if (entry.isIntersecting) {
+          el.classList.add('revealed');
+        } else {
+          el.classList.remove('revealed');
+          if (entry.boundingClientRect.top < 0) {
+            el.classList.add('reveal-from-top');
+          } else {
+            el.classList.remove('reveal-from-top');
+          }
+        }
+      }
+    },
+    {
+      threshold: Number(key),
+      rootMargin: '-12px 0px -12px 0px',
+    }
+  );
+
+  observerPool.set(key, io);
+  return io;
+}
+
 export default function Reveal({
-  y = 0, x = 0, scale = null, fade = false,
-  duration = 0.6, delay = 0, amount = 0.2,
-  as: Tag = 'div', className = '', style, children, ...rest
+  y = 24,
+  x = 0,
+  scale = null,
+  fade = false,
+  duration = 0.55,
+  delay = 0,
+  amount = 0.15,
+  as: Tag = 'div',
+  className = '',
+  style,
+  children,
+  ...rest
 }) {
   const ref = useRef(null);
-  const [shown, setShown] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
-    const threshold = Math.min(1, Math.max(0.01, Number(amount) || 0.2));
-    const io = new IntersectionObserver(
-      ([entry]) => setShown(entry.isIntersecting),
-      { threshold, rootMargin: '-15px 0px -15px 0px' }
-    );
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      if (el) el.classList.add('revealed');
+      return;
+    }
+
+    const io = getSharedObserver(amount);
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      io.unobserve(el);
+    };
   }, [amount]);
 
   const vars = {
@@ -57,7 +85,7 @@ export default function Reveal({
   return (
     <Tag
       ref={ref}
-      className={`reveal-init${fade ? ' reveal-fade' : ''}${shown ? ' revealed' : ''}${className ? ' ' + className : ''}`}
+      className={`reveal-init${fade ? ' reveal-fade' : ''}${className ? ' ' + className : ''}`}
       style={{ ...vars, ...style }}
       {...rest}
     >

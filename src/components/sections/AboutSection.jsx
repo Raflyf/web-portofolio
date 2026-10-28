@@ -1,26 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { getDeveloperProfile } from '../../data';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import { Brain, Network, Eye, ShieldCheck } from 'lucide-react';
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { y: 25 },
-  visible: {
-    y: 0,
-    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
-  }
-};
+import Reveal from '../ui/Reveal.jsx';
 
 export default function AboutSection() {
   const { language, t } = useLanguage();
@@ -63,39 +45,35 @@ export default function AboutSection() {
 
   return (
     <section id="about" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.2 }}
-        variants={containerVariants}
-        className="text-center space-y-4 mb-16"
-      >
-        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
+      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-16">
+        <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('about.badge')}</span>
-        </motion.div>
+        </div>
         
-        <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
           {t('about.title')}
-        </motion.h2>
+        </h2>
         
-        <motion.p variants={itemVariants} className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
+        <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
           {t('about.subtitle')}
-        </motion.p>
-      </motion.div>
+        </p>
+      </Reveal>
 
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.15 }}
-        variants={containerVariants}
-        className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch"
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         {/* Main Bio Card */}
-        <motion.div 
-          variants={itemVariants}
+        <Reveal 
+          y={24}
+          duration={0.55}
+          amount={0.15}
           className="lg:col-span-6 space-y-6 text-base sm:text-lg text-zinc-300 leading-relaxed p-8 sm:p-10 liquid-glass-strong liquid-glass-hover relative overflow-hidden flex flex-col justify-center"
         >
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+          <div
+            className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.14) 0%, transparent 70%)',
+              transform: 'translateZ(0)'
+            }}
+          />
           <p className="relative z-10">
             {language === 'id' ? (
               <>
@@ -118,15 +96,17 @@ export default function AboutSection() {
               </>
             )}
           </p>
-        </motion.div>
+        </Reveal>
 
         {/* Pillars Cards - Liquid Glass 2x2 Grid */}
         <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {pillars.map((pillar, i) => (
-            <motion.div 
+            <Reveal 
               key={i} 
-              variants={itemVariants}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              y={24}
+              duration={0.55}
+              delay={(i % 2) * 0.06}
+              amount={0.15}
               className="p-6 liquid-glass liquid-glass-hover group cursor-default relative overflow-hidden flex flex-col justify-between"
             >
               <div className="relative z-10">
@@ -140,10 +120,10 @@ export default function AboutSection() {
                   {pillar.desc}
                 </p>
               </div>
-            </motion.div>
+            </Reveal>
           ))}
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

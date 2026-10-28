@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { getProjectsData } from '../../data';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import { Star, ExternalLink } from 'lucide-react';
@@ -12,20 +11,7 @@ const GithubIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.08 }
-  }
-};
-
-const tabVariants = {
-  hidden: { scale: 0.9 },
-  visible: { scale: 1, transition: { duration: 0.3 } }
-};
-
 const GITHUB_STARS_CACHE_KEY = 'portfolio_github_stars_v2';
-const CACHE_TTL_MS = 3 * 60 * 1000; // 3 menit TTL SWR cache
 
 export default function ProjectsGrid() {
   const { language, t } = useLanguage();
@@ -128,8 +114,8 @@ export default function ProjectsGrid() {
 
   return (
     <section id="projects" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-12">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-12">
+        <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('projects.badge')}</span>
         </div>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
@@ -141,13 +127,7 @@ export default function ProjectsGrid() {
       </Reveal>
 
       {/* Filter Tabs */}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.8 }}
-        className="flex justify-center mb-12"
-      >
+      <Reveal y={24} duration={0.55} delay={0.05} amount={0.15} className="flex justify-center mb-12">
         <div className="stitch-capsule-group">
           {[
             { id: 'all', label: t('projects.tabAll') },
@@ -155,8 +135,7 @@ export default function ProjectsGrid() {
             { id: 'tools', label: t('projects.tabTools') },
             { id: 'web', label: t('projects.tabWeb') }
           ].map(tab => (
-            <motion.button
-              variants={tabVariants}
+            <button
               key={tab.id}
               onClick={() => {
                 setFilter(tab.id);
@@ -169,20 +148,26 @@ export default function ProjectsGrid() {
               }`}
             >
               {tab.label}
-            </motion.button>
+            </button>
           ))}
         </div>
-      </motion.div>
+      </Reveal>
 
       {/* Featured Project Showcase Card (HANYA tampil pada tab 'Semua Proyek') */}
       {featuredProject && (
-        <Reveal y={28} duration={0.5} amount={0.15} className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group">
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+        <Reveal y={24} duration={0.55} amount={0.15} className="mb-12 p-8 sm:p-12 liquid-glass-strong liquid-glass-hover relative overflow-hidden group">
+          <div
+            className="absolute top-0 right-0 -mr-20 -mt-20 h-80 w-80 rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.16) 0%, transparent 70%)',
+              transform: 'translateZ(0)'
+            }}
+          />
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             <div className="lg:col-span-8 space-y-6">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-full uppercase backdrop-blur-md">
+                <span className="px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 rounded-full uppercase">
                   {featuredProject.badge}
                 </span>
                 <span className="px-3.5 py-1 text-xs font-medium text-zinc-300 bg-white/5 border border-white/10 rounded-full">
@@ -252,88 +237,79 @@ export default function ProjectsGrid() {
 
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AnimatePresence mode="popLayout">
-          {displayProjects.map((project, index) => (
-            <motion.div 
-              layout
-              key={project.id}
-              initial={{ y: 28 }}
-              whileInView={{ y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              viewport={{ once: false, amount: 0.15 }}
-              transition={{ 
-                duration: 0.5, 
-                ease: [0.16, 1, 0.3, 1],
-                delay: (index % 2) * 0.08
-              }}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="liquid-glass liquid-glass-hover p-7 group flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 rounded-full">
-                      {project.categoryLabel}
+        {displayProjects.map((project, index) => (
+          <Reveal 
+            key={project.id}
+            y={24}
+            duration={0.55}
+            delay={(index % 2) * 0.06}
+            amount={0.15}
+            className="liquid-glass liquid-glass-hover p-7 group flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 text-[11px] font-semibold text-cyan-300 bg-cyan-500/10 border border-cyan-500/25 rounded-full">
+                    {project.categoryLabel}
+                  </span>
+                  {project.badge && (
+                    <span className="hidden sm:inline-block px-2.5 py-0.5 text-[10px] font-medium text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                      {project.badge}
                     </span>
-                    {project.badge && (
-                      <span className="hidden sm:inline-block px-2.5 py-0.5 text-[10px] font-medium text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                        {project.badge}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 text-zinc-400 text-xs">
-                    <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
-                    <span>{getProjectStars(project)}</span>
-                  </div>
+                  )}
                 </div>
-
-                <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
-                  {project.title}
-                </h3>
-
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                  {project.description}
-                </p>
-
-                <div className="flex flex-wrap gap-1.5 pt-2">
-                  {project.techStack.map((tech, i) => (
-                    <span key={i} className="px-2.5 py-1 rounded-md text-[11px] font-medium text-zinc-300 bg-white/5 border border-white/10">
-                      {tech}
-                    </span>
-                  ))}
+                <div className="flex items-center gap-1 text-zinc-400 text-xs">
+                  <Star className="w-3.5 h-3.5 fill-current text-amber-400" />
+                  <span>{getProjectStars(project)}</span>
                 </div>
               </div>
 
-              <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-between gap-2">
+              <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
+                {project.title}
+              </h3>
+
+              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                {project.description}
+              </p>
+
+              <div className="flex flex-wrap gap-1.5 pt-2">
+                {project.techStack.map((tech, i) => (
+                  <span key={i} className="px-2.5 py-1 rounded-md text-[11px] font-medium text-zinc-300 bg-white/5 border border-white/10">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-6 mt-4 border-t border-white/10 flex items-center justify-between gap-2">
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => telemetry.logEvent('link_click', `github_${project.id}`, `Kunjungi Repositori: ${project.title}`)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full stitch-btn-glass text-xs font-semibold text-zinc-200 hover:text-white transition-all"
+              >
+                <GithubIcon className="w-3.5 h-3.5" />
+                <span>{t('projects.githubRepo')}</span>
+              </a>
+              
+              {project.demoUrl ? (
                 <a
-                  href={project.githubUrl}
+                  href={project.demoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => telemetry.logEvent('link_click', `github_${project.id}`, `Kunjungi Repositori: ${project.title}`)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full stitch-btn-glass text-xs font-semibold text-zinc-200 hover:text-white transition-all"
+                  onClick={() => telemetry.logEvent('link_click', `demo_${project.id}`, `Buka Demo: ${project.title}`)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full stitch-btn-glass text-xs font-semibold text-cyan-300 hover:text-white transition-all"
                 >
-                  <GithubIcon className="w-3.5 h-3.5" />
-                  <span>{t('projects.githubRepo')}</span>
+                  <span>{t('projects.liveDemo')}</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
-                
-                {project.demoUrl ? (
-                  <a
-                    href={project.demoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => telemetry.logEvent('link_click', `demo_${project.id}`, `Buka Demo: ${project.title}`)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full stitch-btn-glass text-xs font-semibold text-cyan-300 hover:text-white transition-all"
-                  >
-                    <span>{t('projects.liveDemo')}</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                ) : (
-                  <span className="text-[11px] font-mono text-zinc-500">{t('projects.standaloneApp')}</span>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              ) : (
+                <span className="text-[11px] font-mono text-zinc-500">{t('projects.standaloneApp')}</span>
+              )}
+            </div>
+          </Reveal>
+        ))}
       </div>
     </section>
   );

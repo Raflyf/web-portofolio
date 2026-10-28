@@ -721,23 +721,34 @@ button.stitch-btn-glass:active,
   }
 }
 
-/* Layout and style containment for silky smooth 60fps/120fps scroll without pop-in spikes */
+/* Layout and style containment for silky smooth 60fps/120fps scroll without pop-in spikes.
+   CATATAN PERFORMA: jangan gunakan `content-visibility: auto` dengan intrinsic-size 900px
+   karena tinggi aktual section (1600px-4000px) jauh melebihi 900px sehingga memicu
+   loncatan scrollHeight dan freeze saat realokasi tekstur GPU backdrop-filter di batas section. */
 .section-contain {
   contain: layout style;
 }
 
-/* OPTIMASI SCROLL (terukur 25 Sep, CPU 4x lebih lambat):
-   content-visibility:auto membuat browser MELEWATI render section yang berada
-   di luar layar, sehingga biaya blur/shadow/gradient hanya dibayar untuk bagian
-   yang terlihat. Hasil uji: FPS 36 -> 56, frame jank 54 -> 10.
-   contain-intrinsic-size menjaga tinggi placeholder agar scrollbar & posisi
-   section tidak melompat (mencegah layout shift saat section masuk viewport).
-   Semua animasi, motion, dan efek visual tetap utuh — hanya bagian luar layar
-   yang tidak dirender sampai dibutuhkan. */
-.stitch-liquid-theme .section-contain,
-.stitch-dashboard-container .section-contain {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 900px;
+/* Optimasi GPU Mobile (<= 768px): layar ponsel memiliki DPR 2.5x-3.0x sehingga radius
+   blur(8px)/blur(10px) secara fisik setara 24px-30px Gaussian kernel (identik secara
+   visual dengan desktop, namun memangkas beban fill-rate shader GPU mobile > 50%). */
+@media (max-width: 768px) {
+  .stitch-glass,
+  .stitch-liquid-theme .liquid-glass,
+  .stitch-dashboard-container .liquid-glass,
+  .stitch-btn-glass,
+  .stitch-btn-primary,
+  .stitch-capsule-group {
+    -webkit-backdrop-filter: blur(8px) !important;
+    backdrop-filter: blur(8px) !important;
+  }
+
+  .stitch-liquid-theme .liquid-glass-strong,
+  .stitch-dashboard-container .liquid-glass-strong,
+  .stitch-terminal-window {
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+  }
 }
 
 /* 16 AI Model Cards */

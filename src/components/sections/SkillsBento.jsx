@@ -1,31 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Cpu, Network, Server, Eye } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext.jsx';
 import Reveal from '../ui/Reveal.jsx';
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { y: 20 },
-  visible: {
-    y: 0,
-    transition: { duration: 0.5, staggerChildren: 0.05 }
-  }
-};
-
-const badgeVariants = {
-  hidden: { scale: 0.8 },
-  visible: { scale: 1, transition: { duration: 0.2 } }
-};
 
 export default function SkillsBento() {
   const { t } = useLanguage();
@@ -47,26 +23,20 @@ export default function SkillsBento() {
 
   return (
     <section ref={sectionRef} id="skills" className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-24">
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.2 }}
-        variants={containerVariants}
-        className="text-center space-y-4 mb-14"
-      >
-        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+      <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-14">
+        <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">{t('skills.badge')}</span>
-        </motion.div>
-        <motion.h2 variants={itemVariants} className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
+        </div>
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white">
           {t('skills.title')}
-        </motion.h2>
-        <motion.p variants={itemVariants} className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
+        </h2>
+        <p className="text-zinc-400 max-w-2xl mx-auto text-base sm:text-lg">
           {t('skills.subtitle')}
-        </motion.p>
-      </motion.div>
+        </p>
+      </Reveal>
 
       {/* Infinite Marquee 1 (Left Scrolling) */}
-      <Reveal y={20} duration={0.5} delay={0.1} amount={0.8} className="relative overflow-hidden flex w-full mb-4 marquee-mask-x">
+      <Reveal y={24} duration={0.55} delay={0.05} amount={0.15} className="relative overflow-hidden flex w-full mb-4 marquee-mask-x">
         <div 
           className="animate-marquee-left flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}
@@ -85,7 +55,7 @@ export default function SkillsBento() {
       </Reveal>
 
       {/* Infinite Marquee 2 (Right Scrolling) */}
-      <Reveal y={20} duration={0.5} delay={0.2} amount={0.8} className="relative overflow-hidden flex w-full mb-16 marquee-mask-x">
+      <Reveal y={24} duration={0.55} delay={0.1} amount={0.15} className="relative overflow-hidden flex w-full mb-16 marquee-mask-x">
         <div 
           className="animate-marquee-right flex gap-3 whitespace-nowrap py-1"
           style={{ animationPlayState: isInView ? 'running' : 'paused' }}
@@ -104,18 +74,13 @@ export default function SkillsBento() {
       </Reveal>
 
       {/* Bento Grid with Uniform Obsidian Liquid Glass & Lucide SVG Icons */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.15 }}
-        variants={containerVariants}
-        className="grid grid-cols-1 md:grid-cols-12 gap-6"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         
         {/* Machine Learning & NLP */}
-        <motion.div 
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
+        <Reveal 
+          y={24}
+          duration={0.55}
+          amount={0.15}
           className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
@@ -127,17 +92,19 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["Python 3", "PyTorch", "Prompt Engineering", "Sentence-Transformers", "Scikit-Learn", "XGBoost", "N-Gram Shingling", "Pandas", "NumPy"].map((tech, i) => (
-              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
                 {tech}
-              </motion.span>
+              </span>
             ))}
           </div>
-        </motion.div>
+        </Reveal>
 
         {/* Network & Infrastructure */}
-        <motion.div 
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
+        <Reveal 
+          y={24}
+          duration={0.55}
+          delay={0.06}
+          amount={0.15}
           className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
@@ -149,17 +116,18 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["MikroTik RouterOS", "MTCNA Certified", "Static & Dynamic Routing", "Firewall Filter Rules", "Simple Queues (QoS)", "VLAN & Tunnels"].map((tech, i) => (
-              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
                 {tech}
-              </motion.span>
+              </span>
             ))}
           </div>
-        </motion.div>
+        </Reveal>
 
         {/* Backend & Full-Stack */}
-        <motion.div 
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
+        <Reveal 
+          y={24}
+          duration={0.55}
+          amount={0.15}
           className="md:col-span-5 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
@@ -171,17 +139,19 @@ export default function SkillsBento() {
           </h3>
           <div className="flex flex-wrap gap-2 relative z-10">
             {["React.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Supabase DB", "Node.js API", "Flask API"].map((tech, i) => (
-              <motion.span variants={badgeVariants} key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
+              <span key={i} className="px-3.5 py-1.5 rounded-full stitch-btn-glass text-xs sm:text-sm text-zinc-300 font-medium hover:text-white transition-all">
                 {tech}
-              </motion.span>
+              </span>
             ))}
           </div>
-        </motion.div>
+        </Reveal>
 
         {/* Computer Vision & Interactive Tools */}
-        <motion.div 
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
+        <Reveal 
+          y={24}
+          duration={0.55}
+          delay={0.06}
+          amount={0.15}
           className="md:col-span-7 liquid-glass liquid-glass-hover p-7 sm:p-8 relative overflow-hidden group"
         >
           <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
@@ -198,9 +168,9 @@ export default function SkillsBento() {
               </span>
             ))}
           </div>
-        </motion.div>
+        </Reveal>
 
-      </motion.div>
+      </div>
     </section>
   );
 }

@@ -231,7 +231,6 @@
               border-color 0.3s ease,
               box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
               background 0.3s ease;
-  will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
@@ -430,21 +429,24 @@
    ========================================================================== */
 .reveal-init {
   opacity: 1;
-  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 0px), 0) scale(var(--rv-scale, 1));
-  will-change: transform;
-  transition: transform var(--rv-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
+  transform: translate3d(var(--rv-x, 0px), var(--rv-y, 24px), 0) scale(var(--rv-scale, 1));
+  backface-visibility: hidden;
+  transition: transform var(--rv-duration, 0.55s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
+}
+
+.reveal-init.reveal-from-top {
+  transform: translate3d(var(--rv-x, 0px), calc(var(--rv-y, 24px) * -1), 0) scale(var(--rv-scale, 1));
 }
 
 .reveal-init.reveal-fade {
   opacity: 0;
-  transition: opacity var(--rv-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s),
-              transform var(--rv-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
+  transition: opacity var(--rv-duration, 0.55s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s),
+              transform var(--rv-duration, 0.55s) cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0s);
 }
 
 .reveal-init.revealed {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
-  will-change: auto;
 }
 
 /* Reveal: slide up (scroll-triggered via IntersectionObserver / framer).

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Terminal,
@@ -17,6 +17,7 @@ import {
   Clock
 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext.jsx";
+import Reveal from "./Reveal.jsx";
 
 const HERO_SHOWCASE_PROJECTS_I18N = {
   id: [
@@ -134,66 +135,92 @@ const STACK_BADGES = [
   { name: "Flask & WebSockets", icon: Command }
 ];
 
+// Isolated clock sub-component so 1-second ticks never re-render HorizonHero during scroll
+const LiveWibClock = React.memo(function LiveWibClock({ language, active }) {
+  const [clockTime, setClockTime] = useState("");
+
+  useEffect(() => {
+    if (!active) return;
+
+    const formatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Jakarta",
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+    const tzLabel = language === "id" ? "WIB (UTC+7)" : "UTC+7 (WIB)";
+
+    const updateClock = () => {
+      if (document.hidden) return;
+      const timeStr = formatter.format(new Date()).replace(/\./g, ":");
+      setClockTime(`${tzLabel} • ${timeStr}`);
+    };
+
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    const onVisibility = () => {
+      if (!document.hidden) updateClock();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [language, active]);
+
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
+      <Clock className="w-3.5 h-3.5 text-cyan-400" />
+      <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
+        {clockTime}
+      </span>
+    </div>
+  );
+});
+
 export default function HorizonHero() {
   const { language, t } = useLanguage();
   const containerRef = useRef(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [clockTime, setClockTime] = useState('');
+  const [isHeroInView, setIsHeroInView] = useState(true);
 
   const showcaseProjects = HERO_SHOWCASE_PROJECTS_I18N[language] || HERO_SHOWCASE_PROJECTS_I18N.id;
 
-  // Live WIB clock (UTC+7), paused when the tab is hidden
+  // Pause hero timers and marquee when scrolled out of view
   useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      // Format 24-jam presisi HH:mm:ss dengan titik dua (bukan titik)
-      const timeStr = new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'Asia/Jakarta',
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      }).format(now).replace(/\./g, ':');
-      const tzLabel = language === 'id' ? 'WIB (UTC+7)' : 'UTC+7 (WIB)';
-      setClockTime(`${tzLabel} • ${timeStr}`);
-    };
-    updateClock();
-    const timer = setInterval(updateClock, 1000);
-    const onVisibility = () => {
-      if (document.hidden) {
-        clearInterval(timer);
-      } else {
-        updateClock();
-      }
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => {
-      clearInterval(timer);
-      document.removeEventListener('visibilitychange', onVisibility);
-    };
-  }, [language]);
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        setIsHeroInView(entry.isIntersecting);
+      },
+      { threshold: 0.02 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
   });
 
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 20 });
+  // Direct scroll transforms (Lenis already smooths scroll wheel momentum)
+  const heroTextY = useTransform(scrollYProgress, [0, 1], [0, 56]);
+  const showcaseY = useTransform(scrollYProgress, [0, 1], [0, -40]);
 
-  // Parallax layer transforms
-  const heroTextY = useTransform(smoothProgress, [0, 1], [0, 80]);
-  const heroOpacity = useTransform(smoothProgress, [0, 0.7], [1, 0]);
-  const showcaseY = useTransform(smoothProgress, [0, 1], [0, -60]);
-
-  // Auto slide interval
+  // Auto slide interval (paused when hovered or when hero is scrolled out of view)
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || !isHeroInView) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % showcaseProjects.length);
+      if (!document.hidden) {
+        setCurrentSlide((prev) => (prev + 1) % showcaseProjects.length);
+      }
     }, 4500);
     return () => clearInterval(timer);
-  }, [isPaused, showcaseProjects.length]);
+  }, [isPaused, isHeroInView, showcaseProjects.length]);
 
   const handlePrev = () => {
     setCurrentSlide((prev) => (prev === 0 ? showcaseProjects.length - 1 : prev - 1));
@@ -235,62 +262,58 @@ export default function HorizonHero() {
         />
       </div>
 
-
       {/* Main Grid Container */}
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full pt-10 md:pt-14">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8 items-center">
           
           {/* Left Column: Hero Content */}
           <motion.div 
-            style={{ y: heroTextY, opacity: heroOpacity }}
-            className="lg:col-span-7 flex flex-col justify-center space-y-8"
+            style={{ y: heroTextY }}
+            className="lg:col-span-7"
           >
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
-                <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
-                  {t('hero.badge')}
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
-                </span>
+            <Reveal y={24} duration={0.55} amount={0.15} className="flex flex-col justify-center space-y-8">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
+                  <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-200 flex items-center gap-2">
+                    {t('hero.badge')}
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
+                  </span>
+                </div>
+                <LiveWibClock language={language} active={isHeroInView} />
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full stitch-btn-glass px-3.5 py-1.5 transition-all">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-[11px] sm:text-xs font-mono font-semibold text-cyan-300 tabular-nums">
-                  {clockTime}
+
+              <h1 
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-medium tracking-tighter leading-[0.95]"
+              >
+                Rafly<br />
+                <span className="bg-linear-to-br from-white via-zinc-100 to-zinc-500 bg-clip-text text-transparent">
+                  Firmansyah
                 </span>
+              </h1>
+
+              <p className="max-w-xl text-base sm:text-lg text-zinc-300 leading-relaxed font-normal">
+                {t('hero.tagline')}
+              </p>
+
+              {/* Pristine 3D Tactile Liquid Glass Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                <a 
+                  href="#projects"
+                  className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full stitch-btn-primary font-semibold tracking-wide text-sm liquid-press transition-all group"
+                >
+                  <span>{t('hero.exploreBtn')}</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </a>
+                
+                <a 
+                  href="#lab"
+                  className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full stitch-btn-glass font-semibold tracking-wide text-sm liquid-press transition-all group"
+                >
+                  <Terminal className="w-4 h-4 text-cyan-400 transition-transform group-hover:scale-110" />
+                  <span>{t('hero.terminalBtn')}</span>
+                </a>
               </div>
-            </div>
-
-            <h1 
-              className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-medium tracking-tighter leading-[0.95]"
-            >
-              Rafly<br />
-              <span className="bg-linear-to-br from-white via-zinc-100 to-zinc-500 bg-clip-text text-transparent">
-                Firmansyah
-              </span>
-            </h1>
-
-            <p className="max-w-xl text-base sm:text-lg text-zinc-300 leading-relaxed font-normal">
-              {t('hero.tagline')}
-            </p>
-
-            {/* Pristine 3D Tactile Liquid Glass Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <a 
-                href="#projects"
-                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full stitch-btn-primary font-semibold tracking-wide text-sm liquid-press transition-all group"
-              >
-                <span>{t('hero.exploreBtn')}</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </a>
-              
-              <a 
-                href="#lab"
-                className="inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full stitch-btn-glass font-semibold tracking-wide text-sm liquid-press transition-all group"
-              >
-                <Terminal className="w-4 h-4 text-cyan-400 transition-transform group-hover:scale-110" />
-                <span>{t('hero.terminalBtn')}</span>
-              </a>
-            </div>
+            </Reveal>
           </motion.div>
 
           {/* Right Column: Dynamic Project Showcase Deck & Carousel */}
@@ -303,7 +326,7 @@ export default function HorizonHero() {
             onBlur={() => setIsPaused(false)}
           >
             {/* Dynamic Project Showcase Canvas */}
-            <div className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7 rounded-3xl">
+            <Reveal y={24} duration={0.55} delay={0.06} amount={0.15} className="relative overflow-hidden liquid-glass-strong liquid-glass-hover p-6 sm:p-7 rounded-3xl">
               <div 
                 className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full pointer-events-none" 
                 style={{
@@ -410,18 +433,20 @@ export default function HorizonHero() {
                   </a>
                 </div>
               </div>
-            </div>
+            </Reveal>
 
             {/* Marquee Tech Brand Pod */}
-            <div className="relative overflow-hidden liquid-glass py-4 rounded-2xl">
+            <Reveal y={24} duration={0.55} delay={0.12} amount={0.15} className="relative overflow-hidden liquid-glass py-4 rounded-2xl">
               <div className="mb-2.5 px-6 flex items-center justify-between">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">Core Engineering Stack</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
               </div>
               
               <div className="relative flex overflow-hidden marquee-mask-x">
-
-                <div className="animate-marquee-left flex gap-8 whitespace-nowrap px-4 py-1">
+                <div
+                  className="animate-marquee-left flex gap-8 whitespace-nowrap px-4 py-1"
+                  style={{ animationPlayState: isHeroInView ? "running" : "paused" }}
+                >
                   {[...STACK_BADGES, ...STACK_BADGES].map((tech, i) => (
                     <div 
                       key={i}
@@ -435,7 +460,7 @@ export default function HorizonHero() {
                   ))}
                 </div>
               </div>
-            </div>
+            </Reveal>
 
           </motion.div>
         </div>

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import './stitch.css';
-import { motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { telemetry } from '../lib/telemetry.js';
 import StitchCausticsBackdrop from './components/StitchCausticsBackdrop.jsx';
@@ -44,7 +43,7 @@ export default function StitchPortfolio() {
           <HorizonHero />
         </div>
 
-        {/* Main Sections with Bidirectional Scroll Reveal */}
+        {/* Main Sections with Unified Bidirectional Scroll Reveal */}
         <div className="section-contain"><AboutSection /></div>
         <div className="section-contain"><SkillsBento /></div>
         <div className="section-contain"><ProjectsGrid /></div>
@@ -53,7 +52,7 @@ export default function StitchPortfolio() {
 
         {/* Terminal & Interactive AI Lab */}
         <section className="relative px-4 sm:px-6 w-full max-w-7xl mx-auto pt-12 pb-24 section-contain" id="lab">
-          <Reveal y={20} duration={0.6} amount={0.2} className="text-center space-y-4 mb-12">
+          <Reveal y={24} duration={0.55} amount={0.15} className="text-center space-y-4 mb-12">
             <div className="inline-flex items-center gap-2 liquid-glass-inset liquid-glass-pill px-3.5 py-1.5">
               <span className="text-xs font-semibold uppercase tracking-wider text-cyan-300 font-mono">{t('lab.badge')}</span>
             </div>
@@ -65,7 +64,7 @@ export default function StitchPortfolio() {
             </p>
           </Reveal>
           
-          <Reveal y={30} duration={0.7} amount={0.15} >
+          <Reveal y={24} duration={0.55} delay={0.06} amount={0.15}>
             <TerminalAI />
           </Reveal>
         </section>
