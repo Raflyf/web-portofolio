@@ -1443,7 +1443,7 @@ export default function TerminalAI({ onClose } = {}) {
                       })}
                     </div>
                   )}
-                  {msg.content && <div className="leading-relaxed whitespace-pre-wrap wrap-break-word">{msg.content}</div>}
+                  {msg.content && <div className="font-sans font-medium text-[13px] sm:text-[14px] text-emerald-50 leading-relaxed whitespace-pre-wrap wrap-break-word">{msg.content}</div>}
                 </div>
               </div>
             ) : msg.role === 'system' ? (
@@ -1518,8 +1518,8 @@ export default function TerminalAI({ onClose } = {}) {
                   </div>
                 )}
                 
-                <div className="w-fit max-w-full liquid-glass rounded-2xl rounded-tl-sm px-3 py-2.5 sm:px-4 text-zinc-200">
-                  <div className="markdown-body max-w-none leading-relaxed">
+                <div className="w-fit max-w-full stitch-ai-bubble rounded-2xl rounded-tl-sm px-4 py-3 sm:px-5 sm:py-3.5 text-slate-100 font-sans">
+                  <div className="markdown-body font-sans max-w-none leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {formatMessageContent(msg.content)}
                     </ReactMarkdown>

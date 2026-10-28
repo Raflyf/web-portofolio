@@ -585,9 +585,10 @@ body::-webkit-scrollbar,
 /* Markdown body (AI terminal responses) - manual typography so we do not
    require @tailwindcss/typography. Mirrors prose-sm/invert essentials. */
 .markdown-body {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.875rem;
-  line-height: 1.625;
-  color: rgb(228 228 231);
+  line-height: 1.7;
+  color: #f1f5f9;
   word-wrap: break-word;
 }
 
