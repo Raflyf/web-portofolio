@@ -1,70 +1,59 @@
 import React, { useEffect, useRef } from 'react';
 
 /**
- * Dual-Observer Bidirectional Scroll Reveal Engine (Zero React Re-Renders, 60fps Compositor-Only)
- * - `enterObserver` (`rootMargin: '-9% 0px -9% 0px'`): Mengaktifkan `.revealed` tepat ketika
- *   kartu sudah masuk ~9% ke dalam layar (area pandang mata pengguna), sehingga gerakan meluncur
- *   56px dari bawah ke atas (saat scroll down) maupun dari atas ke bawah (saat scroll up)
- *   benar-benar terlihat jelas dan halus.
- * - `exitObserver` (`rootMargin: '0px'`): Mereset `.revealed` dan menyetel arah `.reveal-from-top`
- *   HANYA saat kartu 100% keluar dari batas layar dengan `transition: none` (biaya GPU 0ms).
- * - Murni menganimasikan `translate3d` pada compositor GPU dengan `opacity: 1` konstan,
- *   sehingga Chromium tidak pernah mengalokasikan ulang tekstur FBO `backdrop-filter` saat scroll.
+ * Shared IntersectionObserver Pool with Threshold Hysteresis (Zero React Re-Renders, 60fps Compositor-Only)
+ * - Satu observer (`rootMargin: '0px'`, `threshold: [0, 0.05, 0.14]`) dipakai bersama seluruh halaman.
+ * - Mengaktifkan `.revealed` saat >= 14% tinggi kartu sudah masuk ke dalam viewport
+ *   (atau untuk section tinggi, segera saat melewati >= 5% / > 70px ke dalam layar), sehingga
+ *   gerakan meluncur 46px dari bawah ke atas (scroll down) maupun dari atas ke bawah (scroll up)
+ *   terlihat jelas di area pandang mata dan tidak pernah gagal memicu elemen di ujung paling bawah halaman.
+ * - Mereset `.revealed` dan menyetel arah `.reveal-from-top` HANYA saat kartu 100% keluar dari
+ *   viewport (`!entry.isIntersecting`) dengan `transition: none` (biaya GPU 0ms).
  */
-let sharedEnterObserver = null;
-let sharedExitObserver = null;
+let sharedObserver = null;
 
-function getSharedObservers() {
-  if (sharedEnterObserver && sharedExitObserver) {
-    return { enterObserver: sharedEnterObserver, exitObserver: sharedExitObserver };
+function getSharedObserver() {
+  if (sharedObserver) {
+    return sharedObserver;
   }
 
-  sharedEnterObserver = new IntersectionObserver(
+  sharedObserver = new IntersectionObserver(
     (entries) => {
-      for (let i = 0; i < entries.length; i++) {
-        const entry = entries[i];
-        if (entry.isIntersecting && entry.intersectionRatio > 0) {
-          entry.target.classList.add('revealed');
-        }
-      }
-    },
-    {
-      threshold: [0.01],
-      rootMargin: '-9% 0px -9% 0px',
-    }
-  );
-
-  sharedExitObserver = new IntersectionObserver(
-    (entries) => {
+      const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
       for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
         const el = entry.target;
 
-        if (!entry.isIntersecting && entry.intersectionRatio <= 0) {
+        if (!entry.isIntersecting || entry.intersectionRatio <= 0) {
           el.classList.remove('revealed');
           if (entry.boundingClientRect.top < 0) {
             el.classList.add('reveal-from-top');
           } else {
             el.classList.remove('reveal-from-top');
           }
+        } else {
+          const visiblePx = entry.intersectionRect ? entry.intersectionRect.height : 0;
+          if (entry.intersectionRatio >= 0.14 || visiblePx >= 64 || entry.boundingClientRect.height > vh * 0.5) {
+            el.classList.add('revealed');
+          }
         }
       }
     },
     {
-      threshold: [0],
+      threshold: [0, 0.05, 0.14],
       rootMargin: '0px',
     }
   );
 
-  return { enterObserver: sharedEnterObserver, exitObserver: sharedExitObserver };
+  return sharedObserver;
 }
 
 export default function Reveal({
-  y = 56,
+  y = 46,
   x = 0,
   scale = null,
   fade = false,
-  duration = 0.78,
+  duration = 0.76,
   delay = 0,
   amount = 0.01,
   as: Tag = 'div',
@@ -82,12 +71,10 @@ export default function Reveal({
       return;
     }
 
-    const { enterObserver, exitObserver } = getSharedObservers();
-    exitObserver.observe(el);
-    enterObserver.observe(el);
+    const io = getSharedObserver();
+    io.observe(el);
     return () => {
-      enterObserver.unobserve(el);
-      exitObserver.unobserve(el);
+      io.unobserve(el);
     };
   }, [amount]);
 
